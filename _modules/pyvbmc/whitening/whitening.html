@@ -26,45 +26,53 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/whitening/whitening';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/whitening/whitening.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/whitening/whitening.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -90,7 +98,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -148,6 +196,7 @@
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -155,20 +204,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -176,6 +238,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
@@ -306,11 +371,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -343,32 +415,117 @@
                   
   <h1>Source code for pyvbmc.whitening.whitening</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Real</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">gpyreg</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># The refusal of a value of the option `warp_cov_reg` that is neither a</span>
+<span class="c1"># number nor a function; `format` takes the value.</span>
+<span class="n">_WARP_COV_REG_REFUSAL</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"The option 'warp_cov_reg' must be a finite real number (not a "</span>
+    <span class="s2">"boolean) or a function of the number of training points that returns "</span>
+    <span class="s2">"one; it is </span><span class="si">{!r}</span><span class="s2">."</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_finite_real_number</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether ``value`` is a finite real number.</span>
+
+<span class="sd">    A Python or NumPy integer or floating-point number is one, and so is a</span>
+<span class="sd">    0-d array that holds one; a boolean is not.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Real</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_drop_low_correlations</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">,</span> <span class="n">corr_thresh</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Set the weakly correlated entries of a covariance matrix to zero.</span>
+
+<span class="sd">    An entry is kept where the absolute value of its correlation exceeds</span>
+<span class="sd">    ``corr_thresh``. An entry whose correlation is not a number does not</span>
+<span class="sd">    exceed the threshold, and goes to zero with the weakly correlated</span>
+<span class="sd">    ones.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vp_cov : (D,D) np.ndarray</span>
+<span class="sd">        The covariance matrix.</span>
+<span class="sd">    corr_thresh : float</span>
+<span class="sd">        The correlation below which an entry is dropped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dropped : (D,D) np.ndarray</span>
+<span class="sd">        A copy of the covariance matrix with the dropped entries zeroed.</span>
+<span class="sd">    """</span>
+    <span class="n">vp_corr</span> <span class="o">=</span> <span class="n">vp_cov</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">)))</span>
+    <span class="n">mask_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vp_corr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">corr_thresh</span>
+    <span class="n">dropped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">)</span>
+    <span class="n">dropped</span><span class="p">[</span><span class="o">~</span><span class="n">mask_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">dropped</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_positive_definite</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether a real symmetric matrix is positive definite.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matrix : (D,D) np.ndarray</span>
+<span class="sd">        The symmetric matrix to test.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    positive_definite : bool</span>
+<span class="sd">        `True` if the matrix is finite and admits a Cholesky factorization.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">matrix</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
 
 
 <div class="viewcode-block" id="unscent_warp">
 <a class="viewcode-back" href="../../../api/functions/whitening.html#pyvbmc.whitening.unscent_warp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">unscent_warp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the unscented transform of the warping function `fun`.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Compute the unscented transform of the warping function `fun`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    fun : function</span>
 <span class="sd">        A single-argument function which warps input points.</span>
 <span class="sd">    x : (n,D) or (D,) np.ndarray</span>
-<span class="sd">        The input mean for which to compute the unscented transform.</span>
+<span class="sd">        The input mean for which to compute the unscented transform. A</span>
+<span class="sd">        single row is broadcast against the rows of `sigma`.</span>
 <span class="sd">    sigma : (n,D) or (D,) np.ndarray</span>
 <span class="sd">        The input matrix of standard deviations or scale parameters for which</span>
-<span class="sd">        to compute the unscented transform.</span>
+<span class="sd">        to compute the unscented transform. A single row is broadcast</span>
+<span class="sd">        against the rows of `x`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    x_warped_mean : (n,D) or (D,) np.ndarray</span>
-<span class="sd">        The unscented estimate of the mean.</span>
-<span class="sd">    x_warped_sigma : (n,D) np.ndarray</span>
-<span class="sd">        The unscented estimate of the standard deviation / scale parameters.</span>
+<span class="sd">        The unscented estimate of the mean, with one row per row of the</span>
+<span class="sd">        broadcast inputs. It is one-dimensional where `x` is and the</span>
+<span class="sd">        inputs give a single row.</span>
+<span class="sd">    x_warped_sigma : (n,D) or (D,) np.ndarray</span>
+<span class="sd">        The unscented estimate of the standard deviation / scale</span>
+<span class="sd">        parameters, shaped like `x_warped_mean`.</span>
 <span class="sd">    x_warped : (U,n,D) np.ndarray</span>
 <span class="sd">        The warped mean points at `x_warped[0, :, :]`, and the warped std.</span>
 <span class="sd">        simplex points, at `[1:, :, :]`. Here `U=2*D+1`.</span>
@@ -377,7 +534,11 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If the rows/columns of `x` and `sigma` cannot be coerced to match.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="c1"># The sigma points are taken in floating point whatever the dtype of</span>
+    <span class="c1"># the inputs, so that an array of integers does not truncate them.</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">x_shape_orig</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
@@ -387,11 +548,11 @@
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">N1</span><span class="p">,</span> <span class="n">N2</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">N1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mismatch between rows of X and SIGMA.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Mismatch between rows of X and SIGMA."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">N2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mismatch between rows of X and SIGMA.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Mismatch between rows of X and SIGMA."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">D</span> <span class="o">!=</span> <span class="n">D2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mismatch between columns of X and SIGMA.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Mismatch between columns of X and SIGMA."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">N1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">N</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
@@ -416,9 +577,14 @@
     <span class="n">x_warped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_warped</span><span class="p">,</span> <span class="p">[</span><span class="n">U</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span>
 
     <span class="c1"># Estimate the mean and standard deviation of the warped points</span>
-    <span class="c1"># by the mean and std of these sigma-points</span>
-    <span class="n">x_warped_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x_warped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_shape_orig</span><span class="p">)</span>
-    <span class="n">x_warped_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x_warped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_shape_orig</span><span class="p">)</span>
+    <span class="c1"># by the mean and std of these sigma-points. The estimates carry one</span>
+    <span class="c1"># row per row of the broadcast inputs; a single row takes the shape</span>
+    <span class="c1"># `x` was given in.</span>
+    <span class="n">x_warped_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x_warped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">x_warped_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x_warped</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">x_warped_mean</span> <span class="o">=</span> <span class="n">x_warped_mean</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_shape_orig</span><span class="p">)</span>
+        <span class="n">x_warped_sigma</span> <span class="o">=</span> <span class="n">x_warped_sigma</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_shape_orig</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">x_warped_mean</span><span class="p">,</span> <span class="n">x_warped_sigma</span><span class="p">,</span> <span class="n">x_warped</span></div>
 
@@ -427,21 +593,29 @@
 <div class="viewcode-block" id="warp_input">
 <a class="viewcode-back" href="../../../api/functions/whitening.html#pyvbmc.whitening.warp_input">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">warp_input</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">optim_state</span><span class="p">,</span> <span class="n">function_logger</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute input warping of variables and update the cached points in</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Compute input warping of variables and update the cached points in</span>
 <span class="sd">    function_logger accordingly.</span>
 
 <span class="sd">    Currently supports only a whitening transformation: a rotation and</span>
 <span class="sd">    rescaling of the inference space such that the variational posterior</span>
-<span class="sd">    acheives unit diagonal covariance.</span>
+<span class="sd">    achieves unit diagonal covariance.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    vp : VariationalPosterior</span>
-<span class="sd">        The current VP object for which to compute the warping.</span>
+<span class="sd">        The variational posterior whose covariance the whitening</span>
+<span class="sd">        transformation is computed from. That covariance is expressed in</span>
+<span class="sd">        the inference space of the posterior's own parameter transformer,</span>
+<span class="sd">        which need not be the space the run is currently in.</span>
 <span class="sd">    optim_state : dict</span>
 <span class="sd">        The dictionary recording the current optimization state.</span>
 <span class="sd">    function_logger : FunctionLogger</span>
-<span class="sd">        The record including cached function values.</span>
+<span class="sd">        The record including cached function values. Its parameter</span>
+<span class="sd">        transformer defines the current inference space, the one the</span>
+<span class="sd">        search bounds and the cached search points are given in.</span>
+<span class="sd">    options : Options</span>
+<span class="sd">        The options of the run: ``warp_rotoscaling``,</span>
+<span class="sd">        ``warp_roto_corr_thresh`` and ``warp_cov_reg`` are read.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -454,52 +628,74 @@
 <span class="sd">    function_logger : FunctionLogger</span>
 <span class="sd">        An updated copy of the original function logger.</span>
 <span class="sd">    warp_action : str</span>
-<span class="sd">        The type of warping performed (&quot;rotoscaling&quot; or &quot;warp&quot;)</span>
+<span class="sd">        The label of the warp in the iteration display, "rotoscale".</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
-<span class="sd">    NotImplementedError</span>
-<span class="sd">        If `vbmc.options[&quot;warp_nonlinear&quot;]` is set other than False.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``warp_cov_reg`` is neither a finite real number nor a function</span>
+<span class="sd">        of the number of training points that returns one.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Random draws use ``vp.rng``.</span>
+<span class="sd">    """</span>
     <span class="n">parameter_transformer</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="p">)</span>
     <span class="n">optim_state</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">optim_state</span><span class="p">)</span>
     <span class="n">function_logger</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">function_logger</span><span class="p">)</span>
+    <span class="c1"># The transformation of the inference space the run is in. The</span>
+    <span class="c1"># posterior given here may have been recorded in an earlier one, and</span>
+    <span class="c1"># its own transformation is what its covariance lives in, but the</span>
+    <span class="c1"># search bounds and the cached search points below are points of the</span>
+    <span class="c1"># current space.</span>
+    <span class="n">current_transformer</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">parameter_transformer</span>
 
-    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;warp_nonlinear&quot;</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Non-linear warping is not supported.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"warp_rotoscaling"</span><span class="p">):</span>
+        <span class="c1"># Get covariance matrix analytically</span>
+        <span class="n">__</span><span class="p">,</span> <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">moments</span><span class="p">(</span><span class="n">orig_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cov_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">delta</span>
+        <span class="n">R_mat</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">R_mat</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">scale</span>
+        <span class="k">if</span> <span class="n">R_mat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">R_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+        <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">R_mat</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">@</span> <span class="n">vp_cov</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">@</span> <span class="n">R_mat</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">@</span> <span class="n">vp_cov</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;warp_rotoscaling&quot;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;warp_nonlinear&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Non-linear warping is not supported.&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Get covariance matrix analytically</span>
-            <span class="n">__</span><span class="p">,</span> <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">moments</span><span class="p">(</span><span class="n">orig_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cov_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">delta</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">delta</span>
-            <span class="n">R_mat</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">R_mat</span>
-            <span class="n">scale</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">scale</span>
-            <span class="k">if</span> <span class="n">R_mat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">R_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
-            <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">R_mat</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">@</span> <span class="n">vp_cov</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">@</span> <span class="n">R_mat</span><span class="o">.</span><span class="n">T</span>
-            <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">@</span> <span class="n">vp_cov</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
-
-        <span class="c1"># Remove low-correlation entries</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;warp_roto_corr_thresh&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">vp_corr</span> <span class="o">=</span> <span class="n">vp_cov</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">))</span>
+        <span class="c1"># Remove low-correlation entries. Setting entries of a covariance</span>
+        <span class="c1"># matrix to zero can leave a matrix that is no longer positive</span>
+        <span class="c1"># definite; its singular values would then be the absolute values</span>
+        <span class="c1"># of its eigenvalues, and the transform computed from them would</span>
+        <span class="c1"># miss unit variance along the direction of a negative one. The</span>
+        <span class="c1"># covariance is kept as it was whenever that happens.</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"warp_roto_corr_thresh"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">vp_cov_dropped</span> <span class="o">=</span> <span class="n">_drop_low_correlations</span><span class="p">(</span>
+                <span class="n">vp_cov</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">"warp_roto_corr_thresh"</span><span class="p">]</span>
             <span class="p">)</span>
-            <span class="n">mask_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vp_corr</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;warp_roto_corr_thresh&quot;</span><span class="p">]</span>
-            <span class="n">vp_cov</span><span class="p">[</span><span class="n">mask_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">_is_positive_definite</span><span class="p">(</span><span class="n">vp_cov_dropped</span><span class="p">):</span>
+                <span class="n">vp_cov</span> <span class="o">=</span> <span class="n">vp_cov_dropped</span>
 
-        <span class="c1"># Regularization of covariance matrix towards diagonal</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="nb">type</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;warp_cov_reg&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">float</span>
-            <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;warp_cov_reg&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">int</span>
-        <span class="p">):</span>
-            <span class="n">w_reg</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;warp_cov_reg&quot;</span><span class="p">]</span>
+        <span class="c1"># Regularization of covariance matrix towards diagonal. The</span>
+        <span class="c1"># amount is a number, or a function of the number of training</span>
+        <span class="c1"># points.</span>
+        <span class="n">warp_cov_reg</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"warp_cov_reg"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">warp_cov_reg</span><span class="p">):</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"N"</span><span class="p">]</span>
+            <span class="n">returned</span> <span class="o">=</span> <span class="n">warp_cov_reg</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">w_reg</span> <span class="o">=</span> <span class="n">returned</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">returned</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">returned</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">w_reg</span> <span class="o">=</span> <span class="n">returned</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_finite_real_number</span><span class="p">(</span><span class="n">w_reg</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"The option 'warp_cov_reg' is a function of the number "</span>
+                    <span class="s2">"of training points, and it must return a finite real "</span>
+                    <span class="sa">f</span><span class="s2">"number; given N = </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2">, it returned </span><span class="si">{</span><span class="n">returned</span><span class="si">!r}</span><span class="s2">."</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">_is_finite_real_number</span><span class="p">(</span><span class="n">warp_cov_reg</span><span class="p">):</span>
+            <span class="n">w_reg</span> <span class="o">=</span> <span class="n">warp_cov_reg</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">w_reg</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">warp_cov_reg</span><span class="p">[</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_WARP_COV_REG_REFUSAL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">warp_cov_reg</span><span class="p">))</span>
         <span class="n">w_reg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="n">w_reg</span><span class="p">])])</span>
         <span class="n">vp_cov</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w_reg</span><span class="p">)</span> <span class="o">*</span> <span class="n">vp_cov</span> <span class="o">+</span> <span class="n">w_reg</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vp_cov</span><span class="p">))</span>
 
@@ -516,9 +712,9 @@
     <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
     <span class="n">Nrnd</span> <span class="o">=</span> <span class="mi">100000</span>
     <span class="n">xx</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">Nrnd</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;pub_orig&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;plb_orig&quot;</span><span class="p">])</span>
-        <span class="o">+</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;plb_orig&quot;</span><span class="p">]</span>
+        <span class="n">vp</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">Nrnd</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"pub_orig"</span><span class="p">]</span> <span class="o">-</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"plb_orig"</span><span class="p">])</span>
+        <span class="o">+</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"plb_orig"</span><span class="p">]</span>
     <span class="p">)</span>
     <span class="n">yy</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
 
@@ -528,66 +724,67 @@
     <span class="n">plb_tran</span> <span class="o">=</span> <span class="n">plb_tran</span> <span class="o">-</span> <span class="n">delta_temp</span> <span class="o">/</span> <span class="mi">9</span>
     <span class="n">pub_tran</span> <span class="o">=</span> <span class="n">pub_tran</span> <span class="o">+</span> <span class="n">delta_temp</span> <span class="o">/</span> <span class="mi">9</span>
 
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;plb_tran&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plb_tran</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;pub_tran&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pub_tran</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"plb_tran"</span><span class="p">]</span> <span class="o">=</span> <span class="n">plb_tran</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"pub_tran"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pub_tran</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
 
     <span class="c1"># Temperature scaling</span>
-    <span class="k">if</span> <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;temperature&quot;</span><span class="p">):</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"temperature"</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"temperature"</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">T</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="c1"># Adjust stored points after warping</span>
-    <span class="n">X_flag</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">X_flag</span>
-    <span class="n">X_orig</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">X_orig</span><span class="p">[</span><span class="n">X_flag</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">y_orig</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">X_flag</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="c1"># Adjust stored points after warping. Every filled row is rewritten,</span>
+    <span class="c1"># whether or not it is active, so that the inference-space coordinates</span>
+    <span class="c1"># of the logger agree with its original-space ones throughout.</span>
+    <span class="n">filled</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">X_orig</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">X_orig</span><span class="p">[</span><span class="n">filled</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">y_orig</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">filled</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="p">(</span><span class="n">X_orig</span><span class="p">)</span>
     <span class="n">dy</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="o">.</span><span class="n">log_abs_det_jacobian</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">y_orig</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">/</span> <span class="n">T</span>
-    <span class="n">function_logger</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">X_flag</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X</span>
-    <span class="n">function_logger</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">X_flag</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">function_logger</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">filled</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X</span>
+    <span class="n">function_logger</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">filled</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span>
     <span class="n">function_logger</span><span class="o">.</span><span class="n">parameter_transformer</span> <span class="o">=</span> <span class="n">parameter_transformer</span>
 
     <span class="c1"># Update search bounds:</span>
     <span class="c1"># Invert points to original space with old transform,</span>
     <span class="c1"># then map to new space with new transform</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">warpfun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">parameter_transformer</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">parameter_transformer</span><span class="p">(</span><span class="n">current_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
     <span class="n">Nrnd</span> <span class="o">=</span> <span class="mi">1000</span>
     <span class="n">xx</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">Nrnd</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;ub_search&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;lb_search&quot;</span><span class="p">])</span>
-        <span class="o">+</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;lb_search&quot;</span><span class="p">]</span>
+        <span class="n">vp</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">Nrnd</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"ub_search"</span><span class="p">]</span> <span class="o">-</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"lb_search"</span><span class="p">])</span>
+        <span class="o">+</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"lb_search"</span><span class="p">]</span>
     <span class="p">)</span>
     <span class="n">yy</span> <span class="o">=</span> <span class="n">warpfun</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
     <span class="n">yyMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">yy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">yyMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">yy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="n">yyMax</span> <span class="o">-</span> <span class="n">yyMin</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;lb_search&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">yyMin</span> <span class="o">-</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">Nrnd</span><span class="p">)</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;ub_search&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">yyMax</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">Nrnd</span><span class="p">)</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"lb_search"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">yyMin</span> <span class="o">-</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">Nrnd</span><span class="p">)</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"ub_search"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">yyMax</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">Nrnd</span><span class="p">)</span>
 
     <span class="c1"># If search cache is not empty, update it</span>
-    <span class="k">if</span> <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;search_cache&quot;</span><span class="p">):</span>
-        <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;search_cache&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">warpfun</span><span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;search_cache&quot;</span><span class="p">])</span>
+    <span class="n">search_cache</span> <span class="o">=</span> <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"search_cache"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">search_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">search_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">optim_state</span><span class="p">[</span><span class="s2">"search_cache"</span><span class="p">]</span> <span class="o">=</span> <span class="n">warpfun</span><span class="p">(</span><span class="n">search_cache</span><span class="p">)</span>
 
     <span class="c1"># Update other state fields</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;recompute_var_post&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;skip_active_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;warping_count&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;last_warping&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;last_successful_warping&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"recompute_var_post"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"skip_active_sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"warping_count"</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"last_warping"</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"last_successful_warping"</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span>
 
-    <span class="c1"># Reset GP Hyperparameters</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;run_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;last_run_avg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="c1"># Restart the running mean and covariance of the variational</span>
+    <span class="c1"># posterior, which were taken in the old inference space</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"run_mean"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"last_run_avg"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="c1"># Warp action for output display</span>
-    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;warp_nonlinear&quot;</span><span class="p">):</span>
-        <span class="n">warp_action</span> <span class="o">=</span> <span class="s2">&quot;warp&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">warp_action</span> <span class="o">=</span> <span class="s2">&quot;rotoscale&quot;</span>
+    <span class="n">warp_action</span> <span class="o">=</span> <span class="s2">"rotoscale"</span>
 
     <span class="k">return</span> <span class="n">parameter_transformer</span><span class="p">,</span> <span class="n">optim_state</span><span class="p">,</span> <span class="n">function_logger</span><span class="p">,</span> <span class="n">warp_action</span></div>
 
@@ -596,7 +793,7 @@
 <div class="viewcode-block" id="warp_gp_and_vp">
 <a class="viewcode-back" href="../../../api/functions/whitening.html#pyvbmc.whitening.warp_gp_and_vp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">warp_gp_and_vp</span><span class="p">(</span><span class="n">parameter_transformer</span><span class="p">,</span> <span class="n">gp_old</span><span class="p">,</span> <span class="n">vp_old</span><span class="p">,</span> <span class="n">vbmc</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update the GP and VP with a given warp transformation.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Update the GP and VP with a given warp transformation.</span>
 
 <span class="sd">    Applies an updated ParameterTransformer object (with new warping</span>
 <span class="sd">    transformation) to the GP and VP parameters.</span>
@@ -617,10 +814,16 @@
 <span class="sd">    -------</span>
 <span class="sd">    vp : VariationalPosterior</span>
 <span class="sd">        An updated copy of the original variational posterior.</span>
-<span class="sd">    hyp_warped : dict</span>
-<span class="sd">        An updated copy of the dictionary of original GP hyperparameters, with</span>
-<span class="sd">        the warping transformation applied.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    hyp_warped : np.ndarray</span>
+<span class="sd">        The GP hyperparameters with the warping transformation applied, one</span>
+<span class="sd">        row per hyperparameter sample, of shape ``(Ns_gp, n_hyp)``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the mean function of the GP is none of the zero, constant and</span>
+<span class="sd">        negative quadratic means.</span>
+<span class="sd">    """</span>
     <span class="n">vp_old</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">vp_old</span><span class="p">)</span>
 
     <span class="c1"># Invert points from the old inference space to the input space,</span>
@@ -629,8 +832,8 @@
         <span class="k">return</span> <span class="n">parameter_transformer</span><span class="p">(</span><span class="n">vp_old</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
     <span class="c1"># Temperature scaling</span>
-    <span class="k">if</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;temperature&quot;</span><span class="p">):</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"temperature"</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"temperature"</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">T</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -655,7 +858,12 @@
         <span class="n">hyp_warped</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ell_new</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># We assume relatively no change to GP output and noise scales</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp_old</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ConstantMean</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp_old</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ZeroMean</span><span class="p">):</span>
+            <span class="c1"># No mean hyperparameter to warp. The warp shifts the stored log</span>
+            <span class="c1"># joint by a constant, which a zero mean cannot follow; the GP</span>
+            <span class="c1"># refit that follows every warp takes it up.</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp_old</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ConstantMean</span><span class="p">):</span>
             <span class="c1"># Warp constant mean</span>
             <span class="n">m0</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="n">Ncov</span> <span class="o">+</span> <span class="n">Nnoise</span><span class="p">]</span>
             <span class="n">dy_old</span> <span class="o">=</span> <span class="n">vp_old</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">log_abs_det_jacobian</span><span class="p">(</span>
@@ -692,7 +900,7 @@
                 <span class="n">Ncov</span> <span class="o">+</span> <span class="n">Nnoise</span> <span class="o">+</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">D</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">Ncov</span> <span class="o">+</span> <span class="n">Nnoise</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">D</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">s</span>
             <span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">omegaw</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported GP mean function for input warping.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unsupported GP mean function for input warping."</span><span class="p">)</span>
     <span class="n">hyp_warped</span> <span class="o">=</span> <span class="n">hyp_warped</span><span class="o">.</span><span class="n">T</span>
 
     <span class="c1"># Update variational posterior</span>
@@ -777,6 +985,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -788,8 +999,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

@@ -26,45 +26,53 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/acquisition_functions/acq_fcn_viqr';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -90,7 +98,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -148,6 +196,7 @@
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -155,20 +204,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -176,6 +238,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
@@ -306,11 +371,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -345,6 +417,7 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gpyreg</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">cdist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logsumexp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">norm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.function_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionLogger</span>
@@ -352,26 +425,226 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.abstract_acq_fcn</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractAcqFcn</span>
 
+<span class="n">_LOG_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">_LOG_FLOAT_MAX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+<span class="n">_VIQR_KERNEL_CACHE_MAX_BYTES</span> <span class="o">=</span> <span class="mi">128</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Eligibility is checked against these import-time implementations rather</span>
+<span class="c1"># than being inferred from class membership. This also detects methods</span>
+<span class="c1"># replaced on a class or an individual instance after import, without adding</span>
+<span class="c1"># anything to serialized acquisition or GP state.</span>
+<span class="n">_ORIGINAL_GP_PREDICT</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="o">.</span><span class="n">predict</span>
+<span class="n">_ORIGINAL_SE_COMPUTE</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">covariance_functions</span><span class="o">.</span><span class="n">SquaredExponential</span><span class="o">.</span><span class="n">compute</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_log_viqr_sum</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Compute ``log(2 * sum(sinh(a), axis=1))`` safely in float64.</span>
+
+<span class="sd">    The direct expression is faster for ordinary VIQR arguments and avoids</span>
+<span class="sd">    cancellation in ``1 - exp(-2a)`` for extremely small positive values.</span>
+<span class="sd">    Its upper bound leaves a factor-of-two margin below the largest float64</span>
+<span class="sd">    value after accounting for every term in the sum. Rows outside the safe</span>
+<span class="sd">    finite, nonnegative range retain the original log-space calculation.</span>
+<span class="sd">    """</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">n_terms</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># For a &gt;= 0, 2 * n_terms * sinh(a) &lt;= n_terms * exp(a). Subtracting</span>
+    <span class="c1"># log(2) leaves a factor-of-two reserve for that complete quantity.</span>
+    <span class="n">direct_limit</span> <span class="o">=</span> <span class="n">_LOG_FLOAT_MAX</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_terms</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">direct</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">_LOG_2</span>
+
+    <span class="c1"># Scalar extrema avoid per-row allocations when every row is safe.</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">size</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">direct_limit</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">direct</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="n">row_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">row_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">safe</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">row_min</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">row_max</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">row_min</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">row_max</span> <span class="o">&lt;=</span> <span class="n">direct_limit</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">safe</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">direct</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">safe</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">safe</span><span class="p">]</span> <span class="o">=</span> <span class="n">direct</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">safe</span><span class="p">])</span>
+
+    <span class="c1"># Original log-sinh followed by log-sum-exp. Besides avoiding overflow,</span>
+    <span class="c1"># this preserves the former handling of unsupported arguments.</span>
+    <span class="n">fallback</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="o">~</span><span class="n">safe</span><span class="p">]</span>
+    <span class="n">zz</span> <span class="o">=</span> <span class="n">fallback</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">fallback</span><span class="p">))</span>
+    <span class="n">ln_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">zz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ln_max</span><span class="p">[</span><span class="n">ln_max</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Avoid -inf + inf</span>
+    <span class="n">result</span><span class="p">[</span><span class="o">~</span><span class="n">safe</span><span class="p">]</span> <span class="o">=</span> <span class="n">ln_max</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">zz</span> <span class="o">-</span> <span class="n">ln_max</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
 
 <div class="viewcode-block" id="AcqFcnVIQR">
 <a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AcqFcnVIQR</span><span class="p">(</span><span class="n">AbstractAcqFcn</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Variational Interquantile Range (VIQR) acquisition function.</span>
 
 <span class="sd">    Approximates the Integrated Median Interquantile Range (IMIQR) by simple</span>
 <span class="sd">    Monte Carlo using samples from the Variational Posterior.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantile</span><span class="o">=</span><span class="mf">0.75</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">&quot;log_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">&quot;importance_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">&quot;importance_sampling_vp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">&quot;variational_importance_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">&quot;quantile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">quantile</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quantile : float, optional</span>
+<span class="sd">        The upper quantile :math:`p_u` of the interquantile range, a number</span>
+<span class="sd">        strictly between 0.5 and 1; the default 0.75 gives</span>
+<span class="sd">        :math:`u = \Phi^{-1}(0.75)`.</span>
+<span class="sd">    loss : {"iqr", "iqr_reduction"}, optional</span>
+<span class="sd">        The loss whose expectation under the variational posterior the</span>
+<span class="sd">        acquisition minimizes. Both losses share the same look-ahead</span>
+<span class="sd">        predictive standard deviation :math:`s_{\Xi \cup \theta_*}(\theta_a)`</span>
+<span class="sd">        at the importance points :math:`\theta_a`: the GP posterior after a</span>
+<span class="sd">        hypothetical observation at the candidate :math:`\theta_*`, which</span>
+<span class="sd">        does not depend on the value observed there.</span>
+
+<span class="sd">        - ``"iqr"`` (default): the log integrated interquantile range after</span>
+<span class="sd">          the observation, :math:`\log \sum_a 2 \sinh(u\, s_{\Xi \cup</span>
+<span class="sd">          \theta_*}(\theta_a))`, the VIQR of [1]_.</span>
+<span class="sd">        - ``"iqr_reduction"``: minus the log of the integrated *reduction*</span>
+<span class="sd">          of the interquantile range, :math:`-\log \sum_a w_a [\sinh(u\,</span>
+<span class="sd">          s_\Xi(\theta_a)) - \sinh(u\, s_{\Xi \cup \theta_*}(\theta_a))]`.</span>
+<span class="sd">          It has the same minimizer as ``"iqr"`` over any fixed candidate</span>
+<span class="sd">          set. The log of the reduction spans orders of magnitude where the</span>
+<span class="sd">          log of the residual range is nearly flat, which matters to the</span>
+<span class="sd">          tolerance-based termination of the search optimizer.</span>
+
+<span class="sd">        :math:`w_a` are the importance weights, normalized over the</span>
+<span class="sd">        hyperparameter samples and the importance points together (so the</span>
+<span class="sd">        reduction acquisition carries a constant, :math:`\log (N_s N_a)`</span>
+<span class="sd">        for :math:`N_s` hyperparameter samples and :math:`N_a` importance</span>
+<span class="sd">        points, that does not move the minimizer) and uniform under the</span>
+<span class="sd">        simple Monte Carlo of VIQR. The reduction is non-negative, so</span>
+<span class="sd">        ``"iqr_reduction"`` is ``+inf`` where the candidate reduces the</span>
+<span class="sd">        interquantile range at no importance point.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Acerbi, L. (2020). "Variational Bayesian Monte Carlo with Noisy</span>
+<span class="sd">       Likelihoods." Advances in Neural Information Processing Systems 33.</span>
+<span class="sd">    """</span>
+
+    <span class="n">LOSSES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"iqr"</span><span class="p">,</span> <span class="s2">"iqr_reduction"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantile</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">"iqr"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">loss</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">LOSSES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Unknown loss </span><span class="si">{</span><span class="n">loss</span><span class="si">!r}</span><span class="s2">; expected one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">LOSSES</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="n">quantile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_quantile</span><span class="p">(</span><span class="n">quantile</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">"log_flag"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">"importance_sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">"importance_sampling_vp"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">"variational_importance_sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">"quantile"</span><span class="p">]</span> <span class="o">=</span> <span class="n">quantile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">"loss"</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">quantile</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_predict_with_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Request prediction kernels for compatible standard VIQR calls."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_can_reuse_prediction_kernel</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">gp</span><span class="p">):</span>
+            <span class="n">f_mu</span><span class="p">,</span> <span class="n">f_s2</span><span class="p">,</span> <span class="n">cross_covariance</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">x_star</span><span class="o">=</span><span class="n">Xs</span><span class="p">,</span>
+                <span class="n">separate_samples</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">return_cross_covariance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">f_mu</span><span class="p">,</span> <span class="n">f_s2</span><span class="p">,</span> <span class="n">cross_covariance</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_predict_with_context</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">gp</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_acquisition_function_with_context</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Xs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">vp</span><span class="p">:</span> <span class="n">VariationalPosterior</span><span class="p">,</span>
+        <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">,</span>
+        <span class="n">function_logger</span><span class="p">:</span> <span class="n">FunctionLogger</span><span class="p">,</span>
+        <span class="n">optim_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">f_mu</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">f_s2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">f_bar</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">var_tot</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Compute VIQR using prediction kernels when context provides them."""</span>
+        <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_compute_acquisition_function_with_context</span><span class="p">(</span>
+                <span class="n">Xs</span><span class="p">,</span>
+                <span class="n">vp</span><span class="p">,</span>
+                <span class="n">gp</span><span class="p">,</span>
+                <span class="n">function_logger</span><span class="p">,</span>
+                <span class="n">optim_state</span><span class="p">,</span>
+                <span class="n">f_mu</span><span class="p">,</span>
+                <span class="n">f_s2</span><span class="p">,</span>
+                <span class="n">f_bar</span><span class="p">,</span>
+                <span class="n">var_tot</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_viqr</span><span class="p">(</span>
+            <span class="n">Xs</span><span class="p">,</span>
+            <span class="n">gp</span><span class="p">,</span>
+            <span class="n">optim_state</span><span class="p">,</span>
+            <span class="n">f_mu</span><span class="p">,</span>
+            <span class="n">f_s2</span><span class="p">,</span>
+            <span class="n">cross_covariance</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_can_reuse_prediction_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Whether this call can safely retain predictor cross-kernels."""</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">AcqFcnVIQR</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"loss"</span><span class="p">,</span> <span class="s2">"iqr"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"iqr"</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span>
+            <span class="ow">is</span> <span class="ow">not</span> <span class="n">gpr</span><span class="o">.</span><span class="n">covariance_functions</span><span class="o">.</span><span class="n">SquaredExponential</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_original_bound_method</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="s2">"predict"</span><span class="p">,</span> <span class="n">_ORIGINAL_GP_PREDICT</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_original_bound_method</span><span class="p">(</span>
+            <span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="s2">"compute"</span><span class="p">,</span> <span class="n">_ORIGINAL_SE_COMPUTE</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_original_bound_method</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="s2">"_compute_acquisition_function"</span><span class="p">,</span>
+            <span class="n">_ORIGINAL_VIQR_COMPUTE_ACQUISITION</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Untrained and empty states retain the established prediction path.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="s2">"X"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">or</span> <span class="n">Xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">posteriors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Start with Python integers so unusually large shapes cannot overflow</span>
+        <span class="c1"># before comparison with the payload cap. Prediction and PyVBMC state</span>
+        <span class="c1"># are float64 on this supported path.</span>
+        <span class="n">payload_bytes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mi">8</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">posteriors</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">payload_bytes</span> <span class="o">&lt;=</span> <span class="n">_VIQR_KERNEL_CACHE_MAX_BYTES</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_acquisition_function</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -385,7 +658,7 @@
         <span class="n">f_bar</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">var_tot</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">        Compute the value of the acquisition function.</span>
 
 <span class="sd">        Parameters</span>
@@ -400,14 +673,14 @@
 <span class="sd">        function_logger : FunctionLogger</span>
 <span class="sd">            The object responsible for caching evaluations of the log-joint.</span>
 <span class="sd">        optim_state : dict</span>
-<span class="sd">            The dictionary describing PyVBMC&#39;s internal state.</span>
+<span class="sd">            The dictionary describing PyVBMC's internal state.</span>
 <span class="sd">        f_mu : np.ndarray</span>
-<span class="sd">            A ``(N, Ns_gp)`` array of GP predictive means at the importance</span>
-<span class="sd">            sampling points, where ``Ns_gp`` is the number of GP posterior</span>
+<span class="sd">            A ``(N, Ns_gp)`` array of GP predictive means at the candidate</span>
+<span class="sd">            points, where ``Ns_gp`` is the number of GP posterior</span>
 <span class="sd">            hyperparameter samples.</span>
 <span class="sd">        f_s2 : np.ndarray</span>
-<span class="sd">            A ``(N, Ns_gp)`` array of GP predictive variances at the importance</span>
-<span class="sd">            sampling points, where ``Ns_gp`` is the number of GP posterior</span>
+<span class="sd">            A ``(N, Ns_gp)`` array of GP predictive variances at the candidate</span>
+<span class="sd">            points, where ``Ns_gp`` is the number of GP posterior</span>
 <span class="sd">            hyperparameter samples.</span>
 <span class="sd">        f_bar : None</span>
 <span class="sd">            Unused for this acquisition function.</span>
@@ -419,7 +692,25 @@
 <span class="sd">        ValueError</span>
 <span class="sd">            For choices of GP covariance function which are not implemented.</span>
 <span class="sd">            Currently, only ``SquaredExponential`` covariance is implemented.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            Also when the instance carries a ``loss`` outside ``LOSSES``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_viqr</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">optim_state</span><span class="p">,</span> <span class="n">f_mu</span><span class="p">,</span> <span class="n">f_s2</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_viqr</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Xs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">,</span>
+        <span class="n">optim_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">f_mu</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">f_s2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">cross_covariance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Shared VIQR arithmetic with optional predictor cross-kernels.</span>
+
+<span class="sd">        ``cross_covariance`` is a per-hyperparameter-sample tuple of latent</span>
+<span class="sd">        kernel matrices with shape ``(N_training, N_candidates)``. It is</span>
+<span class="sd">        consumed through transpose views during this call only.</span>
+<span class="sd">        """</span>
         <span class="c1"># Missing port, integrated mean function, lines 49 to 57.</span>
 
         <span class="c1"># Xs is in *transformed* coordinates</span>
@@ -431,7 +722,16 @@
         <span class="n">y_s2</span> <span class="o">=</span> <span class="n">f_s2</span> <span class="o">+</span> <span class="n">sn2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Predictive variance at test points,</span>
         <span class="c1"># inclusive of observation noise.</span>
 
-        <span class="n">Xa</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;active_importance_sampling&quot;</span><span class="p">][</span><span class="s2">&quot;X&quot;</span><span class="p">]</span>
+        <span class="n">active_is</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"active_importance_sampling"</span><span class="p">]</span>
+        <span class="n">Xa</span> <span class="o">=</span> <span class="n">active_is</span><span class="p">[</span><span class="s2">"X"</span><span class="p">]</span>
+        <span class="c1"># Instances pickled before the ``loss`` argument existed are VIQR;</span>
+        <span class="c1"># one carrying a loss this version does not implement is rejected</span>
+        <span class="c1"># rather than computed as another.</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"loss"</span><span class="p">,</span> <span class="s2">"iqr"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">loss</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">LOSSES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Unknown loss </span><span class="si">{</span><span class="n">loss</span><span class="si">!r}</span><span class="s2">; expected one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">LOSSES</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
         <span class="n">acq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nx</span><span class="p">,</span> <span class="n">Ns_gp</span><span class="p">))</span>
 
         <span class="c1"># Compute acquisition function via importance sampling</span>
@@ -448,26 +748,29 @@
                 <span class="c1"># Functionally equivalent to:</span>
                 <span class="c1"># K_Xs_X = gp.covariance.compute(hyp, Xs, gp.X)</span>
                 <span class="c1"># K_Xs_Xa = gp.covariance.compute(hyp, Xs, Xa)</span>
-                <span class="c1"># K_Xa_X = optim_state[&quot;active_importance_sampling&quot;][&quot;K_Xa_X&quot;][</span>
+                <span class="c1"># K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][</span>
                 <span class="c1">#     s, :, :</span>
                 <span class="c1"># ]</span>
                 <span class="n">ell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">D</span><span class="p">])</span>
                 <span class="n">sf2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">hyp</span><span class="p">[</span><span class="n">D</span><span class="p">])</span>
                 <span class="n">Xs_ell</span> <span class="o">=</span> <span class="n">Xs</span> <span class="o">/</span> <span class="n">ell</span>
 
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">Xs_ell</span><span class="p">,</span> <span class="n">gp</span><span class="o">.</span><span class="n">X</span> <span class="o">/</span> <span class="n">ell</span><span class="p">,</span> <span class="s2">&quot;sqeuclidean&quot;</span><span class="p">)</span>
-                <span class="n">K_Xs_X</span> <span class="o">=</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tmp</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cross_covariance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">Xs_ell</span><span class="p">,</span> <span class="n">gp</span><span class="o">.</span><span class="n">X</span> <span class="o">/</span> <span class="n">ell</span><span class="p">,</span> <span class="s2">"sqeuclidean"</span><span class="p">)</span>
+                    <span class="n">K_Xs_X</span> <span class="o">=</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tmp</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">K_Xs_X</span> <span class="o">=</span> <span class="n">cross_covariance</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
 
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">Xs_ell</span><span class="p">,</span> <span class="n">Xa</span> <span class="o">/</span> <span class="n">ell</span><span class="p">,</span> <span class="s2">&quot;sqeuclidean&quot;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">Xs_ell</span><span class="p">,</span> <span class="n">Xa</span> <span class="o">/</span> <span class="n">ell</span><span class="p">,</span> <span class="s2">"sqeuclidean"</span><span class="p">)</span>
                 <span class="n">K_Xs_Xa</span> <span class="o">=</span> <span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tmp</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
 
-                <span class="n">C_tmp</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;active_importance_sampling&quot;</span><span class="p">][</span><span class="s2">&quot;C_tmp&quot;</span><span class="p">][</span>
+                <span class="n">C_tmp</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"active_importance_sampling"</span><span class="p">][</span><span class="s2">"C_tmp"</span><span class="p">][</span>
                     <span class="n">s</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span>
                 <span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Covariance functions besides&quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;SquaredExponential are not supported yet.&quot;</span>
+                    <span class="s2">"Covariance functions besides"</span>
+                    <span class="o">+</span> <span class="s2">"SquaredExponential are not supported yet."</span>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">L_chol</span><span class="p">:</span>
@@ -478,37 +781,89 @@
             <span class="c1"># Missing port, integrated meanfun</span>
 
             <span class="n">tau2</span> <span class="o">=</span> <span class="n">C</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">y_s2</span><span class="p">[:,</span> <span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">loss</span> <span class="o">!=</span> <span class="s2">"iqr"</span><span class="p">:</span>
+                <span class="n">acq</span><span class="p">[:,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_log_iqr_reduction</span><span class="p">(</span>
+                    <span class="n">tau2</span><span class="p">,</span>
+                    <span class="n">active_is</span><span class="p">[</span><span class="s2">"f_s2"</span><span class="p">][:,</span> <span class="n">s</span><span class="p">],</span>
+                    <span class="n">active_is</span><span class="p">[</span><span class="s2">"ln_weights"</span><span class="p">][</span><span class="n">s</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+
             <span class="n">s_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
-                    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;active_importance_sampling&quot;</span><span class="p">][</span><span class="s2">&quot;f_s2&quot;</span><span class="p">][:,</span> <span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+                    <span class="n">optim_state</span><span class="p">[</span><span class="s2">"active_importance_sampling"</span><span class="p">][</span><span class="s2">"f_s2"</span><span class="p">][:,</span> <span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
                     <span class="o">-</span> <span class="n">tau2</span><span class="p">,</span>
                     <span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
-            <span class="c1"># zz = ln(weights * sinh(u * s_pred)) + C</span>
-            <span class="c1"># (VIQR uses simple Monte Carlo, so weights are constant).</span>
-            <span class="n">zz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">s_pred</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">s_pred</span><span class="p">))</span>
-            <span class="c1"># logsumexp</span>
-            <span class="n">ln_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">zz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">ln_max</span><span class="p">[</span><span class="n">ln_max</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Avoid -inf + inf</span>
-            <span class="n">acq</span><span class="p">[:,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">ln_max</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">zz</span> <span class="o">-</span> <span class="n">ln_max</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="c1"># VIQR uses simple Monte Carlo, so the weights are constant.</span>
+            <span class="n">acq</span><span class="p">[:,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">_log_viqr_sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">s_pred</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">Ns_gp</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">acq</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">M</span><span class="p">[</span><span class="n">M</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Avoid -inf + inf</span>
-            <span class="n">acq</span> <span class="o">=</span> <span class="n">M</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">acq</span> <span class="o">-</span> <span class="n">M</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ns_gp</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">loss</span> <span class="o">!=</span> <span class="s2">"iqr"</span><span class="p">:</span>
+                <span class="c1"># Average the reductions over the hyperparameter samples.</span>
+                <span class="n">acq</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">logsumexp</span><span class="p">(</span><span class="o">-</span><span class="n">acq</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Ns_gp</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">acq</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">M</span><span class="p">[</span><span class="n">M</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Avoid -inf + inf</span>
+                <span class="n">acq</span> <span class="o">=</span> <span class="n">M</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">acq</span> <span class="o">-</span> <span class="n">M</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ns_gp</span>
+                <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">acq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_iqr_reduction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau2</span><span class="p">,</span> <span class="n">f_s2_a</span><span class="p">,</span> <span class="n">ln_w</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Log of the importance-weighted integrated reduction of the</span>
+<span class="sd">        interquantile range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tau2 : np.ndarray</span>
+<span class="sd">            The look-ahead reduction of the GP posterior variance at the</span>
+<span class="sd">            importance points, shape ``(Nx, Na)`` for ``Nx`` candidates.</span>
+<span class="sd">        f_s2_a : np.ndarray</span>
+<span class="sd">            The current GP posterior variance at the importance points,</span>
+<span class="sd">            shape ``(Na,)``.</span>
+<span class="sd">        ln_w : np.ndarray</span>
+<span class="sd">            The normalized log importance weights, shape ``(Na,)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ln_r : np.ndarray</span>
+<span class="sd">            The log of the weighted reduction per candidate, shape</span>
+<span class="sd">            ``(Nx,)``; ``-inf`` where the candidate reduces the range at no</span>
+<span class="sd">            importance point.</span>
+<span class="sd">        """</span>
+        <span class="n">s_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f_s2_a</span><span class="p">)</span>  <span class="c1"># (Na,)</span>
+        <span class="n">s_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">f_s2_a</span> <span class="o">-</span> <span class="n">tau2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>  <span class="c1"># (Nx, Na)</span>
+        <span class="c1"># s_a - s_pred = tau2 / (s_a + s_pred): no cancellation when the</span>
+        <span class="c1"># reduction is a small fraction of the variance, the common case</span>
+        <span class="c1"># with observation noise.</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">s_a</span> <span class="o">+</span> <span class="n">s_pred</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">tau2</span><span class="p">,</span> <span class="n">denom</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tau2</span><span class="p">),</span> <span class="n">where</span><span class="o">=</span><span class="n">denom</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># sinh(u s_a) - sinh(u s_pred) = 2 cosh(A) sinh(B) with</span>
+        <span class="c1"># A = u (s_a + s_pred) / 2 and B = u (s_a - s_pred) / 2, in log</span>
+        <span class="c1"># space (no overflow for large s):</span>
+        <span class="c1"># log 2 + logcosh(A) + logsinh(B)</span>
+        <span class="c1">#   = A + B + log1p(exp(-2A)) + log(-expm1(-2B)) - log 2.</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">denom</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">d</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">ln_term</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">A</span>
+                <span class="o">+</span> <span class="n">B</span>
+                <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">A</span><span class="p">))</span>
+                <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span><span class="p">))</span>
+                <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">ln_term</span> <span class="o">+</span> <span class="n">ln_w</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AcqFcnVIQR.is_log_base">
 <a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_log_base</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling proposal log density, base part.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Importance sampling proposal log density, base part.</span>
 
 <span class="sd">        The base density of the importance sampling proposal distribution, used</span>
 <span class="sd">        for computing i.s. weights (in addition to the full proposal density).</span>
@@ -529,21 +884,21 @@
 <span class="sd">        z : np.ndarray</span>
 <span class="sd">            The log base part of the importance sampling weights (zeros), shape</span>
 <span class="sd">            ``f_s2``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">f_s2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;f_s2&quot;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">f_s2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"f_s2"</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">f_s2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AcqFcnVIQR.is_log_added">
 <a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_log_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling proposal log density, added part.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Importance sampling proposal log density, added part.</span>
 
 <span class="sd">        The added term in the importance sampling proposal log density: The</span>
 <span class="sd">        full proposal log density is ``is_log_full = is_log_base +</span>
-<span class="sd">        is_log_added``. Added part for VIQR/IMIQR is :math: `\\log [\\sinh(u *</span>
-<span class="sd">        f_s)]``, where ``f_s`` is the GP predictive variance at the input</span>
-<span class="sd">        points.</span>
+<span class="sd">        is_log_added``. Added part for VIQR/IMIQR is</span>
+<span class="sd">        :math:`\log [2 \sinh(u f_s)]`, where :math:`f_s` is the GP</span>
+<span class="sd">        predictive standard deviation at the input points.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -555,15 +910,15 @@
 <span class="sd">        y : np.ndarray</span>
 <span class="sd">            The added log density term at the points of interest. Of the same</span>
 <span class="sd">            shape as ``f_s2``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">f_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;f_s2&quot;</span><span class="p">])</span>
+<span class="sd">        """</span>
+        <span class="n">f_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">"f_s2"</span><span class="p">])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">f_s</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">f_s</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="AcqFcnVIQR.is_log_full">
 <a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_log_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling full proposal log density.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Importance sampling full proposal log density.</span>
 
 <span class="sd">        The full proposal log density, used for MCMC sampling: ``is_log_full =</span>
 <span class="sd">        is_log_base + is_log_added``.</span>
@@ -588,20 +943,32 @@
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If neither ``f_s2`` nor ``gp`` are provided.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">f_s2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;f_s2&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Try to get pre-computed f_s2</span>
+<span class="sd">        """</span>
+        <span class="n">f_s2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"f_s2"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Try to get pre-computed f_s2</span>
         <span class="k">if</span> <span class="n">f_s2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Otherwise use GP to predict</span>
-            <span class="n">gp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gp&quot;</span><span class="p">)</span>
+            <span class="n">gp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gp"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">gp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Must provide gp as keyword argument if f_s2 is not&quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;provided.&quot;</span>
+                    <span class="s2">"Must provide gp as keyword argument if f_s2 is not"</span>
+                    <span class="o">+</span> <span class="s2">"provided."</span>
                 <span class="p">)</span>
             <span class="n">__</span><span class="p">,</span> <span class="n">f_s2</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">add_noise</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># base + added (base part is 0):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_log_added</span><span class="p">(</span><span class="n">f_s2</span><span class="o">=</span><span class="n">f_s2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_original_bound_method</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">original</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return whether ``instance.name`` resolves to ``original``."""</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="s2">"__self__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="n">instance</span>
+        <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="s2">"__func__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="n">original</span>
+    <span class="p">)</span>
+
+
+<span class="n">_ORIGINAL_VIQR_COMPUTE_ACQUISITION</span> <span class="o">=</span> <span class="n">AcqFcnVIQR</span><span class="o">.</span><span class="n">_compute_acquisition_function</span>
 </pre></div>
 
                 </article>
@@ -653,6 +1020,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -664,8 +1034,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

@@ -27,47 +27,55 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/quickstart.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/quickstart.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="next" title="PyVBMC: Frequently Asked Questions" href="faq.html" />
     <link rel="prev" title="Installation" href="installation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -149,6 +201,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -156,20 +209,33 @@
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -177,6 +243,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/entropy.html">Entropy</a></li>
@@ -372,11 +441,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -404,8 +480,20 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-usage">Summary usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducible-runs">Reproducible runs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bring-a-torch-or-jax-model-into-pyvbmc">Bring a torch or JAX model into PyVBMC</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorized-targets">Vectorized targets</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bring-a-pymc-model-into-pyvbmc">Bring a PyMC model into PyVBMC</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#use-a-fitted-posterior-downstream">Use a fitted posterior downstream</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stacking-several-runs">Stacking several runs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#torch-distribution">Torch distribution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#arviz-datatree">ArviZ DataTree</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -421,13 +509,18 @@
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
 <p>The best way to get started with PyVBMC is via the tutorials and worked examples.
 In particular, start with <a class="reference internal" href="_examples/pyvbmc_example_1_basic_usage.html#pyvbmc-example-1-basic-usage"><span class="std std-ref">PyVBMC Example 1: Basic usage</span></a> and continue from there.</p>
+<p>Optionally, we recommend running <code class="docutils literal notranslate"><span class="pre">pyvbmc.calibrate()</span></code> once to tune performance
+for your machine (memory, processor, etc.); it takes tens of seconds and can
+make PyVBMC run faster.
+Saved calibration settings are reused automatically by future runs (see the
+<a class="reference internal" href="api/functions/calibrate.html"><span class="doc">calibration guide</span></a>).</p>
 <p>If you are already familiar with approximate inference methods, you can find a summary usage below.</p>
 <section id="summary-usage">
 <h2>Summary usage<a class="headerlink" href="#summary-usage" title="Link to this heading">#</a></h2>
 <p>The typical usage pipeline of PyVBMC follows four steps:</p>
 <ol class="arabic simple">
 <li><p>Define the model, which defines a target log density (i.e., an unnormalized log posterior density);</p></li>
-<li><p>Setup the parameters (parameter bounds, starting point);</p></li>
+<li><p>Set up the parameters (parameter bounds, starting point);</p></li>
 <li><p>Initialize and run the inference;</p></li>
 <li><p>Examine and visualize the results.</p></li>
 </ol>
@@ -441,11 +534,15 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
 </div>
 <p>with input arguments:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code>: the target (unnormalized) log density — often an unnormalized log posterior. <code class="docutils literal notranslate"><span class="pre">target</span></code> takes as input a parameter vector and returns the log density at the point. The returned log density must return a <em>finite</em> real value, i.e. non <cite>NaN</cite> or <cite>-inf</cite>. See the <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc/wiki#how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space">VBMC FAQ</a> for more details;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code>: the target (unnormalized) log density — often an unnormalized log posterior. <code class="docutils literal notranslate"><span class="pre">target</span></code> takes as input a parameter vector and returns the log density at the point. The returned log density must be a <em>finite</em> real value, i.e. neither <code class="docutils literal notranslate"><span class="pre">NaN</span></code> nor <code class="docutils literal notranslate"><span class="pre">+/-inf</span></code>. See the <a class="reference internal" href="faq.html#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space"><span class="std std-ref">FAQ</span></a> for more details;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>: the starting point of the inference in parameter space;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>: hard lower and upper bounds for the parameters (can be <code class="docutils literal notranslate"><span class="pre">-inf</span></code> and <code class="docutils literal notranslate"><span class="pre">inf</span></code>, or bounded);</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>: <em>plausible</em> lower and upper bounds, that is a box that ideally brackets a region of high density of the target.</p></li>
 </ul>
+<p>You can also pass a log-likelihood as <code class="docutils literal notranslate"><span class="pre">target</span></code> and supply its prior
+separately with <code class="docutils literal notranslate"><span class="pre">prior=</span></code> or <code class="docutils literal notranslate"><span class="pre">log_prior=</span></code>. For model evidence, include
+the likelihood’s normalization constants and use a normalized prior; see
+the <a class="reference internal" href="faq.html#faq-how-do-i-specify-the-prior-to-vbmc"><span class="std std-ref">FAQ</span></a>.</p>
 <p>The outputs are:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">vp</span></code>: a <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> object which approximates the true target density;</p></li>
@@ -455,6 +552,329 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">vp</span></code> object can be manipulated in various ways, see the <a class="reference internal" href="api/classes/variational_posterior.html#variationalposterior"><span class="std std-ref">VariationalPosterior</span></a> class documentation.</p>
 <p>See the examples for more detailed information. The <a class="reference internal" href="api/options/vbmc_options.html#basic-options"><span class="std std-ref">Basic options</span></a> may also be useful.</p>
+<p>For noisy likelihoods, see <a class="reference internal" href="_examples/pyvbmc_example_6_noisy_likelihoods.html#pyvbmc-example-6-noisy-log-likelihood-evaluations"><span class="std std-ref">PyVBMC Example 6: Noisy log-likelihood evaluations</span></a> and
+the <a class="reference internal" href="faq.html#faq-noisy-target-function"><span class="std std-ref">FAQ</span></a> for the target interface and
+noise options.</p>
+<p>PyVBMC occasionally prints a tip or a reminder when a new run starts. Pass
+<code class="docutils literal notranslate"><span class="pre">options={&quot;show_tips&quot;:</span> <span class="pre">False}</span></code> to disable tips and reminders about old
+releases. To suppress the calibration reminder and ordinary optimization
+output as well, use <code class="docutils literal notranslate"><span class="pre">options={&quot;display&quot;:</span> <span class="pre">&quot;off&quot;}</span></code>.</p>
+</section>
+<section id="reproducible-runs">
+<h2>Reproducible runs<a class="headerlink" href="#reproducible-runs" title="Link to this heading">#</a></h2>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">seed=</span></code> to control the random generator used by a VBMC instance
+and its variational posterior. The same integer seed reproduces a run
+with the same target, setup and numerical environment. Reusing the same
+integer seed repeats PyVBMC’s random stream. For independent runs, leave
+<code class="docutils literal notranslate"><span class="pre">seed</span></code> unset or use different seeds; comparing their results helps assess convergence
+(see <a class="reference internal" href="_examples/pyvbmc_example_4_validation.html#pyvbmc-example-4-multiple-runs-as-validation"><span class="std std-ref">PyVBMC Example 4: Multiple runs as validation</span></a>).</p>
+<p>The seed can also be a NumPy <code class="docutils literal notranslate"><span class="pre">Generator</span></code>. PyVBMC advances that generator,
+so reusing it continues its random stream. The posterior shares the run’s
+generator: drawing samples from it before resuming inference changes the
+subsequent draws of the run.</p>
+<p>If your likelihood function uses random simulations, <code class="docutils literal notranslate"><span class="pre">VBMC(seed=...)</span></code>
+does not control the randomness inside that function. To reproduce the
+whole analysis, also set the simulator’s seed before starting the run.
+For example, with NumPy, create <code class="docutils literal notranslate"><span class="pre">sim_rng</span> <span class="pre">=</span> <span class="pre">np.random.default_rng(123)</span></code>
+once outside your target function, then use that generator for its random
+draws (e.g., <code class="docutils literal notranslate"><span class="pre">sim_rng.normal(...)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">np.random.normal(...)</span></code>).
+If you use another simulation library, use its seed or generator argument.
+Let the simulator draw fresh random numbers on each evaluation; do not
+reset its seed inside the target function.</p>
+<p>The <a class="reference internal" href="faq.html#faq-i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong"><span class="std std-ref">FAQ</span></a>
+explains reproducibility and the behavior when <code class="docutils literal notranslate"><span class="pre">seed</span></code> is omitted.</p>
+</section>
+<section id="bring-a-torch-or-jax-model-into-pyvbmc">
+<h2>Bring a torch or JAX model into PyVBMC<a class="headerlink" href="#bring-a-torch-or-jax-model-into-pyvbmc" title="Link to this heading">#</a></h2>
+<p>The default target interface calls one point at a time. It accepts a
+one-dimensional NumPy parameter vector and returns one finite scalar. A model
+implemented in Torch can be connected with a small user-written wrapper that
+keeps framework objects outside PyVBMC.
+The example below uses independent Gaussian observations with unit standard
+deviation and a Gaussian prior on their common mean. Install the modelling
+framework used by your model separately:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">norm</span>
+
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+<span class="n">observations_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+    <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+<span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">torch_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">theta_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">value_t</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">observations_t</span> <span class="o">-</span> <span class="n">theta_t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+        <span class="n">value_t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">lb</span><span class="p">,</span> <span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
+<span class="n">plb</span><span class="p">,</span> <span class="n">pub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">])</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">torch_log_likelihood</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">,</span>
+    <span class="n">lb</span><span class="p">,</span>
+    <span class="n">ub</span><span class="p">,</span>
+    <span class="n">plb</span><span class="p">,</span>
+    <span class="n">pub</span><span class="p">,</span>
+    <span class="n">prior</span><span class="o">=</span><span class="n">norm</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">detach().cpu().numpy()</span></code> completes device execution and returns the scalar
+to the host. This also makes PyVBMC’s target timing cover the framework work.
+The explicit <code class="docutils literal notranslate"><span class="pre">torch.float64</span></code> matches PyVBMC’s numerical precision.</p>
+<p>For JAX, enable 64-bit values before importing <code class="docutils literal notranslate"><span class="pre">jax.numpy</span></code> or constructing
+the model. <code class="docutils literal notranslate"><span class="pre">jax.device_get</span></code> completes the computation and moves its result
+to the host:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">jax</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">"jax_enable_x64"</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">observations_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">jax_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">theta_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">value_j</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">observations_j</span> <span class="o">-</span> <span class="n">theta_j</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+        <span class="n">jax</span><span class="o">.</span><span class="n">device_get</span><span class="p">(</span><span class="n">value_j</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="vectorized-targets">
+<h3>Vectorized targets<a class="headerlink" href="#vectorized-targets" title="Link to this heading">#</a></h3>
+<p>Set <code class="docutils literal notranslate"><span class="pre">options={&quot;vectorized_target&quot;:</span> <span class="pre">True}</span></code> when the likelihood can evaluate
+a batch. PyVBMC collects all initial-design rows whose values were not supplied
+and evaluates them in one target call. All subsequent target calls still
+contain one point, with shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code>. The input is always a NumPy array in
+original coordinates and the target must return a finite NumPy array with
+shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code> or <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">1)</span></code>. PyVBMC does not probe a target to determine
+whether it supports batches. A scalar return is invalid even when <code class="docutils literal notranslate"><span class="pre">N</span></code> is
+one.</p>
+<p>The Torch wrapper above becomes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">torch_vectorized_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">theta_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">values_t</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">observations_t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">theta_t</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span>
+        <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+        <span class="n">values_t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+    <span class="p">)</span>
+
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">torch_vectorized_log_likelihood</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">,</span>
+    <span class="n">lb</span><span class="p">,</span>
+    <span class="n">ub</span><span class="p">,</span>
+    <span class="n">plb</span><span class="p">,</span>
+    <span class="n">pub</span><span class="p">,</span>
+    <span class="n">prior</span><span class="o">=</span><span class="n">norm</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span><span class="p">),</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"vectorized_target"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The equivalent JAX wrapper is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">jax_vectorized_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">theta_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">values_j</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">observations_j</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">theta_j</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">device_get</span><span class="p">(</span><span class="n">values_j</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A separately supplied prior keeps its scalar interface. PyVBMC evaluates it
+one point at a time and combines it with the batched likelihood; custom prior
+functions therefore do not need to accept a batch.</p>
+<p>For a target with user-provided noise estimates, set
+<code class="docutils literal notranslate"><span class="pre">&quot;specify_target_noise&quot;:</span> <span class="pre">True</span></code> and return a pair of arrays. Each array must
+have shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code> or <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">1)</span></code>; the standard deviations must be finite and
+positive. Do not combine the two outputs into an <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">2)</span></code> array. For
+example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">torch_noisy_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">torch_vectorized_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="n">sds</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">jax_noisy_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">jax_vectorized_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">sds_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">sds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">device_get</span><span class="p">(</span><span class="n">sds_j</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="n">sds</span>
+
+<span class="n">noisy_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"vectorized_target"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">"specify_target_noise"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">noisy_options</span></code> as the <code class="docutils literal notranslate"><span class="pre">options</span></code> argument when constructing
+<code class="docutils literal notranslate"><span class="pre">VBMC</span></code> with either noisy wrapper.</p>
+<p>To reuse cached target values, pass <code class="docutils literal notranslate"><span class="pre">precomputed_evaluations=(X,</span> <span class="pre">y)</span></code> to
+<code class="docutils literal notranslate"><span class="pre">VBMC</span></code>. Each value in <code class="docutils literal notranslate"><span class="pre">y</span></code> must be the output of the target supplied to
+<code class="docutils literal notranslate"><span class="pre">VBMC</span></code> at the corresponding row of <code class="docutils literal notranslate"><span class="pre">X</span></code>. When a prior is supplied
+separately, the target and <code class="docutils literal notranslate"><span class="pre">y</span></code> contain the log-likelihood and PyVBMC adds the
+prior; when the target is a log joint, <code class="docutils literal notranslate"><span class="pre">y</span></code> contains that log joint. See
+<a class="reference internal" href="api/classes/vbmc.html#reusing-evaluations-and-charging-initialization-work"><span class="std std-ref">Reusing evaluations and charging initialization work</span></a> for shapes,
+noisy observations and budget accounting.</p>
+<p>For a complete Torch fit, an equivalent short JAX target, Torch posterior
+predictions and density gradients, and ArviZ summaries, see
+<a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html#pyvbmc-example-9-torch-and-jax-models-and-posterior-exports"><span class="std std-ref">PyVBMC Example 9: Torch and JAX models and posterior exports</span></a>.</p>
+</section>
+</section>
+<section id="bring-a-pymc-model-into-pyvbmc">
+<h2>Bring a PyMC model into PyVBMC<a class="headerlink" href="#bring-a-pymc-model-into-pyvbmc" title="Link to this heading">#</a></h2>
+<p>Install the optional integration on Python 3.12 or newer with
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[pymc]&quot;</span></code>. A
+<a class="reference internal" href="api/classes/pymc_target.html#pyvbmc.pymc.PyMCTarget" title="pyvbmc.pymc.PyMCTarget"><code class="xref py py-class docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a> provides the flat target and setup that
+PyVBMC needs. This model has a named coefficient vector and a positive
+observation scale:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pymc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyMCTarget</span><span class="p">,</span> <span class="n">VBMC</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">x_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">design</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x_data</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">x_data</span><span class="p">))</span>
+<span class="n">observations</span> <span class="o">=</span> <span class="n">design</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">observations</span> <span class="o">+=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x_data</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="n">coords</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"observation"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_data</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+    <span class="s2">"coefficient"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"intercept"</span><span class="p">,</span> <span class="s2">"slope"</span><span class="p">],</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="s2">"X"</span><span class="p">,</span> <span class="n">design</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">"observation"</span><span class="p">,</span> <span class="s2">"coefficient"</span><span class="p">))</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"beta"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"coefficient"</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfNormal</span><span class="p">(</span><span class="s2">"sigma"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">"mean"</span><span class="p">,</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"observation"</span><span class="p">)</span>
+    <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">observations</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"observation"</span><span class="p">)</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">PyMCTarget</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">target</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="n">target</span><span class="o">.</span><span class="n">setup_cost</span> <span class="o">+</span> <span class="mi">60</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<span class="n">posterior_data</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">posterior_data</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">compute_deterministics</span><span class="p">(</span>
+    <span class="n">posterior_data</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">extend_dataset</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample_posterior_predictive</span><span class="p">(</span>
+    <span class="n">posterior_data</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"y"</span><span class="p">],</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">7</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">print(target)</span></code> lists each model variable, its shape, its flat VBMC
+coordinates, hard and plausible bounds, and its start. Here <code class="docutils literal notranslate"><span class="pre">beta</span></code> becomes
+<code class="docutils literal notranslate"><span class="pre">beta[intercept]</span></code> and <code class="docutils literal notranslate"><span class="pre">beta[slope]</span></code>. The positive <code class="docutils literal notranslate"><span class="pre">sigma</span></code> keeps PyMC’s
+log transform, so its VBMC coordinate is <code class="docutils literal notranslate"><span class="pre">sigma_log__</span></code> and the target
+includes the corresponding Jacobian.</p>
+<p>The adapter chooses a starting point and plausible bounds automatically.
+Its setup work counts toward <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code> through <code class="docutils literal notranslate"><span class="pre">target.setup_cost</span></code>;
+the example allows 60 more evaluations for inference. Use a larger budget
+and validate repeated runs for your own model. Pass <code class="docutils literal notranslate"><span class="pre">setup_budget=</span></code> to
+limit the setup work, or <code class="docutils literal notranslate"><span class="pre">start=</span></code> and <code class="docutils literal notranslate"><span class="pre">plausible_bounds=</span></code> to supply your
+own choices in model coordinates.</p>
+<p>The adapter supports continuous float64 variables with recognized support
+and standard PyMC transforms. It does not support discrete variables. See
+<a class="reference internal" href="api/classes/pymc_target.html"><span class="doc">PyMCTarget</span></a> for the supported models and setup options.</p>
+<p><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> keeps the model data used at construction. Build a new target
+to refit changed data, and export each posterior with the target used to fit
+it. <code class="docutils literal notranslate"><span class="pre">PyMCTarget(seed=)</span></code> controls setup draws; <code class="docutils literal notranslate"><span class="pre">VBMC(seed=)</span></code> controls the
+inference run. <a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html#pyvbmc-example-8-fitting-a-pymc-model"><span class="std std-ref">PyVBMC Example 8: Fitting a PyMC model</span></a> shows the full
+workflow.</p>
+</section>
+<section id="use-a-fitted-posterior-downstream">
+<h2>Use a fitted posterior downstream<a class="headerlink" href="#use-a-fitted-posterior-downstream" title="Link to this heading">#</a></h2>
+<section id="stacking-several-runs">
+<h3>Stacking several runs<a class="headerlink" href="#stacking-several-runs" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="api/classes/svbmc.html"><span class="doc">Stacking Variational Bayesian Monte Carlo (S-VBMC)</span></a>
+(<a class="reference external" href="https://arxiv.org/abs/2504.05004">Silvestrin et al., 2025</a>) combines the posteriors of several completed
+VBMC runs on the same model and data into a stacked posterior, without
+further model evaluations. Combining runs often improves the approximation
+to the true posterior. See
+<a class="reference internal" href="_examples/pyvbmc_example_7_stacking.html#pyvbmc-example-7-stacking-the-posteriors-of-several-runs-s-vbmc"><span class="std std-ref">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</span></a>
+for a worked example. S-VBMC requires the optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> extra; the
+<a class="reference internal" href="installation.html"><span class="doc">installation guide</span></a> also covers dependencies for
+the posterior exports below.</p>
+</section>
+<section id="torch-distribution">
+<h3>Torch distribution<a class="headerlink" href="#torch-distribution" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="api/methods/variational_posterior_to_torch.html#pyvbmc.variational_posterior.VariationalPosterior.to_torch" title="pyvbmc.variational_posterior.VariationalPosterior.to_torch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_torch()</span></code></a> exports the fitted posterior as
+a torch distribution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">posterior_t</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">to_torch</span><span class="p">()</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">samples_t</span> <span class="o">=</span> <span class="n">posterior_t</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">1000</span><span class="p">,))</span>
+
+<span class="n">point_t</span> <span class="o">=</span> <span class="n">samples_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">gradient_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">posterior_t</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">point_t</span><span class="p">),</span> <span class="n">point_t</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The default export uses original parameter coordinates, CPU tensors, and
+<code class="docutils literal notranslate"><span class="pre">torch.float64</span></code>, regardless of torch’s global defaults. Pass
+<code class="docutils literal notranslate"><span class="pre">orig_flag=False</span></code> for PyVBMC’s unbounded internal coordinates, or specify
+<code class="docutils literal notranslate"><span class="pre">dtype=torch.float32</span></code> and <code class="docutils literal notranslate"><span class="pre">device=...</span></code> explicitly when needed. The export
+is an independent copy; sampling it uses torch’s random generator.</p>
+<p>For bounded parameters, <code class="docutils literal notranslate"><span class="pre">log_prob</span></code> accepts finite values strictly inside
+the hard bounds. Support validation rejects exact-bound and outside values.
+See the method reference for supported shapes and boundary behavior.</p>
+<p>The complete workflow in
+<a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html#pyvbmc-example-9-torch-and-jax-models-and-posterior-exports"><span class="std std-ref">PyVBMC Example 9: Torch and JAX models and posterior exports</span></a> uses this
+distribution for psychometric probability predictions and density gradients.</p>
+</section>
+<section id="arviz-datatree">
+<h3>ArviZ DataTree<a class="headerlink" href="#arviz-datatree" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="api/methods/variational_posterior_to_arviz.html#pyvbmc.variational_posterior.VariationalPosterior.to_arviz" title="pyvbmc.variational_posterior.VariationalPosterior.to_arviz"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_arviz()</span></code></a> draws independent samples into
+the current ArviZ DataTree format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">arviz</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">az</span>
+
+<span class="n">posterior_data</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"location"</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">posterior_data</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">"posterior"</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stats"</span><span class="p">)</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">plot_dist</span><span class="p">(</span><span class="n">posterior_data</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">"posterior"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result contains one <code class="docutils literal notranslate"><span class="pre">posterior</span></code> group and one chain. By default, each
+parameter is a scalar variable named <code class="docutils literal notranslate"><span class="pre">x_0</span></code>, …, <code class="docutils literal notranslate"><span class="pre">x_{D-1}</span></code>; the structured
+form below supports vector and matrix variables. Pass <code class="docutils literal notranslate"><span class="pre">orig_flag=False</span></code> to
+export samples in internal coordinates.</p>
+<p>For a three-dimensional posterior whose first two columns form a vector,
+preserve the variable shape and labels with a structured export:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Here vp has D == 3.</span>
+<span class="n">structured_data</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">"beta"</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="s2">"sigma"</span><span class="p">:</span> <span class="p">()},</span>
+    <span class="n">dims</span><span class="o">=</span><span class="p">{</span><span class="s2">"beta"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"coef"</span><span class="p">]},</span>
+    <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"coef"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"intercept"</span><span class="p">,</span> <span class="s2">"slope"</span><span class="p">]},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here <code class="docutils literal notranslate"><span class="pre">beta</span></code> has dimensions <code class="docutils literal notranslate"><span class="pre">(chain,</span> <span class="pre">draw,</span> <span class="pre">coef)</span></code> and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> has
+dimensions <code class="docutils literal notranslate"><span class="pre">(chain,</span> <span class="pre">draw)</span></code>. Variables consume consecutive posterior columns
+in mapping order.</p>
+<p>This method advances <code class="docutils literal notranslate"><span class="pre">vp.rng</span></code> in the same way as
+<a class="reference internal" href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.sample" title="pyvbmc.variational_posterior.VariationalPosterior.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a>. The draws are independent samples
+from a variational approximation, so MCMC convergence diagnostics computed on
+them do not measure the quality of that approximation. Use posterior summaries
+and plots, and assess PyVBMC convergence from its own results and repeated
+runs.</p>
+</section>
 </section>
 </section>
 
@@ -479,11 +899,11 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
       </div>
     </a>
     <a class="right-next"
-       href="examples.html"
+       href="faq.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Examples</p>
+        <p class="prev-next-title">PyVBMC: Frequently Asked Questions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -504,8 +924,20 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-usage">Summary usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducible-runs">Reproducible runs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bring-a-torch-or-jax-model-into-pyvbmc">Bring a torch or JAX model into PyVBMC</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorized-targets">Vectorized targets</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bring-a-pymc-model-into-pyvbmc">Bring a PyMC model into PyVBMC</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#use-a-fitted-posterior-downstream">Use a fitted posterior downstream</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stacking-several-runs">Stacking several runs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#torch-distribution">Torch distribution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#arviz-datatree">ArviZ DataTree</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
@@ -543,6 +975,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -554,8 +989,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

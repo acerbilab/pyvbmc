@@ -1,0 +1,1089 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PyMCTarget &#8212; PyVBMC</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wrap.css?v=fad812b3" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/classes/pymc_target';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/api/classes/pymc_target.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Advanced documentation" href="../advanced_docs.html" />
+    <link rel="prev" title="SVBMC" href="svbmc.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../advanced_docs.html">Advanced documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="classes.html">Classes</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Instructions for developers and contributors</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../about_us.html">About us</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/docsrc/source/api/classes/pymc_target.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2Fapi/classes/pymc_target.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/api/classes/pymc_target.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PyMCTarget</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-adapter-at-a-glance">PyMC adapter at a glance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-coordinate-layout-and-hard-bounds">PyMC coordinate layout and hard bounds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-setup-and-plausible-region-accounting">PyMC setup and plausible-region accounting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structured-return-to-the-pymc-model">Structured return to the PyMC model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-model-scope-limits">PyMC model-scope limits</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persistence-of-adapted-pymc-runs">Persistence of adapted PyMC runs</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="pymctarget">
+<h1><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code><a class="headerlink" href="#pymctarget" title="Link to this heading">#</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> adapts a supported PyMC model to PyVBMC, including the
+model’s log joint, variable transforms, bounds, starting point and plausible
+box. Install the optional integration with
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[pymc]&quot;</span></code> on Python 3.12 or
+newer; see <a class="reference internal" href="../../installation.html"><span class="doc">Installation</span></a>. Importing <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> or
+<code class="docutils literal notranslate"><span class="pre">pyvbmc.pymc</span></code> does not import PyMC or PyTensor.</p>
+</div>
+<section id="pymc-adapter-at-a-glance">
+<h2>PyMC adapter at a glance<a class="headerlink" href="#pymc-adapter-at-a-glance" title="Link to this heading">#</a></h2>
+<p>Construct the model normally, then pass one adapter object directly to
+<a class="reference internal" href="vbmc.html#pyvbmc.VBMC" title="pyvbmc.VBMC"><code class="xref py py-class docutils literal notranslate"><span class="pre">VBMC</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pymc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyMCTarget</span><span class="p">,</span> <span class="n">VBMC</span>
+
+<span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"location"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">HalfNormal</span><span class="p">(</span><span class="s2">"scale"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">observations</span><span class="p">)</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">PyMCTarget</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">target</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="n">target</span><span class="o">.</span><span class="n">setup_cost</span> <span class="o">+</span> <span class="mi">100</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">VBMC(target)</span></code> obtains <code class="docutils literal notranslate"><span class="pre">x0</span></code>, hard and plausible bounds, the target
+callable, setup observations and their function-equivalent cost from the same
+object. <code class="docutils literal notranslate"><span class="pre">str(target)</span></code> displays the layout and numerical bounds before a run
+starts. The read-only <code class="docutils literal notranslate"><span class="pre">vbmc.target</span></code> property retains the adapter for export
+after fitting or loading a saved run.</p>
+<p>Explicit <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> arguments can override the starting point, plausible bounds,
+observations and initialization charge. These starting points and bounds use
+the adapter’s flat coordinates; the adapter constructor’s <code class="docutils literal notranslate"><span class="pre">start</span></code> and
+<code class="docutils literal notranslate"><span class="pre">plausible_bounds</span></code> mappings use model coordinates. Hard-bound overrides
+must equal <code class="docutils literal notranslate"><span class="pre">target.lb</span></code> and <code class="docutils literal notranslate"><span class="pre">target.ub</span></code> in those flat coordinates, and a
+separate <code class="docutils literal notranslate"><span class="pre">prior</span></code> or <code class="docutils literal notranslate"><span class="pre">log_prior</span></code> is rejected
+because the PyMC model already includes its prior.</p>
+</section>
+<section id="pymc-coordinate-layout-and-hard-bounds">
+<h2>PyMC coordinate layout and hard bounds<a class="headerlink" href="#pymc-coordinate-layout-and-hard-bounds" title="Link to this heading">#</a></h2>
+<p>Free variables follow the supplied model’s <code class="docutils literal notranslate"><span class="pre">model.free_RVs</span></code> order. Each
+variable is flattened in C order; <code class="docutils literal notranslate"><span class="pre">coordinate_names</span></code> uses declared PyMC
+coordinate labels when available. The adapter’s <code class="docutils literal notranslate"><span class="pre">flatten</span></code> and <code class="docutils literal notranslate"><span class="pre">unflatten</span></code>
+methods operate on PyMC value-variable names. <code class="docutils literal notranslate"><span class="pre">to_model_variables</span></code> and
+<code class="docutils literal notranslate"><span class="pre">from_model_variables</span></code> cross between flat VBMC points and mappings over the
+original model-variable names.</p>
+<p>Variables with no transform remain in model coordinates. Variables whose
+coordinates all have two finite bounds also become model coordinates, with
+those limits as VBMC’s hard bounds. A variable whose coordinates are all
+one-sided keeps its PyMC transform, travels in an unbounded value coordinate
+such as <code class="docutils literal notranslate"><span class="pre">scale_log__</span></code>, and contributes the transform Jacobian to the target.
+This gives VBMC a fully unbounded or two-sided box while preserving the PyMC
+model’s density.</p>
+<p>Explicit <code class="docutils literal notranslate"><span class="pre">start=</span></code> and <code class="docutils literal notranslate"><span class="pre">plausible_bounds=</span></code> values are mappings over every
+free-variable name in model coordinates. Every value must be strictly inside
+the recorded support. The adapter maps retained transforms to value space and
+applies the same final normalization used by ordinary <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> construction.</p>
+</section>
+<section id="pymc-setup-and-plausible-region-accounting">
+<h2>PyMC setup and plausible-region accounting<a class="headerlink" href="#pymc-setup-and-plausible-region-accounting" title="Link to this heading">#</a></h2>
+<p>By default, the adapter searches for a mode and builds a Laplace box of three
+marginal standard deviations. A non-positive-definite Hessian or an unusable
+marginal curvature takes its width from prior draws. A mode outside the
+prior’s 0.5%–99.5% location interval is reported as a diagnostic and is not
+moved. If the graph has no gradient, the adapter uses the model’s initial
+point and the 5%–95% prior quantiles instead. Supply <code class="docutils literal notranslate"><span class="pre">start=</span></code> or
+<code class="docutils literal notranslate"><span class="pre">plausible_bounds=</span></code> to override the corresponding automatic step.</p>
+<p>Every prior quantity above comes from one batch of 4000 forward draws of the
+model’s prior. <code class="docutils literal notranslate"><span class="pre">plausible_bounds=</span></code> needs neither those draws nor the
+Hessian. <code class="docutils literal notranslate"><span class="pre">start=</span></code> drops the location check, so draws are then taken only for
+a prior-width fallback or for a model without a gradient. Both arguments are
+therefore the way to keep a prior that is expensive to sample forward out of
+setup.</p>
+<p>The default <code class="docutils literal notranslate"><span class="pre">setup_budget</span></code> is <code class="docutils literal notranslate"><span class="pre">20</span> <span class="pre">+</span> <span class="pre">5</span> <span class="pre">*</span> <span class="pre">D</span></code> function-equivalent
+evaluations. It caps work before it is performed; a smaller positive budget
+shortens the mode search when the selected route still fits. The Hessian costs
+<code class="docutils literal notranslate"><span class="pre">D</span></code> units, and every attempted density or value-gradient call counts even
+when its result is rejected or non-finite. <code class="docutils literal notranslate"><span class="pre">setup_cost</span></code> is the actual total,
+while <code class="docutils literal notranslate"><span class="pre">plausible_info</span></code> separates target calls, Hessian calls and cost, the
+selected route, and any fallback diagnostics.</p>
+<p>Finite setup observations are available in <code class="docutils literal notranslate"><span class="pre">setup_evaluations</span></code> and are
+automatically reused by <code class="docutils literal notranslate"><span class="pre">VBMC(target)</span></code> through the general
+<code class="docutils literal notranslate"><span class="pre">precomputed_evaluations</span></code> interface. They supplement the ordinary initial
+design without changing <code class="docutils literal notranslate"><span class="pre">x0</span></code> or the plausible box. Importing them consumes
+no fresh calls; <code class="docutils literal notranslate"><span class="pre">setup_cost</span></code> is charged once against
+<code class="docutils literal notranslate"><span class="pre">options[&quot;max_fun_evals&quot;]</span></code>. Consequently <code class="docutils literal notranslate"><span class="pre">results[&quot;func_count&quot;]</span></code> remains
+the literal number of fresh calls made by VBMC, and a positive setup charge
+adds <code class="docutils literal notranslate"><span class="pre">results[&quot;evaluation_budget&quot;]</span></code> with the total, initialization, fresh
+and used counts. The maximum fresh-call allowance is the configured total
+minus <code class="docutils literal notranslate"><span class="pre">setup_cost</span></code>.</p>
+<p>Passing <code class="docutils literal notranslate"><span class="pre">precomputed_evaluations=None</span></code> to <code class="docutils literal notranslate"><span class="pre">VBMC(target,</span> <span class="pre">...)</span></code> disables
+reuse while retaining the setup charge. Passing <code class="docutils literal notranslate"><span class="pre">initialization_cost=0</span></code>
+retains reuse but excludes setup from that run’s budget, for example when
+accounting for shared preparation separately across several fits. Reusing a
+target does not consume its observations: each fit charges its setup cost by
+default. The individual fields remain available for manually constructing
+<code class="docutils literal notranslate"><span class="pre">VBMC(target.log_joint,</span> <span class="pre">...)</span></code>; that form requires explicit observation and
+cost arguments and leaves <code class="docutils literal notranslate"><span class="pre">vbmc.target</span></code> as <code class="docutils literal notranslate"><span class="pre">None</span></code>, and its runs go without
+the checks for a changed target described under persistence below.</p>
+</section>
+<section id="structured-return-to-the-pymc-model">
+<h2>Structured return to the PyMC model<a class="headerlink" href="#structured-return-to-the-pymc-model" title="Link to this heading">#</a></h2>
+<p>Export variational draws with their model names, shapes, dimensions and
+coordinates, then use PyMC’s downstream functions. Use the posterior fitted
+with this target and inference snapshot: the dimension check cannot establish
+that a posterior belongs to the same model or coordinate layout. After loading
+a run, use <code class="docutils literal notranslate"><span class="pre">loaded.target.to_arviz(loaded.vp)</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_data</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="n">posterior_data</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">compute_deterministics</span><span class="p">(</span>
+    <span class="n">posterior_data</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">extend_dataset</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample_posterior_predictive</span><span class="p">(</span>
+    <span class="n">posterior_data</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"y"</span><span class="p">],</span>
+    <span class="n">random_seed</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The result is an ArviZ DataTree whose <code class="docutils literal notranslate"><span class="pre">posterior</span></code> group records
+<code class="docutils literal notranslate"><span class="pre">parameter_space=&quot;model&quot;</span></code>. Export advances <code class="docutils literal notranslate"><span class="pre">vp.rng</span></code> exactly as
+<code class="docutils literal notranslate"><span class="pre">vp.sample(n_samples)</span></code> does. <code class="docutils literal notranslate"><span class="pre">target.model</span></code> is the original prediction
+model, so PyMC’s ordinary <code class="docutils literal notranslate"><span class="pre">pm.set_data</span></code> workflow can change compatible
+covariates before prediction.</p>
+</section>
+<section id="pymc-model-scope-limits">
+<h2>PyMC model-scope limits<a class="headerlink" href="#pymc-model-scope-limits" title="Link to this heading">#</a></h2>
+<p>Free variables must be continuous float64 variables with one of PyMC’s
+standard log, log-odds or interval transforms, or an explicitly recognized
+proper distribution on the whole real line. Unknown free-variable support is
+rejected even when no default transform is registered. A custom likelihood
+operation is allowed when its model graph provides a compatible density;
+missing derivatives select the documented setup fallbacks. This is distinct
+from an unknown custom free-variable distribution.</p>
+<p>PyTensor must use <code class="docutils literal notranslate"><span class="pre">floatX=float64</span></code>; value variables and compiled density,
+gradient and Hessian outputs must also be float64. Some PyMC expressions
+retain a narrower constant dtype: for a uniform-only model, use explicit
+<code class="docutils literal notranslate"><span class="pre">np.float64</span></code> bounds, for example
+<code class="docutils literal notranslate"><span class="pre">pm.Uniform(&quot;p&quot;,</span> <span class="pre">np.float64(0),</span> <span class="pre">np.float64(1))</span></code>. The adapter checks the
+compiled output dtype rather than casting a lower-precision result.</p>
+<p>The adapter rejects discrete or float32 free variables, suppressed or custom
+transforms, interval limits that depend on another random variable, and a
+single variable whose coordinates mix one-sided bounds with two-sided or
+unbounded bounds. The log density must be finite strictly inside the hard box.
+The adapter returns <code class="docutils literal notranslate"><span class="pre">-inf</span></code> only on or outside that box, where VBMC does not
+evaluate. Use proper, normalized priors when interpreting the ELBO as a bound
+on model evidence.</p>
+<p>A retained log transform represents support on <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">inf)</span></code>. A distribution
+whose density begins above a positive shift, such as a Wald distribution with
+a nonzero <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, is therefore unsupported even when PyMC assigns it that
+transform. Reparameterize the variable as its distance above the shift.
+The setup checks may miss such a restriction; they do not guarantee that
+the log density is finite throughout the transformed space.</p>
+</section>
+<section id="persistence-of-adapted-pymc-runs">
+<h2>Persistence of adapted PyMC runs<a class="headerlink" href="#persistence-of-adapted-pymc-runs" title="Link to this heading">#</a></h2>
+<p>Target construction freezes the model data, the numeric shared variables and
+NumPy arrays of the model, of its log density and of the maps between its
+coordinates and the model’s, and the dimensions and coordinate metadata used for
+inference. Later changes to the original model, or to the arrays it was built
+from, do not change target values or setup observations; construct a new
+target to refit changed data. The original model remains available for
+posterior prediction.</p>
+<p>An array that the body of a <code class="docutils literal notranslate"><span class="pre">pytensor.scan</span></code> loop or of an <code class="docutils literal notranslate"><span class="pre">OpFromGraph</span></code>
+reads as a constant is the exception, including an array passed to a loop in
+<code class="docutils literal notranslate"><span class="pre">non_sequences</span></code>: PyTensor keeps it inside that operation, where the target
+does not copy it, and shares the operation between models whose arrays there
+are equal, so the array a target reads can be another model’s. Pass such an
+array to a loop in <code class="docutils literal notranslate"><span class="pre">sequences</span></code> or as <code class="docutils literal notranslate"><span class="pre">pm.Data</span></code>, and to an <code class="docutils literal notranslate"><span class="pre">OpFromGraph</span></code> as
+one of its inputs; otherwise leave it unchanged while the target is in use. For
+a run made with <code class="docutils literal notranslate"><span class="pre">VBMC(target)</span></code>, a change to such an array makes
+<a class="reference internal" href="vbmc.html#pyvbmc.VBMC.optimize" title="pyvbmc.VBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a> refuse to run, and saving the run warns. Restoring
+the array allows the live run to continue unless loading has already marked
+the run as changed.</p>
+<p>Saving a <a class="reference internal" href="vbmc.html#pyvbmc.VBMC" title="pyvbmc.VBMC"><code class="xref py py-class docutils literal notranslate"><span class="pre">VBMC</span></code></a> instance retains the adapter, its fixed
+inference snapshot, original prediction model, setup observations and budget
+charge. Loading recompiles PyTensor functions and can take several seconds.
+Load the file only with compatible PyMC and PyTensor versions, then use
+<code class="docutils literal notranslate"><span class="pre">loaded.target</span></code> for export and prediction. Loading a run made with
+<code class="docutils literal notranslate"><span class="pre">VBMC(target)</span></code> also checks the arrays that the target could not copy and
+evaluates its log density once, at the starting point, against the value
+recorded during setup. If the target no longer matches the run, loading warns:
+the run’s results remain valid, but <code class="docutils literal notranslate"><span class="pre">optimize</span></code> refuses to continue it; build a
+new target and run to fit the changed data.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.pymc.</span></span><span class="sig-name descname"><span class="pre">PyMCTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setup_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget" title="Link to this definition">#</a></dt>
+<dd><p>Represent a supported PyMC model as a flat PyVBMC target.</p>
+<p>The adapter snapshots the model inputs at construction, maps supported
+constrained variables to coordinates accepted by PyVBMC, and prepares a
+finite starting point and plausible box. Setup density evaluations are
+retained for reuse by <a class="reference internal" href="vbmc.html#pyvbmc.VBMC" title="pyvbmc.VBMC"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.VBMC</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>model</strong><span class="classifier">pymc.Model</span></dt><dd><p>Model whose free variables define the target, in <code class="docutils literal notranslate"><span class="pre">model.free_RVs</span></code>
+order.</p>
+</dd>
+<dt><strong>plausible_bounds</strong><span class="classifier">mapping, optional</span></dt><dd><p>Mapping from every free-variable name to <code class="docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> values in
+model coordinates. Values must broadcast to the variable shape and be
+strictly inside its support. By default a Laplace box with prior-width
+fallbacks is constructed; supplying bounds instead needs neither the
+Hessian nor the 4000 prior draws that box can require, which matters
+when the prior is expensive to sample forward.</p>
+</dd>
+<dt><strong>start</strong><span class="classifier">mapping, optional</span></dt><dd><p>Starting point in model coordinates. It must contain every free
+variable and lie strictly inside its support. Supplying it skips the
+mode search and the automatic box’s location check against prior
+draws, which are then drawn only for a prior-width fallback or for a
+model without a gradient.</p>
+</dd>
+<dt><strong>seed</strong><span class="classifier">None, int, SeedSequence or numpy.random.Generator, optional</span></dt><dd><p>Random generator or seed for prior fallback draws and stochastic
+<code class="docutils literal notranslate"><span class="pre">initval=&quot;prior&quot;</span></code> strategies. A generator is used as is. With
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, a generator is derived from NumPy’s legacy global state.</p>
+</dd>
+<dt><strong>setup_budget</strong><span class="classifier">int, optional</span></dt><dd><p>Positive function-equivalent setup allowance. The default is
+<code class="docutils literal notranslate"><span class="pre">20</span> <span class="pre">+</span> <span class="pre">5</span> <span class="pre">*</span> <span class="pre">D</span></code>. Actual work, including rejected search trials and a
+<code class="docutils literal notranslate"><span class="pre">D</span></code>-unit Hessian evaluation, determines <a class="reference internal" href="#pyvbmc.pymc.PyMCTarget.setup_cost" title="pyvbmc.pymc.PyMCTarget.setup_cost"><code class="xref py py-attr docutils literal notranslate"><span class="pre">setup_cost</span></code></a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>Dimension of the flat PyVBMC coordinates.</p>
+</dd>
+<dt><strong>names, value_names, coordinate_names</strong><span class="classifier">list of str</span></dt><dd><p>Model variable names, PyVBMC value-variable names, and flattened
+coordinate labels.</p>
+</dd>
+<dt><strong>shapes</strong><span class="classifier">list of tuple</span></dt><dd><p>Model-variable shapes in layout order.</p>
+</dd>
+<dt><strong>sizes</strong><span class="classifier">list of int</span></dt><dd><p>Flattened sizes in layout order.</p>
+</dd>
+<dt><strong>kept</strong><span class="classifier">dict</span></dt><dd><p>Model-variable names mapped to the class names of transforms retained
+in PyVBMC coordinates.</p>
+</dd>
+<dt><strong>support</strong><span class="classifier">dict</span></dt><dd><p>Model-variable names mapped to <code class="docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> support arrays.</p>
+</dd>
+<dt><strong>x0, lb, ub, plb, pub</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Float64 row vectors of shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code>.</p>
+</dd>
+<dt><strong>setup_evaluations</strong><span class="classifier">tuple of numpy.ndarray</span></dt><dd><p>Finite setup observations <code class="docutils literal notranslate"><span class="pre">(X,</span> <span class="pre">y)</span></code> in call order.</p>
+</dd>
+<dt><strong>plausible_info</strong><span class="classifier">dict</span></dt><dd><p>Setup route, diagnostics, and exact cost accounting.</p>
+</dd>
+<dt><strong>model</strong><span class="classifier">pymc.Model</span></dt><dd><p>The original model, retained for posterior prediction. Numerical
+target calls use a private frozen snapshot.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ImportError</dt><dd><p>If the PyMC extra is absent or the installed PyMC API is incompatible.</p>
+</dd>
+<dt>UnsupportedModel</dt><dd><p>If a free variable, transform, support, or dtype is unsupported.</p>
+</dd>
+<dt>ValueError</dt><dd><p>If setup arguments, bounds, or the final starting density are invalid.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>A retained log transform represents support on <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">inf)</span></code>. A
+distribution whose density begins above a positive shift, such as a Wald
+distribution with a nonzero <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, is unsupported; reparameterize the
+variable as its distance above the shift.
+The setup checks may miss such a restriction; they do not guarantee that
+the log density is finite throughout the transformed space.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.flatten">
+<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.flatten" title="Link to this definition">#</a></dt>
+<dd><p>Flatten a mapping over value-variable names in C order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>values</strong><span class="classifier">mapping</span></dt><dd><p>One array of the declared shape for every name in <cite>value_names</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Float64 vector of shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.from_model_variables">
+<span class="sig-name descname"><span class="pre">from_model_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.from_model_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.from_model_variables" title="Link to this definition">#</a></dt>
+<dd><p>Map one model-variable point to a flat PyVBMC vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>point</strong><span class="classifier">mapping</span></dt><dd><p>Every model-variable name mapped to one finite value in model
+coordinates. Values may be broadcast to the variable’s declared
+shape and must lie strictly inside its support.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Float64 vector of shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> in the adapter’s flat PyVBMC
+coordinates. Retained PyMC transforms are applied.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>point</cite> is not a mapping over exactly the model-variable
+names, a value cannot be broadcast to its declared shape, or a
+value is non-finite or outside its support.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.log_joint">
+<span class="sig-name descname"><span class="pre">log_joint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.log_joint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.log_joint" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the model log joint, including retained Jacobians.</p>
+<p>A point on or outside a hard bound returns <code class="docutils literal notranslate"><span class="pre">-inf</span></code>. A non-finite
+density strictly inside the box raises a <cite>ValueError</cite> that identifies
+the model variables and their values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.log_joint_no_jacobian">
+<span class="sig-name descname"><span class="pre">log_joint_no_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.log_joint_no_jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.log_joint_no_jacobian" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate the model-coordinate log density without Jacobians.</p>
+<p>The input remains in the adapter’s flat PyVBMC coordinates. This
+value omits the Jacobian terms of any retained PyMC transforms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">array-like</span></dt><dd><p>One point with shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> or <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code> in flat PyVBMC
+coordinates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>The model-coordinate log density. A point on or outside a hard
+bound returns <code class="docutils literal notranslate"><span class="pre">-inf</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>x</cite> has the wrong shape, or if the compiled density is
+non-finite strictly inside the hard bounds.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.setup_cost">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">setup_cost</span></span><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.setup_cost" title="Link to this definition">#</a></dt>
+<dd><p>Actual function-equivalent setup cost.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.to_arviz">
+<span class="sig-name descname"><span class="pre">to_arviz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.to_arviz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.to_arviz" title="Link to this definition">#</a></dt>
+<dd><p>Export variational draws in the PyMC model’s coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>Posterior fitted with this target’s frozen model and data, in
+its flat coordinate layout. Only dimension compatibility is
+checked. After loading a run, use
+<code class="docutils literal notranslate"><span class="pre">loaded.target.to_arviz(loaded.vp)</span></code>.</p>
+</dd>
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Positive number of independent draws, default 1000, as any
+scalar that holds a whole number (see
+<code class="docutils literal notranslate"><span class="pre">VariationalPosterior.sample</span></code>); a boolean is refused.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">xarray.DataTree</span></dt><dd><p>One <code class="docutils literal notranslate"><span class="pre">posterior</span></code> group with the model’s variable names, shapes,
+dimensions, and coordinates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ImportError</dt><dd><p>If the ArviZ data API is unavailable.</p>
+</dd>
+<dt>ValueError</dt><dd><p>If the sample count, posterior dimension, or stored layout is
+invalid. Validation errors leave <code class="docutils literal notranslate"><span class="pre">vp.rng</span></code> unchanged.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.to_model_variables">
+<span class="sig-name descname"><span class="pre">to_model_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.to_model_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.to_model_variables" title="Link to this definition">#</a></dt>
+<dd><p>Map flat PyVBMC draws to arrays over the model’s variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Float64-compatible array of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">D)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>values</strong><span class="classifier">dict</span></dt><dd><p>Variable names mapped to arrays of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">*shape)</span></code>.
+Every value is finite and strictly inside its support. A
+retained transform’s backward map can land on a finite support
+bound by rounding, and such a coordinate is returned as the
+adjacent representable value inside the support.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>X</cite> has the wrong shape, or a mapped value is non-finite or
+lies beyond a support bound.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.pymc.PyMCTarget.unflatten">
+<span class="sig-name descname"><span class="pre">unflatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_target.html#PyMCTarget.unflatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.PyMCTarget.unflatten" title="Link to this definition">#</a></dt>
+<dd><p>Convert one flat PyVBMC point to a value-variable mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">array-like</span></dt><dd><p>One point with shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> or <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code> in the adapter’s
+flat PyVBMC coordinates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>values</strong><span class="classifier">dict</span></dt><dd><p>PyMC value-variable names mapped to float64 arrays with the
+variables’ declared shapes. Retained PyMC transforms are not
+inverted.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>x</cite> does not have shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> or <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyvbmc.pymc.UnsupportedModel">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.pymc.</span></span><span class="sig-name descname"><span class="pre">UnsupportedModel</span></span><a class="reference internal" href="../../_modules/pyvbmc/pymc/_compat.html#UnsupportedModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.pymc.UnsupportedModel" title="Link to this definition">#</a></dt>
+<dd><p>Raised when a PyMC model is outside the adapter’s supported scope.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="svbmc.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../advanced_docs.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Advanced documentation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-adapter-at-a-glance">PyMC adapter at a glance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-coordinate-layout-and-hard-bounds">PyMC coordinate layout and hard bounds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-setup-and-plausible-region-accounting">PyMC setup and plausible-region accounting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structured-return-to-the-pymc-model">Structured return to the PyMC model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc-model-scope-limits">PyMC model-scope limits</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persistence-of-adapted-pymc-runs">Persistence of adapted PyMC runs</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -27,26 +27,28 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'development';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/development.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/development.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="About us" href="about_us.html" />
@@ -54,20 +56,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -149,6 +201,7 @@
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -156,20 +209,33 @@
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -177,6 +243,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/entropy.html">Entropy</a></li>
@@ -372,11 +441,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -404,7 +480,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-instructions-for-developers">Installation instructions for developers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coding-conventions">Coding conventions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code-formatting">Code formatting</a></li>
@@ -434,16 +510,16 @@
 <h1>Instructions for developers and contributors<a class="headerlink" href="#instructions-for-developers-and-contributors" title="Link to this heading">#</a></h1>
 <p>PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.10 and up).</p>
 <p>The reference code is the <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
-<p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
+<p>The documentation is available at: <a class="reference external" href="https://acerbilab.org/pyvbmc/">https://acerbilab.org/pyvbmc/</a></p>
 <section id="installation-instructions-for-developers">
 <h2>Installation instructions for developers<a class="headerlink" href="#installation-instructions-for-developers" title="Link to this heading">#</a></h2>
 <p>Release versions of PyVBMC are available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>, but developers will need to work with the latest source code. They should follow these steps to install:</p>
 <ol class="arabic">
-<li><p>(Optional, but recommended for development): Create a new environment in Conda and activate it.</p>
-<blockquote>
-<div><p>conda create –name pyvbmc-env
-conda activate pyvbmc-env</p>
-</div></blockquote>
+<li><p>(Optional, but recommended for development): Create a new environment in Conda and activate it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.12</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span>
+</pre></div>
+</div>
 </li>
 <li><p>Clone the PyVBMC and GPyReg GitHub repos locally:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">pyvbmc</span>
@@ -454,39 +530,43 @@ conda activate pyvbmc-env</p>
 </li>
 <li><p>Install the packages and their optional development dependencies:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">./</span><span class="n">gpyreg</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">&quot;.[dev]&quot;</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">".[dev]"</span>
 <span class="n">cd</span> <span class="o">../</span><span class="n">pyvbmc</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">&quot;.[dev]&quot;</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">".[dev]"</span>
 </pre></div>
 </div>
 </li>
-<li><p>Install Jupyter to view the examples You can skip this step if you’re working from a Conda environment which already has Jupyter, but be aware that if the wrong <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> executable is found on your path then import errors may arise.</p>
+<li><p>Install Jupyter to view the examples. You can skip this step if you’re working from a Conda environment which already has Jupyter, but be aware that if the wrong <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> executable is found on your path then import errors may arise.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">jupyter</span>
 </pre></div>
 </div>
 </li>
 </ol>
-<p>We are using the dependencies listed in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. Please list all used dependencies there. Dependencies are separated into basic dependencies, and optional development dependencies included under <code class="docutils literal notranslate"><span class="pre">dev</span></code>.</p>
+<p>The dependencies installed with PyVBMC are declared in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>.
+Runtime dependencies belong in <code class="docutils literal notranslate"><span class="pre">project.dependencies</span></code>; optional integrations
+and extras have separate groups under <code class="docutils literal notranslate"><span class="pre">project.optional-dependencies</span></code>.</p>
 <p>The necessary packages can be installed with <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> or <a class="reference external" href="https://pypi.org/project/pip/">pip</a>.</p>
 </section>
 <section id="coding-conventions">
 <h2>Coding conventions<a class="headerlink" href="#coding-conventions" title="Link to this heading">#</a></h2>
 <p>We try to follow common conventions whenever possible. Some useful reading:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8 – Style Guide for Python Code</a></p></li>
+<li><p><a class="reference external" href="https://peps.python.org/pep-0008/">PEP 8 – Style Guide for Python Code</a></p></li>
 <li><p><a class="reference external" href="https://docs.python-guide.org/writing/style/">Code style in The Hitchhiker’s Guide to Python</a></p></li>
 </ul>
 <p>These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.</p>
 <section id="code-formatting">
 <h3>Code formatting<a class="headerlink" href="#code-formatting" title="Link to this heading">#</a></h3>
-<p>The code is formatted using <a class="reference external" href="https://pypi.org/project/black/">Black</a> with a line length of 79, with the help of pre-commit hooks. To install and use:</p>
+<p>Formatting is enforced by the pre-commit hooks in <code class="docutils literal notranslate"><span class="pre">.pre-commit-config.yaml</span></code>.
+They include <a class="reference external" href="https://pypi.org/project/black/">Black</a> with a line length of
+79. To install and use them:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pre</span><span class="o">-</span><span class="n">commit</span>
 <span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
 <span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">run</span> <span class="o">-</span><span class="n">a</span>  <span class="c1"># run for all files, optional</span>
 </pre></div>
 </div>
-<p>After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in <code class="docutils literal notranslate"><span class="pre">.pre-commit-config.yaml</span></code>. The settings of the hooks are specified in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. You need to restage the file if it gets modified by the hooks.</p>
-<p>If you want, you can also check with <a class="reference external" href="https://beta.ruff.rs/docs/">ruff</a> or <a class="reference external" href="https://www.pylint.org/">Pylint</a> for more detailed errors, warnings, and suggestions.</p>
+<p>After installation, Git runs the hooks on staged files before each commit. Restage
+any file that a hook modifies.</p>
 </section>
 <section id="docstrings">
 <h3>Docstrings<a class="headerlink" href="#docstrings" title="Link to this heading">#</a></h3>
@@ -494,17 +574,17 @@ conda activate pyvbmc-env</p>
 There are add-ons to generate docstring blueprints using IDEs.</p>
 <ul class="simple">
 <li><p>See an example for a correct docstring from NumPy <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/example.html">here</a>.</p></li>
-<li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/variational_posterior/variational_posterior.py">here</a>.</p></li>
+<li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/pyvbmc/variational_posterior/variational_posterior.py">here</a>.</p></li>
 <li><p>In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.</p></li>
 </ul>
 </section>
 <section id="code-documentation">
 <h3>Code documentation<a class="headerlink" href="#code-documentation" title="Link to this heading">#</a></h3>
-<p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch.</p>
+<p>The documentation is published at <a class="reference external" href="https://acerbilab.org/pyvbmc/">https://acerbilab.org/pyvbmc/</a> from the <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch, which holds the built pages. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a>.</p>
 <p>GitHub workflows automatically build and update the documentation whenever a commit is merged into the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:</p>
 <ol class="arabic">
 <li><p>From your working branch, render new documentation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">docsrc</span>  <span class="c1"># navigate to documentation source folder</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docsrc</span>  <span class="c1"># navigate to documentation source folder</span>
 <span class="n">make</span> <span class="n">github</span>  <span class="c1"># build the docs and copy them to ./docs</span>
 </pre></div>
 </div>
@@ -521,33 +601,26 @@ There are add-ons to generate docstring blueprints using IDEs.</p>
 <p>(If you are using Windows, run <code class="docutils literal notranslate"><span class="pre">.\make.bat</span> <span class="pre">clean</span></code> with <code class="docutils literal notranslate"><span class="pre">cmd</span></code> instead.)</p>
 </li>
 </ol>
-<p>If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples">examples</a> render correctly on GitHub (make sure to view them from your working branch).</p>
+<p>If any changes have been made to the Jupyter Notebook examples, it is advisable to check that the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples">examples</a> render correctly on GitHub (make sure to view them from your working branch).</p>
 <section id="general-structure">
 <h4>General structure<a class="headerlink" href="#general-structure" title="Link to this heading">#</a></h4>
-<p>For each new class, function, etc. a <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have <code class="docutils literal notranslate"><span class="pre">functions</span></code>, <code class="docutils literal notranslate"><span class="pre">classes</span></code>, etc.
-The <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file contains the text in <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText format</a>, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example:</p>
+<p>Nothing generates the API pages: each new public class or function needs a hand-written <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file under <code class="docutils literal notranslate"><span class="pre">docsrc/source/api/</span></code>, in <code class="docutils literal notranslate"><span class="pre">classes</span></code>, <code class="docutils literal notranslate"><span class="pre">functions</span></code>, <code class="docutils literal notranslate"><span class="pre">methods</span></code> or <code class="docutils literal notranslate"><span class="pre">options</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file contains text in <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText format</a>, a lightweight markup language with special commands that tell Sphinx where to compile the documentation: an autodoc directive, which renders the docstrings, and any usage notes, for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">autoclass</span><span class="p">::</span> <span class="n">pyvbmc</span><span class="o">.</span><span class="n">vbmc</span><span class="o">.</span><span class="n">VBMC</span>
   <span class="p">:</span><span class="n">members</span><span class="p">:</span>
 </pre></div>
 </div>
-<p>Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:</p>
-<ul class="simple">
-<li><p>Status of the port (what is missing?);</p></li>
-<li><p>Reference to the respective file of the original <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc">MATLAB</a> implementation;</p></li>
-<li><p>Known issues (if something is currently suboptimal in PyVBMC);</p></li>
-<li><p>The documentation of the Python code (generated from the docstrings).</p></li>
-</ul>
-<p>For each new file, a link needs to be added manually to the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/index.rst">index page</a>.
+<p>Each new page also needs an entry in the toctree that owns it: <code class="docutils literal notranslate"><span class="pre">documentation.rst</span></code> for a headline page, <code class="docutils literal notranslate"><span class="pre">api/classes/classes.rst</span></code> or <code class="docutils literal notranslate"><span class="pre">api/functions/functions.rst</span></code> otherwise, and the page of its class for a method.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)</p>
 </section>
 </section>
 <section id="exceptions">
 <h3>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading">#</a></h3>
-<p>Please use standard Python exceptions whenever it is sensible. Here is a list of those <a class="reference external" href="https://docs.python.org/3/library/exceptions.html">exceptions</a>.</p>
+<p>Please use standard Python exceptions whenever it is sensible. Here is a list of those <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html">exceptions</a>.</p>
 </section>
 <section id="git-commits">
 <h3><code class="docutils literal notranslate"><span class="pre">git</span></code> commits<a class="headerlink" href="#git-commits" title="Link to this heading">#</a></h3>
-<p>Commits follow the <a class="reference external" href="https://www.conventionalcommits.org/en/v1.0.0/">conventional commits</a> style. This makes it easier to collaborate on the project. A cheat sheet is can be found <a class="reference external" href="https://cheatography.com/albelop/cheat-sheets/conventional-commits/">here</a>.</p>
+<p>Commits follow the <a class="reference external" href="https://www.conventionalcommits.org/en/v1.0.0/">conventional commits</a> style. This makes it easier to collaborate on the project. A cheat sheet can be found <a class="reference external" href="https://cheatography.com/albelop/cheat-sheets/conventional-commits/">here</a>.</p>
 <p>Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. <a class="reference external" href="https://martinfowler.com/bliki/FeatureBranch.html">Read this</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">new</span><span class="o">-</span><span class="n">feature</span><span class="o">&gt;</span>
 <span class="p">[</span><span class="o">...</span> <span class="n">do</span> <span class="n">stuff</span> <span class="ow">and</span> <span class="n">commit</span> <span class="o">...</span><span class="p">]</span>
@@ -574,11 +647,13 @@ Tests can be run with:</p>
 <p>A few comments about testing:</p>
 <ul class="simple">
 <li><p>Testing is mandatory! The full suite of tests is automatically run before any pull request can be merged into <code class="docutils literal notranslate"><span class="pre">main</span></code>. The tests run on Windows, Linux, and macOS. Automatic tests are skipped for PRs which do not change the source code or tests (e.g., changes to the documentation only).</p></li>
+<li><p>Tests for the optional torch, ArviZ and PyMC integrations skip unless the matching <code class="docutils literal notranslate"><span class="pre">torch</span></code>, <code class="docutils literal notranslate"><span class="pre">arviz</span></code> or <code class="docutils literal notranslate"><span class="pre">pymc</span></code> extra is installed.</p></li>
 <li><p>Still, as a good practice, please rerun all tests before major commits and pull requests. This might take a while, but it is worth it to avoid surprises.</p></li>
 <li><p>Please try to keep the total runtime of the tests minimal for the task at hand.</p></li>
 <li><p>A nice way of proceeding is “test first”: write a test first, make it fail, write the code until the test is passed.</p></li>
 <li><p>Many methods are tested against test cases produced with the original <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc">MATLAB implementation</a>.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">pytest-mock</span></code> library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to <code class="docutils literal notranslate"><span class="pre">unittest.mock</span></code> in the future, which is part of the Python standard library.)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">pytest-mock</span></code> library lets tests replace parts of the system under test
+with mock objects and make assertions about how they were used.</p></li>
 </ul>
 </section>
 </section>
@@ -630,7 +705,7 @@ Tests can be run with:</p>
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-instructions-for-developers">Installation instructions for developers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coding-conventions">Coding conventions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#code-formatting">Code formatting</a></li>
@@ -682,6 +757,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -693,8 +771,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

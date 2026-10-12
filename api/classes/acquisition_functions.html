@@ -27,47 +27,57 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/classes/acquisition_functions';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/api/classes/acquisition_functions.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/api/classes/acquisition_functions.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="FunctionLogger" href="function_logger.html" />
+    <link rel="next" title="CalibrationProfile" href="calibration_profile.html" />
     <link rel="prev" title="Classes" href="classes.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +103,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -149,6 +203,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -156,20 +211,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../advanced_docs.html">Advanced documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="classes.html">Classes</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -177,6 +245,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../functions/entropy.html">Entropy</a></li>
@@ -372,11 +443,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -404,7 +482,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AbstractAcqFcn"><code class="docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.__call__"><code class="docutils literal notranslate"><span class="pre">AbstractAcqFcn.__call__()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.get_info"><code class="docutils literal notranslate"><span class="pre">AbstractAcqFcn.get_info()</span></code></a></li>
@@ -420,6 +498,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnLog"><code class="docutils literal notranslate"><span class="pre">AcqFcnLog</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnNoisy"><code class="docutils literal notranslate"><span class="pre">AcqFcnNoisy</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.LOSSES"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.LOSSES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.is_log_added()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.is_log_base()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.is_log_full()</span></code></a></li>
@@ -444,6 +523,16 @@
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AbstractAcqFcn</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/abstract_acq_fcn.html#AbstractAcqFcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Abstract acquisition function for VBMC.</p>
+<p class="rubric">Notes</p>
+<p>A subclass that sets <code class="docutils literal notranslate"><span class="pre">acq_info[&quot;compute_var_log_joint&quot;]</span> <span class="pre">=</span> <span class="pre">True</span></code> is
+given the posterior uncertainty of the expected log joint before each
+search: <code class="docutils literal notranslate"><span class="pre">active_sample</span></code> then writes its variance per GP
+hyperparameter sample to <code class="docutils literal notranslate"><span class="pre">optim_state[&quot;var_log_joint_samples&quot;]</span></code>,
+shape <code class="docutils literal notranslate"><span class="pre">(Ns,)</span></code> and a scalar when <code class="docutils literal notranslate"><span class="pre">Ns</span> <span class="pre">==</span> <span class="pre">1</span></code>, and the covariance of
+the mixture components’ integrals to
+<code class="docutils literal notranslate"><span class="pre">optim_state[&quot;cov_log_joint_components&quot;]</span></code>, shape <code class="docutils literal notranslate"><span class="pre">(Ns,</span> <span class="pre">K,</span> <span class="pre">K)</span></code>.
+The built-in acquisitions leave the flag disabled and neither entry
+exists for them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AbstractAcqFcn.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/abstract_acq_fcn.html#AbstractAcqFcn.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.__call__" title="Link to this definition">#</a></dt>
@@ -507,15 +596,25 @@ is the number of input points.</p>
 <p>Integrated Median Interquantile Range (IMIQR) acquisition function.</p>
 <p>Approximates the Integrated Median Interquantile Range (IMIQR) via
 importance samples from the GP surrogate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>quantile</strong><span class="classifier">float, optional</span></dt><dd><p>The upper quantile <span class="math notranslate nohighlight">\(p_u\)</span> of the interquantile range, a number
+strictly between 0.5 and 1; the default 0.75 gives
+<span class="math notranslate nohighlight">\(u = \Phi^{-1}(0.75)\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_added">
 <span class="sig-name descname"><span class="pre">is_log_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_imiqr.html#AcqFcnIMIQR.is_log_added"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_added" title="Link to this definition">#</a></dt>
 <dd><p>Importance sampling proposal log density, added part.</p>
 <p>The added term in the importance sampling proposal log density: The
 full proposal log density is <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span> <span class="pre">is_log_base</span> <span class="pre">+</span>
-<span class="pre">is_log_added</span></code>. Added part for VIQR/IMIQR is :math: <cite>\log [\sinh(u *
-f_s)]`</cite>, where <code class="docutils literal notranslate"><span class="pre">f_s</span></code> is the GP predictive variance at the input
-points.</p>
+<span class="pre">is_log_added</span></code>. Added part for VIQR/IMIQR is
+<span class="math notranslate nohighlight">\(\log [2 \sinh(u f_s)]\)</span>, where <span class="math notranslate nohighlight">\(f_s\)</span> is the GP
+predictive standard deviation at the input points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -615,20 +714,70 @@ provided.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html#AcqFcnVIQR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iqr'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html#AcqFcnVIQR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Variational Interquantile Range (VIQR) acquisition function.</p>
 <p>Approximates the Integrated Median Interquantile Range (IMIQR) by simple
 Monte Carlo using samples from the Variational Posterior.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>quantile</strong><span class="classifier">float, optional</span></dt><dd><p>The upper quantile <span class="math notranslate nohighlight">\(p_u\)</span> of the interquantile range, a number
+strictly between 0.5 and 1; the default 0.75 gives
+<span class="math notranslate nohighlight">\(u = \Phi^{-1}(0.75)\)</span>.</p>
+</dd>
+<dt><strong>loss</strong><span class="classifier">{“iqr”, “iqr_reduction”}, optional</span></dt><dd><p>The loss whose expectation under the variational posterior the
+acquisition minimizes. Both losses share the same look-ahead
+predictive standard deviation <span class="math notranslate nohighlight">\(s_{\Xi \cup \theta_*}(\theta_a)\)</span>
+at the importance points <span class="math notranslate nohighlight">\(\theta_a\)</span>: the GP posterior after a
+hypothetical observation at the candidate <span class="math notranslate nohighlight">\(\theta_*\)</span>, which
+does not depend on the value observed there.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;iqr&quot;</span></code> (default): the log integrated interquantile range after
+the observation, <span class="math notranslate nohighlight">\(\log \sum_a 2 \sinh(u\, s_{\Xi \cup
+\theta_*}(\theta_a))\)</span>, the VIQR of <a class="reference internal" href="#rcf5d6797e94b-1" id="id1">[1]</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;iqr_reduction&quot;</span></code>: minus the log of the integrated <em>reduction</em>
+of the interquantile range, <span class="math notranslate nohighlight">\(-\log \sum_a w_a [\sinh(u\,
+s_\Xi(\theta_a)) - \sinh(u\, s_{\Xi \cup \theta_*}(\theta_a))]\)</span>.
+It has the same minimizer as <code class="docutils literal notranslate"><span class="pre">&quot;iqr&quot;</span></code> over any fixed candidate
+set. The log of the reduction spans orders of magnitude where the
+log of the residual range is nearly flat, which matters to the
+tolerance-based termination of the search optimizer.</p></li>
+</ul>
+<p><span class="math notranslate nohighlight">\(w_a\)</span> are the importance weights, normalized over the
+hyperparameter samples and the importance points together (so the
+reduction acquisition carries a constant, <span class="math notranslate nohighlight">\(\log (N_s N_a)\)</span>
+for <span class="math notranslate nohighlight">\(N_s\)</span> hyperparameter samples and <span class="math notranslate nohighlight">\(N_a\)</span> importance
+points, that does not move the minimizer) and uniform under the
+simple Monte Carlo of VIQR. The reduction is non-negative, so
+<code class="docutils literal notranslate"><span class="pre">&quot;iqr_reduction&quot;</span></code> is <code class="docutils literal notranslate"><span class="pre">+inf</span></code> where the candidate reduces the
+interquantile range at no importance point.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="rcf5d6797e94b-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Acerbi, L. (2020). “Variational Bayesian Monte Carlo with Noisy
+Likelihoods.” Advances in Neural Information Processing Systems 33.</p>
+</div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR.LOSSES">
+<span class="sig-name descname"><span class="pre">LOSSES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('iqr',</span> <span class="pre">'iqr_reduction')</span></span><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.LOSSES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added">
 <span class="sig-name descname"><span class="pre">is_log_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html#AcqFcnVIQR.is_log_added"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added" title="Link to this definition">#</a></dt>
 <dd><p>Importance sampling proposal log density, added part.</p>
 <p>The added term in the importance sampling proposal log density: The
 full proposal log density is <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span> <span class="pre">is_log_base</span> <span class="pre">+</span>
-<span class="pre">is_log_added</span></code>. Added part for VIQR/IMIQR is :math: <cite>\log [\sinh(u *
-f_s)]`</cite>, where <code class="docutils literal notranslate"><span class="pre">f_s</span></code> is the GP predictive variance at the input
-points.</p>
+<span class="pre">is_log_added</span></code>. Added part for VIQR/IMIQR is
+<span class="math notranslate nohighlight">\(\log [2 \sinh(u f_s)]\)</span>, where <span class="math notranslate nohighlight">\(f_s\)</span> is the GP
+predictive standard deviation at the input points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -741,11 +890,11 @@ distribution at the points of interest. Of the same shape as
       </div>
     </a>
     <a class="right-next"
-       href="function_logger.html"
+       href="calibration_profile.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -766,7 +915,7 @@ distribution at the points of interest. Of the same shape as
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AbstractAcqFcn"><code class="docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.__call__"><code class="docutils literal notranslate"><span class="pre">AbstractAcqFcn.__call__()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.get_info"><code class="docutils literal notranslate"><span class="pre">AbstractAcqFcn.get_info()</span></code></a></li>
@@ -782,6 +931,7 @@ distribution at the points of interest. Of the same shape as
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnLog"><code class="docutils literal notranslate"><span class="pre">AcqFcnLog</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnNoisy"><code class="docutils literal notranslate"><span class="pre">AcqFcnNoisy</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.LOSSES"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.LOSSES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.is_log_added()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.is_log_base()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full"><code class="docutils literal notranslate"><span class="pre">AcqFcnVIQR.is_log_full()</span></code></a></li>
@@ -825,6 +975,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -836,8 +989,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

@@ -1,0 +1,1677 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyvbmc.svbmc.svbmc &#8212; PyVBMC</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/svbmc/svbmc';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/svbmc/svbmc.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <img src="../../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Instructions for developers and contributors</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../about_us.html">About us</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_modules/pyvbmc/svbmc/svbmc.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pyvbmc.svbmc.svbmc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># S-VBMC: Stacking Variational Bayesian Monte Carlo.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2025, S-VBMC Developers and their Assignees.</span>
+<span class="c1"># All rights reserved. Distributed under the BSD 3-Clause License; the</span>
+<span class="c1"># full text is in LICENSE.txt next to this file.</span>
+<span class="c1">#</span>
+<span class="c1"># This module derives from the standalone ``svbmc`` package</span>
+<span class="c1"># (acerbilab/svbmc, version 0.1.1, commit 13a78f6); the SVBMC page of the</span>
+<span class="c1"># documentation (docsrc/source/api/classes/svbmc.rst) lists how it differs.</span>
+<span class="sd">"""Stacking Variational Bayesian Monte Carlo (S-VBMC)."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SVBMC"</span><span class="p">]</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dill</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc._logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.rng</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._elbo_shrinkage</span><span class="w"> </span><span class="kn">import</span> <span class="n">_two_level_shrinkage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._entropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">component_log_densities</span><span class="p">,</span> <span class="n">log_density_chunks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._jacobian</span><span class="w"> </span><span class="kn">import</span> <span class="n">expected_log_jacobian</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._runtime_tips</span><span class="w"> </span><span class="kn">import</span> <span class="n">consider_runtime_tip</span>
+
+<span class="n">_REQUIRED_STATS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"stable"</span><span class="p">,</span> <span class="s2">"elbo"</span><span class="p">,</span> <span class="s2">"I_sk"</span><span class="p">,</span> <span class="s2">"J_sjk"</span><span class="p">)</span>
+<span class="n">_VERSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"all-weights"</span><span class="p">,</span> <span class="s2">"posterior-only"</span><span class="p">,</span> <span class="s2">"ns"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_optimization</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">version</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Validate optimization arguments before draws or user guidance."""</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VERSIONS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Unknown S-VBMC version </span><span class="si">{</span><span class="n">version</span><span class="si">!r}</span><span class="s2">; choose one of "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">_VERSIONS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_steps</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`max_steps` should be at least 1."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`n_samples` should be at least 1."</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_import_torch</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Return the torch module, or raise a message naming the extra."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">"S-VBMC requires torch; install pyvbmc[torch]."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">return</span> <span class="n">torch</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_svbmc_logger</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Return the ``"SVBMC"`` logger, showing progress by default."""</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="s2">"SVBMC"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">:</span>
+        <span class="c1"># Progress is shown by default; a level set by the user stays.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logger</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_posteriors</span><span class="p">(</span><span class="n">vp_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Check that ``vp_list`` holds fitted posteriors of one problem.</span>
+
+<span class="sd">    Returns the common ``D``. The checks cover what stacking reads: the</span>
+<span class="sd">    component parameters, the transformer and the original-space hard</span>
+<span class="sd">    bounds it maps to, and the ``stable``, ``elbo``, ``I_sk`` and ``J_sjk``</span>
+<span class="sd">    statistics a completed VBMC run stores.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vp_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`vp_list` is empty; pass at least one posterior."</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vp_list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">"mu"</span><span class="p">,</span>
+            <span class="s2">"w"</span><span class="p">,</span>
+            <span class="s2">"sigma"</span><span class="p">,</span>
+            <span class="s2">"lambd"</span><span class="p">,</span>
+            <span class="s2">"stats"</span><span class="p">,</span>
+            <span class="s2">"parameter_transformer"</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` is not a fitted VariationalPosterior "</span>
+                    <span class="sa">f</span><span class="s2">"(missing `</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">`)."</span>
+                <span class="p">)</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mu</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">].mu` should have shape (D, K), got </span><span class="si">{</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="n">d</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">D</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="n">d</span>
+        <span class="k">elif</span> <span class="n">d</span> <span class="o">!=</span> <span class="n">D</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` has D = </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">, but `vp_list[0]` has D = </span><span class="si">{</span><span class="n">D</span><span class="si">}</span><span class="s2">; "</span>
+                <span class="s2">"stack only posteriors of the same problem."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">k</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">k</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` has </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> components in `mu` but `w` and "</span>
+                <span class="s2">"`sigma` do not match."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">lambd</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">d</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">].lambd` should hold D = </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> scales, got "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">lambd</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="c1"># The stacked posterior lives in the common original space, and</span>
+        <span class="c1"># every run's density is evaluated at every run's draws, so the</span>
+        <span class="c1"># runs have to agree on the hard bounds of that space. How each</span>
+        <span class="c1"># run maps the box to its own transformed space -- the bounded</span>
+        <span class="c1"># transform, the centering, the scaling, the rotation -- is free.</span>
+        <span class="n">transformer</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">parameter_transformer</span>
+        <span class="n">lb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">first</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="s2">"lower"</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">"upper"</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="p">):</span>
+                <span class="n">differing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">edge</span> <span class="o">!=</span> <span class="n">first</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">differing</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">differing</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` has </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> bound </span><span class="si">{</span><span class="n">edge</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2"> in "</span>
+                        <span class="sa">f</span><span class="s2">"dimension </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">, where `vp_list[0]` has "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">first</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">; the stacked posterior lives in one "</span>
+                        <span class="s2">"original parameter space, so stack only runs "</span>
+                        <span class="s2">"with the same hard bounds."</span>
+                    <span class="p">)</span>
+        <span class="c1"># A posterior VBMC has not finished (or an unfitted one) has no</span>
+        <span class="c1"># statistics at all.</span>
+        <span class="k">if</span> <span class="n">vp</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">,</span> <span class="s2">"__contains__"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` has no statistics; stack only posteriors "</span>
+                <span class="s2">"returned by a completed VBMC run."</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_REQUIRED_STATS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">].stats` lacks </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">; stack only "</span>
+                    <span class="s2">"posteriors returned by a completed VBMC run."</span>
+                <span class="p">)</span>
+        <span class="n">I_sk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"I_sk"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">J_sjk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"J_sjk"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">I_sk</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">I_sk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">k</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">].stats['I_sk']` should have shape (Ns, K) "</span>
+                <span class="sa">f</span><span class="s2">"with K = </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">I_sk</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">J_sjk</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">J_sjk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">].stats['J_sjk']` should have shape (Ns, K, K) "</span>
+                <span class="sa">f</span><span class="s2">"with K = </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">J_sjk</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">I_sk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">I_sk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">J_sjk</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` needs matching, nonempty GP sample axes "</span>
+                <span class="s2">"in `I_sk` and `J_sjk`."</span>
+            <span class="p">)</span>
+        <span class="c1"># The filters discard a run VBMC did not mark as converged, so only</span>
+        <span class="c1"># a run that can be retained needs finite statistics.</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"stable"</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">I_sk</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">J_sjk</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">]))</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`vp_list[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]` is marked stable but has nonfinite `elbo`, "</span>
+                <span class="s2">"`I_sk` or `J_sjk` statistics."</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">D</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_balanced_counts</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Split ``n`` draws across runs in proportion to ``omega`` exactly.</span>
+
+<span class="sd">    Every run gets the integer part of its quota ``n * omega``; the</span>
+<span class="sd">    remaining draws go to distinct runs chosen with probability</span>
+<span class="sd">    proportional to the fractional parts of their quotas, so every count is</span>
+<span class="sd">    within one draw of its quota. (The balanced mode of</span>
+<span class="sd">    :meth:`VariationalPosterior.sample` allocates its remainder across</span>
+<span class="sd">    components with replacement instead.)</span>
+<span class="sd">    """</span>
+    <span class="n">quota</span> <span class="o">=</span> <span class="n">n</span> <span class="o">*</span> <span class="n">omega</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">quota</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">remainder</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">counts</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">remainder</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># The fractional parts sum to the remainder and are each below one,</span>
+        <span class="c1"># so at least ``remainder`` of them are nonzero.</span>
+        <span class="n">frac</span> <span class="o">=</span> <span class="n">quota</span> <span class="o">-</span> <span class="n">counts</span>
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="n">omega</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">remainder</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">frac</span> <span class="o">/</span> <span class="n">frac</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">extra</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">counts</span>
+
+
+<div class="viewcode-block" id="SVBMC">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SVBMC</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Stacking Variational Bayesian Monte Carlo (S-VBMC).</span>
+
+<span class="sd">    Combines the variational posteriors of several completed VBMC runs on</span>
+<span class="sd">    the same problem into one stacked mixture by optimizing the *stacked</span>
+<span class="sd">    ELBO* with respect to the mixture weights only. Component locations</span>
+<span class="sd">    and scales, and the expected log-joint statistics VBMC stored with each</span>
+<span class="sd">    posterior, stay fixed, so no further evaluations of the model are</span>
+<span class="sd">    needed.</span>
+
+<span class="sd">    Construct the object with the fitted posteriors, then call</span>
+<span class="sd">    :meth:`optimize`. Construction discards runs that VBMC did not mark as</span>
+<span class="sd">    converged (``stats["stable"]``) and runs whose expected log-joint</span>
+<span class="sd">    carries excessive uncertainty (``s_max``), and raises when fewer than</span>
+<span class="sd">    ``M_min`` runs remain.</span>
+
+<span class="sd">    The stacked posterior is a composite over the input posteriors: each</span>
+<span class="sd">    VBMC run has its own parameter transform, so components of different</span>
+<span class="sd">    runs live in different transformed spaces and are only comparable in</span>
+<span class="sd">    the original space. Use :meth:`sample` for estimates and plots; do not</span>
+<span class="sd">    combine the component means and covariances of different runs</span>
+<span class="sd">    directly.</span>
+
+<span class="sd">    Requires the optional ``torch`` extra</span>
+<span class="sd">    (``pip install --upgrade "pyvbmc[torch]"``); construction raises</span>
+<span class="sd">    ``ImportError`` without it. An object saved with :meth:`save` can be</span>
+<span class="sd">    loaded, sampled and plotted without it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vp_list : list of VariationalPosterior</span>
+<span class="sd">        Posteriors returned by completed VBMC runs on the same model, data</span>
+<span class="sd">        and original parameter space. Construction verifies the dimension,</span>
+<span class="sd">        the mixture shapes, the statistics stacking reads, and that every</span>
+<span class="sd">        run carries the same original-space hard bounds; the runs are free</span>
+<span class="sd">        to map that space differently. That they were run on the same</span>
+<span class="sd">        model and data does not follow from the posteriors and is not</span>
+<span class="sd">        verified.</span>
+<span class="sd">    s_max : float, optional</span>
+<span class="sd">        Tolerance on the standard deviation of the expected log-joint of</span>
+<span class="sd">        any single component, ``sqrt(max(stats["J_sjk"]))``. A run at or</span>
+<span class="sd">        above it is discarded as poorly converged. Default ``sqrt(5)``.</span>
+<span class="sd">    M_min : int or float, optional</span>
+<span class="sd">        Minimum number of runs that must survive the filters: a count when</span>
+<span class="sd">        greater than 1, a proportion of ``len(vp_list)`` when at most 1</span>
+<span class="sd">        (so exactly 1 means every run). Default ``2/3``.</span>
+<span class="sd">    seed : None, int, array_like[int], SeedSequence, BitGenerator or \</span>
+<span class="sd">Generator, optional</span>
+<span class="sd">        Seed of the object's random generator, which drives the Monte</span>
+<span class="sd">        Carlo entropy estimate and :meth:`sample`. ``None`` derives the</span>
+<span class="sd">        generator from NumPy's global state, so ``np.random.seed`` before</span>
+<span class="sd">        construction still fixes a run. Default ``None``.</span>
+<span class="sd">    show_tips : bool, optional</span>
+<span class="sd">        Show occasional guidance when INFO logging is enabled. Set to</span>
+<span class="sd">        ``False`` to suppress tips while keeping the messages on progress</span>
+<span class="sd">        and on the headline ELBO. Default ``True``.</span>
+<span class="sd">    noisy : bool or None, optional</span>
+<span class="sd">        Override the noise status of the whole stack. With ``None`` (the</span>
+<span class="sd">        default), read each retained run's ``uncertainty_handling_level``</span>
+<span class="sd">        statistic; when absent, infer noise from ``elbo_sd &gt; 0.1``. This</span>
+<span class="sd">        inference can misclassify old posteriors. Any noisy retained run</span>
+<span class="sd">        makes the headline :attr:`elbo` the two-level shrinkage estimate,</span>
+<span class="sd">        where it is defined.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vp_list : list of VariationalPosterior</span>
+<span class="sd">        The retained posteriors, in input order. They are read, never</span>
+<span class="sd">        modified: sampling works on copies that use this object's</span>
+<span class="sd">        generator.</span>
+<span class="sd">    D : int</span>
+<span class="sd">        Dimension of the problem.</span>
+<span class="sd">    M : int</span>
+<span class="sd">        Number of retained runs.</span>
+<span class="sd">    K : list of int</span>
+<span class="sd">        Number of components of each retained run.</span>
+<span class="sd">    w : np.ndarray, shape (1, K_total)</span>
+<span class="sd">        Weights of all components, concatenated in run order and</span>
+<span class="sd">        normalized. :meth:`optimize` replaces them with the optimized ones.</span>
+<span class="sd">    elbo : float or None</span>
+<span class="sd">        After :meth:`optimize`: the headline estimate of the stacked ELBO at</span>
+<span class="sd">        the returned weights, evaluated with fresh draws. For a noiseless</span>
+<span class="sd">        stack it is the raw ELBO; for a noisy stack, the two-level</span>
+<span class="sd">        shrinkage estimate ``elbo_details["shrunk_two_level"]``, or the</span>
+<span class="sd">        component-median capped ELBO where the shrinkage is numerically</span>
+<span class="sd">        undefined. Choosing the weights on noisy estimates adds an upward</span>
+<span class="sd">        bias to the raw ELBO of a noisy stack, which the shrinkage targets.</span>
+<span class="sd">        The shrinkage can also remove part of the bias that each run's ELBO</span>
+<span class="sd">        carries from VBMC, and residual bias can remain. The raw ELBO is not</span>
+<span class="sd">        an upper bound on the stack's true ELBO.</span>
+<span class="sd">    elbo_sd : float or None</span>
+<span class="sd">        Estimated uncertainty of the raw evaluation at the returned</span>
+<span class="sd">        weights: entropy Monte Carlo error and GP quadrature uncertainty,</span>
+<span class="sd">        treating runs as independent. It excludes selection bias and the</span>
+<span class="sd">        uncertainty of the shrinkage or of the cap; it does not define a</span>
+<span class="sd">        calibrated confidence interval for the headline of a noisy stack.</span>
+<span class="sd">    elbo_details : dict or None</span>
+<span class="sd">        After :meth:`optimize`: ``raw``, ``capped_I_median``,</span>
+<span class="sd">        ``capped_E_median``, ``naive`` and ``shrunk_two_level`` ELBO</span>
+<span class="sd">        estimates; ``shrinkage_noise_share``; ``headline_method`` (``raw``,</span>
+<span class="sd">        ``shrunk_two_level`` or ``capped_I_median``); ``cap_amount`` (the</span>
+<span class="sd">        reduction the median cap applied to the headline, zero unless the</span>
+<span class="sd">        headline is ``capped_I_median``); ``entropy_sd``, ``gp_sd`` and</span>
+<span class="sd">        ``raw_sd`` (equal to :attr:`elbo_sd`); ``noisy`` and</span>
+<span class="sd">        ``noise_status_source``. Shrinkage adjusts component estimates</span>
+<span class="sd">        within each run and then shifts run levels, at the selected weights</span>
+<span class="sd">        and with the same final entropy as ``raw``. ``shrunk_two_level`` is</span>
+<span class="sd">        ``None`` when its numerical calculation is undefined, in which case</span>
+<span class="sd">        optimization still succeeds with a ``RuntimeWarning``.</span>
+<span class="sd">        ``shrinkage_noise_share`` is the estimated noise-to-spread ratio</span>
+<span class="sd">        averaged over runs using their selected masses; it can exceed one</span>
+<span class="sd">        and can be ``None`` independently.</span>
+<span class="sd">        Naive stacking equally weights retained runs with their original</span>
+<span class="sd">        internal weights. Its estimate inherits the runs' errors and is</span>
+<span class="sd">        a diagnostic baseline, not a bound on the optimized ELBO.</span>
+<span class="sd">    noisy : bool</span>
+<span class="sd">        Whether the stack is treated as noisy.</span>
+<span class="sd">    noise_status_source : tuple of str</span>
+<span class="sd">        How each retained run's noise status was obtained: ``recorded``,</span>
+<span class="sd">        ``inferred`` or ``override``, in retained-run order.</span>
+<span class="sd">    entropy : float or None</span>
+<span class="sd">        After :meth:`optimize`: the entropy estimate of the stacked</span>
+<span class="sd">        posterior at the optimized weights.</span>
+<span class="sd">    I : np.ndarray, shape (1, K_total)</span>
+<span class="sd">        Expected log-joint of every component (the mean over the run's GP</span>
+<span class="sd">        hyperparameter samples of ``stats["I_sk"]``), in the run's own</span>
+<span class="sd">        transformed space.</span>
+<span class="sd">    individual_elbos : list of float</span>
+<span class="sd">        The ELBO of each retained run, used to initialize the weights.</span>
+<span class="sd">    I_corrected, E_corrected : np.ndarray</span>
+<span class="sd">        The expected log-joints corrected to the original space, per</span>
+<span class="sd">        component (shape ``(1, K_total)``) and per run (shape ``(M,)``),</span>
+<span class="sd">        computed deterministically at construction. The capped ELBO</span>
+<span class="sd">        variants limit the expected log-joint to their medians.</span>
+<span class="sd">    rng : np.random.Generator</span>
+<span class="sd">        The object's random generator.</span>
+<span class="sd">    logger : logging.Logger</span>
+<span class="sd">        Progress goes to the ``"SVBMC"`` logger at ``INFO`` level; raise its</span>
+<span class="sd">        level (to ``WARNING``, say) to quieten a run.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vp_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">s_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">M_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">show_tips</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">noisy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Fail before any work if the optional dependency is missing.</span>
+        <span class="n">_import_torch</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_tips</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"`show_tips` should be a boolean."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">noisy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noisy</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"`noisy` should be a boolean or None."</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_tips</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">show_tips</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">_svbmc_logger</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="n">vp_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">vp_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">_validate_posteriors</span><span class="p">(</span><span class="n">vp_list</span><span class="p">))</span>
+        <span class="n">n_input</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vp_list</span><span class="p">)</span>
+
+        <span class="c1"># Keep the converged runs whose expected log-joint is precise enough.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">vp</span>
+            <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="n">vp_list</span>
+            <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"stable"</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"J_sjk"</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="n">s_max</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Minimum number of runs: a proportion when M_min &lt;= 1, else a count.</span>
+        <span class="k">if</span> <span class="n">M_min</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`M_min` should be a positive number, but got </span><span class="si">{</span><span class="n">M_min</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">M_min</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">M_min</span> <span class="o">=</span> <span class="n">n_input</span> <span class="o">*</span> <span class="n">M_min</span>
+        <span class="k">elif</span> <span class="n">M_min</span> <span class="o">&gt;</span> <span class="n">n_input</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`M_min` should be at most `len(vp_list)`, but got </span><span class="si">{</span><span class="n">M_min</span><span class="si">}</span><span class="s2"> "</span>
+                <span class="sa">f</span><span class="s2">"and </span><span class="si">{</span><span class="n">n_input</span><span class="si">}</span><span class="s2">, respectively. Setting `M_min` to </span><span class="si">{</span><span class="n">n_input</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">M_min</span> <span class="o">=</span> <span class="n">n_input</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">M_min</span><span class="p">)</span> <span class="o">!=</span> <span class="n">M_min</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">"A minimum number of runs should be an integer; rounding "</span>
+                <span class="sa">f</span><span class="s2">"`M_min` = </span><span class="si">{</span><span class="n">M_min</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">M_min</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">M_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">M_min</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">M_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">M_min</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">M_min</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Expected at least </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">M_min</span><span class="p">))</span><span class="si">}</span><span class="s2"> well-converged "</span>
+                <span class="sa">f</span><span class="s2">"VBMC runs, but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">)</span><span class="si">}</span><span class="s2">. Check your VBMC "</span>
+                <span class="s2">"runs or change the values of `s_max` and `M_min`."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Got </span><span class="si">%d</span><span class="s2"> well-converged runs after filters."</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">noise_flags</span><span class="p">,</span> <span class="n">noise_sources</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">noisy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">noise_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">noisy</span><span class="p">))</span>
+                <span class="n">noise_sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"override"</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">"uncertainty_handling_level"</span> <span class="ow">in</span> <span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">:</span>
+                <span class="n">level</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"uncertainty_handling_level"</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">level</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"`uncertainty_handling_level` should be 0, 1 or 2."</span>
+                    <span class="p">)</span>
+                <span class="n">noise_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">noise_sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"recorded"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sd</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"elbo_sd"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">sd</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"A retained posterior without noise metadata needs "</span>
+                        <span class="s2">"a finite, nonnegative `elbo_sd`; set `noisy` "</span>
+                        <span class="s2">"explicitly when its noise status is known."</span>
+                    <span class="p">)</span>
+                <span class="n">noise_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sd</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">)</span>
+                <span class="n">noise_sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"inferred"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noisy</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">noise_flags</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_status_source</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">noise_sources</span><span class="p">)</span>
+
+        <span class="c1"># Components per run, their weights (normalized over all runs) and</span>
+        <span class="c1"># the posterior-mean expected log-joint of every component.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">vp</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+        <span class="c1"># The stack's starting point, which every optimization initializes</span>
+        <span class="c1"># its logits from. `self.w` holds the currently selected weights</span>
+        <span class="c1"># and `optimize` overwrites it.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_naive_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"I_sk"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                    <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">individual_elbos</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">])</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_corrections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">expected_log_jacobian</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_corrections</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">E_corrected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]],</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">vp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elbo_sd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elbo_details</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="SVBMC.stacked_entropy">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.stacked_entropy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stacked_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Monte Carlo estimate of the entropy of the stacked posterior.</span>
+
+<span class="sd">        Differentiable with respect to the mixture weights. Every component</span>
+<span class="sd">        contributes ``n_samples`` draws, taken in its own run's transformed</span>
+<span class="sd">        space and mapped to the original space; the log density of the</span>
+<span class="sd">        stacked mixture at every draw is then evaluated by mapping the draws</span>
+<span class="sd">        into each run's space with the matching Jacobian correction.</span>
+<span class="sd">        The draws come from this object's generator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        w : torch.Tensor</span>
+<span class="sd">            Weights of the stacked posterior (any shape holding ``K_total``</span>
+<span class="sd">            values; normalized internally). Converted to float64.</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            Draws per component. Default 20.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        H : torch.Tensor</span>
+<span class="sd">            The entropy estimate (a float64 scalar).</span>
+<span class="sd">        J_corrections : np.ndarray, shape (K_total,)</span>
+<span class="sd">            Per-component expected log-Jacobian, computed deterministically</span>
+<span class="sd">            at construction. Subtracting it from the stored expected</span>
+<span class="sd">            log-joints expresses them in the original space, which</span>
+<span class="sd">            :attr:`I_corrected` already holds and :meth:`stacked_ELBO`</span>
+<span class="sd">            reads; this copy is for inspection.</span>
+<span class="sd">        """</span>
+        <span class="n">H</span><span class="p">,</span> <span class="n">corrections</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stacked_entropy</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">H</span><span class="p">,</span> <span class="n">corrections</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_stacked_entropy</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">compute_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chunk_rows</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Evaluate entropy and optionally its stratified sampling variance.</span>
+
+<span class="sd">        The log density of the stacked mixture at a draw is the weighted</span>
+<span class="sd">        log-sum-exp of one row of the ``(K_total * n_samples, K_total)``</span>
+<span class="sd">        matrix of component log densities. When the weights need a</span>
+<span class="sd">        gradient, the matrix is built whole and reduced in one Torch</span>
+<span class="sd">        operation. Otherwise it is reduced ``chunk_rows`` rows at a time</span>
+<span class="sd">        (by default as many as</span>
+<span class="sd">        :func:`~pyvbmc.svbmc._entropy.log_density_chunks` fits in its</span>
+<span class="sd">        memory bound) and never held whole; the draws and the values are</span>
+<span class="sd">        the same. Returns the entropy, a copy of the Jacobian corrections</span>
+<span class="sd">        and the variance, which is ``None`` unless ``compute_variance``.</span>
+<span class="sd">        """</span>
+        <span class="n">torch</span> <span class="o">=</span> <span class="n">_import_torch</span><span class="p">()</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`n_samples` should be at least 1."</span><span class="p">)</span>
+
+        <span class="n">K_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">))</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">device</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">K_total</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">log_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">w</span> <span class="o">+</span> <span class="mf">1e-40</span><span class="p">)</span>
+
+        <span class="c1"># Draws from every component and the log density of every component</span>
+        <span class="c1"># at every draw, in the original space, then the log density of the</span>
+        <span class="c1"># mixture at every draw: the weights enter only there, in Torch.</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_grad_enabled</span><span class="p">()</span> <span class="ow">and</span> <span class="n">w</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
+            <span class="c1"># The whole matrix in one reduction. Autograd sums the gradient</span>
+            <span class="c1"># of the weights over the rows; reducing by chunks would change</span>
+            <span class="c1"># the order of that sum and with it the optimization's</span>
+            <span class="c1"># trajectory.</span>
+            <span class="n">logq_matrix</span> <span class="o">=</span> <span class="n">component_log_densities</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span>
+            <span class="p">)</span>
+            <span class="n">logq_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                <span class="n">logq_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+            <span class="p">)</span>
+            <span class="n">logq_orig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">logq_matrix</span> <span class="o">+</span> <span class="n">log_w</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (S,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># The chunks' results are concatenated rather than written into</span>
+            <span class="c1"># a preallocated tensor: under ``torch.func.vmap`` the weights,</span>
+            <span class="c1"># and with them each chunk's result, carry a batch dimension,</span>
+            <span class="c1"># which an in-place write into a plain tensor cannot take.</span>
+            <span class="n">logq_chunks</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">logq_rows</span> <span class="ow">in</span> <span class="n">log_density_chunks</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">,</span> <span class="n">chunk_rows</span><span class="o">=</span><span class="n">chunk_rows</span>
+            <span class="p">):</span>
+                <span class="n">logq_rows</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                    <span class="n">logq_rows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+                <span class="p">)</span>
+                <span class="n">logq_chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">logq_rows</span> <span class="o">+</span> <span class="n">log_w</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">logq_orig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">logq_chunks</span><span class="p">)</span>  <span class="c1"># (S,)</span>
+
+        <span class="c1"># E_{q_mk}[log q(x)] for every component: ``component_log_densities``</span>
+        <span class="c1"># lays the rows out by component, ``n_samples`` consecutive rows</span>
+        <span class="c1"># each, in the order of ``self.K``.</span>
+        <span class="n">logq_by_component</span> <span class="o">=</span> <span class="n">logq_orig</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K_total</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+        <span class="n">E_mk_logq</span> <span class="o">=</span> <span class="n">logq_by_component</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">H</span> <span class="o">=</span> <span class="o">-</span><span class="n">w</span> <span class="o">@</span> <span class="n">E_mk_logq</span>
+        <span class="n">varH</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">compute_variance</span><span class="p">:</span>
+            <span class="n">var_logq</span> <span class="o">=</span> <span class="n">logq_by_component</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unbiased</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">varH</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">w</span><span class="o">.</span><span class="n">square</span><span class="p">()</span> <span class="o">@</span> <span class="p">(</span><span class="n">var_logq</span> <span class="o">/</span> <span class="n">n_samples</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_corrections</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">varH</span>
+
+<div class="viewcode-block" id="SVBMC.stacked_ELBO">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.stacked_ELBO">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stacked_ELBO</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Estimate the stacked ELBO at given weights.</span>
+
+<span class="sd">        The expected log-joint is the weighted sum of the components' stored</span>
+<span class="sd">        expected log-joints (from the runs' GP surrogates), corrected to the</span>
+<span class="sd">        original space with the Jacobian terms of :meth:`stacked_entropy`;</span>
+<span class="sd">        the entropy is estimated by Monte Carlo. The expected log-joints</span>
+<span class="sd">        are corrected deterministically during construction.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        w : torch.Tensor, np.ndarray or list</span>
+<span class="sd">            Weights of the stacked posterior (``K_total`` values; normalized</span>
+<span class="sd">            internally). NumPy or list input is converted to a float64</span>
+<span class="sd">            tensor.</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            Draws per component for the entropy estimate. Default 20.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ELBO : torch.Tensor</span>
+<span class="sd">            The estimated stacked ELBO (float64 scalar).</span>
+<span class="sd">        H : torch.Tensor</span>
+<span class="sd">            The estimated entropy (float64 scalar).</span>
+<span class="sd">        """</span>
+        <span class="n">torch</span> <span class="o">=</span> <span class="n">_import_torch</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">w_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">w_np</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w_np</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">"`w` should be a torch.Tensor, a NumPy array or a list, "</span>
+                <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="n">H</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stacked_entropy</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="n">I_corr_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">w</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">@</span> <span class="n">I_corr_t</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">G</span> <span class="o">+</span> <span class="n">H</span><span class="p">,</span> <span class="n">H</span></div>
+
+
+<div class="viewcode-block" id="SVBMC.maximize_ELBO">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.maximize_ELBO">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">maximize_ELBO</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"all-weights"</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Maximize the stacked ELBO over the weights with Adam.</span>
+
+<span class="sd">        The weights are the softmax of unconstrained logits, initialized</span>
+<span class="sd">        from the runs' own weights and ELBOs so that better runs start</span>
+<span class="sd">        heavier. That starting point belongs to the stack, so every call</span>
+<span class="sd">        departs from it whatever :attr:`w` currently holds. Every step</span>
+<span class="sd">        draws fresh entropy samples. The optimization stops when the ELBO,</span>
+<span class="sd">        rounded to five decimals, has not improved for five consecutive</span>
+<span class="sd">        steps, or after ``max_steps``; the best iterate is returned.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            Draws per component for the entropy estimate. Default 20.</span>
+<span class="sd">        lr : float, optional</span>
+<span class="sd">            Adam learning rate. Default 0.1.</span>
+<span class="sd">        max_steps : int, optional</span>
+<span class="sd">            Maximum number of steps. Default 500.</span>
+<span class="sd">        version : {"all-weights", "posterior-only", "ns"}, optional</span>
+<span class="sd">            ``"all-weights"`` optimizes the weight of every component;</span>
+<span class="sd">            ``"posterior-only"`` optimizes one weight per run, keeping the</span>
+<span class="sd">            relative weights within a run; ``"ns"`` (naive stacking)</span>
+<span class="sd">            performs no optimization and returns the normalized input</span>
+<span class="sd">            weights. Default ``"all-weights"``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        w_final : torch.Tensor, shape (K_total,)</span>
+<span class="sd">            The optimized weights (float64).</span>
+<span class="sd">        elbo_best : torch.Tensor</span>
+<span class="sd">            Optimization-time Monte Carlo ELBO from the selected iteration</span>
+<span class="sd">            (float64 scalar). :meth:`optimize` re-evaluates the returned</span>
+<span class="sd">            weights with fresh draws for the reported headline.</span>
+<span class="sd">        entropy_best : torch.Tensor</span>
+<span class="sd">            The entropy estimate at the returned weights (float64 scalar).</span>
+<span class="sd">        """</span>
+        <span class="n">torch</span> <span class="o">=</span> <span class="n">_import_torch</span><span class="p">()</span>
+        <span class="n">_validate_optimization</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="n">w_init</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">log_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">w_init</span><span class="p">)</span>  <span class="c1"># (1, K_total); optimize in log space</span>
+        <span class="n">repeats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">"all-weights"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Optimizing the stacked ELBO w.r.t. all weights."</span><span class="p">)</span>
+            <span class="c1"># Logits start at log w + ELBO of the run, favoring better runs.</span>
+            <span class="n">broadcasted_elbos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">individual_elbos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span>
+            <span class="p">)</span>
+            <span class="n">w_logits_init</span> <span class="o">=</span> <span class="n">log_w</span> <span class="o">+</span> <span class="n">broadcasted_elbos</span>
+            <span class="n">w_logits_init</span> <span class="o">=</span> <span class="n">w_logits_init</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">w_logits_init</span><span class="p">)</span>
+            <span class="n">w_logits</span> <span class="o">=</span> <span class="n">w_logits_init</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">w_logits</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">w_logits</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+            <span class="n">w_best</span> <span class="o">=</span> <span class="n">w_logits</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">"posterior-only"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">"Optimizing the stacked ELBO w.r.t. the weights of "</span>
+                <span class="s2">"individual VBMC posteriors."</span>
+            <span class="p">)</span>
+            <span class="n">omega_init</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">individual_elbos</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span>
+            <span class="p">)</span>
+            <span class="n">omega_init</span> <span class="o">=</span> <span class="n">omega_init</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">omega_init</span><span class="p">)</span>
+            <span class="n">omega_logits</span> <span class="o">=</span> <span class="n">omega_init</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">omega_logits</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">omega_logits</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+            <span class="n">w_best</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span>
+                    <span class="n">omega_logits</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">repeats</span><span class="o">=</span><span class="n">repeats</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="o">+</span> <span class="n">log_w</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># "ns"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Naive stacking: averaging the VBMC posteriors."</span><span class="p">)</span>
+            <span class="n">w_final</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_naive_weights</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span>
+            <span class="p">)</span>
+            <span class="n">elbo_best</span><span class="p">,</span> <span class="n">entropy_best</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stacked_ELBO</span><span class="p">(</span>
+                <span class="n">w_final</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">w_final</span><span class="p">,</span> <span class="n">elbo_best</span><span class="p">,</span> <span class="n">entropy_best</span>
+
+        <span class="c1"># Converged when the rounded ELBO has not improved for 5 steps.</span>
+        <span class="n">convergence_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loss_old</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">elbo_best</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">entropy_best</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">max_steps</span><span class="p">)):</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">"posterior-only"</span><span class="p">:</span>
+                <span class="n">w_logits</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span>
+                        <span class="n">omega_logits</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="n">repeats</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="p">)</span>
+                    <span class="o">+</span> <span class="n">log_w</span>
+                <span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">w_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">ELBO</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stacked_ELBO</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Initial elbo = </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">ELBO</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">"iter </span><span class="si">%d</span><span class="s2">: elbo = </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ELBO</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="p">)</span>
+
+            <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">ELBO</span>
+            <span class="n">loss_new</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">loss</span> <span class="o">*</span> <span class="mf">1e5</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e5</span>
+            <span class="k">if</span> <span class="n">loss_new</span> <span class="o">&gt;=</span> <span class="n">loss_old</span><span class="p">:</span>
+                <span class="n">convergence_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">convergence_counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">w_best</span> <span class="o">=</span> <span class="n">w_logits</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="n">elbo_best</span> <span class="o">=</span> <span class="o">-</span><span class="n">loss</span>
+                <span class="n">entropy_best</span> <span class="o">=</span> <span class="n">H</span>
+                <span class="n">loss_old</span> <span class="o">=</span> <span class="n">loss_new</span>
+            <span class="k">if</span> <span class="n">convergence_counter</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="n">w_final</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">w_best</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">w_final</span><span class="p">,</span> <span class="n">elbo_best</span><span class="p">,</span> <span class="n">entropy_best</span></div>
+
+
+<div class="viewcode-block" id="SVBMC.optimize">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.optimize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"all-weights"</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">n_samples_final</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Optimize the stacked posterior in place.</span>
+
+<span class="sd">        Runs :meth:`maximize_ELBO`, stores the optimized weights in</span>
+<span class="sd">        :attr:`w` (NumPy float64), the entropy estimate in :attr:`entropy`</span>
+<span class="sd">        and a fresh final evaluation in :attr:`elbo`, :attr:`elbo_sd` and</span>
+<span class="sd">        :attr:`elbo_details`. The report includes a deterministic two-level</span>
+<span class="sd">        shrinkage estimate at those weights, computed with the same final</span>
+<span class="sd">        entropy and without random draws; where it is defined, it is the</span>
+<span class="sd">        headline of a noisy stack.</span>
+<span class="sd">        Returns ``None``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            Draws per component for the entropy estimate. Default 20.</span>
+<span class="sd">        lr : float, optional</span>
+<span class="sd">            Adam learning rate. Default 0.1.</span>
+<span class="sd">        max_steps : int, optional</span>
+<span class="sd">            Maximum number of steps. Default 500.</span>
+<span class="sd">        version : {"all-weights", "posterior-only", "ns"}, optional</span>
+<span class="sd">            Optimization mode; see :meth:`maximize_ELBO`. Default</span>
+<span class="sd">            ``"all-weights"``.</span>
+<span class="sd">        n_samples_final : int, optional</span>
+<span class="sd">            Fresh entropy draws per component at the returned weights and</span>
+<span class="sd">            at the naive-stacking weights. At least 2, to estimate sampling</span>
+<span class="sd">            variance. Default 100. Naive mode reuses one final evaluation.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_samples_final</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_samples_final</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="n">n_samples_final</span> <span class="o">&lt;</span> <span class="mi">2</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`n_samples_final` should be an integer &gt;= 2."</span><span class="p">)</span>
+        <span class="n">_validate_optimization</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="n">torch</span> <span class="o">=</span> <span class="n">_import_torch</span><span class="p">()</span>
+        <span class="c1"># Naive stacking selects no weights and prints no ELBO values, so the</span>
+        <span class="c1"># noisy-only tips, which are about those values, do not apply to it.</span>
+        <span class="n">consider_runtime_tip</span><span class="p">(</span>
+            <span class="n">enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">show_tips</span><span class="p">,</span>
+            <span class="n">display</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">),</span>
+            <span class="n">noisy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">noisy</span> <span class="ow">and</span> <span class="n">version</span> <span class="o">!=</span> <span class="s2">"ns"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximize_ELBO</span><span class="p">(</span>
+            <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="n">max_steps</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">final_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">H</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">varH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stacked_entropy</span><span class="p">(</span>
+                <span class="n">final_w</span><span class="p">,</span> <span class="n">n_samples_final</span><span class="p">,</span> <span class="n">compute_variance</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">H</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="n">G</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+            <span class="n">raw</span> <span class="o">=</span> <span class="n">G</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">"ns"</span><span class="p">:</span>
+                <span class="n">naive</span> <span class="o">=</span> <span class="n">raw</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">naive_H</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stacked_entropy</span><span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_naive_weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                    <span class="n">n_samples_final</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">naive</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_naive_weights</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+                    <span class="o">+</span> <span class="n">naive_H</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="p">)</span>
+
+        <span class="c1"># The expected log-joint capped at the median component / run value:</span>
+        <span class="c1"># diagnostics, and the headline of a noisy stack whose shrinkage is</span>
+        <span class="c1"># undefined.</span>
+        <span class="n">I_median</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span><span class="p">))</span>
+        <span class="n">E_median</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E_corrected</span><span class="p">))</span>
+        <span class="n">varG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expected_log_joint_variance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elbo_sd</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">varG</span> <span class="o">+</span> <span class="n">varH</span><span class="p">))</span>
+        <span class="n">capped_I</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">I_median</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)])</span>
+        <span class="n">shrunk</span><span class="p">,</span> <span class="n">shrinkage_noise_share</span> <span class="o">=</span> <span class="n">_two_level_shrinkage</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"I_sk"</span><span class="p">]</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"J_sjk"</span><span class="p">]</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">],</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">I_corrected</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span>
+            <span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># A noisy stack reports the shrinkage estimate, or the cap where the</span>
+        <span class="c1"># shrinkage is numerically undefined; a noiseless one the raw value.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">noisy</span><span class="p">:</span>
+            <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span> <span class="o">=</span> <span class="s2">"raw"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">shrunk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span> <span class="o">=</span> <span class="s2">"shrunk_two_level"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">shrunk</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span> <span class="o">=</span> <span class="s2">"capped_I_median"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">capped_I</span><span class="p">)</span>
+        <span class="n">cap_amount</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">raw</span> <span class="o">-</span> <span class="n">capped_I</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"capped_I_median"</span>
+            <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elbo_details</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"raw"</span><span class="p">:</span> <span class="n">raw</span><span class="p">,</span>
+            <span class="s2">"capped_I_median"</span><span class="p">:</span> <span class="n">capped_I</span><span class="p">,</span>
+            <span class="s2">"capped_E_median"</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">E_median</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span><span class="p">,</span>
+            <span class="s2">"naive"</span><span class="p">:</span> <span class="n">naive</span><span class="p">,</span>
+            <span class="s2">"shrunk_two_level"</span><span class="p">:</span> <span class="n">shrunk</span><span class="p">,</span>
+            <span class="s2">"shrinkage_noise_share"</span><span class="p">:</span> <span class="n">shrinkage_noise_share</span><span class="p">,</span>
+            <span class="s2">"headline_method"</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
+            <span class="s2">"cap_amount"</span><span class="p">:</span> <span class="n">cap_amount</span><span class="p">,</span>
+            <span class="s2">"entropy_sd"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">varH</span><span class="p">)),</span>
+            <span class="s2">"gp_sd"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">varG</span><span class="p">)),</span>
+            <span class="s2">"raw_sd"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">elbo_sd</span><span class="p">,</span>
+            <span class="s2">"noisy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">noisy</span><span class="p">,</span>
+            <span class="s2">"noise_status_source"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_status_source</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"shrunk_two_level"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">"Two-level shrinkage moved the ELBO by </span><span class="si">%+.3g</span><span class="s2"> nats."</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span> <span class="o">-</span> <span class="n">raw</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"capped_I_median"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"Two-level shrinkage is unavailable, so the headline ELBO "</span>
+                <span class="s2">"is capped_I_median, with the expected log-joint capped at "</span>
+                <span class="s2">"the component median."</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">cap_amount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">"Expected log-joint capped by </span><span class="si">%.3g</span><span class="s2"> nats."</span><span class="p">,</span> <span class="n">cap_amount</span>
+                <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_expected_log_joint_variance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""GP uncertainty at fixed weights, summed over independent runs."""</span>
+        <span class="n">variance</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">vp</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">offset</span> <span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"I_sk"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"J_sjk"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">diag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">J</span><span class="p">[:,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">diag</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">spacing</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">J</span><span class="p">[:,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">diag</span><span class="p">])</span>
+            <span class="n">conditional</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"sjk,j,k-&gt;s"</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">weights</span><span class="p">):</span>
+                <span class="n">variance</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">conditional</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">spacing</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">I</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">variance</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">I</span> <span class="o">@</span> <span class="n">weights</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">k</span>
+        <span class="k">return</span> <span class="n">variance</span>
+
+<div class="viewcode-block" id="SVBMC.sample">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.sample">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">balance_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw samples from the stacked posterior in the original space.</span>
+
+<span class="sd">        The stacked posterior is a mixture over the retained runs, so a</span>
+<span class="sd">        draw picks a run with probability equal to that run's total weight</span>
+<span class="sd">        and then a point from that run's reweighted posterior through its</span>
+<span class="sd">        own transform. By default the run counts are multinomial, the</span>
+<span class="sd">        component choice within a run is random (see</span>
+<span class="sd">        :meth:`VariationalPosterior.sample`) and the rows are shuffled, so</span>
+<span class="sd">        the result is an independent sample of exactly ``n_samples`` rows.</span>
+<span class="sd">        With ``balance_flag=True`` the draws are stratified instead: the</span>
+<span class="sd">        number taken from a run is within one draw of that run's exact</span>
+<span class="sd">        share of the weights, and within a run they are spread over its</span>
+<span class="sd">        components by the balanced allocation of</span>
+<span class="sd">        :meth:`VariationalPosterior.sample`, which follows the component</span>
+<span class="sd">        weights up to the random placement of its remainder and so holds</span>
+<span class="sd">        no exact bound per component. Stratification lowers the variance</span>
+<span class="sd">        of expectations; it does not give an independent sample. All</span>
+<span class="sd">        randomness comes from this object's generator; the input</span>
+<span class="sd">        posteriors are not touched.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int</span>
+<span class="sd">            Number of draws.</span>
+<span class="sd">        balance_flag : bool, optional</span>
+<span class="sd">            Stratify the draws by run and component. Default ``False``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X : np.ndarray, shape (n_samples, D)</span>
+<span class="sd">            Draws in the original parameter space.</span>
+<span class="sd">        """</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`n_samples` should be non-negative."</span><span class="p">)</span>
+        <span class="n">w_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)])</span>
+        <span class="n">omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">w_flat</span><span class="p">[</span><span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="n">omega</span> <span class="o">=</span> <span class="n">omega</span> <span class="o">/</span> <span class="n">omega</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">balance_flag</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">_balanced_counts</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+
+        <span class="n">Xs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">vp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp_list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># A copy carries the optimized weights of this run's components</span>
+            <span class="c1"># and draws from this object's generator, not the input's.</span>
+            <span class="n">vp_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
+            <span class="n">vp_copy</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span>
+            <span class="n">comp_w</span> <span class="o">=</span> <span class="n">w_flat</span><span class="p">[</span><span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+            <span class="n">vp_copy</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="n">comp_w</span> <span class="o">/</span> <span class="n">comp_w</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">X_m</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp_copy</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="n">m</span><span class="p">]),</span> <span class="n">balance_flag</span><span class="o">=</span><span class="n">balance_flag</span><span class="p">)</span>
+            <span class="n">Xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Xs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span></div>
+
+
+<div class="viewcode-block" id="SVBMC.plot">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"black"</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">smooth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">corner_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw a corner plot of the stacked posterior from fresh samples.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            Draws taken with :meth:`sample`. Default 10000.</span>
+<span class="sd">        color : str, optional</span>
+<span class="sd">            Matplotlib color of the contours and histograms. Default</span>
+<span class="sd">            ``"black"``.</span>
+<span class="sd">        figsize : (float, float) or None, optional</span>
+<span class="sd">            Figure size in inches; ``None`` uses 2.5 inches per dimension.</span>
+<span class="sd">        smooth : float or None, optional</span>
+<span class="sd">            Gaussian kernel smoothing applied by ``corner``.</span>
+<span class="sd">        **corner_kwargs</span>
+<span class="sd">            Passed to :func:`corner.corner`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        matplotlib.figure.Figure</span>
+<span class="sd">            The figure.</span>
+<span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">corner</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="mf">2.5</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="n">base</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="n">base</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"$x_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)]</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+            <span class="n">samples</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">smooth</span><span class="o">=</span><span class="n">smooth</span><span class="p">,</span>
+            <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">corner_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_backend</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"agg"</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="SVBMC.save">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Save the stacked posterior to a file.</span>
+
+<span class="sd">        The file holds the whole object: the retained posteriors, the</span>
+<span class="sd">        weights, the ELBO report and the state of the generator, so the</span>
+<span class="sd">        object that :meth:`load` returns draws what this one would draw</span>
+<span class="sd">        next. It holds no Python bytecode, so it can be loaded, used and</span>
+<span class="sd">        saved again under another minor version of Python than the one that</span>
+<span class="sd">        wrote it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file : path-like</span>
+<span class="sd">            The file name or path to write to. Default file extension `.pkl`</span>
+<span class="sd">            will be added if no extension is specified.</span>
+<span class="sd">        overwrite : bool</span>
+<span class="sd">            Whether to allow overwriting existing files. Default `False`.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileExistsError</span>
+<span class="sd">            If the file already exists and ``overwrite`` is `False`.</span>
+<span class="sd">        OSError</span>
+<span class="sd">            If the file cannot be opened for other reasons (e.g., the directory</span>
+<span class="sd">            is not found, the disk is full, etc.).</span>
+<span class="sd">        """</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filepath</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".pkl"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">"wb"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">"xb"</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SVBMC.load">
+<a class="viewcode-back" href="../../../api/classes/svbmc.html#pyvbmc.svbmc.SVBMC.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Load a stacked posterior from a file written by :meth:`save`.</span>
+
+<span class="sd">        Loading needs no torch: :meth:`sample` and :meth:`plot` of the</span>
+<span class="sd">        loaded object work without it, while :meth:`optimize` and the</span>
+<span class="sd">        methods that estimate the stacked ELBO or its entropy raise</span>
+<span class="sd">        ``ImportError`` as construction does. The logging level is not</span>
+<span class="sd">        saved: progress goes to the ``"SVBMC"`` logger at ``INFO`` level</span>
+<span class="sd">        unless a level has been set on it, as for a newly constructed</span>
+<span class="sd">        object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file : path-like</span>
+<span class="sd">            The file name or path to read from. Default file extension `.pkl`</span>
+<span class="sd">            will be added if no extension is specified.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stacked : SVBMC</span>
+<span class="sd">            The loaded object.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If the file holds another kind of object, such as a</span>
+<span class="sd">            ``VariationalPosterior``.</span>
+<span class="sd">        OSError</span>
+<span class="sd">            If the file cannot be found, or cannot be opened for other reasons.</span>
+<span class="sd">        """</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filepath</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".pkl"</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">stacked</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stacked</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">stacked</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2"> holds an object of type "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">found</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">found</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">, not "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="c1"># The retained posteriors do not pass through</span>
+        <span class="c1"># `VariationalPosterior.load`, so they are migrated here as</span>
+        <span class="c1"># `VBMC.load` migrates the posteriors of a run.</span>
+        <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="n">stacked</span><span class="o">.</span><span class="n">vp_list</span><span class="p">:</span>
+            <span class="n">vp</span><span class="o">.</span><span class="n">_ensure_calibration_state</span><span class="p">()</span>
+        <span class="n">stacked</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">_svbmc_logger</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stacked</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

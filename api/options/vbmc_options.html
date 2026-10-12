@@ -27,47 +27,55 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/options/vbmc_options';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/api/options/vbmc_options.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/api/options/vbmc_options.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Priors" href="../classes/priors.html" />
-    <link rel="prev" title="VariationalPosterior" href="../classes/variational_posterior.html" />
+    <link rel="prev" title="calibrate" href="../functions/calibrate.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -149,6 +201,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -156,20 +209,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../advanced_docs.html">Advanced documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="../classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -177,6 +243,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../functions/entropy.html">Entropy</a></li>
@@ -372,11 +441,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -404,9 +480,10 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-options">Basic options</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-options">Advanced Options</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#integer-valued-variables">Integer-valued variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-options">Advanced options</a></li>
 </ul>
             </nav>
         </div>
@@ -420,60 +497,74 @@
                   
   <section id="vbmc-options">
 <h1>VBMC options<a class="headerlink" href="#vbmc-options" title="Link to this heading">#</a></h1>
-<dl class="simple">
-<dt>The options can be divided into two types of options:</dt><dd><ul class="simple">
-<li><p><strong>Basic default options:</strong> We expect that these options are changed by many users.</p></li>
-<li><p><strong>Advanced options:</strong> These options are for advanced users of VBMC. Do not modify them unless you <em>know</em> what you are doing.</p></li>
-</ul>
-</dd>
-</dl>
-<p>You can find the default options for both groups below.</p>
+<p>Pass option values through the <code class="docutils literal notranslate"><span class="pre">options</span></code> argument of <a class="reference internal" href="../classes/vbmc.html#pyvbmc.VBMC" title="pyvbmc.VBMC"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.VBMC</span></code></a>.
+Basic options control common aspects of a run. Advanced options expose
+specialized algorithm settings and are rarely needed.</p>
 <section id="basic-options">
 <h2>Basic options<a class="headerlink" href="#basic-options" title="Link to this heading">#</a></h2>
-<p>We expect that these options are changed by many users.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">BasicOptions</span><span class="p">]</span>
-<span class="c1"># Level of display (&quot;iter&quot;, &quot;notify&quot;, &quot;final&quot;, or &quot;off&quot;)</span>
-<span class="n">display</span> <span class="o">=</span> <span class="s2">&quot;iter&quot;</span>
+<div class="wrap highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">BasicOptions</span><span class="p">]</span>
+<span class="c1"># Level of display ("off", "iter", or "full"); "off" prints warnings only</span>
+<span class="n">display</span> <span class="o">=</span> <span class="s2">"iter"</span>
+<span class="c1"># Whether to show occasional runtime tips, and the reminder that the installed release is more than a year old, at the start of new runs</span>
+<span class="n">show_tips</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Plot marginals of variational posterior at each iteration</span>
 <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Max number of iterations</span>
 <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">50</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">D</span><span class="p">)</span>
-<span class="c1"># Max number of target fcn evals</span>
+<span class="c1"># Maximum function-equivalent evaluation budget, including initialization_cost</span>
 <span class="n">max_fun_evals</span> <span class="o">=</span> <span class="mi">50</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">D</span><span class="p">)</span>
-<span class="c1"># Number of target fcn evals per iteration</span>
+<span class="c1"># Number of target evaluations per iteration</span>
 <span class="n">fun_evals_per_iter</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="c1"># Required stable fcn evals for termination</span>
+<span class="c1"># Required stable target evaluations for termination</span>
 <span class="n">tol_stable_count</span> <span class="o">=</span> <span class="mi">60</span>
 <span class="c1"># Number of variational components to refine posterior at termination</span>
 <span class="n">min_final_components</span> <span class="o">=</span> <span class="mi">50</span>
-<span class="c1"># Target log joint function returns noise estimate (SD) as second output</span>
+<span class="c1"># Whether the target log joint function returns a noise estimate (SD) as second output, True or False</span>
 <span class="n">specify_target_noise</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Target accepts batches with shape (N, D): the initial design is one batch and later calls contain one row; returns one value per row</span>
+<span class="n">vectorized_target</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Name of file to write logs to (if None, no log file will be written)</span>
 <span class="n">log_file_name</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="c1"># Logging level for log file, one of (&quot;iter&quot;, &quot;notify&quot;, &quot;final&quot;, or &quot;off&quot;), or a level from logging module (e.g. logging.DEBUG)</span>
-<span class="n">log_file_level</span> <span class="o">=</span> <span class="s2">&quot;iter&quot;</span>
-<span class="c1"># Logging write mode, one of (&quot;w&quot;, &quot;w+&quot;, or &quot;a&quot;)</span>
-<span class="n">log_file_mode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+<span class="c1"># Logging level for the log file, which is written whenever log_file_name is set: "off", "iter" or "full", or a level of the logging module, that is a non-negative integer (e.g. logging.DEBUG)</span>
+<span class="n">log_file_level</span> <span class="o">=</span> <span class="s2">"iter"</span>
+<span class="c1"># Logging write mode, one of ("w", "w+", or "a")</span>
+<span class="n">log_file_mode</span> <span class="o">=</span> <span class="s2">"a"</span>
 <span class="c1"># Whether to re-print column headers for optimization statistics at each iteration. If None, PyVBMC tries to guess based on plotting options.</span>
 <span class="n">print_iteration_header</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
 </section>
+<section id="integer-valued-variables">
+<h2>Integer-valued variables<a class="headerlink" href="#integer-valued-variables" title="Link to this heading">#</a></h2>
+<p>Integer variables are experimental. Set <code class="docutils literal notranslate"><span class="pre">integer_vars</span></code> to either a Boolean
+mask with one entry per variable or a sequence of zero-based variable indices.
+Place each hard bound half an integer outside the allowed range. For example,
+use bounds <code class="docutils literal notranslate"><span class="pre">-0.5</span></code> and <code class="docutils literal notranslate"><span class="pre">10.5</span></code> for the integers 0 through 10. A prior passed
+through <code class="docutils literal notranslate"><span class="pre">prior</span></code> must cover these hard bounds; the corresponding uniform prior
+is <code class="docutils literal notranslate"><span class="pre">UniformBox(-0.5,</span> <span class="pre">10.5)</span></code>.</p>
+<p>VBMC snaps points found by the active-sampling search to the integer grid. It
+does not snap the initial design, including <code class="docutils literal notranslate"><span class="pre">x0</span></code>. The first
+<code class="docutils literal notranslate"><span class="pre">fun_eval_start</span></code> evaluations may therefore be off-grid unless the supplied
+starting points fill the whole initial design. On a grid, the search may also
+select an input evaluated earlier. For a noiseless target, that call spends an
+evaluation without adding an observation. For a noisy target, repeated calls
+can refine the estimate at that input; <code class="docutils literal notranslate"><span class="pre">max_repeated_observations</span></code> limits
+consecutive repeated measurements. A repeated measurement at an off-grid
+point from the initial design stays at that point.</p>
+</section>
 <section id="advanced-options">
-<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Link to this heading">#</a></h2>
-<p>These options are for advanced users of VBMC. Do not modify them unless you know
-what you are doing.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">AdvancedOptions</span><span class="p">]</span>
-<span class="c1"># Explicit noise handling (0: none; 1: unknown noise level; 2: user-provided noise)</span>
+<h2>Advanced options<a class="headerlink" href="#advanced-options" title="Link to this heading">#</a></h2>
+<div class="wrap highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">AdvancedOptions</span><span class="p">]</span>
+<span class="c1"># Whether the target log-density is noisy with a noise level VBMC has to infer, True or False; leave it empty to follow specify_target_noise, which instead takes the noise estimate the target returns</span>
 <span class="n">uncertainty_handling</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="c1"># Array with indices of integer variables</span>
+<span class="c1"># Experimental integer variables, given as a Boolean mask or 0-based indices; hard bounds sit half an integer outside the range, and prior= must cover them (e.g. UniformBox(-0.5, 10.5)); see the options documentation</span>
 <span class="n">integer_vars</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="c1"># Base observation noise magnitude (standard deviation)</span>
+<span class="c1"># Base observation noise magnitude (standard deviation), a positive finite number, read as tol_gp_noise when smaller; leave it empty ([] or None) for the default; not read with specify_target_noise, whose target returns the noise of each evaluation</span>
 <span class="n">noise_size</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1"># Max number of consecutive repeated measurements for noisy inputs</span>
 <span class="n">max_repeated_observations</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="c1"># Number of initial target fcn evals</span>
-<span class="n">fun_eval_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">fun_eval_start</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">((</span><span class="n">D</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span>
 <span class="c1"># Base step size for stochastic gradient descent</span>
 <span class="n">sgd_step_size</span> <span class="o">=</span> <span class="mf">0.005</span>
 <span class="c1"># Skip active sampling the first iteration after warmup</span>
@@ -488,19 +579,19 @@ what you are doing.</p>
 <span class="n">variable_weights</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Penalty multiplier for small mixture weights</span>
 <span class="n">weight_penalty</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="c1"># Run in diagnostics mode get additional info</span>
+<span class="c1"># Run in diagnostics mode to get additional info (not used, the iteration history always keeps a lean GP; record_full_history_details is the nearest knob)</span>
 <span class="n">diagnostics</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Output function</span>
+<span class="c1"># Output function (not used, MATLAB VBMC declares it and never calls it)</span>
 <span class="n">output_fcn</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1"># Fraction of allowed exceptions when computing iteration stability</span>
 <span class="n">tol_stable_excpt_frac</span> <span class="o">=</span> <span class="mf">0.2</span>
-<span class="c1"># Evaluated fcn values at X0</span>
+<span class="c1"># Evaluated log-joint values at X0: with a separate prior (prior or log_prior), the value of the target plus the log prior, where the precomputed_evaluations argument takes the value of the target alone (values only, so not for a target with specify_target_noise, whose observations go through the precomputed_evaluations argument)</span>
 <span class="n">f_vals</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="c1"># Weighted proposal fcn for uncertainty search</span>
+<span class="c1"># Weighted proposal fcn for uncertainty search (not used, MATLAB VBMC stores the option and never reads it)</span>
 <span class="n">proposal_fcn</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="c1"># Automatic nonlinear rescaling of variables</span>
+<span class="c1"># Automatic nonlinear rescaling of variables (not used, the parameter transform always rescales)</span>
 <span class="n">nonlinear_scaling</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># Search acquisition fcn(s), from pyvbmc.acquisition_functions. If length is greater than 1, a function is randomly selected for each new point.</span>
+<span class="c1"># Search acquisition fcn(s): a list of objects of the classes of pyvbmc.acquisition_functions, or of strings that name one with literal arguments, such as "AcqFcnVIQR(quantile=0.9)". If length is greater than 1, a function is randomly selected for each new point.</span>
 <span class="n">search_acq_fcn</span> <span class="o">=</span> <span class="p">[</span><span class="n">AcqFcnLog</span><span class="p">()]</span>
 <span class="c1"># Samples for fast acquisition fcn eval per new point</span>
 <span class="n">ns_search</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">13</span>
@@ -512,6 +603,8 @@ what you are doing.</p>
 <span class="n">ns_ent_fine</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">K</span>
 <span class="c1"># Whether to do a final boost</span>
 <span class="n">do_final_boost</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Maximum loss in stored boost ELBO and beta-5 ELCBO scores (None keeps legacy penalized, unguarded behavior)</span>
+<span class="n">tol_elcbo_boost</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="c1"># Total samples for Monte Carlo approx. of the entropy (final boost)</span>
 <span class="n">ns_ent_boost</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">K</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
 <span class="c1"># Total samples for preliminary Monte Carlo approx. of the entropy (final boost)</span>
@@ -536,6 +629,8 @@ what you are doing.</p>
 <span class="n">ns_gp_max_warmup</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="c1"># Max GP hyperparameter samples during main algorithm</span>
 <span class="n">ns_gp_max_main</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+<span class="c1"># Cap on the number of GP hyperparameter samples of the GP refits within active sampling (0: MAP fit only; inf: as the main fit)</span>
+<span class="n">ns_gp_max_active</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 <span class="c1"># Fcn evals without improvement before stopping warmup</span>
 <span class="n">warmup_no_impro_threshold</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">D</span>
 <span class="c1"># Also check for max fcn value improvement before stopping warmup</span>
@@ -553,7 +648,7 @@ what you are doing.</p>
 <span class="c1"># Final design points for GP hyperparameter training</span>
 <span class="n">gp_train_n_init_final</span> <span class="o">=</span> <span class="mi">64</span>
 <span class="c1"># Initial design method for GP hyperparameter training</span>
-<span class="n">gp_train_init_method</span> <span class="o">=</span> <span class="s2">&quot;rand&quot;</span>
+<span class="n">gp_train_init_method</span> <span class="o">=</span> <span class="s2">"rand"</span>
 <span class="c1"># Tolerance for optimization of GP hyperparameters</span>
 <span class="n">gp_tol_opt</span> <span class="o">=</span> <span class="mf">1e-5</span>
 <span class="c1"># Tolerance for optimization of GP hyperparameters preliminary to MCMC</span>
@@ -562,46 +657,46 @@ what you are doing.</p>
 <span class="n">gp_tol_opt_active</span> <span class="o">=</span> <span class="mf">1e-4</span>
 <span class="c1"># Tolerance for optimization of GP hyperparameters preliminary to MCMC during active sampling</span>
 <span class="n">gp_tol_opt_mcmc_active</span> <span class="o">=</span> <span class="mf">1e-2</span>
-<span class="c1"># Threshold True GP variance used by regulatized acquisition fcns</span>
+<span class="c1"># Threshold on GP variance used by regulatized acquisition fcns</span>
 <span class="n">tol_gp_var</span> <span class="o">=</span> <span class="mf">1e-4</span>
-<span class="c1"># Threshold True GP variance used to stabilize sampling</span>
+<span class="c1"># Threshold on GP variance, used to stabilize sampling</span>
 <span class="n">tol_gp_var_mcmc</span> <span class="o">=</span> <span class="mf">1e-4</span>
-<span class="c1"># GP mean function</span>
-<span class="n">gp_mean_fun</span> <span class="o">=</span> <span class="s2">&quot;negquad&quot;</span>
-<span class="c1"># GP integrated mean function</span>
+<span class="c1"># GP mean function ("negquad", "const" or "zero"; the other mean functions of MATLAB VBMC are not ported)</span>
+<span class="n">gp_mean_fun</span> <span class="o">=</span> <span class="s2">"negquad"</span>
+<span class="c1"># GP integrated mean function (not used, the integrated mean function of the GP is not ported)</span>
 <span class="n">gp_int_mean_fun</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="c1"># Max variational components as a function of training points</span>
 <span class="n">k_fun_max</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">N</span> <span class="p">:</span> <span class="n">N</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
 <span class="c1"># Variational components during warmup</span>
 <span class="n">k_warmup</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="c1"># Added variational components for stable solution</span>
+<span class="c1"># Added variational components for stable solution (a number, or a function of the current number of components)</span>
 <span class="n">adaptive_k</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="c1"># High Posterior Density region (fraction of training inputs)</span>
 <span class="n">hpd_frac</span> <span class="o">=</span> <span class="mf">0.8</span>
-<span class="c1"># Uncertainty weight True ELCBO for computing lower bound improvement</span>
+<span class="c1"># Uncertainty weight on ELCBO for computing lower bound improvement</span>
 <span class="n">elcbo_impro_weight</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="c1"># Minimum fractional length scale</span>
 <span class="n">tol_length</span> <span class="o">=</span> <span class="mf">1e-6</span>
-<span class="c1"># Size of cache for storing fcn evaluations</span>
+<span class="c1"># Initial number of rows of the arrays that store the fcn evaluations (they grow as needed)</span>
 <span class="n">cache_size</span> <span class="o">=</span> <span class="mi">500</span>
-<span class="c1"># Fraction of search points from starting cache (if nonempty)</span>
+<span class="c1"># Fraction of search points from starting cache (if nonempty), in [0, 1]</span>
 <span class="n">cache_frac</span> <span class="o">=</span> <span class="mf">0.5</span>
-<span class="c1"># Stochastic optimizer for varational parameters</span>
-<span class="n">stochastic_optimizer</span> <span class="o">=</span> <span class="s2">&quot;adam&quot;</span>
+<span class="c1"># Stochastic optimizer for variational parameters (only "adam" is implemented; another value raises an error at the first stochastic optimization)</span>
+<span class="n">stochastic_optimizer</span> <span class="o">=</span> <span class="s2">"adam"</span>
 <span class="c1"># Stopping threshold for stochastic optimization</span>
 <span class="n">tol_fun_stochastic</span> <span class="o">=</span> <span class="mf">1e-3</span>
 <span class="c1"># Max iterations for stochastic optimization</span>
 <span class="n">max_iter_stochastic</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">D</span><span class="p">)</span>
-<span class="c1"># Set stochastic optimization stepsize via GP hyperparameters</span>
+<span class="c1"># Set stochastic optimization stepsize via GP hyperparameters (not used, removed from MATLAB VBMC in 2021 together with the code that read it)</span>
 <span class="n">gp_stochastic_step_size</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Tolerance True ELBO uncertainty for stopping (if variational posterior is stable)</span>
+<span class="c1"># Tolerance on ELBO uncertainty for stopping (if variational posterior is stable)</span>
 <span class="n">tol_sd</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="c1"># Stopping threshold True change of variational posterior per training point</span>
+<span class="c1"># Stopping threshold on change of variational posterior per training point</span>
 <span class="n">tol_skl</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 <span class="c1"># Number of stable fcn evals for stopping warmup</span>
 <span class="n">tol_stable_warmup</span> <span class="o">=</span> <span class="mi">15</span>
-<span class="c1"># MCMC sampler for variational posteriors</span>
-<span class="n">variational_sampler</span> <span class="o">=</span> <span class="s2">&quot;malasample&quot;</span>
+<span class="c1"># MCMC sampler for variational posteriors (not used, sampling of the variational parameters is not ported)</span>
+<span class="n">variational_sampler</span> <span class="o">=</span> <span class="s2">"malasample"</span>
 <span class="c1"># Required ELCBO improvement per fcn eval before termination</span>
 <span class="n">tol_improvement</span> <span class="o">=</span> <span class="mf">0.01</span>
 <span class="c1"># Use Gaussian approximation for symmetrized KL-divergence b\w iters</span>
@@ -614,21 +709,21 @@ what you are doing.</p>
 <span class="n">min_fun_evals</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">D</span>
 <span class="c1"># Min number of iterations</span>
 <span class="n">min_iter</span> <span class="o">=</span> <span class="n">D</span>
-<span class="c1"># Fraction of search points from heavy-tailed variational posterior</span>
+<span class="c1"># Fraction of search points from a heavy-tailed variational posterior, in [0, 1]; the five search fractions sum to at most 1, with the remainder drawn from the variational posterior</span>
 <span class="n">heavy_tail_search_frac</span> <span class="o">=</span> <span class="mf">0.25</span>
-<span class="c1"># Fraction of search points from multivariate normal</span>
+<span class="c1"># Fraction of search points from a multivariate normal, in [0, 1]; the five search fractions sum to at most 1, with the remainder drawn from the variational posterior</span>
 <span class="n">mvn_search_frac</span> <span class="o">=</span> <span class="mf">0.25</span>
-<span class="c1"># Fraction of search points from multivariate normal fitted to HPD points</span>
+<span class="c1"># Fraction of search points from a multivariate normal fitted to HPD points, in [0, 1]; the five search fractions sum to at most 1, with the remainder drawn from the variational posterior</span>
 <span class="n">hpd_search_frac</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># Fraction of search points from uniform random box based True training inputs</span>
+<span class="c1"># Fraction of search points from a uniform box based on training inputs, in [0, 1]; the five search fractions sum to at most 1, with the remainder drawn from the variational posterior</span>
 <span class="n">box_search_frac</span> <span class="o">=</span> <span class="mf">0.25</span>
-<span class="c1"># Fraction of search points from previous iterations</span>
+<span class="c1"># Fraction of search points from previous iterations, in [0, 1]; the five search fractions sum to at most 1, with the remainder drawn from the variational posterior</span>
 <span class="n">search_cache_frac</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="c1"># Always fully refit variational posterior</span>
 <span class="n">always_refit_vp</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Perform warm-up stage</span>
 <span class="n">warmup</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># Special OPTIONS struct for warmup stage</span>
+<span class="c1"># Special OPTIONS struct for warmup stage (not used, per-stage option overrides are not ported)</span>
 <span class="n">warmup_options</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1"># Stop warm-up when ELCBO increase below threshold (per fcn eval)</span>
 <span class="n">stop_warmup_thresh</span> <span class="o">=</span> <span class="mf">0.2</span>
@@ -638,17 +733,17 @@ what you are doing.</p>
 <span class="n">warmup_keep_threshold_false_alarm</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">D</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
 <span class="c1"># Reliability index required to stop warmup</span>
 <span class="n">stop_warmup_reliability</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="c1"># Optimization method for active sampling</span>
-<span class="n">search_optimizer</span> <span class="o">=</span> <span class="s2">&quot;cmaes&quot;</span>
+<span class="c1"># Local optimizer of the acquisition search: "cmaes" (CMA-ES, replaced by a bounded scalar search where the problem has one variable) or "none" (no local search)</span>
+<span class="n">search_optimizer</span> <span class="o">=</span> <span class="s2">"cmaes"</span>
 <span class="c1"># Initialize CMA-ES search SIGMA from variational posterior</span>
 <span class="n">search_cmaes_vp_init</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># Take bestever solution from CMA-ES search</span>
+<span class="c1"># Take the best-ever point of the CMA-ES acquisition search (not used, the search always takes it)</span>
 <span class="n">search_cmaes_best</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Max number of acquisition fcn evaluations during search</span>
 <span class="n">search_max_fun_evals</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="p">(</span><span class="n">D</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
-<span class="c1"># Weight of previous trials (per trial) for running avg of variational posterior moments</span>
+<span class="c1"># Weight of previous trials (per trial) for running avg of variational posterior moments (the running average is recorded in the optimization state, and nothing reads it)</span>
 <span class="n">moments_run_weight</span> <span class="o">=</span> <span class="mf">0.9</span>
-<span class="c1"># Upper threshold True reliability index for full retraining of GP hyperparameters</span>
+<span class="c1"># Upper threshold on reliability index for full retraining of GP hyperparameters</span>
 <span class="n">gp_retrain_threshold</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="c1"># Compute full ELCBO also at best midpoint</span>
 <span class="n">elcbo_midpoint</span> <span class="o">=</span> <span class="kc">True</span>
@@ -660,9 +755,9 @@ what you are doing.</p>
 <span class="n">weighted_hyp_cov</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Minimum weight for weighted hyperparameter posterior covariance</span>
 <span class="n">tol_cov_weight</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># MCMC sampler for GP hyperparameters</span>
-<span class="n">gp_hyp_sampler</span> <span class="o">=</span> <span class="s2">&quot;slicesample&quot;</span>
-<span class="c1"># Switch to covariance sampling below this threshold of stability index</span>
+<span class="c1"># MCMC sampler for GP hyperparameters (only "slicesample" is supported, the other samplers of MATLAB VBMC are not ported)</span>
+<span class="n">gp_hyp_sampler</span> <span class="o">=</span> <span class="s2">"slicesample"</span>
+<span class="c1"># Switch to covariance sampling below this threshold of stability index (not used, covariance sampling is not ported)</span>
 <span class="n">cov_sample_thresh</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="c1"># Optimality tolerance for optimization of deterministic entropy</span>
 <span class="n">det_entropy_tol_opt</span> <span class="o">=</span> <span class="mf">1e-3</span>
@@ -670,11 +765,11 @@ what you are doing.</p>
 <span class="n">entropy_switch</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Force switch to stochastic entropy at this fraction of total fcn evals</span>
 <span class="n">entropy_force_switch</span> <span class="o">=</span> <span class="mf">0.8</span>
-<span class="c1"># Alpha value for lower/upper deterministic entropy interpolation</span>
+<span class="c1"># Alpha value for lower/upper deterministic entropy interpolation (not used, MATLAB VBMC removed the interpolation in 2021; the value is stored in the optimization state and reaches no computation)</span>
 <span class="n">det_entropy_alpha</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># Randomize deterministic entropy alpha during active sample updates</span>
+<span class="c1"># Randomize deterministic entropy alpha during active sample updates (no effect on the fit, since the alpha value is not used; with active_sample_vp_update, each such update draws a random number and so advances the run's random stream)</span>
 <span class="n">update_random_alpha</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Online adaptation of alpha value for lower/upper deterministic entropy interpolation</span>
+<span class="c1"># Online adaptation of alpha value for lower/upper deterministic entropy interpolation (not used, the adaptation is not ported)</span>
 <span class="n">adaptive_entropy_alpha</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Start with deterministic entropy only with this number of vars or more</span>
 <span class="n">det_entropy_min_d</span> <span class="o">=</span> <span class="mi">5</span>
@@ -682,17 +777,17 @@ what you are doing.</p>
 <span class="n">tol_con_loss</span> <span class="o">=</span> <span class="mf">0.01</span>
 <span class="c1"># SD multiplier of ELCBO for computing best variational solution</span>
 <span class="n">best_safe_sd</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="c1"># When computing best solution lacking stability go back up to this fraction of iterations</span>
+<span class="c1"># When computing best solution lacking stability go back up to this fraction of iterations (used only when rank_criterion is False)</span>
 <span class="n">best_frac_back</span> <span class="o">=</span> <span class="mf">0.25</span>
 <span class="c1"># Threshold mixture component weight for pruning</span>
 <span class="n">tol_weight</span> <span class="o">=</span> <span class="mf">1e-2</span>
 <span class="c1"># Multiplier to threshold for pruning mixture weights</span>
 <span class="n">pruning_threshold_multiplier</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
-<span class="c1"># Annealing for hyperprior width of GP negative quadratic mean</span>
+<span class="c1"># Annealing for hyperprior width of GP negative quadratic mean (not used, MATLAB VBMC removed the code that read it in 2021)</span>
 <span class="n">annealed_gp_mean</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">N</span><span class="p">,</span><span class="n">NMAX</span><span class="p">:</span> <span class="mi">0</span>
-<span class="c1"># Strict hyperprior for GP negative quadratic mean</span>
+<span class="c1"># Strict hyperprior for GP negative quadratic mean (not used, MATLAB VBMC removed the code that read it in 2021)</span>
 <span class="n">constrained_gp_mean</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Empirical Bayes prior over some GP hyperparameters</span>
+<span class="c1"># Empirical Bayes prior over some GP hyperparameters (not used, removed from MATLAB VBMC in 2021 together with the code that read it)</span>
 <span class="n">empirical_gp_prior</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Minimum GP observation noise</span>
 <span class="n">tol_gp_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">)</span>
@@ -700,39 +795,39 @@ what you are doing.</p>
 <span class="n">gp_length_prior_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
 <span class="c1"># Prior std over GP input length scale (in plausible units)</span>
 <span class="n">gp_length_prior_std</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e3</span><span class="p">)</span>
-<span class="c1"># Upper bound True GP input lengths based True plausible box (0 = ignore)</span>
+<span class="c1"># Upper bound on GP input lengths based on plausible box (0 = ignore)</span>
 <span class="n">upper_gp_length_factor</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="c1"># Initial samples (plausible is uniform in the plausible box)</span>
-<span class="n">init_design</span> <span class="o">=</span> <span class="s2">&quot;plausible&quot;</span>
-<span class="c1"># Stricter upper bound True GP negative quadratic mean function</span>
+<span class="n">init_design</span> <span class="o">=</span> <span class="s2">"plausible"</span>
+<span class="c1"># Stricter upper bound on GP negative quadratic mean function</span>
 <span class="n">gp_quadratic_mean_bound</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># Heuristic output warping (fitness shaping)</span>
+<span class="c1"># Heuristic output warping (not implemented; True only updates an unused threshold and may consume random draws)</span>
 <span class="n">fitness_shaping</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Output warping starting threshold</span>
+<span class="c1"># Output warping starting threshold (not used, the GP output warping of MATLAB VBMC is not ported)</span>
 <span class="n">out_warp_thresh_base</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
-<span class="c1"># Output warping threshold multiplier when failed sub-threshold check</span>
+<span class="c1"># Output warping threshold multiplier when failed sub-threshold check (not used, the GP output warping of MATLAB VBMC is not ported)</span>
 <span class="n">out_warp_thresh_mult</span> <span class="o">=</span> <span class="mf">1.25</span>
-<span class="c1"># Output warping base threshold tolerance (fraction of current threshold)</span>
+<span class="c1"># Output warping base threshold tolerance (fraction of current threshold) (not used, the GP output warping of MATLAB VBMC is not ported)</span>
 <span class="n">out_warp_thresh_tol</span> <span class="o">=</span> <span class="mf">0.8</span>
-<span class="c1"># Temperature for posterior tempering (allowed values T = 1234)</span>
+<span class="c1"># Temperature for posterior tempering (allowed values T = 1, 2, 3, 4) (not used, posterior tempering is not ported)</span>
 <span class="n">temperature</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="c1"># Use separate GP with constant mean for active search</span>
+<span class="c1"># Use separate GP with constant mean for active search (not used, a development option of MATLAB VBMC that PyVBMC does not need)</span>
 <span class="n">separate_search_gp</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Discount observations from extremely low-density regions</span>
+<span class="c1"># Discount observations from extremely low-density regions (must be False, the shaping of MATLAB VBMC's noiseshaping_vbmc.m is not ported)</span>
 <span class="n">noise_shaping</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Threshold from max observed value to start discounting</span>
+<span class="c1"># Threshold from max observed value to start discounting (not used, noise shaping is not ported)</span>
 <span class="n">noise_shaping_threshold</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
-<span class="c1"># Proportionality factor of added noise wrt distance from threshold</span>
+<span class="c1"># Proportionality factor of added noise wrt distance from threshold (not used, noise shaping is not ported)</span>
 <span class="n">noise_shaping_factor</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="c1"># Hedge True multiple acquisition functions</span>
+<span class="c1"># Hedge on multiple acquisition functions (must be False, the portfolio of MATLAB VBMC's acqhedge_vbmc.m is not ported; one entry of search_acq_fcn is picked at random at each step)</span>
 <span class="n">acq_hedge</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Past iterations window to judge acquisition fcn improvement</span>
+<span class="c1"># Past iterations window to judge acquisition fcn improvement (not used, the acquisition-portfolio hedge is not ported)</span>
 <span class="n">acq_hedge_iter_window</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="c1"># Portfolio value decay per function evaluation</span>
+<span class="c1"># Portfolio value decay per function evaluation (not used, the acquisition-portfolio hedge is not ported)</span>
 <span class="n">acq_hedge_decay</span> <span class="o">=</span> <span class="mf">0.9</span>
-<span class="c1"># MCMC variational steps before each active sampling</span>
+<span class="c1"># MCMC variational steps before each active sampling (not used, variational active sampling is not ported)</span>
 <span class="n">active_variational_samples</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># Apply lower bound True variational components scale during variational sampling</span>
+<span class="c1"># Apply lower bound on variational components scale during variational sampling (not used, sampling of the variational parameters is not ported)</span>
 <span class="n">scale_lower_bound</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Perform variational optimization after each active sample</span>
 <span class="n">active_sample_vp_update</span> <span class="o">=</span> <span class="kc">False</span>
@@ -742,47 +837,47 @@ what you are doing.</p>
 <span class="n">active_sample_full_update_past_warmup</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="c1"># Perform full update during active sampling if stability above threshold</span>
 <span class="n">active_sample_full_update_threshold</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="c1"># Use previous variational posteriors to initialize optimization</span>
+<span class="c1"># Use previous variational posteriors to initialize optimization (not used, the repository of previous variational posteriors is not ported)</span>
 <span class="n">variational_init_repo</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Extra variational components sampled from GP profile</span>
+<span class="c1"># Extra variational components sampled from GP profile (not used, the extra components are not ported)</span>
 <span class="n">sample_extra_vp_means</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># Uncertainty weight True ELCBO during active sampling</span>
+<span class="c1"># Uncertainty weight on ELCBO during active sampling (not used, the optimistic bound is not ported)</span>
 <span class="n">optimistic_variational_bound</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="c1"># # importance samples from smoothed variational posterior</span>
 <span class="n">active_importance_sampling_vp_samples</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="c1"># # importance samples from box-uniform centered True training inputs</span>
+<span class="c1"># # importance samples from box-uniform centered on training inputs</span>
 <span class="n">active_importance_sampling_box_samples</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="c1"># # importance samples through MCMC</span>
+<span class="c1"># Noisy-acquisition importance samples, rounded up: VP draws for VIQR (minimum 1), or for IMIQR the MCMC samples kept per GP hyperparameter sample, one in every active_importance_sampling_mcmc_thin steps after a burn-in of half as many steps (0 skips MCMC); a number or function called with K (mixture components), n_vars and D (both variable count) as keywords</span>
 <span class="n">active_importance_sampling_mcmc_samples</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="c1"># Thinning for importance sampling MCMC</span>
 <span class="n">active_importance_sampling_mcmc_thin</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="c1"># fractional ESS threhsold to update GP and VP</span>
+<span class="c1"># Fractional ESS threshold to update GP and VP (not used, the in-loop update is not conditioned on the effective sample size)</span>
 <span class="n">active_sample_fess_thresh</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="c1"># % fractional ESS threhsold to do MCMC while active importance sampling</span>
+<span class="c1"># Fractional ESS threshold to do MCMC while active importance sampling (not used, the refinement of the importance samples by an ensemble sampler is not ported)</span>
 <span class="n">active_importance_sampling_fess_thresh</span> <span class="o">=</span> <span class="mf">0.9</span>
 <span class="c1"># Active search bound multiplier</span>
 <span class="n">active_search_bound</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="c1"># Try integrating GP mean function</span>
+<span class="c1"># Try integrating GP mean function (not used, removed from MATLAB VBMC in 2021 together with the code that read it)</span>
 <span class="n">integrate_gp_mean</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Tolerance True closeness to bound constraints (fraction of total range)</span>
+<span class="c1"># Tolerance on closeness to bound constraints (fraction of total range)</span>
 <span class="n">tol_bound_x</span> <span class="o">=</span> <span class="mf">1e-5</span>
-<span class="c1"># Recompute LCB max for each iteration based True current GP estimate</span>
+<span class="c1"># Recompute LCB max for each iteration based on current GP estimate</span>
 <span class="n">recompute_lcb_max</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Input transform for bounded variables</span>
-<span class="n">bounded_transform</span> <span class="o">=</span> <span class="s2">&quot;probit&quot;</span>
-<span class="c1"># Use double GP</span>
+<span class="n">bounded_transform</span> <span class="o">=</span> <span class="s2">"probit"</span>
+<span class="c1"># Use double GP (not used, removed from MATLAB VBMC in 2021 together with the code that read it)</span>
 <span class="n">double_gp</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Warp every this number of iterations</span>
 <span class="n">warp_every_iters</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="c1"># Increase delay between warpings</span>
 <span class="n">incremental_warp_delay</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># Threshold True reliability index to perform warp</span>
+<span class="c1"># Threshold on reliability index to perform warp</span>
 <span class="n">warp_tol_reliability</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="c1"># Rotate and scale input</span>
 <span class="n">warp_rotoscaling</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># Regularization weight towards diagonal covariance matrix for N training inputs</span>
+<span class="c1"># Regularization weight towards diagonal covariance matrix in the rotoscaling warp, clamped to [0, 1]: a number, or a function of N, the number of distinct points logged so far (optim_state["N"]), such as lambda N: 10 / N</span>
 <span class="n">warp_cov_reg</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># Threshold True correlation matrix for roto-scaling</span>
+<span class="c1"># Threshold on correlation matrix for roto-scaling</span>
 <span class="n">warp_roto_corr_thresh</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="c1"># Min number of variational components to perform warp</span>
 <span class="n">warp_min_k</span> <span class="o">=</span> <span class="mi">5</span>
@@ -792,8 +887,12 @@ what you are doing.</p>
 <span class="n">warp_tol_improvement</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="c1"># Multiplier tolerance of ELBO SD after warp proposal</span>
 <span class="n">warp_tol_sd_multiplier</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="c1"># Base tolerance True ELBO SD after warp proposal</span>
+<span class="c1"># Base tolerance on ELBO SD after warp proposal</span>
 <span class="n">warp_tol_sd_base</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># Keep the importance samples of noisy acquisitions in the iteration history (recomputed on resume, not rebuildable from the record); for debugging</span>
+<span class="n">record_full_history_details</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Fixed numerical chunk profile: "cached" reuses a compatible machine-local calibration, "off" pins historical defaults, or pass a CalibrationProfile</span>
+<span class="n">performance_calibration</span> <span class="o">=</span> <span class="s2">"cached"</span>
 </pre></div>
 </div>
 </section>
@@ -811,12 +910,12 @@ what you are doing.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../classes/variational_posterior.html"
+       href="../functions/calibrate.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></p>
       </div>
     </a>
     <a class="right-next"
@@ -845,9 +944,10 @@ what you are doing.</p>
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-options">Basic options</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-options">Advanced Options</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#integer-valued-variables">Integer-valued variables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-options">Advanced options</a></li>
 </ul>
   </nav></div>
 
@@ -885,6 +985,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -896,8 +999,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

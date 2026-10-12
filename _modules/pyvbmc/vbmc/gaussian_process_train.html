@@ -26,45 +26,53 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/vbmc/gaussian_process_train';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/vbmc/gaussian_process_train.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/vbmc/gaussian_process_train.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -90,7 +98,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -148,6 +196,7 @@
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -155,20 +204,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -176,6 +238,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
@@ -306,11 +371,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -342,20 +414,23 @@
                 <article class="bd-article">
                   
   <h1>Source code for pyvbmc.vbmc.gaussian_process_train</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">gpyreg</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.function_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.rng</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_hpd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.stats._rounding</span><span class="w"> </span><span class="kn">import</span> <span class="n">round_half_away_from_zero</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.iteration_history</span><span class="w"> </span><span class="kn">import</span> <span class="n">IterationHistory</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">Options</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">Options</span><span class="p">,</span> <span class="n">_noise_size_reading</span>
 
 
 <div class="viewcode-block" id="train_gp">
-<a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.vbmc.train_gp">[docs]</a>
+<a class="viewcode-back" href="../../../api/functions/algorithm_helpers.html#pyvbmc.vbmc.train_gp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">train_gp</span><span class="p">(</span>
     <span class="n">hyp_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">optim_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
@@ -364,8 +439,9 @@
     <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>
     <span class="n">plb_tran</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">pub_tran</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Train Gaussian process model.</span>
 
 <span class="sd">    Parameters</span>
@@ -373,7 +449,8 @@
 <span class="sd">    hyp_dict : dict</span>
 <span class="sd">        Hyperparameter summary statistics dictionary.</span>
 <span class="sd">        If it does not contain the appropriate keys they will be added</span>
-<span class="sd">        automatically.</span>
+<span class="sd">        automatically. A statistic whose shape does not match the number of</span>
+<span class="sd">        hyperparameters of the GP model is dropped and started afresh.</span>
 <span class="sd">    optim_state : dict</span>
 <span class="sd">        Optimization state from the VBMC instance we are calling this from.</span>
 <span class="sd">    function_logger : FunctionLogger</span>
@@ -386,6 +463,11 @@
 <span class="sd">        Transformed lower plausible bounds, used to set GP hyperparameters.</span>
 <span class="sd">    pub_tran : ndarray, shape (1, D)</span>
 <span class="sd">        Transformed upper plausible bounds, used to set GP hyperparameters.</span>
+<span class="sd">    rng : None, int, SeedSequence or np.random.Generator, optional</span>
+<span class="sd">        Random generator (or seed) used to subsample the starting</span>
+<span class="sd">        hyperparameters and handed to the fit itself (``gpyreg.GP.fit``: the</span>
+<span class="sd">        space-filling initial design and the slice sampler). By default a</span>
+<span class="sd">        generator derived from NumPy's global random state.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    =======</span>
@@ -397,19 +479,18 @@
 <span class="sd">        An estimate of the GP noise variance at high posterior density.</span>
 <span class="sd">    hyp_dict : dict</span>
 <span class="sd">        The updated summary statistics.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Initialize hyp_dict if empty.</span>
-    <span class="k">if</span> <span class="s2">&quot;hyp&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;warp&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;warp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;logp&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;logp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;full&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;run_cov&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">"hyp"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">"warp"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"warp"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">"full"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"full"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">"run_cov"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hyp_dict</span><span class="p">:</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 
     <span class="c1"># Get training dataset.</span>
     <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">s2_train</span><span class="p">,</span> <span class="n">t_train</span> <span class="o">=</span> <span class="n">_get_training_data</span><span class="p">(</span><span class="n">function_logger</span><span class="p">)</span>
@@ -422,18 +503,20 @@
     <span class="c1">#  end</span>
 
     <span class="c1"># Pick the mean function</span>
-    <span class="n">mean_f</span> <span class="o">=</span> <span class="n">_meanfun_name_to_mean_function</span><span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_mean_fun&quot;</span><span class="p">])</span>
+    <span class="n">mean_f</span> <span class="o">=</span> <span class="n">_meanfun_name_to_mean_function</span><span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_mean_fun"</span><span class="p">])</span>
 
     <span class="c1"># Pick the covariance function.</span>
     <span class="n">covariance_f</span> <span class="o">=</span> <span class="n">_cov_identifier_to_covariance_function</span><span class="p">(</span>
-        <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_cov_fun&quot;</span><span class="p">]</span>
+        <span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_cov_fun"</span><span class="p">]</span>
     <span class="p">)</span>
 
-    <span class="c1"># Pick the noise function.</span>
-    <span class="n">const_add</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_noise_fun&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-    <span class="n">user_add</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_noise_fun&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-    <span class="n">user_scale</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_noise_fun&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
-    <span class="n">rlod_add</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_noise_fun&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="c1"># Pick the noise function. The second entry says how the noise the user</span>
+    <span class="c1"># provides enters the total variance: 1 adds it as it is, 2 adds it</span>
+    <span class="c1"># scaled by a fitted multiplier.</span>
+    <span class="n">const_add</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_noise_fun"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">user_add</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_noise_fun"</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">user_scale</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_noise_fun"</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">rlod_add</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_noise_fun"</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="n">noise_f</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">noise_functions</span><span class="o">.</span><span class="n">GaussianNoise</span><span class="p">(</span>
         <span class="n">constant_add</span><span class="o">=</span><span class="n">const_add</span><span class="p">,</span>
         <span class="n">user_provided_add</span><span class="o">=</span><span class="n">user_add</span><span class="p">,</span>
@@ -447,97 +530,109 @@
     <span class="n">gp</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">_gp_hyp</span><span class="p">(</span>
         <span class="n">optim_state</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">plb_tran</span><span class="p">,</span> <span class="n">pub_tran</span><span class="p">,</span> <span class="n">gp</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span>
     <span class="p">)</span>
+    <span class="c1"># The stored statistics of the hyperparameters belong to the model that</span>
+    <span class="c1"># computed them, and a run saved by an earlier version can hold those of</span>
+    <span class="c1"># a model with another number of hyperparameters (release 1.0.4 fitted</span>
+    <span class="c1"># one noise hyperparameter at uncertainty level 1, where this model has</span>
+    <span class="c1"># two). Those that do not match the model are dropped, and start afresh</span>
+    <span class="c1"># as in a first fit.</span>
+    <span class="n">hyp_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">hyp0</span><span class="p">)</span>
+    <span class="n">stored_hyp</span> <span class="o">=</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">stored_hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">stored_hyp</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">hyp_n</span><span class="p">:</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">run_cov</span> <span class="o">=</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">run_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">run_cov</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">hyp_n</span><span class="p">,</span> <span class="n">hyp_n</span><span class="p">):</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># Initial GP hyperparameters.</span>
-    <span class="k">if</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hyp0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">]</span> <span class="o">=</span> <span class="n">hyp0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="c1"># Get GP training options.</span>
     <span class="n">gp_train</span> <span class="o">=</span> <span class="n">_get_gp_training_options</span><span class="p">(</span>
-        <span class="n">optim_state</span><span class="p">,</span> <span class="n">iteration_history</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">hyp_dict</span><span class="p">,</span> <span class="n">gp_s_N</span>
+        <span class="n">optim_state</span><span class="p">,</span>
+        <span class="n">iteration_history</span><span class="p">,</span>
+        <span class="n">options</span><span class="p">,</span>
+        <span class="n">hyp_dict</span><span class="p">,</span>
+        <span class="n">gp_s_N</span><span class="p">,</span>
+        <span class="n">hyp_n</span><span class="o">=</span><span class="n">hyp_n</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># In some cases the model can change so be careful.</span>
-    <span class="k">if</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">"widths"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span>
+        <span class="n">gp_train</span><span class="p">[</span><span class="s2">"widths"</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">hyp0</span><span class="p">):</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">gp_train</span><span class="p">[</span><span class="s2">"widths"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Build starting points</span>
-    <span class="c1"># hyp0 = np.empty((0, np.size(hyp_dict[&quot;hyp&quot;])))</span>
-    <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-    <span class="k">if</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_N&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># Be very careful with off-by-one errors compared to MATLAB in the</span>
-        <span class="c1"># range here.</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
-            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;gp&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;gp&quot;</span><span class="p">]),</span>
-        <span class="p">):</span>
-            <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-                <span class="p">(</span>
-                    <span class="n">hyp0</span><span class="p">,</span>
-                    <span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;gp&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_hyperparameters</span><span class="p">(</span>
-                        <span class="n">as_array</span><span class="o">=</span><span class="kc">True</span>
-                    <span class="p">),</span>
-                <span class="p">)</span>
+    <span class="c1"># hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))</span>
+    <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_N"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># The later half of the recorded GPs. With `n` of them, MATLAB</span>
+        <span class="c1"># collects the 1-based `ceil(n/2):n`, which over the same records</span>
+        <span class="c1"># is `range(ceil(n / 2) - 1, n)` here; a history holding no GP</span>
+        <span class="c1"># leaves nothing to collect, and a GP of another model, recorded by</span>
+        <span class="c1"># an earlier version, gives no starting point.</span>
+        <span class="n">n_recorded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">"gp"</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_recorded</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">n_recorded</span><span class="p">):</span>
+            <span class="n">recorded_hyp</span> <span class="o">=</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">"gp"</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_hyperparameters</span><span class="p">(</span>
+                <span class="n">as_array</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">recorded_hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">hyp_n</span><span class="p">:</span>
+                <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">recorded_hyp</span><span class="p">))</span>
         <span class="n">N0</span> <span class="o">=</span> <span class="n">hyp0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">N0</span> <span class="o">&gt;</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_N&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">N0</span> <span class="o">&gt;</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_N"</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp0</span><span class="p">[</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                    <span class="n">N0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_N&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+                <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                    <span class="n">N0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_N"</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
                 <span class="p">),</span>
                 <span class="p">:,</span>
             <span class="p">]</span>
-    <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp&quot;</span><span class="p">])))</span>
+    <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">])))</span>
     <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># In some cases the model can change so be careful.</span>
-    <span class="k">if</span> <span class="n">hyp0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">hyper_priors</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="n">hyp0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">hyper_priors</span><span class="p">[</span><span class="s2">"mu"</span><span class="p">]):</span>
         <span class="n">hyp0</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="s2">&quot;hyp_vp&quot;</span> <span class="ow">in</span> <span class="n">hyp_dict</span>
-        <span class="ow">and</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp_vp&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="ow">and</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;npv&quot;</span>
-    <span class="p">):</span>
-        <span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp_vp&quot;</span><span class="p">]</span>
-
     <span class="c1"># print(hyp0.shape)</span>
-    <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;hyp&quot;</span><span class="p">],</span> <span class="n">_</span><span class="p">,</span> <span class="n">res</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-        <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">s2_train</span><span class="p">,</span> <span class="n">hyp0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gp_train</span>
+    <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">],</span> <span class="n">_</span><span class="p">,</span> <span class="n">res</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">s2_train</span><span class="p">,</span> <span class="n">hyp0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">gp_train</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Pre-thinning GP hyperparameters</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;samples&quot;</span><span class="p">]</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;logp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;log_priors&quot;</span><span class="p">]</span>
+        <span class="c1"># Pre-thinning GP hyperparameters.</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"full"</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">]</span>
 
         <span class="c1"># Missing port: currently not used since we do</span>
         <span class="c1"># not support samplers other than slice sampling.</span>
-        <span class="c1"># if isfield(gpoutput,&#39;hyp_vp&#39;)</span>
+        <span class="c1"># if isfield(gpoutput,'hyp_vp')</span>
         <span class="c1">#     hypstruct.hyp_vp = gpoutput.hyp_vp;</span>
         <span class="c1"># end</span>
 
-        <span class="c1"># if isfield(gpoutput,&#39;stepsize&#39;)</span>
+        <span class="c1"># if isfield(gpoutput,'stepsize')</span>
         <span class="c1">#     optimState.gp_mala_step_size = gpoutput.stepsize;</span>
         <span class="c1">#     gpoutput.stepsize</span>
         <span class="c1"># end</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># A fit that draws no samples returns the optimized hyperparameters</span>
+        <span class="c1"># alone, and they take the place of the chain.</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"full"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"hyp"</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="c1"># Update running average of GP hyperparameter covariance (coarse)</span>
-    <span class="k">if</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">hyp_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;hyp_run_weight&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hyp_cov</span>
+    <span class="k">if</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"full"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"full"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">hyp_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"full"</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">options</span><span class="p">[</span><span class="s2">"hyp_run_weight"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="o">=</span> <span class="n">hyp_cov</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">w</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;hyp_run_weight&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;fun_evals_per_iter&quot;</span><span class="p">]</span>
-            <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyp_cov</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"hyp_run_weight"</span><span class="p">]</span> <span class="o">**</span> <span class="n">options</span><span class="p">[</span><span class="s2">"fun_evals_per_iter"</span><span class="p">]</span>
+            <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyp_cov</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Missing port: sample for GP for debug (not used)</span>
 
     <span class="c1"># Estimate of GP noise around the top high posterior density region</span>
-    <span class="c1"># We don&#39;t modify optim_state to contain sn2_hpd here.</span>
+    <span class="c1"># We don't modify optim_state to contain sn2_hpd here.</span>
     <span class="n">sn2_hpd</span> <span class="o">=</span> <span class="n">_estimate_noise</span><span class="p">(</span><span class="n">gp</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">gp</span><span class="p">,</span> <span class="n">gp_s_N</span><span class="p">,</span> <span class="n">sn2_hpd</span><span class="p">,</span> <span class="n">hyp_dict</span></div>
@@ -545,7 +640,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_meanfun_name_to_mean_function</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Transforms a mean function name to an instance of that mean function.</span>
 
 <span class="sd">    Parameters</span>
@@ -562,21 +657,21 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        Raised when the mean function name is unknown.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;zero&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"zero"</span><span class="p">:</span>
         <span class="n">mean_f</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ZeroMean</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;const&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"const"</span><span class="p">:</span>
         <span class="n">mean_f</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ConstantMean</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;negquad&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"negquad"</span><span class="p">:</span>
         <span class="n">mean_f</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">NegativeQuadratic</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown mean function!&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unknown mean function!"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">mean_f</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cov_identifier_to_covariance_function</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Transforms a covariance function identifer to an instance of the</span>
 <span class="sd">    corresponding covariance function.</span>
 
@@ -596,7 +691,7 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        Raised when the covariance function identifier is unknown.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">identifier</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">cov_f</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">covariance_functions</span><span class="o">.</span><span class="n">SquaredExponential</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">identifier</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -604,7 +699,7 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">identifier</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="n">cov_f</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">covariance_functions</span><span class="o">.</span><span class="n">Matern</span><span class="p">(</span><span class="n">identifier</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown covariance function&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unknown covariance function"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">cov_f</span>
 
@@ -618,7 +713,7 @@
     <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Define bounds, priors and samples for GP hyperparameters.</span>
 
 <span class="sd">    Parameters</span>
@@ -652,86 +747,119 @@
 <span class="sd">    ------</span>
 <span class="sd">    TypeError</span>
 <span class="sd">        Raised if the mean function is not supported by gpyreg.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Get high posterior density dataset.</span>
-    <span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_hpd</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;hpd_frac&quot;</span><span class="p">])</span>
+    <span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_hpd</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">"hpd_frac"</span><span class="p">])</span>
     <span class="n">D</span> <span class="o">=</span> <span class="n">hpd_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="c1"># s2 = None</span>
 
     <span class="c1">## Set GP hyperparameter defaults for VBMC.</span>
 
-    <span class="n">cov_bounds_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">)</span>
-    <span class="n">mean_bounds_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">)</span>
-    <span class="n">noise_bounds_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">noise</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">)</span>
+    <span class="c1"># In a coordinate where every point of the subset shares one value, the</span>
+    <span class="c1"># recommendations built from the spread of the coordinate are log(0):</span>
+    <span class="c1"># the starting length scale and its lower bound, and the starting scale</span>
+    <span class="c1"># of the negative-quadratic mean. Those take the recommendations of the</span>
+    <span class="c1"># whole training set, from which MATLAB takes the bounds of the length</span>
+    <span class="c1"># scales (`misc/gptrain_vbmc.m:174-180` leaves them unset and</span>
+    <span class="c1"># `gplite/gplite_train.m:120` fills them), so NumPy's warning of the</span>
+    <span class="c1"># logarithm of zero is silenced here.</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+        <span class="n">cov_bounds_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">)</span>
+        <span class="n">mean_bounds_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">)</span>
+        <span class="n">noise_bounds_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">noise</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">hpd_y</span><span class="p">)</span>
+    <span class="n">shared</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hpd_X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">shared</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># The length scales lead the covariance hyperparameters.</span>
+        <span class="n">cov_full_info</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"x0"</span><span class="p">,</span> <span class="s2">"LB"</span><span class="p">):</span>
+            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">shared</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov_full_info</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">shared</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">NegativeQuadratic</span><span class="p">):</span>
+            <span class="c1"># The constant and the location precede the scales.</span>
+            <span class="n">omega</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">D</span> <span class="o">+</span> <span class="n">shared</span>
+            <span class="n">mean_full_x0</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">get_bounds_info</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)[</span><span class="s2">"x0"</span><span class="p">]</span>
+            <span class="n">mean_bounds_info</span><span class="p">[</span><span class="s2">"x0"</span><span class="p">][</span><span class="n">omega</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_full_x0</span><span class="p">[</span><span class="n">omega</span><span class="p">]</span>
     <span class="c1"># Missing port: output warping hyperparameters not implemented</span>
-    <span class="n">cov_x0</span> <span class="o">=</span> <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span>
-    <span class="n">mean_x0</span> <span class="o">=</span> <span class="n">mean_bounds_info</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span>
+    <span class="n">cov_x0</span> <span class="o">=</span> <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">"x0"</span><span class="p">]</span>
+    <span class="n">mean_x0</span> <span class="o">=</span> <span class="n">mean_bounds_info</span><span class="p">[</span><span class="s2">"x0"</span><span class="p">]</span>
 
-    <span class="n">noise_x0</span> <span class="o">=</span> <span class="n">noise_bounds_info</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span>
-    <span class="n">min_noise</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_gp_noise&quot;</span><span class="p">]</span>
+    <span class="n">noise_x0</span> <span class="o">=</span> <span class="n">noise_bounds_info</span><span class="p">[</span><span class="s2">"x0"</span><span class="p">]</span>
+    <span class="n">min_noise</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"tol_gp_noise"</span><span class="p">]</span>
+    <span class="c1"># `None` when the option is empty, which leaves it unset.</span>
+    <span class="n">given_noise_size</span> <span class="o">=</span> <span class="n">_noise_size_reading</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"noise_size"</span><span class="p">])</span>
     <span class="n">noise_mult</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;noise_size&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="p">[]:</span>
-            <span class="n">noise_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;noise_size&quot;</span><span class="p">],</span> <span class="n">min_noise</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"uncertainty_handling_level"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">given_noise_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">noise_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">given_noise_size</span><span class="p">,</span> <span class="n">min_noise</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">noise_size</span> <span class="o">=</span> <span class="n">min_noise</span>
         <span class="n">noise_std</span> <span class="o">=</span> <span class="mf">0.5</span>
-    <span class="k">elif</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="c1"># This branch is not used and tested at the moment.</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;noise_size&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="p">[]:</span>
-            <span class="n">noise_mult</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;noise_size&quot;</span><span class="p">],</span> <span class="n">min_noise</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"uncertainty_handling_level"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">given_noise_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">noise_mult</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">given_noise_size</span><span class="p">,</span> <span class="n">min_noise</span><span class="p">)</span>
             <span class="n">noise_mult_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">noise_mult</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">noise_mult_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
         <span class="n">noise_size</span> <span class="o">=</span> <span class="n">min_noise</span>
         <span class="n">noise_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"uncertainty_handling_level"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">noise_size</span> <span class="o">=</span> <span class="n">min_noise</span>
         <span class="n">noise_std</span> <span class="o">=</span> <span class="mf">0.5</span>
     <span class="n">noise_x0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">noise_size</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">noise_mult</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">noise_x0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">noise_mult</span><span class="p">)</span>
     <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">cov_x0</span><span class="p">,</span> <span class="n">noise_x0</span><span class="p">,</span> <span class="n">mean_x0</span><span class="p">])</span>
 
     <span class="c1"># Missing port: output warping hyperparameters not implemented</span>
 
     <span class="c1">## Change default bounds and set priors over hyperparameters.</span>
 
+    <span class="c1"># Each statement below replaces one bound of a hyperparameter and</span>
+    <span class="c1"># carries the other one over, so that the entries a later statement</span>
+    <span class="c1"># leaves alone survive. A NaN bound is left to gpyreg, which fills it</span>
+    <span class="c1"># with its recommendation from the training set when the GP is fitted.</span>
     <span class="n">bounds</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;upper_gp_length_factor&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"upper_gp_length_factor"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># Max GP input length scale</span>
-        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;covariance_log_lengthscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;upper_gp_length_factor&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">pub_tran</span> <span class="o">-</span> <span class="n">plb_tran</span><span class="p">)),</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">"covariance_log_lengthscale"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">bounds</span><span class="p">[</span><span class="s2">"covariance_log_lengthscale"</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"upper_gp_length_factor"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">pub_tran</span> <span class="o">-</span> <span class="n">plb_tran</span><span class="p">)),</span>
         <span class="p">)</span>
     <span class="c1"># Increase minimum noise.</span>
-    <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;noise_log_scale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">min_noise</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">bounds</span><span class="p">[</span><span class="s2">"noise_log_scale"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">min_noise</span><span class="p">),</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">"noise_log_scale"</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
 
     <span class="c1"># Missing port: we only implement the mean functions that gpyreg supports.</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ZeroMean</span><span class="p">):</span>
         <span class="k">pass</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">ConstantMean</span><span class="p">):</span>
         <span class="c1"># Lower maximum constant mean</span>
-        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mean_const&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">))</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">"mean_const"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="s2">"mean_const"</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">))</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">mean_functions</span><span class="o">.</span><span class="n">NegativeQuadratic</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_quadratic_mean_bound&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_quadratic_mean_bound"</span><span class="p">]:</span>
             <span class="n">delta_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
-                <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_sd&quot;</span><span class="p">],</span>
+                <span class="n">options</span><span class="p">[</span><span class="s2">"tol_sd"</span><span class="p">],</span>
                 <span class="nb">min</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">)),</span>
             <span class="p">)</span>
-            <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mean_const&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_y</span><span class="p">)</span>
+            <span class="n">bounds</span><span class="p">[</span><span class="s2">"mean_const"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">bounds</span><span class="p">[</span><span class="s2">"mean_const"</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_y</span><span class="p">,</span>
+            <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The mean function is not supported by gpyreg.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"The mean function is not supported by gpyreg."</span><span class="p">)</span>
 
-    <span class="c1"># Set lower bounds for GP&#39;s outputscale and lengthscale</span>
+    <span class="c1"># Set lower bounds for GP's outputscale and lengthscale</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">covariance_functions</span><span class="o">.</span><span class="n">SquaredExponential</span><span class="p">):</span>
-        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;covariance_log_outputscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">&quot;LB&quot;</span><span class="p">][</span><span class="n">D</span><span class="p">],</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">"covariance_log_outputscale"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">"LB"</span><span class="p">][</span><span class="n">D</span><span class="p">],</span>
+            <span class="n">bounds</span><span class="p">[</span><span class="s2">"covariance_log_outputscale"</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
-        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;covariance_log_lengthscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">&quot;LB&quot;</span><span class="p">][:</span><span class="n">D</span><span class="p">],</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">"covariance_log_lengthscale"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">"LB"</span><span class="p">][:</span><span class="n">D</span><span class="p">],</span>
+            <span class="n">bounds</span><span class="p">[</span><span class="s2">"covariance_log_lengthscale"</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
         <span class="c1"># These bounds are wider since cov_bounds_info is based on the</span>
         <span class="c1"># high-posterior-density region as opposed to the full data</span>
@@ -741,13 +869,13 @@
     <span class="n">priors</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">get_priors</span><span class="p">()</span>
 
     <span class="c1"># Hyperprior over observation noise</span>
-    <span class="n">priors</span><span class="p">[</span><span class="s2">&quot;noise_log_scale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;student_t&quot;</span><span class="p">,</span>
+    <span class="n">priors</span><span class="p">[</span><span class="s2">"noise_log_scale"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"student_t"</span><span class="p">,</span>
         <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">noise_size</span><span class="p">),</span> <span class="n">noise_std</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">noise_mult</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">priors</span><span class="p">[</span><span class="s2">&quot;noise_provided_log_multiplier&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;student_t&quot;</span><span class="p">,</span>
+        <span class="n">priors</span><span class="p">[</span><span class="s2">"noise_provided_log_multiplier"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">"student_t"</span><span class="p">,</span>
             <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">noise_mult</span><span class="p">),</span> <span class="n">noise_mult_std</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
         <span class="p">)</span>
 
@@ -755,10 +883,12 @@
 
     <span class="c1"># Change bounds and hyperprior over output-dependent noise modulation</span>
     <span class="c1"># Note: currently this branch is not used.</span>
-    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_noise_fun&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;noise_rectified_log_multiplier&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span>
+    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"gp_noise_fun"</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Only the threshold, the first of the two parameters, is bounded</span>
+        <span class="c1"># here; the bounds of the second are left to gpyreg.</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">"noise_rectified_log_multiplier"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
         <span class="p">)</span>
 
         <span class="c1"># These two lines were commented out in MATLAB as well.</span>
@@ -768,8 +898,8 @@
         <span class="c1"># hypprior.sigma(Ncov+2) = 1;</span>
 
         <span class="c1"># Only set the first of the two parameters here.</span>
-        <span class="n">priors</span><span class="p">[</span><span class="s2">&quot;noise_rectified_log_multiplier&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;student_t&quot;</span><span class="p">,</span>
+        <span class="n">priors</span><span class="p">[</span><span class="s2">"noise_rectified_log_multiplier"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">"student_t"</span><span class="p">,</span>
             <span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
         <span class="p">)</span>
 
@@ -780,11 +910,11 @@
     <span class="c1"># such as input length scales, based on statistics of the GP training</span>
     <span class="c1"># inputs. However, this approach could lead to instabilities. From the</span>
     <span class="c1"># 2020 paper, we switched to a fixed prior based on the plausible bounds.</span>
-    <span class="n">priors</span><span class="p">[</span><span class="s2">&quot;covariance_log_lengthscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;student_t&quot;</span><span class="p">,</span>
+    <span class="n">priors</span><span class="p">[</span><span class="s2">"covariance_log_lengthscale"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"student_t"</span><span class="p">,</span>
         <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_length_prior_mean&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">pub_tran</span> <span class="o">-</span> <span class="n">plb_tran</span><span class="p">)),</span>
-            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_length_prior_std&quot;</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"gp_length_prior_mean"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">pub_tran</span> <span class="o">-</span> <span class="n">plb_tran</span><span class="p">)),</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">"gp_length_prior_std"</span><span class="p">],</span>
             <span class="mi">3</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span>
@@ -795,33 +925,33 @@
 
     <span class="c1">## Number of GP hyperparameter samples.</span>
 
-    <span class="n">stop_sampling</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;stop_sampling&quot;</span><span class="p">]</span>
+    <span class="n">stop_sampling</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"stop_sampling"</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">stop_sampling</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># Number of samples</span>
-        <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;ns_gp_max&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">])</span>
+        <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"ns_gp_max"</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"N"</span><span class="p">])</span>
 
         <span class="c1"># Maximum sample cutoff</span>
-        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">]:</span>
-            <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;ns_gp_max_warmup&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"warmup"</span><span class="p">]:</span>
+            <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">"ns_gp_max_warmup"</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;ns_gp_max_main&quot;</span><span class="p">])</span>
+            <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">"ns_gp_max_main"</span><span class="p">])</span>
 
         <span class="c1"># Stop sampling after reaching max number of training points</span>
-        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;stable_gp_sampling&quot;</span><span class="p">]:</span>
-            <span class="n">stop_sampling</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"N"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"stable_gp_sampling"</span><span class="p">]:</span>
+            <span class="n">stop_sampling</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"N"</span><span class="p">]</span>
 
         <span class="c1"># Stop sampling after reaching threshold of variational components</span>
-        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;vp_K&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;stable_gp_vp_k&quot;</span><span class="p">]:</span>
-            <span class="n">stop_sampling</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"vp_K"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"stable_gp_vp_k"</span><span class="p">]:</span>
+            <span class="n">stop_sampling</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"N"</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">stop_sampling</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;stable_gp_samples&quot;</span><span class="p">]</span>
+        <span class="n">gp_s_N</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"stable_gp_samples"</span><span class="p">]</span>
 
     <span class="n">gp</span><span class="o">.</span><span class="n">set_bounds</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
     <span class="n">gp</span><span class="o">.</span><span class="n">set_priors</span><span class="p">(</span><span class="n">priors</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">gp</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gp</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">round_half_away_from_zero</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_gp_training_options</span><span class="p">(</span>
@@ -830,8 +960,9 @@
     <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>
     <span class="n">hyp_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">gp_s_N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">hyp_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get options for training GP hyperparameters.</span>
 
 <span class="sd">    Parameters</span>
@@ -846,6 +977,9 @@
 <span class="sd">        Hyperparameter summary statistic dictionary.</span>
 <span class="sd">    gp_s_N : int</span>
 <span class="sd">        Number of samples for the GP fitting.</span>
+<span class="sd">    hyp_n : int, optional</span>
+<span class="sd">        Number of hyperparameters in the current GP model. When supplied,</span>
+<span class="sd">        this is authoritative over the possibly stale value in ``hyp_dict``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    =======</span>
@@ -857,145 +991,106 @@
 <span class="sd">    ValueError</span>
 <span class="sd">        Raised if the MCMC sampler for GP hyperparameters is unknown.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">iteration</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span>
+    <span class="n">iteration</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">iteration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">r_index</span> <span class="o">=</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;r_index&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">r_index</span> <span class="o">=</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">"r_index"</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">r_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
     <span class="n">gp_train</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;thin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_thin&quot;</span><span class="p">]</span>  <span class="c1"># MCMC thinning</span>
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_method&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_train_init_method&quot;</span><span class="p">]</span>
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;tol_opt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_tol_opt&quot;</span><span class="p">]</span>
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;tol_opt_mcmc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_tol_opt_mcmc&quot;</span><span class="p">]</span>
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"thin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_sample_thin"</span><span class="p">]</span>  <span class="c1"># MCMC thinning</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_method"</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_train_init_method"</span><span class="p">]</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"tol_opt"</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_tol_opt"</span><span class="p">]</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"tol_opt_mcmc"</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_tol_opt_mcmc"</span><span class="p">]</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"widths"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Get hyperparameter posterior covariance from previous iterations</span>
-    <span class="n">hyp_cov</span> <span class="o">=</span> <span class="n">_get_hyp_cov</span><span class="p">(</span><span class="n">optim_state</span><span class="p">,</span> <span class="n">iteration_history</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">hyp_dict</span><span class="p">)</span>
+    <span class="n">hyp_cov</span> <span class="o">=</span> <span class="n">_get_hyp_cov</span><span class="p">(</span>
+        <span class="n">optim_state</span><span class="p">,</span>
+        <span class="n">iteration_history</span><span class="p">,</span>
+        <span class="n">options</span><span class="p">,</span>
+        <span class="n">hyp_dict</span><span class="p">,</span>
+        <span class="n">hyp_n</span><span class="o">=</span><span class="n">hyp_n</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="c1"># Setup MCMC sampler</span>
-    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;slicesample&quot;</span><span class="p">:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;slicesample&quot;</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">width_mult</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">],</span> <span class="n">r_index</span><span class="p">)</span>
+    <span class="c1"># Setup MCMC sampler. Slice sampling is the one sampler the GP backend</span>
+    <span class="c1"># runs, and the only value the option takes.</span>
+    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_hyp_sampler"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"slicesample"</span><span class="p">:</span>
+        <span class="n">gp_train</span><span class="p">[</span><span class="s2">"sampler"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"slicesample"</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_sample_widths"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">width_mult</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"gp_sample_widths"</span><span class="p">],</span> <span class="n">r_index</span><span class="p">)</span>
             <span class="n">hyp_widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hyp_cov</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hyp_widths</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span>
-
-    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;npv&quot;</span><span class="p">:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;npv&quot;</span>
-
-    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;mala&quot;</span><span class="p">:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mala&quot;</span>
-        <span class="k">if</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hyp_cov</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;gp_mala_step_size&quot;</span> <span class="ow">in</span> <span class="n">optim_state</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;step_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_mala_step_size&quot;</span><span class="p">]</span>
-
-    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;slicelite&quot;</span><span class="p">:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;slicelite&quot;</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">width_mult</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">],</span> <span class="n">r_index</span><span class="p">)</span>
-            <span class="n">hyp_widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hyp_cov</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hyp_widths</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span>
-
-    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;splitsample&quot;</span><span class="p">:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;splitsample&quot;</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">width_mult</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">],</span> <span class="n">r_index</span><span class="p">)</span>
-            <span class="n">hyp_widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hyp_cov</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hyp_widths</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span>
-
-    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;covsample&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">width_mult</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">],</span> <span class="n">r_index</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">width_mult</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
-                <span class="n">r_index</span> <span class="o">&lt;</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;cov_sample_thresh&quot;</span><span class="p">]</span>
-            <span class="p">):</span>
-                <span class="n">hyp_n</span> <span class="o">=</span> <span class="n">hyp_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">hyp_cov</span> <span class="o">+</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">hyp_n</span><span class="p">)</span>
-                <span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span><span class="o">**</span><span class="mi">2</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;covsample&quot;</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;thin&quot;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">hyp_n</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">hyp_widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hyp_cov</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hyp_widths</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;slicesample&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;covsample&quot;</span>
-
-    <span class="k">elif</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;laplace&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;n_eff&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;slicesample&quot;</span>
-            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">hyp_cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">width_mult</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_sample_widths&quot;</span><span class="p">],</span> <span class="n">r_index</span><span class="p">)</span>
-                <span class="n">hyp_widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">hyp_cov</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hyp_widths</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;sampler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;laplace&quot;</span>
+            <span class="n">gp_train</span><span class="p">[</span><span class="s2">"widths"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hyp_widths</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_mult</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown MCMC sampler for GP hyperparameters&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unknown MCMC sampler for GP hyperparameters"</span><span class="p">)</span>
 
     <span class="c1"># N-dependent initial training points.</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_train_n_init&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_train_n_init_final&quot;</span><span class="p">])</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"gp_train_n_init"</span><span class="p">]</span> <span class="o">-</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_train_n_init_final"</span><span class="p">])</span>
     <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">a</span>
     <span class="n">c</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">a</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_train_n_init&quot;</span><span class="p">]</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;n_eff&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;fun_eval_start&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
-        <span class="nb">min</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;max_fun_evals&quot;</span><span class="p">],</span> <span class="mf">1e3</span><span class="p">)</span> <span class="o">-</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;fun_eval_start&quot;</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_train_n_init"</span><span class="p">]</span>
+    <span class="n">schedule_limit</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+        <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"max_fun_evals"</span><span class="p">,</span> <span class="n">options</span><span class="p">[</span><span class="s2">"max_fun_evals"</span><span class="p">]),</span> <span class="mf">1e3</span>
     <span class="p">)</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x_</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="n">x_</span><span class="o">**</span><span class="mi">3</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">d</span>
-    <span class="n">init_N</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">9</span><span class="p">)</span>
+    <span class="n">schedule_span</span> <span class="o">=</span> <span class="n">schedule_limit</span> <span class="o">-</span> <span class="n">options</span><span class="p">[</span><span class="s2">"fun_eval_start"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"budget_active"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="n">schedule_span</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># A charged or precomputed run can validly have fewer fresh calls</span>
+        <span class="c1"># than the ordinary initial-design size because cached starting rows</span>
+        <span class="c1"># cover part of that design. At that point the finite end-of-horizon</span>
+        <span class="c1"># training schedule is the meaningful limiting value.</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">elif</span> <span class="n">schedule_span</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># A budget equal to the initial design leaves the schedule no span</span>
+        <span class="c1"># to run over, and MATLAB divides by zero here</span>
+        <span class="c1"># (`misc/get_GPTrainOptions.m:98`). The count of the first fit</span>
+        <span class="c1"># equals `fun_eval_start`, and 0/0 is NaN; a count past it gives an</span>
+        <span class="c1"># infinite `x`, at which the terms of the cubic cancel to NaN. A</span>
+        <span class="c1"># count short of it, which the trimming of the warm-up can leave,</span>
+        <span class="c1"># sends MATLAB's cubic to infinity and its space-filling design to</span>
+        <span class="c1"># an error; it is given the value of the other two.</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"n_eff"</span><span class="p">]</span> <span class="o">-</span> <span class="n">options</span><span class="p">[</span><span class="s2">"fun_eval_start"</span><span class="p">])</span> <span class="o">/</span> <span class="n">schedule_span</span>
+        <span class="k">if</span> <span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"budget_active"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x_</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="n">x_</span><span class="o">**</span><span class="mi">3</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x_</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">x_</span> <span class="o">+</span> <span class="n">d</span>
+    <span class="c1"># MATLAB's `max` ignores NaN, so a NaN schedule asks for no</span>
+    <span class="c1"># space-filling points.</span>
+    <span class="n">f_x</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">init_N</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">f_x</span><span class="p">)</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">round_half_away_from_zero</span><span class="p">(</span><span class="n">f_x</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># Set other hyperparameter fitting parameters</span>
-    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;recompute_var_post&quot;</span><span class="p">]:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;burn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;thin&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">gp_s_N</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_N</span>
+    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"recompute_var_post"</span><span class="p">]:</span>
+        <span class="n">gp_train</span><span class="p">[</span><span class="s2">"burn"</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">"thin"</span><span class="p">]</span> <span class="o">*</span> <span class="n">gp_s_N</span>
+        <span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_N"</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_N</span>
         <span class="k">if</span> <span class="n">gp_s_N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;opts_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">gp_train</span><span class="p">[</span><span class="s2">"opts_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;opts_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">gp_train</span><span class="p">[</span><span class="s2">"opts_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;burn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;thin&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">gp_train</span><span class="p">[</span><span class="s2">"burn"</span><span class="p">]</span> <span class="o">=</span> <span class="n">gp_train</span><span class="p">[</span><span class="s2">"thin"</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
         <span class="k">if</span> <span class="p">(</span>
-            <span class="n">iteration</span> <span class="o">&gt;</span> <span class="mi">1</span>
-            <span class="ow">and</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;r_index&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="o">&lt;</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_retrain_threshold&quot;</span><span class="p">]</span>
+            <span class="n">iteration</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">"r_index"</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="o">&lt;</span> <span class="n">options</span><span class="p">[</span><span class="s2">"gp_retrain_threshold"</span><span class="p">]</span>
         <span class="p">):</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_hyp_sampler&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;slicelite&quot;</span><span class="p">:</span>
-                <span class="c1"># TODO: gp_retrain_threshold is by default 1, so we get</span>
-                <span class="c1">#       division by zero. what should the default be?</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;burn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="nb">max</span><span class="p">(</span>
-                        <span class="mi">1</span><span class="p">,</span>
-                        <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-                            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;thin&quot;</span><span class="p">]</span>
-                            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
-                                <span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;r_index&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                                <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;gp_retrain_threshold&quot;</span><span class="p">])</span>
-                            <span class="p">)</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="o">*</span> <span class="n">gp_s_N</span>
-                <span class="p">)</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;thin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="n">gp_s_N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;opts_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">gp_train</span><span class="p">[</span><span class="s2">"opts_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;opts_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">gp_train</span><span class="p">[</span><span class="s2">"opts_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;init_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_N</span>
+            <span class="n">gp_train</span><span class="p">[</span><span class="s2">"init_N"</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_N</span>
             <span class="k">if</span> <span class="n">gp_s_N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;opts_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">gp_train</span><span class="p">[</span><span class="s2">"opts_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;opts_N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="n">gp_train</span><span class="p">[</span><span class="s2">"opts_N"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
 
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">)</span>
-    <span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;burn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">gp_train</span><span class="p">[</span><span class="s2">&quot;burn&quot;</span><span class="p">])</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"n_samples"</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_half_away_from_zero</span><span class="p">(</span><span class="n">gp_s_N</span><span class="p">)</span>
+    <span class="n">gp_train</span><span class="p">[</span><span class="s2">"burn"</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_half_away_from_zero</span><span class="p">(</span><span class="n">gp_train</span><span class="p">[</span><span class="s2">"burn"</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">gp_train</span>
 
@@ -1005,8 +1100,9 @@
     <span class="n">iteration_history</span><span class="p">:</span> <span class="n">IterationHistory</span><span class="p">,</span>
     <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>
     <span class="n">hyp_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">hyp_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get hyperparameter posterior covariance.</span>
 
 <span class="sd">    Parameters</span>
@@ -1019,72 +1115,91 @@
 <span class="sd">        Options from the VBMC instance we are calling this from.</span>
 <span class="sd">    hyp_dict : dict</span>
 <span class="sd">        Hyperparameter summary statistic dictionary.</span>
+<span class="sd">    hyp_n : int, optional</span>
+<span class="sd">        Number of hyperparameters in the current GP model. When supplied,</span>
+<span class="sd">        this is authoritative over the possibly stale value in ``hyp_dict``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    =======</span>
 <span class="sd">    hyp_cov : ndarray, optional</span>
 <span class="sd">        The hyperparameter posterior covariance if it can be computed.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;weighted_hyp_cov&quot;</span><span class="p">]:</span>
-            <span class="n">w_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">hyp_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="c1"># Be careful with off-by-ones compared to MATLAB here</span>
-                    <span class="n">diff_mult</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
-                        <span class="mi">1</span><span class="p">,</span>
-                        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
-                            <span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;sKL&quot;</span><span class="p">][</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span>
-                            <span class="o">/</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_skl&quot;</span><span class="p">]</span>
-                            <span class="o">*</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;fun_evals_per_iter&quot;</span><span class="p">]</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="n">w</span> <span class="o">*=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;hyp_run_weight&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="p">(</span>
-                        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;fun_evals_per_iter&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">diff_mult</span>
-                    <span class="p">)</span>
-                <span class="c1"># Check if weight is getting too small.</span>
-                <span class="k">if</span> <span class="n">w</span> <span class="o">&lt;</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_cov_weight&quot;</span><span class="p">]:</span>
-                    <span class="k">break</span>
+    <span class="k">if</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="p">[</span><span class="s2">"weighted_hyp_cov"</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">"run_cov"</span><span class="p">]</span>
 
-                <span class="n">hyp</span> <span class="o">=</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;gp_hyp_full&quot;</span><span class="p">][</span>
-                    <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span>
-                <span class="p">]</span>
-                <span class="n">hyp_n</span> <span class="o">=</span> <span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hyp_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">hyp_list</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                    <span class="n">hyp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hyp</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-                    <span class="n">w_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">hyp_n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">hyp_n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">hyp_n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">current_hyp</span> <span class="o">=</span> <span class="n">hyp_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"hyp"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">current_hyp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">current_hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">current_hyp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">current_hyp</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">hyp_n</span> <span class="o">=</span> <span class="n">current_hyp</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">elif</span> <span class="n">current_hyp</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">current_hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">hyp_n</span> <span class="o">=</span> <span class="n">current_hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">hyp_n</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">hyp_n</span><span class="p">)</span> <span class="o">!=</span> <span class="n">hyp_n</span> <span class="ow">or</span> <span class="n">hyp_n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">hyp_n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hyp_n</span><span class="p">)</span>
 
-            <span class="n">w_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">w_list</span><span class="p">)</span>
-            <span class="n">hyp_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">hyp_list</span><span class="p">)</span>
+    <span class="n">sample_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">weight_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">iteration_weight</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Be careful with off-by-ones compared to MATLAB here.</span>
+            <span class="n">skl_index</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span> <span class="o">-</span> <span class="n">i</span>
+            <span class="n">diff_mult</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="n">iteration_history</span><span class="p">[</span><span class="s2">"sKL"</span><span class="p">][</span><span class="n">skl_index</span><span class="p">]</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">"tol_skl"</span><span class="p">]</span> <span class="o">*</span> <span class="n">options</span><span class="p">[</span><span class="s2">"fun_evals_per_iter"</span><span class="p">])</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">iteration_weight</span> <span class="o">*=</span> <span class="n">options</span><span class="p">[</span><span class="s2">"hyp_run_weight"</span><span class="p">]</span> <span class="o">**</span> <span class="p">(</span>
+                <span class="n">options</span><span class="p">[</span><span class="s2">"fun_evals_per_iter"</span><span class="p">]</span> <span class="o">*</span> <span class="n">diff_mult</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">iteration_weight</span> <span class="o">&lt;</span> <span class="n">options</span><span class="p">[</span><span class="s2">"tol_cov_weight"</span><span class="p">]:</span>
+            <span class="k">break</span>
 
-            <span class="c1"># Normalize weights</span>
-            <span class="n">w_list</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="c1"># Weighted mean</span>
-            <span class="n">mu_star</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">hyp_list</span> <span class="o">*</span> <span class="n">w_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">history_index</span> <span class="o">=</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">"iter"</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span>
+        <span class="n">historical_hyp</span> <span class="o">=</span> <span class="n">iteration_history</span><span class="p">[</span><span class="s2">"gp_hyp_full"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">history_index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">historical_hyp</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">historical_hyp</span><span class="p">[</span><span class="n">history_index</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">hyp</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">hyp_n</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">sample_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hyp</span><span class="p">)</span>
+        <span class="n">weight_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">iteration_weight</span> <span class="o">/</span> <span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="p">)</span>
 
-            <span class="c1"># Weighted covariance matrix</span>
-            <span class="n">hyp_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">hyp_list</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">hyp_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">hyp_n</span><span class="p">,</span> <span class="n">hyp_n</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">hyp_list</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
-                <span class="n">hyp_cov</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
-                    <span class="n">w_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">hyp_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu_star</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">hyp_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu_star</span><span class="p">),</span>
-                <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_blocks</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-            <span class="n">hyp_cov</span> <span class="o">/=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w_list</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">sample_blocks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">weight_blocks</span><span class="p">)</span>
+    <span class="n">total_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">total_weight</span><span class="p">)</span> <span class="ow">or</span> <span class="n">total_weight</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">weights</span> <span class="o">/=</span> <span class="n">total_weight</span>
 
-            <span class="k">return</span> <span class="n">hyp_cov</span>
+    <span class="n">correction</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span> <span class="ow">or</span> <span class="n">correction</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="k">return</span> <span class="n">hyp_dict</span><span class="p">[</span><span class="s2">&quot;run_cov&quot;</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">samples</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">centered</span> <span class="o">=</span> <span class="n">samples</span> <span class="o">-</span> <span class="n">mean</span>
+    <span class="n">hyp_cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">centered</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">centered</span>
+    <span class="n">hyp_cov</span> <span class="o">/=</span> <span class="n">correction</span>
+    <span class="k">return</span> <span class="n">hyp_cov</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_training_data</span><span class="p">(</span><span class="n">function_logger</span><span class="p">:</span> <span class="n">FunctionLogger</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get training data for building GP surrogate.</span>
 
 <span class="sd">    Parameters</span>
@@ -1103,7 +1218,7 @@
 <span class="sd">    t_train, ndarray</span>
 <span class="sd">        Array of the times it took to evaluate the function on the training</span>
 <span class="sd">        data.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">x_train</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">function_logger</span><span class="o">.</span><span class="n">X_flag</span><span class="p">,</span> <span class="p">:]</span>
     <span class="n">y_train</span> <span class="o">=</span> <span class="n">function_logger</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">function_logger</span><span class="o">.</span><span class="n">X_flag</span><span class="p">]</span>
@@ -1120,7 +1235,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_noise</span><span class="p">(</span><span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate GP observation noise at high posterior density.</span>
+<span class="w">    </span><span class="sd">"""Estimate GP observation noise at high posterior density.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ==========</span>
@@ -1131,14 +1246,15 @@
 <span class="sd">    =======</span>
 <span class="sd">    est : float</span>
 <span class="sd">        The estimate of observation noise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">hpd_top</span> <span class="o">=</span> <span class="mf">0.2</span>
     <span class="n">N</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="c1"># Subsample high posterior density dataset</span>
-    <span class="c1"># Sort by descending order, not ascending.</span>
-    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># Sort by descending order, not ascending, keeping points of equal</span>
+    <span class="c1"># target value in the order they were given.</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">gp</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
     <span class="n">hpd_N</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">hpd_top</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span>
     <span class="n">hpd_X</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">hpd_N</span><span class="p">]]</span>
     <span class="n">hpd_y</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">hpd_N</span><span class="p">]]</span>
@@ -1161,8 +1277,74 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sn2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_lean_gp</span><span class="p">(</span><span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Copy a GP without the posterior factors, for the iteration history.</span>
+
+<span class="sd">    The copy keeps the training data (``X``, ``y``, ``s2``), the</span>
+<span class="sd">    hyperparameter samples and the model (covariance, mean and noise</span>
+<span class="sd">    functions, hyperparameter priors and bounds), and drops the per-sample</span>
+<span class="sd">    posterior quantities: the Cholesky factor ``L`` (``N`` by ``N`` per</span>
+<span class="sd">    hyperparameter sample) and the vectors ``alpha`` and ``sW``.</span>
+<span class="sd">    :py:func:`_restore_gp_posteriors` recomputes them from what the copy</span>
+<span class="sd">    keeps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+<span class="sd">    gp : GP</span>
+<span class="sd">        The GP to copy. It is left unchanged.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    =======</span>
+<span class="sd">    lean : GP</span>
+<span class="sd">        A shallow copy of ``gp`` sharing its training data and model, with</span>
+<span class="sd">        posteriors that hold only the hyperparameters and with an empty</span>
+<span class="sd">        ``temporary_data``.</span>
+<span class="sd">    """</span>
+    <span class="n">lean</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">gp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">posteriors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Assigns a fresh `posteriors` array on the copy, built from the</span>
+        <span class="c1"># hyperparameters alone; nothing else on the copy is touched, so</span>
+        <span class="c1"># `gp` keeps its own posteriors and factors. (`lean.clean()` would</span>
+        <span class="c1"># not do: it empties the Posterior objects in place, and the shallow</span>
+        <span class="c1"># copy shares them with `gp`.)</span>
+        <span class="n">lean</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">hyp</span><span class="o">=</span><span class="n">gp</span><span class="o">.</span><span class="n">get_hyperparameters</span><span class="p">(</span><span class="n">as_array</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">compute_posterior</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">lean</span><span class="o">.</span><span class="n">temporary_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">lean</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_restore_gp_posteriors</span><span class="p">(</span><span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Recompute the posterior factors of a GP that lacks them.</span>
+
+<span class="sd">    The factors are a deterministic function of the training data and the</span>
+<span class="sd">    hyperparameters, so the ones recomputed here are those a GP stripped by</span>
+<span class="sd">    :py:func:`_lean_gp` had before. A GP that already carries its factors is</span>
+<span class="sd">    returned untouched.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+<span class="sd">    gp : GP</span>
+<span class="sd">        The GP to complete, modified in place.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    =======</span>
+<span class="sd">    gp : GP</span>
+<span class="sd">        The same object, with every posterior carrying its factors.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">gp</span><span class="o">.</span><span class="n">posteriors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="n">posterior</span><span class="o">.</span><span class="n">alpha</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">posterior</span> <span class="ow">in</span> <span class="n">gp</span><span class="o">.</span><span class="n">posteriors</span>
+    <span class="p">):</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">hyp</span><span class="o">=</span><span class="n">gp</span><span class="o">.</span><span class="n">get_hyperparameters</span><span class="p">(</span><span class="n">as_array</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">compute_posterior</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">gp</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">reupdate_gp</span><span class="p">(</span><span class="n">function_logger</span><span class="p">:</span> <span class="n">FunctionLogger</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Quick posterior reupdate of Gaussian process.</span>
 
 <span class="sd">    Parameters</span>
@@ -1175,7 +1357,7 @@
 <span class="sd">    =======</span>
 <span class="sd">    gp : GP</span>
 <span class="sd">        The updated Gaussian process.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">s2_train</span><span class="p">,</span> <span class="n">t_train</span> <span class="o">=</span> <span class="n">_get_training_data</span><span class="p">(</span><span class="n">function_logger</span><span class="p">)</span>
     <span class="n">gp</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">x_train</span>
@@ -1238,6 +1420,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -1249,8 +1434,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

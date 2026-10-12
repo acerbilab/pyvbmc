@@ -1,0 +1,863 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC) &#8212; PyVBMC</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/wrap.css?v=fad812b3" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_examples/pyvbmc_example_7_stacking';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_7_stacking.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PyVBMC Example 8: Fitting a PyMC model" href="pyvbmc_example_8_pymc.html" />
+    <link rel="prev" title="PyVBMC Example 6: Noisy log-likelihood evaluations" href="pyvbmc_example_6_noisy_likelihoods.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <img src="../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">PyVBMC: Frequently Asked Questions</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Instructions for developers and contributors</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../about_us.html">About us</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_7_stacking.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch on Colab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img alt="Colab logo" src="../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/examples/pyvbmc_example_7_stacking.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_examples/pyvbmc_example_7_stacking.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/_examples/pyvbmc_example_7_stacking.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-a-bimodal-target">1. Model definition: a bimodal target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-pyvbmc-several-times">2. Run PyVBMC several times</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stack-the-posteriors">3. Stack the posteriors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-from-the-stacked-posterior">4. Sample from the stacked posterior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save-and-load-the-stacked-posterior">5. Save and load the stacked posterior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">6. Conclusions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-7-stacking-the-posteriors-of-several-runs-s-vbmc">
+<h1>PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)<a class="headerlink" href="#pyvbmc-example-7-stacking-the-posteriors-of-several-runs-s-vbmc" title="Link to this heading">#</a></h1>
+<p>In this notebook, we combine the variational posteriors of several independent PyVBMC runs into a single <em>stacked posterior</em> with S-VBMC (Stacking Variational Bayesian Monte Carlo; Silvestrin, Li &amp; Acerbi, 2025).</p>
+<p>Running PyVBMC several times from different starting points is standard practice to check that the runs agree (see Example 4). When they do not, for instance because the posterior is multimodal and each run captures only some of the modes, S-VBMC pools the mixture components of all runs and optimizes their weights against the <em>stacked ELBO</em>, using the expected log-joint statistics that every run already stores. Stacking therefore needs <strong>no further evaluations of the model</strong>.</p>
+<p>This notebook is Part 7 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_7_full_code.py">here</a>. S-VBMC needs the optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> dependency: install it with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[torch]&quot;</span></code> (see the installation instructions for a CPU-only torch).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">if</span> <span class="s2">"google.colab"</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>  <span class="c1"># Colab lacks PyVBMC: install it</span>
+    <span class="o">%</span><span class="k">pip</span> install --upgrade "pyvbmc[torch]"
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logsumexp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span><span class="p">,</span> <span class="n">SVBMC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.svbmc.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_init_bounds</span><span class="p">,</span> <span class="n">overlay_corner_plot</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="model-definition-a-bimodal-target">
+<h2>1. Model definition: a bimodal target<a class="headerlink" href="#model-definition-a-bimodal-target" title="Link to this heading">#</a></h2>
+<p>We take a two-dimensional target with two well-separated modes, an equal mixture of two Gaussians, as a stand-in for a multimodal posterior. Since we know the target, we can later compare the individual runs and the stacked posterior against ground-truth samples. As usual, PyVBMC only needs the unnormalized log density (the log-joint), here defined directly.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">modes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]])</span>
+<span class="n">mode_sd</span> <span class="o">=</span> <span class="mf">0.8</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">log_joint</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">log_comps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">scs</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">mode_sd</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log_comps</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_truth</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+    <span class="n">which</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">modes</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">modes</span><span class="p">[</span><span class="n">which</span><span class="p">]</span> <span class="o">+</span> <span class="n">mode_sd</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+
+
+<span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">)</span>  <span class="c1"># hard bounds</span>
+<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="mf">10.0</span><span class="p">)</span>
+<span class="n">PLB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="mf">5.0</span><span class="p">)</span>  <span class="c1"># plausible bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="mf">5.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="run-pyvbmc-several-times">
+<h2>2. Run PyVBMC several times<a class="headerlink" href="#run-pyvbmc-several-times" title="Link to this heading">#</a></h2>
+<p>We start each run from a different random point in the plausible box. <code class="docutils literal notranslate"><span class="pre">find_init_bounds</span></code> returns the box to draw starting points from (the plausible bounds when given, else the bounds). We run four times with different seeds and keep the returned posteriors. Each posterior carries the run’s ELBO estimate and its uncertainty, whether PyVBMC judged the run converged (<code class="docutils literal notranslate"><span class="pre">stable</span></code>), and the expected log-joint statistics that stacking needs. S-VBMC keeps only the converged runs whose expected log-joint is precise enough, and uses their ELBOs to initialize the weights.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_runs</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sample_lb</span><span class="p">,</span> <span class="n">sample_ub</span> <span class="o">=</span> <span class="n">find_init_bounds</span><span class="p">(</span><span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+
+<span class="n">vps</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">sample_lb</span><span class="p">,</span> <span class="n">sample_ub</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+        <span class="n">log_joint</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"display"</span><span class="p">:</span> <span class="s2">"off"</span><span class="p">},</span> <span class="n">seed</span><span class="o">=</span><span class="n">i</span>
+    <span class="p">)</span>
+    <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+    <span class="n">vps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Run </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: x0 = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">x0</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
+        <span class="sa">f</span><span class="s2">"ELBO = </span><span class="si">{</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">'elbo'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">'elbo_sd'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, "</span>
+        <span class="sa">f</span><span class="s2">"converged: </span><span class="si">{</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">'stable'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Run 0: x0 = [ 1.37 -2.3 ], ELBO = 0.009 +/- 0.001, converged: True
+Run 1: x0 = [-4.59 -4.83], ELBO = -0.694 +/- 0.001, converged: True
+Run 2: x0 = [3.13 4.13], ELBO = -0.000 +/- 0.001, converged: True
+Run 3: x0 = [1.07 2.29], ELBO = 0.010 +/- 0.001, converged: True
+</pre></div>
+</div>
+</div>
+</div>
+<p>The target is normalized, so its log evidence is 0. A run that captures a single mode misses half of the probability mass and reports an ELBO close to <span class="math notranslate nohighlight">\(\log(1/2) \approx -0.69\)</span>; a run that captures both modes reports an ELBO close to 0. Every run is converged by PyVBMC’s criteria, which judge the stability of the solution found, not whether every mode was found: this is exactly the situation stacking is for.</p>
+</section>
+<section id="stack-the-posteriors">
+<h2>3. Stack the posteriors<a class="headerlink" href="#stack-the-posteriors" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code> takes the list of posteriors and pools the components of the retained runs. It discards runs that did not converge or whose expected log-joint is too uncertain (<code class="docutils literal notranslate"><span class="pre">s_max=np.sqrt(5)</span></code> by default), and raises an error if fewer than <code class="docutils literal notranslate"><span class="pre">M_min</span></code> runs remain (<code class="docutils literal notranslate"><span class="pre">M_min=2/3</span></code>, so the default requires two thirds of the input runs).</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">optimize()</span></code> adjusts the weights of all pooled components to maximize the stacked ELBO. It modifies the <code class="docutils literal notranslate"><span class="pre">SVBMC</span></code> object in place, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>, and leaves the input posteriors unchanged.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stacked</span> <span class="o">=</span> <span class="n">SVBMC</span><span class="p">(</span><span class="n">vps</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">stacked</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">n_samples_final</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Headline stacked ELBO:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"SD of the raw estimate: "</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Headline method:        "</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"headline_method"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Raw ELBO:               "</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Noise status source:    "</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">noise_status_source</span><span class="p">)</span>
+
+<span class="c1"># Total weight assigned to each retained run:</span>
+<span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">K</span><span class="p">)])</span>
+<span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">M</span><span class="p">):</span>
+    <span class="n">share</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Run </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">: total weight </span><span class="si">{</span><span class="n">share</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Got 4 well-converged runs after filters.
+Tip: Stacking 3–5 well-converged VBMC runs is usually enough. On hard problems, such as multimodal posteriors, stacking more runs can still improve the posterior.
+https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_7_stacking.html
+Optimizing the stacked ELBO w.r.t. all weights.
+Initial elbo = 0.02524028723755123
+iter 5: elbo = 0.03058804897233003
+iter 10: elbo = -0.006145802149877255
+Headline stacked ELBO: 0.018
+SD of the raw estimate:  0.014
+Headline method:         raw
+Raw ELBO:                0.018
+Noise status source:     ('recorded', 'recorded', 'recorded', 'recorded')
+Run 0: total weight 0.321
+Run 1: total weight 0.122
+Run 2: total weight 0.286
+Run 3: total weight 0.271
+</pre></div>
+</div>
+</div>
+</div>
+<p>The scalar <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> is the headline estimate of the stacked ELBO. This target is noiseless, so S-VBMC reports a fresh raw estimate at the selected weights. The target’s exact log evidence is 0, but the reported ELBO remains an estimate. If any retained run is noisy, <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> normally reports a two-level shrinkage estimate designed to reduce the upward selection bias from optimizing the weights on uncertain GP estimates. Residual bias may remain.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code> combines the Monte Carlo uncertainty of the entropy estimate and the GP quadrature uncertainty for the raw estimate at the selected weights. It excludes selection bias and does not propagate the shrinkage, so it is not a calibrated confidence interval for the headline of a noisy stack.</p>
+<p>See the <a class="reference external" href="https://acerbilab.org/pyvbmc/api/classes/svbmc.html">S-VBMC API reference</a> for the complete estimator report, the treatment of noisy runs, and migration from the standalone <code class="docutils literal notranslate"><span class="pre">svbmc</span></code> package.</p>
+</section>
+<section id="sample-from-the-stacked-posterior">
+<h2>4. Sample from the stacked posterior<a class="headerlink" href="#sample-from-the-stacked-posterior" title="Link to this heading">#</a></h2>
+<p>Each run works in its own transformed parameter space, so the mixture components of different runs are <strong>not</strong> directly comparable and the stacked posterior is not a single Gaussian mixture in the original space. Always use <code class="docutils literal notranslate"><span class="pre">stacked.sample(n)</span></code> for estimates and plots: it returns <code class="docutils literal notranslate"><span class="pre">n</span></code> independent draws in the original parameter space (a run is picked at random by its total weight, then a point from that run’s components under the optimized weights).</p>
+<p>Below we compare samples from the individual runs, from the stacked posterior and from the true target with <code class="docutils literal notranslate"><span class="pre">overlay_corner_plot</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample_truth</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">rng</span><span class="p">)]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Ground truth"</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="n">stacked</span><span class="o">.</span><span class="n">vp_list</span><span class="p">:</span>  <span class="c1"># the runs that passed the filters</span>
+    <span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Run </span><span class="si">{</span><span class="n">vps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">))</span>
+<span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"Stacked"</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">overlay_corner_plot</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b70603968e083d7dbf24cf5ec5df47fc39117e83ba232669fbf590a8b01abbdc.png" src="../_images/b70603968e083d7dbf24cf5ec5df47fc39117e83ba232669fbf590a8b01abbdc.png" />
+</div>
+</div>
+<p>A run that found a single mode places all of its mass there, while the stacked posterior recovers both modes in the right proportions. <code class="docutils literal notranslate"><span class="pre">stacked.plot()</span></code> draws the corner plot of the stacked posterior alone:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/e337f05eef25cbebc51f560e95731479825af178b494785d1827f2e896b237c1.png" src="../_images/e337f05eef25cbebc51f560e95731479825af178b494785d1827f2e896b237c1.png" />
+</div>
+</div>
+</section>
+<section id="save-and-load-the-stacked-posterior">
+<h2>5. Save and load the stacked posterior<a class="headerlink" href="#save-and-load-the-stacked-posterior" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">stacked.save(file)</span></code> writes the whole object to a file: the retained posteriors, the optimized weights, the ELBO report and the state of the random generator. <code class="docutils literal notranslate"><span class="pre">SVBMC.load(file)</span></code> reads it back. As with <code class="docutils literal notranslate"><span class="pre">vp.save</span></code>, <code class="docutils literal notranslate"><span class="pre">.pkl</span></code> is added to a name without an extension, and <code class="docutils literal notranslate"><span class="pre">save</span></code> raises <code class="docutils literal notranslate"><span class="pre">FileExistsError</span></code> rather than replace an existing file unless <code class="docutils literal notranslate"><span class="pre">overwrite=True</span></code>. The file holds no Python bytecode, so it can be loaded under another Python version, and loading needs no <code class="docutils literal notranslate"><span class="pre">torch</span></code>: a loaded stack can be sampled and plotted without it.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stacked</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"stacked_posterior.pkl"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">restored</span> <span class="o">=</span> <span class="n">SVBMC</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"stacked_posterior.pkl"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Same weights:      "</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">restored</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">w</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Same headline ELBO:"</span><span class="p">,</span> <span class="n">restored</span><span class="o">.</span><span class="n">elbo</span> <span class="o">==</span> <span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Same weights:       True
+Same headline ELBO: True
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="conclusions">
+<h2>6. Conclusions<a class="headerlink" href="#conclusions" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Run PyVBMC several times on the same model and data, then pass the returned posteriors to <code class="docutils literal notranslate"><span class="pre">SVBMC</span></code> and call <code class="docutils literal notranslate"><span class="pre">optimize()</span></code>; the stacked posterior needs no new model evaluations.</p></li>
+<li><p>Read the stacked ELBO estimate from scalar <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code>, which on a noisy target is normally a shrinkage estimate; inspect <code class="docutils literal notranslate"><span class="pre">stacked.elbo_details</span></code> for the raw, shrinkage, capped and naive estimates, and interpret <code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code> as uncertainty of the raw evaluation at the selected weights.</p></li>
+<li><p>The runs must describe the same model and data, which the object cannot check; it refuses runs that differ in the number of parameters or in the hard bounds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stacked.sample(n,</span> <span class="pre">balance_flag=True)</span></code> stratifies the draws: each run contributes within one draw of its exact share of the weights, and within a run the draws follow the component weights through the balanced allocation of <code class="docutils literal notranslate"><span class="pre">VariationalPosterior.sample</span></code> (lower variance for expectations, not an independent sample).</p></li>
+<li><p>Keep a stack with <code class="docutils literal notranslate"><span class="pre">stacked.save(file)</span></code> and restore it with <code class="docutils literal notranslate"><span class="pre">SVBMC.load(file)</span></code>.</p></li>
+</ul>
+<p>For details, see the S-VBMC paper: Silvestrin, F., Li, C., &amp; Acerbi, L. (2025). Stacking Variational Bayesian Monte Carlo. <em>Transactions on Machine Learning Research</em>. <a class="reference external" href="https://arxiv.org/abs/2504.05004">arXiv:2504.05004</a>. Please cite it together with the VBMC and PyVBMC papers when you use S-VBMC.</p>
+</section>
+<section id="acknowledgments">
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
+<p>Work on the PyVBMC package is supported by the Research Council of Finland (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme: <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pyvbmc_example_6_noisy_likelihoods.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">PyVBMC Example 6: Noisy log-likelihood evaluations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pyvbmc_example_8_pymc.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">PyVBMC Example 8: Fitting a PyMC model</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-a-bimodal-target">1. Model definition: a bimodal target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-pyvbmc-several-times">2. Run PyVBMC several times</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stack-the-posteriors">3. Stack the posteriors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-from-the-stacked-posterior">4. Sample from the stacked posterior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save-and-load-the-stacked-posterior">5. Save and load the stacked posterior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">6. Conclusions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

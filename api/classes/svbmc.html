@@ -1,0 +1,1363 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SVBMC &#8212; PyVBMC</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wrap.css?v=fad812b3" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/classes/svbmc';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/api/classes/svbmc.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="PyMCTarget" href="pymc_target.html" />
+    <link rel="prev" title="Priors" href="priors.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="priors.html">Priors</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../advanced_docs.html">Advanced documentation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="classes.html">Classes</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Instructions for developers and contributors</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../about_us.html">About us</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/docsrc/source/api/classes/svbmc.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2Fapi/classes/svbmc.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/api/classes/svbmc.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>SVBMC</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#elbo-reporting">ELBO reporting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-composite-posterior">A composite posterior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helpers">Helpers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#differences-from-the-standalone-svbmc-package">Differences from the standalone <code class="docutils literal notranslate"><span class="pre">svbmc</span></code> package</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="svbmc">
+<h1><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code><a class="headerlink" href="#svbmc" title="Link to this heading">#</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">SVBMC</span></code> class implements Stacking Variational Bayesian Monte Carlo
+(S-VBMC): it combines the variational posteriors of several completed
+VBMC runs on the same problem into one <em>stacked posterior</em> by optimizing
+the stacked ELBO with respect to the mixture weights only. The runs’
+components and their stored expected log-joint statistics stay fixed, so
+stacking needs no further evaluations of the model. Use it when repeated
+VBMC runs on the same model and data disagree, or each captures part of a
+multimodal posterior.</p>
+<p>S-VBMC needs the optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> extra (see <a class="reference internal" href="../../installation.html"><span class="doc">Installation</span></a>);
+constructing an <code class="docutils literal notranslate"><span class="pre">SVBMC</span></code> object without it raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code>.
+Importing PyVBMC does not import torch.</p>
+</div>
+<section id="basic-usage">
+<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h2>
+<p>Run VBMC several times on the same target, collect the returned posteriors,
+and stack them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span><span class="p">,</span> <span class="n">SVBMC</span>
+
+<span class="n">vps</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_joint</span><span class="p">,</span> <span class="n">x0</span><span class="p">[</span><span class="n">seed</span><span class="p">],</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+    <span class="n">vps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
+
+<span class="n">stacked</span> <span class="o">=</span> <span class="n">SVBMC</span><span class="p">(</span><span class="n">vps</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">stacked</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+
+<span class="n">samples</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>          <span class="c1"># (10000, D), original space</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">)</span>                       <span class="c1"># headline stacked ELBO</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_sd</span><span class="p">)</span>                    <span class="c1"># uncertainty of the raw estimate</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"shrunk_two_level"</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_examples/pyvbmc_example_7_stacking.html#pyvbmc-example-7-stacking-the-posteriors-of-several-runs-s-vbmc"><span class="std std-ref">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</span></a>
+walks through this on a bimodal target.</p>
+</section>
+<section id="elbo-reporting">
+<span id="svbmc-elbo-reporting"></span><h2>ELBO reporting<a class="headerlink" href="#elbo-reporting" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> is the headline estimate of the stacked ELBO, chosen by the
+noise status of the stack:</p>
+<ul class="simple">
+<li><p>For a stack treated as noiseless, it is <code class="docutils literal notranslate"><span class="pre">raw</span></code>, the ELBO from the fresh
+final evaluation at the selected weights.</p></li>
+<li><p>If any retained run is treated as noisy, it is <code class="docutils literal notranslate"><span class="pre">shrunk_two_level</span></code>, the
+two-level shrinkage estimate at the same weights and with the same final
+entropy, whatever the <code class="docutils literal notranslate"><span class="pre">version</span></code> of the optimization. Where that
+calculation is numerically undefined, the headline is <code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code>
+instead, and <code class="docutils literal notranslate"><span class="pre">optimize()</span></code> warns.</p></li>
+</ul>
+<p>The choice affects the reported value alone: the weights, and so the stacked
+posterior and its samples, come from the same optimization whatever the
+headline.</p>
+<p>The weights maximize the weighted sum of the components’ expected log-joints,
+each estimated by its run’s GP, plus the entropy of the mixture. On a noisy target,
+this optimization favors components whose estimates came out high and adds
+an upward bias to the raw ELBO. Here bias is measured against the stack’s
+ELBO computed with the exact log joint, which is itself a lower bound on the
+log evidence.</p>
+<p>The two-level shrinkage estimate targets this selection bias. It first
+shrinks component expected log-joints toward the mean within each run, using
+their GP uncertainty, and then shrinks the runs’ levels toward their common
+mean. It can also remove some bias inherited from the input VBMC runs, but it
+does not make the headline unbiased: miscalibrated GP uncertainty and
+different run-level biases can leave an error in either direction. The raw
+ELBO can likewise fall below the stack’s exact ELBO when the input runs are
+pessimistic.</p>
+<p>On our benchmarks with every component weight optimized, the remaining
+stacking optimism and the inherited bias removed by shrinkage roughly
+balanced, so noisy-stack headlines were about as biased as the input runs.
+With <code class="docutils literal notranslate"><span class="pre">version=&quot;ns&quot;</span></code>, stacking adds no weight-selection bias; shrinkage
+still applies and can move the headline below the raw value.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_details</span></code> contains the complete report:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 24.0%" />
+<col style="width: 76.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">raw</span></code></p></td>
+<td><p>ELBO from the fresh evaluation at the selected weights; the headline
+of a noiseless stack.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code></p></td>
+<td><p>ELBO with the expected log-joint capped at the component median; the
+headline of a noisy stack whose shrinkage is unavailable.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">capped_E_median</span></code></p></td>
+<td><p>ELBO with the expected log-joint capped at the retained-run median.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">naive</span></code></p></td>
+<td><p>Baseline that gives every retained run equal total weight and keeps
+that run’s original internal component weights. It inherits errors in
+the input runs and is not a bound on the optimized ELBO.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">shrunk_two_level</span></code></p></td>
+<td><p>Empirical-Bayes estimate that first shrinks component expected
+log-joints within each retained run using their full GP covariance,
+then shifts each run’s components by the change that shrinkage makes
+to the run’s level; the headline of a noisy stack. It uses the
+selected stacking weights and the same final entropy as <code class="docutils literal notranslate"><span class="pre">raw</span></code>.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> means finite input statistics led
+to a numerically undefined calculation;
+<a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a> emits a <code class="docutils literal notranslate"><span class="pre">RuntimeWarning</span></code> and
+leaves every other report value available.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">shrinkage_noise_share</span></code></p></td>
+<td><p>Diagnostic ratio of estimated noise to component spread, averaged over
+runs using their selected mixture masses. It can exceed one and is
+<code class="docutils literal notranslate"><span class="pre">None</span></code> when shrinkage is unavailable or no run with positive spread
+has positive selected mass.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">headline_method</span></code></p></td>
+<td><p>The key of the headline: <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> for a noiseless stack,
+<code class="docutils literal notranslate"><span class="pre">&quot;shrunk_two_level&quot;</span></code> for a noisy stack, or <code class="docutils literal notranslate"><span class="pre">&quot;capped_I_median&quot;</span></code>
+for a noisy stack whose shrinkage is unavailable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cap_amount</span></code></p></td>
+<td><p>Reduction that the median cap applied to the headline, <code class="docutils literal notranslate"><span class="pre">raw</span></code> less
+<code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code>. It is zero unless the headline is
+<code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code>, even when a diagnostic cap would bind.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">entropy_sd</span></code></p></td>
+<td><p>Monte Carlo contribution to the uncertainty of <code class="docutils literal notranslate"><span class="pre">raw</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gp_sd</span></code></p></td>
+<td><p>GP quadrature contribution, treating retained runs as independent.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">raw_sd</span></code></p></td>
+<td><p>Combined raw-estimate uncertainty, equal to <code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">noisy</span></code></p></td>
+<td><p>Whether the stack is treated as noisy.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">noise_status_source</span></code></p></td>
+<td><p>Per-retained-run provenance: <code class="docutils literal notranslate"><span class="pre">&quot;recorded&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;inferred&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;override&quot;</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code> combines the stratified entropy estimator’s Monte Carlo
+variance with the GP quadrature uncertainty at the selected weights. It
+describes the <code class="docutils literal notranslate"><span class="pre">raw</span></code> value. It excludes selection bias and does not
+propagate the shrinkage or the median cap, so it must not be interpreted as
+defining a calibrated confidence interval for the headline of a noisy stack.</p>
+</section>
+<section id="a-composite-posterior">
+<h2>A composite posterior<a class="headerlink" href="#a-composite-posterior" title="Link to this heading">#</a></h2>
+<p>Each VBMC run works in its own transformed parameter space (bounded
+parameters, and possibly a rotation and rescaling learned during the run).
+The components of different runs therefore live in incompatible spaces and
+are only comparable after mapping back to the original space. The stacked
+posterior keeps the input posteriors as they are and draws from each through
+its own transform. Do not combine the component means and covariances of
+different runs directly, and do not read them as a single mixture: use
+<code class="docutils literal notranslate"><span class="pre">sample()</span></code> for every estimate and plot.</p>
+</section>
+<section id="helpers">
+<span id="svbmc-helpers"></span><h2>Helpers<a class="headerlink" href="#helpers" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="#module-pyvbmc.svbmc.utils" title="pyvbmc.svbmc.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyvbmc.svbmc.utils</span></code></a> holds two helpers from the S-VBMC workflow:
+<code class="docutils literal notranslate"><span class="pre">overlay_corner_plot</span></code> draws several sample sets on one corner plot, to
+compare the individual runs with the stacked posterior, and
+<code class="docutils literal notranslate"><span class="pre">find_init_bounds</span></code> returns the box to draw VBMC starting points from
+given the bounds and plausible bounds of a problem.</p>
+</section>
+<section id="differences-from-the-standalone-svbmc-package">
+<h2>Differences from the standalone <code class="docutils literal notranslate"><span class="pre">svbmc</span></code> package<a class="headerlink" href="#differences-from-the-standalone-svbmc-package" title="Link to this heading">#</a></h2>
+<p>The implementation derives from the standalone S-VBMC package
+(<code class="docutils literal notranslate"><span class="pre">acerbilab/svbmc</span></code>, version 0.1.1), which is deprecated in its favor: use
+<code class="docutils literal notranslate"><span class="pre">pyvbmc.SVBMC</span></code> for new and existing code. The package’s BSD 3-Clause
+license notice ships with the subpackage, <code class="docutils literal notranslate"><span class="pre">pyvbmc.svbmc</span></code>. The method and
+the optimizer of the weights are the same, and on our benchmark the two
+reach the same weights. What differs:</p>
+<ul class="simple">
+<li><p>It is faster. The work that the components of one run share, its parameter
+transform above all, is done once per run rather than once per component.</p></li>
+<li><p>The reported ELBO is more precise. The corrections that bring the expected
+log-joint of each run to the original parameter space are computed once,
+when the object is created, exactly or by numerical quadrature, where the
+standalone package estimated them by Monte Carlo at every step. After the
+optimization the ELBO is evaluated again with more draws
+(<code class="docutils literal notranslate"><span class="pre">optimize(n_samples_final=...)</span></code>), and it comes with an uncertainty,
+<code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elbo</span></code> is a number, the headline described under
+<a class="reference internal" href="#svbmc-elbo-reporting"><span class="std std-ref">ELBO reporting</span></a>, which for a noisy stack is a shrinkage
+estimate that the standalone package does not compute. The entries of the
+standalone package’s <code class="docutils literal notranslate"><span class="pre">elbo</span></code> dictionary are in <code class="docutils literal notranslate"><span class="pre">elbo_details</span></code>, under the
+names in the table below.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code> takes the place of <code class="docutils literal notranslate"><span class="pre">testing</span></code>: every random draw comes from the
+generator of the <code class="docutils literal notranslate"><span class="pre">SVBMC</span></code> object, and the input posteriors are neither
+modified nor advanced.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sample(n)</span></code> returns exactly <code class="docutils literal notranslate"><span class="pre">n</span></code> draws. The standalone package rounded
+the share of each run separately and could return a few more or fewer.</p></li>
+<li><p>Results are float64, problems with one variable work, and malformed inputs
+raise errors.</p></li>
+</ul>
+<p>Code written for the standalone package’s dictionary-valued <code class="docutils literal notranslate"><span class="pre">elbo</span></code> can be
+migrated as follows:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 45.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Standalone <code class="docutils literal notranslate"><span class="pre">svbmc</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">pyvbmc.svbmc</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stacked.elbo[&quot;estimated&quot;]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_details[&quot;raw&quot;]</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stacked.elbo[&quot;debiased_I_median&quot;]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_details[&quot;capped_I_median&quot;]</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stacked.elbo[&quot;debiased_E_median&quot;]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_details[&quot;capped_E_median&quot;]</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading">#</a></h2>
+<p>Silvestrin, F., Li, C., &amp; Acerbi, L. (2025). Stacking Variational Bayesian
+Monte Carlo. <em>Transactions on Machine Learning Research</em>.
+<a class="reference external" href="https://arxiv.org/abs/2504.05004">arXiv:2504.05004</a>,
+<a class="reference external" href="https://openreview.net/forum?id=M2ilYAJdPe">TMLR</a>. Please cite it
+together with the VBMC and PyVBMC papers when you use S-VBMC.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.svbmc.</span></span><span class="sig-name descname"><span class="pre">SVBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.float64(2.23606797749979)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.6666666666666666</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_tips</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noisy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC" title="Link to this definition">#</a></dt>
+<dd><p>Stacking Variational Bayesian Monte Carlo (S-VBMC).</p>
+<p>Combines the variational posteriors of several completed VBMC runs on
+the same problem into one stacked mixture by optimizing the <em>stacked
+ELBO</em> with respect to the mixture weights only. Component locations
+and scales, and the expected log-joint statistics VBMC stored with each
+posterior, stay fixed, so no further evaluations of the model are
+needed.</p>
+<p>Construct the object with the fitted posteriors, then call
+<a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a>. Construction discards runs that VBMC did not mark as
+converged (<code class="docutils literal notranslate"><span class="pre">stats[&quot;stable&quot;]</span></code>) and runs whose expected log-joint
+carries excessive uncertainty (<code class="docutils literal notranslate"><span class="pre">s_max</span></code>), and raises when fewer than
+<code class="docutils literal notranslate"><span class="pre">M_min</span></code> runs remain.</p>
+<p>The stacked posterior is a composite over the input posteriors: each
+VBMC run has its own parameter transform, so components of different
+runs live in different transformed spaces and are only comparable in
+the original space. Use <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.sample" title="pyvbmc.svbmc.SVBMC.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a> for estimates and plots; do not
+combine the component means and covariances of different runs
+directly.</p>
+<p>Requires the optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> extra
+(<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[torch]&quot;</span></code>); construction raises
+<code class="docutils literal notranslate"><span class="pre">ImportError</span></code> without it. An object saved with <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.save" title="pyvbmc.svbmc.SVBMC.save"><code class="xref py py-meth docutils literal notranslate"><span class="pre">save()</span></code></a> can be
+loaded, sampled and plotted without it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vp_list</strong><span class="classifier">list of VariationalPosterior</span></dt><dd><p>Posteriors returned by completed VBMC runs on the same model, data
+and original parameter space. Construction verifies the dimension,
+the mixture shapes, the statistics stacking reads, and that every
+run carries the same original-space hard bounds; the runs are free
+to map that space differently. That they were run on the same
+model and data does not follow from the posteriors and is not
+verified.</p>
+</dd>
+<dt><strong>s_max</strong><span class="classifier">float, optional</span></dt><dd><p>Tolerance on the standard deviation of the expected log-joint of
+any single component, <code class="docutils literal notranslate"><span class="pre">sqrt(max(stats[&quot;J_sjk&quot;]))</span></code>. A run at or
+above it is discarded as poorly converged. Default <code class="docutils literal notranslate"><span class="pre">sqrt(5)</span></code>.</p>
+</dd>
+<dt><strong>M_min</strong><span class="classifier">int or float, optional</span></dt><dd><p>Minimum number of runs that must survive the filters: a count when
+greater than 1, a proportion of <code class="docutils literal notranslate"><span class="pre">len(vp_list)</span></code> when at most 1
+(so exactly 1 means every run). Default <code class="docutils literal notranslate"><span class="pre">2/3</span></code>.</p>
+</dd>
+<dt><strong>seed</strong><span class="classifier">None, int, array_like[int], SeedSequence, BitGenerator or Generator, optional</span></dt><dd><p>Seed of the object’s random generator, which drives the Monte
+Carlo entropy estimate and <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.sample" title="pyvbmc.svbmc.SVBMC.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">None</span></code> derives the
+generator from NumPy’s global state, so <code class="docutils literal notranslate"><span class="pre">np.random.seed</span></code> before
+construction still fixes a run. Default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>show_tips</strong><span class="classifier">bool, optional</span></dt><dd><p>Show occasional guidance when INFO logging is enabled. Set to
+<code class="docutils literal notranslate"><span class="pre">False</span></code> to suppress tips while keeping the messages on progress
+and on the headline ELBO. Default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>noisy</strong><span class="classifier">bool or None, optional</span></dt><dd><p>Override the noise status of the whole stack. With <code class="docutils literal notranslate"><span class="pre">None</span></code> (the
+default), read each retained run’s <code class="docutils literal notranslate"><span class="pre">uncertainty_handling_level</span></code>
+statistic; when absent, infer noise from <code class="docutils literal notranslate"><span class="pre">elbo_sd</span> <span class="pre">&gt;</span> <span class="pre">0.1</span></code>. This
+inference can misclassify old posteriors. Any noisy retained run
+makes the headline <code class="xref py py-attr docutils literal notranslate"><span class="pre">elbo</span></code> the two-level shrinkage estimate,
+where it is defined.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp_list</strong><span class="classifier">list of VariationalPosterior</span></dt><dd><p>The retained posteriors, in input order. They are read, never
+modified: sampling works on copies that use this object’s
+generator.</p>
+</dd>
+<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>Dimension of the problem.</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">int</span></dt><dd><p>Number of retained runs.</p>
+</dd>
+<dt><strong>K</strong><span class="classifier">list of int</span></dt><dd><p>Number of components of each retained run.</p>
+</dd>
+<dt><strong>w</strong><span class="classifier">np.ndarray, shape (1, K_total)</span></dt><dd><p>Weights of all components, concatenated in run order and
+normalized. <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a> replaces them with the optimized ones.</p>
+</dd>
+<dt><strong>elbo</strong><span class="classifier">float or None</span></dt><dd><p>After <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a>: the headline estimate of the stacked ELBO at
+the returned weights, evaluated with fresh draws. For a noiseless
+stack it is the raw ELBO; for a noisy stack, the two-level
+shrinkage estimate <code class="docutils literal notranslate"><span class="pre">elbo_details[&quot;shrunk_two_level&quot;]</span></code>, or the
+component-median capped ELBO where the shrinkage is numerically
+undefined. Choosing the weights on noisy estimates adds an upward
+bias to the raw ELBO of a noisy stack, which the shrinkage targets.
+The shrinkage can also remove part of the bias that each run’s ELBO
+carries from VBMC, and residual bias can remain. The raw ELBO is not
+an upper bound on the stack’s true ELBO.</p>
+</dd>
+<dt><strong>elbo_sd</strong><span class="classifier">float or None</span></dt><dd><p>Estimated uncertainty of the raw evaluation at the returned
+weights: entropy Monte Carlo error and GP quadrature uncertainty,
+treating runs as independent. It excludes selection bias and the
+uncertainty of the shrinkage or of the cap; it does not define a
+calibrated confidence interval for the headline of a noisy stack.</p>
+</dd>
+<dt><strong>elbo_details</strong><span class="classifier">dict or None</span></dt><dd><p>After <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a>: <code class="docutils literal notranslate"><span class="pre">raw</span></code>, <code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code>,
+<code class="docutils literal notranslate"><span class="pre">capped_E_median</span></code>, <code class="docutils literal notranslate"><span class="pre">naive</span></code> and <code class="docutils literal notranslate"><span class="pre">shrunk_two_level</span></code> ELBO
+estimates; <code class="docutils literal notranslate"><span class="pre">shrinkage_noise_share</span></code>; <code class="docutils literal notranslate"><span class="pre">headline_method</span></code> (<code class="docutils literal notranslate"><span class="pre">raw</span></code>,
+<code class="docutils literal notranslate"><span class="pre">shrunk_two_level</span></code> or <code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code>); <code class="docutils literal notranslate"><span class="pre">cap_amount</span></code> (the
+reduction the median cap applied to the headline, zero unless the
+headline is <code class="docutils literal notranslate"><span class="pre">capped_I_median</span></code>); <code class="docutils literal notranslate"><span class="pre">entropy_sd</span></code>, <code class="docutils literal notranslate"><span class="pre">gp_sd</span></code> and
+<code class="docutils literal notranslate"><span class="pre">raw_sd</span></code> (equal to <code class="xref py py-attr docutils literal notranslate"><span class="pre">elbo_sd</span></code>); <code class="docutils literal notranslate"><span class="pre">noisy</span></code> and
+<code class="docutils literal notranslate"><span class="pre">noise_status_source</span></code>. Shrinkage adjusts component estimates
+within each run and then shifts run levels, at the selected weights
+and with the same final entropy as <code class="docutils literal notranslate"><span class="pre">raw</span></code>. <code class="docutils literal notranslate"><span class="pre">shrunk_two_level</span></code> is
+<code class="docutils literal notranslate"><span class="pre">None</span></code> when its numerical calculation is undefined, in which case
+optimization still succeeds with a <code class="docutils literal notranslate"><span class="pre">RuntimeWarning</span></code>.
+<code class="docutils literal notranslate"><span class="pre">shrinkage_noise_share</span></code> is the estimated noise-to-spread ratio
+averaged over runs using their selected masses; it can exceed one
+and can be <code class="docutils literal notranslate"><span class="pre">None</span></code> independently.
+Naive stacking equally weights retained runs with their original
+internal weights. Its estimate inherits the runs’ errors and is
+a diagnostic baseline, not a bound on the optimized ELBO.</p>
+</dd>
+<dt><strong>noisy</strong><span class="classifier">bool</span></dt><dd><p>Whether the stack is treated as noisy.</p>
+</dd>
+<dt><strong>noise_status_source</strong><span class="classifier">tuple of str</span></dt><dd><p>How each retained run’s noise status was obtained: <code class="docutils literal notranslate"><span class="pre">recorded</span></code>,
+<code class="docutils literal notranslate"><span class="pre">inferred</span></code> or <code class="docutils literal notranslate"><span class="pre">override</span></code>, in retained-run order.</p>
+</dd>
+<dt><strong>entropy</strong><span class="classifier">float or None</span></dt><dd><p>After <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a>: the entropy estimate of the stacked
+posterior at the optimized weights.</p>
+</dd>
+<dt><strong>I</strong><span class="classifier">np.ndarray, shape (1, K_total)</span></dt><dd><p>Expected log-joint of every component (the mean over the run’s GP
+hyperparameter samples of <code class="docutils literal notranslate"><span class="pre">stats[&quot;I_sk&quot;]</span></code>), in the run’s own
+transformed space.</p>
+</dd>
+<dt><strong>individual_elbos</strong><span class="classifier">list of float</span></dt><dd><p>The ELBO of each retained run, used to initialize the weights.</p>
+</dd>
+<dt><strong>I_corrected, E_corrected</strong><span class="classifier">np.ndarray</span></dt><dd><p>The expected log-joints corrected to the original space, per
+component (shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">K_total)</span></code>) and per run (shape <code class="docutils literal notranslate"><span class="pre">(M,)</span></code>),
+computed deterministically at construction. The capped ELBO
+variants limit the expected log-joint to their medians.</p>
+</dd>
+<dt><strong>rng</strong><span class="classifier">np.random.Generator</span></dt><dd><p>The object’s random generator.</p>
+</dd>
+<dt><strong>logger</strong><span class="classifier">logging.Logger</span></dt><dd><p>Progress goes to the <code class="docutils literal notranslate"><span class="pre">&quot;SVBMC&quot;</span></code> logger at <code class="docutils literal notranslate"><span class="pre">INFO</span></code> level; raise its
+level (to <code class="docutils literal notranslate"><span class="pre">WARNING</span></code>, say) to quieten a run.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.load">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.load" title="Link to this definition">#</a></dt>
+<dd><p>Load a stacked posterior from a file written by <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.save" title="pyvbmc.svbmc.SVBMC.save"><code class="xref py py-meth docutils literal notranslate"><span class="pre">save()</span></code></a>.</p>
+<p>Loading needs no torch: <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.sample" title="pyvbmc.svbmc.SVBMC.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a> and <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.plot" title="pyvbmc.svbmc.SVBMC.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> of the
+loaded object work without it, while <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a> and the
+methods that estimate the stacked ELBO or its entropy raise
+<code class="docutils literal notranslate"><span class="pre">ImportError</span></code> as construction does. The logging level is not
+saved: progress goes to the <code class="docutils literal notranslate"><span class="pre">&quot;SVBMC&quot;</span></code> logger at <code class="docutils literal notranslate"><span class="pre">INFO</span></code> level
+unless a level has been set on it, as for a newly constructed
+object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>file</strong><span class="classifier">path-like</span></dt><dd><p>The file name or path to read from. Default file extension <cite>.pkl</cite>
+will be added if no extension is specified.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>stacked</strong><span class="classifier">SVBMC</span></dt><dd><p>The loaded object.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>TypeError</dt><dd><p>If the file holds another kind of object, such as a
+<code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code>.</p>
+</dd>
+<dt>OSError</dt><dd><p>If the file cannot be found, or cannot be opened for other reasons.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.maximize_ELBO">
+<span class="sig-name descname"><span class="pre">maximize_ELBO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all-weights'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.maximize_ELBO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.maximize_ELBO" title="Link to this definition">#</a></dt>
+<dd><p>Maximize the stacked ELBO over the weights with Adam.</p>
+<p>The weights are the softmax of unconstrained logits, initialized
+from the runs’ own weights and ELBOs so that better runs start
+heavier. That starting point belongs to the stack, so every call
+departs from it whatever <code class="xref py py-attr docutils literal notranslate"><span class="pre">w</span></code> currently holds. Every step
+draws fresh entropy samples. The optimization stops when the ELBO,
+rounded to five decimals, has not improved for five consecutive
+steps, or after <code class="docutils literal notranslate"><span class="pre">max_steps</span></code>; the best iterate is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Draws per component for the entropy estimate. Default 20.</p>
+</dd>
+<dt><strong>lr</strong><span class="classifier">float, optional</span></dt><dd><p>Adam learning rate. Default 0.1.</p>
+</dd>
+<dt><strong>max_steps</strong><span class="classifier">int, optional</span></dt><dd><p>Maximum number of steps. Default 500.</p>
+</dd>
+<dt><strong>version</strong><span class="classifier">{“all-weights”, “posterior-only”, “ns”}, optional</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">&quot;all-weights&quot;</span></code> optimizes the weight of every component;
+<code class="docutils literal notranslate"><span class="pre">&quot;posterior-only&quot;</span></code> optimizes one weight per run, keeping the
+relative weights within a run; <code class="docutils literal notranslate"><span class="pre">&quot;ns&quot;</span></code> (naive stacking)
+performs no optimization and returns the normalized input
+weights. Default <code class="docutils literal notranslate"><span class="pre">&quot;all-weights&quot;</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>w_final</strong><span class="classifier">torch.Tensor, shape (K_total,)</span></dt><dd><p>The optimized weights (float64).</p>
+</dd>
+<dt><strong>elbo_best</strong><span class="classifier">torch.Tensor</span></dt><dd><p>Optimization-time Monte Carlo ELBO from the selected iteration
+(float64 scalar). <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.optimize" title="pyvbmc.svbmc.SVBMC.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a> re-evaluates the returned
+weights with fresh draws for the reported headline.</p>
+</dd>
+<dt><strong>entropy_best</strong><span class="classifier">torch.Tensor</span></dt><dd><p>The entropy estimate at the returned weights (float64 scalar).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all-weights'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples_final</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.optimize" title="Link to this definition">#</a></dt>
+<dd><p>Optimize the stacked posterior in place.</p>
+<p>Runs <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.maximize_ELBO" title="pyvbmc.svbmc.SVBMC.maximize_ELBO"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maximize_ELBO()</span></code></a>, stores the optimized weights in
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">w</span></code> (NumPy float64), the entropy estimate in <code class="xref py py-attr docutils literal notranslate"><span class="pre">entropy</span></code>
+and a fresh final evaluation in <code class="xref py py-attr docutils literal notranslate"><span class="pre">elbo</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">elbo_sd</span></code> and
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">elbo_details</span></code>. The report includes a deterministic two-level
+shrinkage estimate at those weights, computed with the same final
+entropy and without random draws; where it is defined, it is the
+headline of a noisy stack.
+Returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Draws per component for the entropy estimate. Default 20.</p>
+</dd>
+<dt><strong>lr</strong><span class="classifier">float, optional</span></dt><dd><p>Adam learning rate. Default 0.1.</p>
+</dd>
+<dt><strong>max_steps</strong><span class="classifier">int, optional</span></dt><dd><p>Maximum number of steps. Default 500.</p>
+</dd>
+<dt><strong>version</strong><span class="classifier">{“all-weights”, “posterior-only”, “ns”}, optional</span></dt><dd><p>Optimization mode; see <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.maximize_ELBO" title="pyvbmc.svbmc.SVBMC.maximize_ELBO"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maximize_ELBO()</span></code></a>. Default
+<code class="docutils literal notranslate"><span class="pre">&quot;all-weights&quot;</span></code>.</p>
+</dd>
+<dt><strong>n_samples_final</strong><span class="classifier">int, optional</span></dt><dd><p>Fresh entropy draws per component at the returned weights and
+at the naive-stacking weights. At least 2, to estimate sampling
+variance. Default 100. Naive mode reuses one final evaluation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">corner_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.plot" title="Link to this definition">#</a></dt>
+<dd><p>Draw a corner plot of the stacked posterior from fresh samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Draws taken with <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.sample" title="pyvbmc.svbmc.SVBMC.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a>. Default 10000.</p>
+</dd>
+<dt><strong>color</strong><span class="classifier">str, optional</span></dt><dd><p>Matplotlib color of the contours and histograms. Default
+<code class="docutils literal notranslate"><span class="pre">&quot;black&quot;</span></code>.</p>
+</dd>
+<dt><strong>figsize</strong><span class="classifier">(float, float) or None, optional</span></dt><dd><p>Figure size in inches; <code class="docutils literal notranslate"><span class="pre">None</span></code> uses 2.5 inches per dimension.</p>
+</dd>
+<dt><strong>smooth</strong><span class="classifier">float or None, optional</span></dt><dd><p>Gaussian kernel smoothing applied by <code class="docutils literal notranslate"><span class="pre">corner</span></code>.</p>
+</dd>
+<dt><strong>**corner_kwargs</strong></dt><dd><p>Passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">corner.corner()</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>matplotlib.figure.Figure</dt><dd><p>The figure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance_flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.sample" title="Link to this definition">#</a></dt>
+<dd><p>Draw samples from the stacked posterior in the original space.</p>
+<p>The stacked posterior is a mixture over the retained runs, so a
+draw picks a run with probability equal to that run’s total weight
+and then a point from that run’s reweighted posterior through its
+own transform. By default the run counts are multinomial, the
+component choice within a run is random (see
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">VariationalPosterior.sample()</span></code>) and the rows are shuffled, so
+the result is an independent sample of exactly <code class="docutils literal notranslate"><span class="pre">n_samples</span></code> rows.
+With <code class="docutils literal notranslate"><span class="pre">balance_flag=True</span></code> the draws are stratified instead: the
+number taken from a run is within one draw of that run’s exact
+share of the weights, and within a run they are spread over its
+components by the balanced allocation of
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">VariationalPosterior.sample()</span></code>, which follows the component
+weights up to the random placement of its remainder and so holds
+no exact bound per component. Stratification lowers the variance
+of expectations; it does not give an independent sample. All
+randomness comes from this object’s generator; the input
+posteriors are not touched.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_samples</strong><span class="classifier">int</span></dt><dd><p>Number of draws.</p>
+</dd>
+<dt><strong>balance_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Stratify the draws by run and component. Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">np.ndarray, shape (n_samples, D)</span></dt><dd><p>Draws in the original parameter space.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.save" title="Link to this definition">#</a></dt>
+<dd><p>Save the stacked posterior to a file.</p>
+<p>The file holds the whole object: the retained posteriors, the
+weights, the ELBO report and the state of the generator, so the
+object that <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.load" title="pyvbmc.svbmc.SVBMC.load"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load()</span></code></a> returns draws what this one would draw
+next. It holds no Python bytecode, so it can be loaded, used and
+saved again under another minor version of Python than the one that
+wrote it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>file</strong><span class="classifier">path-like</span></dt><dd><p>The file name or path to write to. Default file extension <cite>.pkl</cite>
+will be added if no extension is specified.</p>
+</dd>
+<dt><strong>overwrite</strong><span class="classifier">bool</span></dt><dd><p>Whether to allow overwriting existing files. Default <cite>False</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>FileExistsError</dt><dd><p>If the file already exists and <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> is <cite>False</cite>.</p>
+</dd>
+<dt>OSError</dt><dd><p>If the file cannot be opened for other reasons (e.g., the directory
+is not found, the disk is full, etc.).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.stacked_ELBO">
+<span class="sig-name descname"><span class="pre">stacked_ELBO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.stacked_ELBO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.stacked_ELBO" title="Link to this definition">#</a></dt>
+<dd><p>Estimate the stacked ELBO at given weights.</p>
+<p>The expected log-joint is the weighted sum of the components’ stored
+expected log-joints (from the runs’ GP surrogates), corrected to the
+original space with the Jacobian terms of <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.stacked_entropy" title="pyvbmc.svbmc.SVBMC.stacked_entropy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stacked_entropy()</span></code></a>;
+the entropy is estimated by Monte Carlo. The expected log-joints
+are corrected deterministically during construction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">torch.Tensor, np.ndarray or list</span></dt><dd><p>Weights of the stacked posterior (<code class="docutils literal notranslate"><span class="pre">K_total</span></code> values; normalized
+internally). NumPy or list input is converted to a float64
+tensor.</p>
+</dd>
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Draws per component for the entropy estimate. Default 20.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ELBO</strong><span class="classifier">torch.Tensor</span></dt><dd><p>The estimated stacked ELBO (float64 scalar).</p>
+</dd>
+<dt><strong>H</strong><span class="classifier">torch.Tensor</span></dt><dd><p>The estimated entropy (float64 scalar).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.SVBMC.stacked_entropy">
+<span class="sig-name descname"><span class="pre">stacked_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/svbmc.html#SVBMC.stacked_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.SVBMC.stacked_entropy" title="Link to this definition">#</a></dt>
+<dd><p>Monte Carlo estimate of the entropy of the stacked posterior.</p>
+<p>Differentiable with respect to the mixture weights. Every component
+contributes <code class="docutils literal notranslate"><span class="pre">n_samples</span></code> draws, taken in its own run’s transformed
+space and mapped to the original space; the log density of the
+stacked mixture at every draw is then evaluated by mapping the draws
+into each run’s space with the matching Jacobian correction.
+The draws come from this object’s generator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">torch.Tensor</span></dt><dd><p>Weights of the stacked posterior (any shape holding <code class="docutils literal notranslate"><span class="pre">K_total</span></code>
+values; normalized internally). Converted to float64.</p>
+</dd>
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>Draws per component. Default 20.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>H</strong><span class="classifier">torch.Tensor</span></dt><dd><p>The entropy estimate (a float64 scalar).</p>
+</dd>
+<dt><strong>J_corrections</strong><span class="classifier">np.ndarray, shape (K_total,)</span></dt><dd><p>Per-component expected log-Jacobian, computed deterministically
+at construction. Subtracting it from the stored expected
+log-joints expresses them in the original space, which
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">I_corrected</span></code> already holds and <a class="reference internal" href="#pyvbmc.svbmc.SVBMC.stacked_ELBO" title="pyvbmc.svbmc.SVBMC.stacked_ELBO"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stacked_ELBO()</span></code></a>
+reads; this copy is for inspection.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-pyvbmc.svbmc.utils">Helpers for comparing VBMC runs and choosing their starting points.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.utils.find_init_bounds">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.svbmc.utils.</span></span><span class="sig-name descname"><span class="pre">find_init_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">LB</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UB</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PLB</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PUB</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/utils.html#find_init_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.utils.find_init_bounds" title="Link to this definition">#</a></dt>
+<dd><p>Find the bounds to sample uniformly from when choosing starting points
+for VBMC.</p>
+<p>If plausible lower bounds (<cite>PLB</cite>) are specified, it uses those as lower
+sampling bounds (<cite>sample_LB</cite>), otherwise it uses lower bounds (<cite>LB</cite>).
+Upper sampling bounds (<cite>sample_UB</cite>) are determined in the same way with
+plausible upper bounds (<cite>PUB</cite>) or upper bounds (<cite>UB</cite>).</p>
+<p>At least one of <cite>LB</cite>, <cite>UB</cite>, <cite>PLB</cite> and <cite>PUB</cite> must be specified as an
+array with the same dimensionality of the inference problem. Each bound
+may be a scalar (broadcast to every dimension) or an array holding <cite>D</cite>
+values in any layout, including the <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code> rows PyVBMC uses; the
+returned bounds are flat <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>LB, UB</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Inputs for VBMC. They represent lower (<cite>LB</cite>) and upper (<cite>UB</cite>) bounds
+for the coordinate vector, <cite>x</cite>, so that the posterior has support on
+<cite>LB</cite> &lt; <cite>x</cite> &lt; <cite>UB</cite>. If scalars, the bound is replicated in each dimension.
+Use <code class="docutils literal notranslate"><span class="pre">None</span></code> for <cite>LB</cite> and <cite>UB</cite> if no bounds exist. Set <cite>LB</cite> [<cite>d</cite>] = -<cite>inf</cite>
+and <cite>UB</cite> [<cite>d</cite>] = <cite>inf</cite> if the <cite>d</cite>-th coordinate is unbounded (while
+other coordinates may be bounded). Note that if <cite>LB</cite> and <cite>UB</cite> contain
+unbounded variables, the respective values of <cite>PLB</cite> and <cite>PUB</cite> need to
+be specified (see below). If <cite>PLB</cite> and <cite>PUB</cite> are not specified (see below),
+the lower and upper sampling bounds (<cite>sample_LB</cite> and <cite>sample_UB</cite>, respectively)
+will be determined by <cite>LB</cite> and <cite>UB</cite>.
+Both are by default <cite>None</cite>.</p>
+</dd>
+<dt><strong>PLB, PUB</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Inputs for VBMC. They represent a set of plausible lower (<cite>PLB</cite>) and upper (<cite>PUB</cite>)
+bounds such that <cite>LB</cite> &lt; <cite>PLB</cite> &lt; <cite>PUB</cite> &lt; <cite>UB</cite>.
+Both <cite>PLB</cite> and <cite>PUB</cite> need to be finite. <cite>PLB</cite> and <cite>PUB</cite> represent a
+“plausible” range, which should denote a region of high posterior
+probability mass. Among other things, the plausible box is used by VBMC to
+draw initial samples and to set priors over hyperparameters of the
+algorithm. If <cite>PLB</cite> and <cite>PUB</cite> are specified, they determine the lower and upper
+sampling bounds (<cite>sample_LB</cite> and <cite>sample_UB</cite>, respectively).
+If they are not, the sampling bounds will be determined by <cite>LB</cite> and <cite>UB</cite>.
+Both are by default <cite>None</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>sample_LB, sample_UB</strong><span class="classifier">np.ndarray</span></dt><dd><p>Lower (<cite>sample_LB</cite>) and upper (<cite>sample_UB</cite>) bounds to sample uniformly from
+when initializing VBMC.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.svbmc.utils.overlay_corner_plot">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.svbmc.utils.</span></span><span class="sig-name descname"><span class="pre">overlay_corner_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">corner_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/svbmc/utils.html#overlay_corner_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.svbmc.utils.overlay_corner_plot" title="Link to this definition">#</a></dt>
+<dd><p>Overlay a corner plot for multiple sample sets.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>samples</strong><span class="classifier">list[np.ndarray]</span></dt><dd><p>List of arrays, each of shape (<cite>N_i</cite>,`D`) where <cite>D</cite> is the
+dimensionality.</p>
+</dd>
+<dt><strong>labels</strong><span class="classifier">list[str], optional</span></dt><dd><p>Legend labels corresponding to each item in <cite>samples</cite>.
+Defaults to “Run 1”, “Run 2”, …</p>
+</dd>
+<dt><strong>colors</strong><span class="classifier">list[str], optional</span></dt><dd><p>Matplotlib colors for each sample set.  Defaults to the rcParams
+color cycle.</p>
+</dd>
+<dt><strong>figsize</strong><span class="classifier">(float, float) or <cite>None</cite>, optional</span></dt><dd><p>Figure size in inches.  If <cite>None</cite>, uses <cite>base`*`D</cite> on each side.</p>
+</dd>
+<dt><strong>smooth</strong><span class="classifier">float or <cite>None</cite>, optional</span></dt><dd><p>Gaussian kernel smoothing (px) applied by <code class="docutils literal notranslate"><span class="pre">corner</span></code>.</p>
+</dd>
+<dt><strong>base</strong><span class="classifier">float, default 2.5</span></dt><dd><p>Inches per variable when auto-sizing.</p>
+</dd>
+<dt><strong>**corner_kwargs</strong></dt><dd><p>Extra keywords forwarded to <code class="xref py py-func docutils literal notranslate"><span class="pre">corner.corner()</span></code>
+(e.g. <code class="docutils literal notranslate"><span class="pre">bins=40</span></code>, <code class="docutils literal notranslate"><span class="pre">levels=(0.68,</span> <span class="pre">0.95)</span></code>).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>matplotlib.figure.Figure</dt><dd><p>The resulting corner-plot figure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="priors.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Priors</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pymc_target.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#elbo-reporting">ELBO reporting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-composite-posterior">A composite posterior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helpers">Helpers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#differences-from-the-standalone-svbmc-package">Differences from the standalone <code class="docutils literal notranslate"><span class="pre">svbmc</span></code> package</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

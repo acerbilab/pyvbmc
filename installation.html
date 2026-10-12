@@ -27,26 +27,28 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'installation';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/installation.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/installation.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting started" href="quickstart.html" />
@@ -54,20 +56,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -149,6 +201,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -156,20 +209,33 @@
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -177,6 +243,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/functions/entropy.html">Entropy</a></li>
@@ -372,17 +441,26 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -398,6 +476,21 @@
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-installation">Basic installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-integrations">Optional integrations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#torch">Torch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#arviz">ArviZ</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc">PyMC</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-and-tests">Examples and tests</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -409,38 +502,123 @@
                   
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
-<p>PyVBMC is available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p>
-<ol class="arabic">
-<li><p>Install with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">pyvbmc</span>
+<p>PyVBMC is available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> and requires Python 3.10
+or newer.</p>
+<section id="basic-installation">
+<h2>Basic installation<a class="headerlink" href="#basic-installation" title="Link to this heading">#</a></h2>
+<p>Install or upgrade PyVBMC with pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pyvbmc</span>
 </pre></div>
 </div>
-<p>or:</p>
+<p>Or install it with Conda:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span><span class="o">=</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pyvbmc</span>
 </pre></div>
 </div>
-<p>PyVBMC requires Python version 3.10 or newer.</p>
-</li>
-<li><p>(Optional): Install Jupyter to view the examples. You can skip this step if you’re working from a Conda environment which already has Jupyter, but be aware that if the wrong <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> executable is found on your path then import errors may arise.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">jupyter</span>
+<p>PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer, and
+its conda-forge package requires Python 3.11 or newer. In an environment
+that holds an older version of one of them, <code class="docutils literal notranslate"><span class="pre">conda</span></code> can install PyVBMC
+1.0.4 instead, without a warning: ask it for <code class="docutils literal notranslate"><span class="pre">&quot;pyvbmc&gt;=1.5&quot;</span></code>, or see the
+<a class="reference internal" href="faq.html#faq-conda-installs-an-older-version-of-pyvbmc-why"><span class="std std-ref">FAQ</span></a>.</p>
+<p>To learn whether a newer release exists and how to update, see the
+<a class="reference internal" href="faq.html#faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists"><span class="std std-ref">FAQ</span></a>.</p>
+</section>
+<section id="optional-integrations">
+<h2>Optional integrations<a class="headerlink" href="#optional-integrations" title="Link to this heading">#</a></h2>
+<section id="torch">
+<h3>Torch<a class="headerlink" href="#torch" title="Link to this heading">#</a></h3>
+<p>The <a class="reference internal" href="api/methods/variational_posterior_to_torch.html#pyvbmc.variational_posterior.VariationalPosterior.to_torch" title="pyvbmc.variational_posterior.VariationalPosterior.to_torch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_torch()</span></code></a> export and the
+<a class="reference internal" href="api/classes/svbmc.html"><span class="doc">SVBMC</span></a> class (stacking the posteriors of several
+VBMC runs) require torch 2.7 or newer. For a CPU-only installation, install
+torch from its official CPU wheel index first, then install the PyVBMC
+extra:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cpu</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">"pyvbmc[torch]"</span>
 </pre></div>
 </div>
-<p>If you are running Python 3.11 and get an <code class="docutils literal notranslate"><span class="pre">UnsatisfiableError</span></code> you may need to install Jupyter from <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>:</p>
+<p>Installing torch first ensures that pip selects a CPU wheel. If your model or
+export will run on an accelerator, follow the <a class="reference external" href="https://pytorch.org/get-started/locally/">torch installation selector</a> for your platform before
+installing <code class="docutils literal notranslate"><span class="pre">pyvbmc[torch]</span></code>.</p>
+<p>With Conda, install the named packages directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span><span class="o">=</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="s2">"pyvbmc&gt;=1.5"</span> <span class="n">pytorch</span>
+</pre></div>
+</div>
+</section>
+<section id="arviz">
+<h3>ArviZ<a class="headerlink" href="#arviz" title="Link to this heading">#</a></h3>
+<p>The <a class="reference internal" href="api/methods/variational_posterior_to_arviz.html#pyvbmc.variational_posterior.VariationalPosterior.to_arviz" title="pyvbmc.variational_posterior.VariationalPosterior.to_arviz"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_arviz()</span></code></a> export uses the current
+ArviZ DataTree format and requires Python 3.12 or newer. Install it with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">"pyvbmc[arviz]"</span>
+</pre></div>
+</div>
+<p>PyVBMC itself continues to support Python 3.10 and newer. On Python 3.10 or
+3.11, pip does not install the ArviZ dependencies because of their Python
+version marker, and <code class="docutils literal notranslate"><span class="pre">to_arviz</span></code> is unavailable. With Conda, install the
+corresponding packages directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span><span class="o">=</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="s2">"pyvbmc&gt;=1.5"</span> <span class="n">arviz</span> <span class="n">arviz</span><span class="o">-</span><span class="n">base</span>
+</pre></div>
+</div>
+</section>
+<section id="pymc">
+<h3>PyMC<a class="headerlink" href="#pymc" title="Link to this heading">#</a></h3>
+<p>The <a class="reference internal" href="api/classes/pymc_target.html#pyvbmc.pymc.PyMCTarget" title="pyvbmc.pymc.PyMCTarget"><code class="xref py py-class docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a> adapter requires Python 3.12 or newer.
+Install PyMC and the ArviZ data interface with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">"pyvbmc[pymc]"</span>
+</pre></div>
+</div>
+<p>The adapter is tested with PyMC 6.3.2, PyTensor 3.3.1–3.3.3 and ArviZ 1.3.0,
+using PyTensor’s default Numba linker on Windows and Linux. PyVBMC itself
+continues to support Python 3.10 and newer; on Python 3.10 or 3.11, pip does
+not install the PyMC dependencies because of their Python version marker, and
+<code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> is unavailable. With Conda, install the named packages
+directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span><span class="o">=</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="s2">"pyvbmc&gt;=1.5"</span> <span class="n">pymc</span>
+</pre></div>
+</div>
+<p>The bracketed <code class="docutils literal notranslate"><span class="pre">torch</span></code>, <code class="docutils literal notranslate"><span class="pre">arviz</span></code> and <code class="docutils literal notranslate"><span class="pre">pymc</span></code> names are pip dependency
+groups; they are not Conda package names. All three integrations are optional
+and loaded on demand.</p>
+</section>
+</section>
+<section id="examples-and-tests">
+<h2>Examples and tests<a class="headerlink" href="#examples-and-tests" title="Link to this heading">#</a></h2>
+<p>Install <a class="reference external" href="https://jupyter.org/install">Jupyter Notebook</a> to run the examples.
+You can skip this step if your environment already has Jupyter Notebook,
+but an unrelated <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> executable on your path can cause import errors:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">notebook</span>
+</pre></div>
+</div>
+<p>or, with Conda:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span><span class="o">=</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">jupyter</span>
 </pre></div>
 </div>
-<p>The example notebooks can be accessed by running</p>
+<p>Open the example notebooks with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pyvbmc</span>
 </pre></div>
 </div>
-</li>
-</ol>
-<p>You can run PyVBMC’s internal tests with</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">--</span><span class="n">pyargs</span> <span class="n">pyvbmc</span> <span class="o">--</span><span class="n">reruns</span><span class="o">=</span><span class="mi">3</span>
+<p>Example 2 uses <code class="docutils literal notranslate"><span class="pre">plotly</span></code> for one interactive figure. Install it with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">"pyvbmc[examples]"</span>
 </pre></div>
 </div>
-<p>The <cite>–reruns=3</cite> argument allows re-trying a failed test up to 3 times, as many of PyVBMC’s tests are stochastic in nature. Note that the complete test suite may take a significant amount of time (20-30 minutes or more, depending on your hardware).</p>
-<p>If you wish to install directly from latest source code, please see the <a class="reference internal" href="development.html#installation-instructions-for-developers"><span class="std std-ref">Installation instructions for developers</span></a>.</p>
+<p><a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html#pyvbmc-example-9-torch-and-jax-models-and-posterior-exports"><span class="std std-ref">PyVBMC Example 9: Torch and JAX models and posterior exports</span></a> uses both
+posterior exports and requires Python 3.12 or newer. A CPU-only environment is
+sufficient. Install its PyVBMC dependencies with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">"pyvbmc[torch,arviz]"</span>
+</pre></div>
+</div>
+<p>Install JAX separately to run the short JAX target section, following the
+<a class="reference external" href="https://docs.jax.dev/en/latest/installation.html">JAX installation guide</a>.
+JAX is not required for the Torch target or posterior-export sections.</p>
+<p>The test suite is included in the source distribution and repository.
+To run it, follow the <a class="reference internal" href="development.html#installation-instructions-for-developers"><span class="std std-ref">Installation instructions for developers</span></a>,
+then run this command from the PyVBMC repository root:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pytest</span> <span class="o">--</span><span class="n">reruns</span><span class="o">=</span><span class="mi">5</span> <span class="o">-</span><span class="n">x</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--reruns=5</span></code> argument retries a failed test up to five times because
+some tests are stochastic. The complete suite can take 20–30 minutes or
+longer, depending on the hardware.</p>
+<p>To install directly from the latest source, see the <a class="reference internal" href="development.html#installation-instructions-for-developers"><span class="std std-ref">Installation instructions for developers</span></a>.</p>
+</section>
 </section>
 
 
@@ -479,6 +657,30 @@
             
             
               
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-installation">Basic installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-integrations">Optional integrations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#torch">Torch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#arviz">ArviZ</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pymc">PyMC</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-and-tests">Examples and tests</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
             
           </div>
           <footer class="bd-footer-content">
@@ -511,6 +713,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -522,8 +727,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

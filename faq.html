@@ -1,0 +1,1489 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PyVBMC: Frequently Asked Questions &#8212; PyVBMC</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/wrap.css?v=fad812b3" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'faq';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/faq.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Getting started" href="quickstart.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <img src="_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">PyVBMC: Frequently Asked Questions</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="api/options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="development.html">Instructions for developers and contributors</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="about_us.html">About us</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/docsrc/source/faq.md" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2Ffaq.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/faq.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PyVBMC: Frequently Asked Questions</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general">General</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-kind-of-problems-is-vbmc-suited-for">Which kind of problems is VBMC suited for?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-do-i-do-if-vbmc-is-not-suited-for-my-problem">What do I do if VBMC is not suited for my problem?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-pyvbmc">Installing PyVBMC</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-can-i-download-pyvbmc">Where can I download PyVBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-external-packages-does-pyvbmc-require">Which external packages does PyVBMC require?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-version-of-python-do-i-need">Which version of Python do I need?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-know-whether-a-newer-version-of-pyvbmc-exists">How do I know whether a newer version of PyVBMC exists?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-installs-an-older-version-of-pyvbmc-why">Conda installs an older version of PyVBMC. Why?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-am-having-trouble-installing-pyvbmc-can-you-help">I am having trouble installing PyVBMC. Can you help?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#input-arguments-target-function-fun">Input arguments (target function: <code class="docutils literal notranslate"><span class="pre">fun</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-the-target-function">What is the target function?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-use-a-pymc-model-with-pyvbmc">Can I use a PyMC model with PyVBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc">I do not have a likelihood function, but another loss function. Can I still use VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-do-i-need-a-prior">Wait, do I need a prior?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-specify-the-prior-to-vbmc">How do I specify the prior to VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#my-target-function-requires-additional-data-inputs-how-do-i-pass-them-to-vbmc">My target function requires additional data/inputs. How do I pass them to VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-support-inference-with-noisy-that-is-stochastic-target-functions">Does VBMC support inference with <em>noisy</em> (that is, <em>stochastic</em>) target functions?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#input-arguments-domain-x0-lb-ub-plb-pub">Input arguments (domain: <code class="docutils literal notranslate"><span class="pre">x0</span></code>,<code class="docutils literal notranslate"><span class="pre">LB</span></code>,<code class="docutils literal notranslate"><span class="pre">UB</span></code>,<code class="docutils literal notranslate"><span class="pre">PLB</span></code>,<code class="docutils literal notranslate"><span class="pre">PUB</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-choose-the-starting-point-x0">How do I choose the starting point <code class="docutils literal notranslate"><span class="pre">x0</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-choose-lb-and-ub">How do I choose <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-have-parameters-bounded-only-on-one-side">Can I have parameters bounded only on one side?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value">Can I set <code class="docutils literal notranslate"><span class="pre">LB</span> <span class="pre">=</span> <span class="pre">UB</span></code> for some variable to fix it to a given value?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-choose-plb-and-pub">How do I choose <code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space">How do I prevent VBMC from evaluating certain inputs or regions of input space?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-support-inference-with-integer-parameters">Does VBMC support inference with integer parameters?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#output-arguments">Output arguments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-vp-and-what-do-i-do-with-it">What is <code class="docutils literal notranslate"><span class="pre">vp</span></code> and what do I do with it?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-are-elbo-and-elbo-sd">What are <code class="docutils literal notranslate"><span class="pre">elbo</span></code> and <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-is-overhead-in-results-defined">How is <code class="docutils literal notranslate"><span class="pre">overhead</span></code> in <code class="docutils literal notranslate"><span class="pre">results</span></code> defined?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-can-i-find-the-internal-state-and-iteration-history">Where can I find the internal state and iteration history?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#noisy-target-function">Noisy target function</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-a-noisy-target-function">What’s a noisy target function?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-automatically-detect-that-the-target-function-is-noisy">Does VBMC automatically detect that the target function is noisy?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function">Does VBMC automatically infer the amount of noise in the target function?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-use-any-technique-to-estimate-a-noisy-log-likelihood">Can I use <em>any</em> technique to estimate a noisy log-likelihood?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood">How do I estimate the standard deviation of the noisy log-likelihood?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-large-can-the-noise-be-to-perform-successful-inferences-with-vbmc">How large can the noise be to perform successful inferences with VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call">Wait, can I just remove stochasticity by fixing the random seed at each function call?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#display">Display</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-are-the-quantities-displayed-by-vbmc-during-the-variational-optimization">What are the quantities displayed by VBMC during the variational optimization?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-noticed-that-the-series-of-displayed-mean-elbo-values-is-not-monotonically-increasing-shouldn-t-the-elbo-keep-increasing-during-the-variational-optimization">I noticed that the series of displayed <code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code> values is <em>not</em> monotonically increasing. Shouldn’t the ELBO keep increasing during the variational optimization?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it">How can VBMC fail, how do I find out, and how do I fix it?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do">VBMC warned me that the <code class="docutils literal notranslate"><span class="pre">Returned</span> <span class="pre">variational</span> <span class="pre">solution</span> <span class="pre">may</span> <span class="pre">have</span> <span class="pre">not</span> <span class="pre">converged.</span></code> What should I do?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do">VBMC crashes saying that <code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">returned</span> <span class="pre">function</span> <span class="pre">value</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">finite</span> <span class="pre">real-valued</span> <span class="pre">scalar</span></code>. What do I do?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong">I have been running VBMC from the same starting point, but I get different results each time. Is something wrong?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-save-and-continue-a-run">How do I save and continue a run?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-combine-the-posteriors-of-several-runs">Can I combine the posteriors of several runs?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#miscellanea">Miscellanea</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-already-run-pybads-on-my-problem-how-do-i-run-vbmc">I already run PyBADS on my problem. How do I run VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#this-is-interesting-but-why-is-it-better-than-just-using-point-estimates-e-g-maximum-likelihood-or-maximum-a-posteriori">This is interesting, but why is it better than just using point estimates? (e.g., maximum-likelihood or maximum-a-posteriori)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#thanks-but-i-think-i-will-stick-to-point-estimates-for-now">Thanks, but I think I will stick to point estimates for now.</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#are-you-planning-to-port-vbmc-to-other-languages">Are you planning to port VBMC to other languages?</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-frequently-asked-questions">
+<h1>PyVBMC: Frequently Asked Questions<a class="headerlink" href="#pyvbmc-frequently-asked-questions" title="Link to this heading">#</a></h1>
+<p>This FAQ is curated by <a class="reference external" href="https://lacerbi.github.io/">Luigi Acerbi</a>, and in constant expansion.
+It is adapted from the <a class="reference external" href="https://github.com/acerbilab/vbmc/wiki">MATLAB VBMC FAQ</a>
+for PyVBMC 1.5.</p>
+<p>For related methods, including optimization with PyBADS and likelihood
+estimation with PyIBS, see the lab’s
+<a class="reference external" href="https://acerbilab.org/model-fitting/">model-fitting overview</a>.</p>
+<p>For a tutorial with detailed examples, see the <a class="reference internal" href="examples.html"><span class="std std-doc">Jupyter notebook examples</span></a>.</p>
+<p>If you have questions not covered here, please feel free to ask in the lab
+<a class="reference external" href="https://github.com/orgs/acerbilab/discussions">Discussions forum</a>.</p>
+<p>The snippets below use <code class="docutils literal notranslate"><span class="pre">np</span></code> for NumPy and <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> for the inference class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span>
+</pre></div>
+</div>
+<p>Supply your model’s target <code class="docutils literal notranslate"><span class="pre">fun</span></code>, starting point <code class="docutils literal notranslate"><span class="pre">x0</span></code>, and bounds <code class="docutils literal notranslate"><span class="pre">LB</span></code>,
+<code class="docutils literal notranslate"><span class="pre">UB</span></code>, <code class="docutils literal notranslate"><span class="pre">PLB</span></code>, <code class="docutils literal notranslate"><span class="pre">PUB</span></code> where they appear in a recipe. Use one-dimensional
+NumPy arrays for the starting point and bounds.</p>
+<section id="table-of-contents">
+<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#faq-general">General</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-which-kind-of-problems-is-vbmc-suited-for">Which kind of problems is VBMC suited for?</a></p></li>
+<li><p><a class="reference internal" href="#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem">What do I do if VBMC is not suited for my problem?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-installation">Installing PyVBMC</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-where-can-i-download-vbmc">Where can I download PyVBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-which-external-packages-does-pyvbmc-require">Which external packages does PyVBMC require?</a></p></li>
+<li><p><a class="reference internal" href="#faq-which-version-of-python-do-i-need">Which version of Python do I need?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists">How do I know whether a newer version of PyVBMC exists?</a></p></li>
+<li><p><a class="reference internal" href="#faq-conda-installs-an-older-version-of-pyvbmc-why">Conda installs an older version of PyVBMC. Why?</a></p></li>
+<li><p><a class="reference internal" href="#faq-i-am-having-trouble-installing-vbmc-can-you-help">I am having trouble installing PyVBMC. Can you help?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-input-arguments-target-function-fun">Input arguments (target function: <code class="docutils literal notranslate"><span class="pre">fun</span></code>)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-what-is-the-target-function">What is the target function?</a></p></li>
+<li><p><a class="reference internal" href="#faq-can-i-use-a-pymc-model-with-pyvbmc">Can I use a PyMC model with PyVBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc">I do not have a likelihood function, but another loss function. Can I still use VBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-wait-do-i-need-a-prior">Wait, do I need a prior?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-specify-the-prior-to-vbmc">How do I specify the prior to VBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-my-target-function-requires-additional-datainputs-how-do-i-pass-them-to-vbmc">My target function requires additional data/inputs. How do I pass them to VBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-does-vbmc-support-inference-with-noisy-that-is-stochastic-target-functions">Does VBMC support inference with <em>noisy</em> (that is, <em>stochastic</em>) target functions?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-input-arguments-domain-x0lbubplbpub">Input arguments (domain: <code class="docutils literal notranslate"><span class="pre">x0</span></code>,<code class="docutils literal notranslate"><span class="pre">LB</span></code>,<code class="docutils literal notranslate"><span class="pre">UB</span></code>,<code class="docutils literal notranslate"><span class="pre">PLB</span></code>,<code class="docutils literal notranslate"><span class="pre">PUB</span></code>)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-how-do-i-choose-the-starting-point-x0">How do I choose the starting point <code class="docutils literal notranslate"><span class="pre">x0</span></code>?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-choose-lb-and-ub">How do I choose <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>?</a></p></li>
+<li><p><a class="reference internal" href="#faq-can-i-have-parameters-bounded-only-on-one-side">Can I have parameters bounded only on one side?</a></p></li>
+<li><p><a class="reference internal" href="#faq-can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value">Can I set <code class="docutils literal notranslate"><span class="pre">LB</span> <span class="pre">=</span> <span class="pre">UB</span></code> for some variable to fix it to a given value?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-choose-plb-and-pub">How do I choose <code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space">How do I prevent VBMC from evaluating certain inputs or regions of input space?</a></p></li>
+<li><p><a class="reference internal" href="#faq-does-vbmc-support-inference-with-integer-parameters">Does VBMC support inference with integer parameters?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-output-arguments">Output arguments</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-what-is-vp-and-what-do-i-do-with-it">What is <code class="docutils literal notranslate"><span class="pre">vp</span></code> and what do I do with it?</a></p></li>
+<li><p><a class="reference internal" href="#faq-what-are-elbo-and-elbo-sd">What are <code class="docutils literal notranslate"><span class="pre">elbo</span></code> and <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-is-overhead-in-results-defined">How is <code class="docutils literal notranslate"><span class="pre">overhead</span></code> in <code class="docutils literal notranslate"><span class="pre">results</span></code> defined?</a></p></li>
+<li><p><a class="reference internal" href="#faq-where-can-i-find-the-internal-state-and-iteration-history">Where can I find the internal state and iteration history?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-noisy-target-function">Noisy target function</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-whats-a-noisy-target-function">What’s a noisy target function?</a></p></li>
+<li><p><a class="reference internal" href="#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy">Does VBMC automatically detect that the target function is noisy?</a></p></li>
+<li><p><a class="reference internal" href="#faq-does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function">Does VBMC automatically infer the amount of noise in the target function?</a></p></li>
+<li><p><a class="reference internal" href="#faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood">Can I use <em>any</em> technique to estimate a noisy log-likelihood?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood">How do I estimate the standard deviation of the noisy log-likelihood?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-large-can-the-noise-be-to-perform-successful-inferences-with-vbmc">How large can the noise be to perform successful inferences with VBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call">Wait, can I just remove stochasticity by fixing the random seed at each function call?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-display">Display</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-what-are-the-quantities-displayed-by-vbmc-during-the-variational-optimization">What are the quantities displayed by VBMC during the variational optimization?</a></p></li>
+<li><p><a class="reference internal" href="#faq-i-noticed-that-the-series-of-displayed-meanelbo-values-is-not-monotonically-increasing-shouldnt-the-elbo-keep-increasing-during-the-variational-optimization">I noticed that the series of displayed <code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code> values is <em>not</em> monotonically increasing. Shouldn’t the ELBO keep increasing during the variational optimization?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-troubleshooting">Troubleshooting</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it">How can VBMC fail, how do I find out, and how do I fix it?</a></p></li>
+<li><p><a class="reference internal" href="#faq-vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do">VBMC warned me that the <code class="docutils literal notranslate"><span class="pre">Returned</span> <span class="pre">variational</span> <span class="pre">solution</span> <span class="pre">may</span> <span class="pre">have</span> <span class="pre">not</span> <span class="pre">converged.</span></code> What should I do?</a></p></li>
+<li><p><a class="reference internal" href="#faq-vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do">VBMC crashes saying that <code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">returned</span> <span class="pre">function</span> <span class="pre">value</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">finite</span> <span class="pre">real-valued</span> <span class="pre">scalar</span></code>. What do I do?</a></p></li>
+<li><p><a class="reference internal" href="#faq-i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong">I have been running VBMC from the same starting point, but I get different results each time. Is something wrong?</a></p></li>
+<li><p><a class="reference internal" href="#faq-how-do-i-save-and-continue-a-run">How do I save and continue a run?</a></p></li>
+<li><p><a class="reference internal" href="#faq-can-i-combine-the-posteriors-of-several-runs">Can I combine the posteriors of several runs?</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#faq-miscellanea">Miscellanea</a></p>
+<ul>
+<li><p><a class="reference internal" href="#faq-i-already-run-pybads-on-my-problem-how-do-i-run-vbmc">I already run PyBADS on my problem. How do I run VBMC?</a></p></li>
+<li><p><a class="reference internal" href="#faq-this-is-interesting-but-why-is-it-better-than-just-using-point-estimates-eg-maximum-likelihood-or-maximum-a-posteriori">This is interesting, but why is it better than just using point estimates? (e.g., maximum-likelihood or maximum-a-posteriori)</a></p></li>
+<li><p><a class="reference internal" href="#faq-thanks-but-i-think-i-will-stick-to-point-estimates-for-now">Thanks, but I think I will stick to point estimates for now.</a></p></li>
+<li><p><a class="reference internal" href="#faq-are-you-planning-to-port-vbmc-to-other-languages">Are you planning to port VBMC to other languages?</a></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="general">
+<span id="faq-general"></span><h2>General<a class="headerlink" href="#general" title="Link to this heading">#</a></h2>
+<section id="which-kind-of-problems-is-vbmc-suited-for">
+<span id="faq-which-kind-of-problems-is-vbmc-suited-for"></span><h3>Which kind of problems is VBMC suited for?<a class="headerlink" href="#which-kind-of-problems-is-vbmc-suited-for" title="Link to this heading">#</a></h3>
+<p>I would recommend VBMC for problems in which:</p>
+<ul class="simple">
+<li><p>target log-likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or <a class="reference internal" href="#faq-noisy-target-function">noisy</a>;</p></li>
+<li><p>the gradient may be unavailable;</p></li>
+<li><p>the number of input parameters is up to about <code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">10</span></code> (<em>maybe</em> up to <code class="docutils literal notranslate"><span class="pre">20</span></code>, but not more);</p></li>
+<li><p>the target posterior is continuous and reasonably smooth, such that it can be approximated by a Gaussian process (GP) with a smooth kernel. This is generally difficult to know <em>a priori</em>, but you can look for <a class="reference internal" href="#faq-vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do">telltale signs</a> that the VBMC approximation is failing.</p></li>
+</ul>
+<p>If your likelihood function is fast to evaluate and noiseless, VBMC is most likely not the best tool for your problem (see <a class="reference internal" href="#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem">below</a>).</p>
+</section>
+<section id="what-do-i-do-if-vbmc-is-not-suited-for-my-problem">
+<span id="faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem"></span><h3>What do I do if VBMC is not suited for my problem?<a class="headerlink" href="#what-do-i-do-if-vbmc-is-not-suited-for-my-problem" title="Link to this heading">#</a></h3>
+<p>If the likelihood function is smooth and analytical (and fast to compute), you should consider estimating the posterior via Markov Chain Monte Carlo, for example using probabilistic programming languages such as <a class="reference external" href="https://mc-stan.org/">Stan</a> or <a class="reference external" href="https://www.pymc.io/">PyMC</a>; PyMC users with an expensive supported model can pass it to PyVBMC through <a class="reference internal" href="api/classes/pymc_target.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></span></a>.</p>
+<p>If the likelihood function is computationally expensive <em>and</em> non-smooth (or it produces a pathological posterior), then, well, tough luck. In this case, you may see if revising your model, for example by changing the parameterization, produces a posterior landscape which is more compatible with the approximations used by VBMC.</p>
+<p>Alternatively, you may resort to maximum-likelihood (or maximum-a-posteriori) estimation. Among the lab’s <a class="reference external" href="https://acerbilab.org/model-fitting/">model-fitting methods</a>, <a class="reference external" href="https://acerbilab.org/pybads/">Bayesian Adaptive Direct Search in Python (PyBADS)</a> is designed for efficient optimization.</p>
+</section>
+</section>
+<section id="installing-pyvbmc">
+<span id="faq-installation"></span><h2>Installing PyVBMC<a class="headerlink" href="#installing-pyvbmc" title="Link to this heading">#</a></h2>
+<section id="where-can-i-download-pyvbmc">
+<span id="faq-where-can-i-download-vbmc"></span><h3>Where can I download PyVBMC?<a class="headerlink" href="#where-can-i-download-pyvbmc" title="Link to this heading">#</a></h3>
+<p>Install or upgrade PyVBMC with pip:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m pip install --upgrade pyvbmc</span>
+</pre></div>
+</div>
+<p>Or install it with Conda:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda install --channel=conda-forge pyvbmc</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="installation.html"><span class="std std-doc">installation instructions</span></a> for more details, and
+the <a class="reference external" href="https://github.com/acerbilab/pyvbmc">GitHub repository</a> for the source code.</p>
+</section>
+<section id="which-external-packages-does-pyvbmc-require">
+<span id="faq-which-external-packages-does-pyvbmc-require"></span><h3>Which external packages does PyVBMC require?<a class="headerlink" href="#which-external-packages-does-pyvbmc-require" title="Link to this heading">#</a></h3>
+<p>PyVBMC uses NumPy, SciPy and several other Python packages, which are
+installed automatically with PyVBMC. It does not require MATLAB.</p>
+<p>The Torch posterior export and S-VBMC need the optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> extra;
+the ArviZ export needs the <code class="docutils literal notranslate"><span class="pre">arviz</span></code> extra, and the PyMC adapter needs the
+<code class="docutils literal notranslate"><span class="pre">pymc</span></code> extra. See
+<a class="reference internal" href="installation.html"><span class="std std-doc">optional integrations</span></a> for installation
+instructions.</p>
+</section>
+<section id="which-version-of-python-do-i-need">
+<span id="faq-which-version-of-python-do-i-need"></span><h3>Which version of Python do I need?<a class="headerlink" href="#which-version-of-python-do-i-need" title="Link to this heading">#</a></h3>
+<p>PyVBMC requires Python 3.10 or newer, and its package on conda-forge Python
+3.11 or newer. The optional ArviZ export and PyMC adapter require Python 3.12
+or newer.</p>
+</section>
+<section id="how-do-i-know-whether-a-newer-version-of-pyvbmc-exists">
+<span id="faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists"></span><h3>How do I know whether a newer version of PyVBMC exists?<a class="headerlink" href="#how-do-i-know-whether-a-newer-version-of-pyvbmc-exists" title="Link to this heading">#</a></h3>
+<p>Run <code class="docutils literal notranslate"><span class="pre">pyvbmc.check_for_updates()</span></code>. It checks PyPI for a newer release and,
+if one is available, prints the command that updates your installation:
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pyvbmc</span></code>, or, for conda,
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">--channel=conda-forge</span> <span class="pre">&quot;pyvbmc&gt;=X.Y.Z&quot;</span></code>, where <code class="docutils literal notranslate"><span class="pre">X.Y.Z</span></code> is the
+latest release.</p>
+<p>PyVBMC also occasionally reminds you when your installed release is more
+than a year old. The reminder makes no network request. To disable it and
+the startup tips, pass <code class="docutils literal notranslate"><span class="pre">options={&quot;show_tips&quot;:</span> <span class="pre">False}</span></code> to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>.</p>
+<p>See the <a class="reference internal" href="api/functions/check_for_updates.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code> reference</span></a>
+for details.</p>
+</section>
+<section id="conda-installs-an-older-version-of-pyvbmc-why">
+<span id="faq-conda-installs-an-older-version-of-pyvbmc-why"></span><h3>Conda installs an older version of PyVBMC. Why?<a class="headerlink" href="#conda-installs-an-older-version-of-pyvbmc-why" title="Link to this heading">#</a></h3>
+<p>PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer,
+among other packages, and its package on conda-forge requires Python 3.11
+or newer. When the environment holds an older version of one of them, or a
+package that requires one, <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">--channel=conda-forge</span> <span class="pre">pyvbmc</span></code>
+can keep that version and install the newest PyVBMC that fits it, 1.0.4,
+without a warning. Ask conda for the latest release:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda install --channel=conda-forge "pyvbmc&gt;=1.5"</span>
+</pre></div>
+</div>
+<p>Conda then upgrades what holds PyVBMC back, or says which package does.
+The same command upgrades a PyVBMC that is installed already, which
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span></code> and <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">update</span></code> can leave at 1.0.4 without a warning. A
+new environment avoids the conflict:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">conda create --name pyvbmc --channel=conda-forge python=3.12 pyvbmc</span>
+</pre></div>
+</div>
+</section>
+<section id="i-am-having-trouble-installing-pyvbmc-can-you-help">
+<span id="faq-i-am-having-trouble-installing-vbmc-can-you-help"></span><h3>I am having trouble installing PyVBMC. Can you help?<a class="headerlink" href="#i-am-having-trouble-installing-pyvbmc-can-you-help" title="Link to this heading">#</a></h3>
+<p>Sure. The PyVBMC installation should be pretty straightforward, so write me in detail which problem you are having in the <a class="reference external" href="https://github.com/orgs/acerbilab/discussions">Discussions forum</a>. Include your operating system, Python version, installation command and the full error message.</p>
+</section>
+</section>
+<section id="input-arguments-target-function-fun">
+<span id="faq-input-arguments-target-function-fun"></span><h2>Input arguments (target function: <code class="docutils literal notranslate"><span class="pre">fun</span></code>)<a class="headerlink" href="#input-arguments-target-function-fun" title="Link to this heading">#</a></h2>
+<section id="what-is-the-target-function">
+<span id="faq-what-is-the-target-function"></span><h3>What is the target function?<a class="headerlink" href="#what-is-the-target-function" title="Link to this heading">#</a></h3>
+<p>The target function in VBMC is the (unnormalized) log posterior or log joint probability density, specified via a Python callable <code class="docutils literal notranslate"><span class="pre">fun</span></code>, the first input argument to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>. You can also pass the log likelihood and a separate prior, as explained <a class="reference internal" href="#faq-how-do-i-specify-the-prior-to-vbmc">below</a>.</p>
+<p>For a typical model-fitting problem, <code class="docutils literal notranslate"><span class="pre">fun</span></code> is a function that computes the (unnormalized) log posterior of an input parameter vector <code class="docutils literal notranslate"><span class="pre">x</span></code>, for a given dataset and model. The log posterior is computed as log likelihood plus log prior.</p>
+<p>If you are unsure, see the following questions for more information about the likelihood function and the prior.</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">fun</span></code> takes a one-dimensional NumPy parameter vector with shape
+<code class="docutils literal notranslate"><span class="pre">(D,)</span></code> and returns one finite real scalar. Use natural logarithms. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span>
+
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Opt-in <a class="reference internal" href="quickstart.html"><span class="std std-doc">vectorized targets</span></a> receive a batch
+of points; the default interface evaluates one point at a time.</p>
+</section>
+<section id="can-i-use-a-pymc-model-with-pyvbmc">
+<span id="faq-can-i-use-a-pymc-model-with-pyvbmc"></span><h3>Can I use a PyMC model with PyVBMC?<a class="headerlink" href="#can-i-use-a-pymc-model-with-pyvbmc" title="Link to this heading">#</a></h3>
+<p>Yes. On Python 3.12 or newer, install <code class="docutils literal notranslate"><span class="pre">pyvbmc[pymc]</span></code>, construct
+<code class="docutils literal notranslate"><span class="pre">PyMCTarget(model)</span></code>, and pass that object directly to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyMCTarget</span><span class="p">,</span> <span class="n">VBMC</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">PyMCTarget</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">target</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="n">target</span><span class="o">.</span><span class="n">setup_cost</span> <span class="o">+</span> <span class="mi">100</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<span class="n">posterior_data</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The adapter supports a range of continuous PyMC models and chooses a
+starting point and plausible bounds automatically. Its setup evaluations
+count toward <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code>; the example allows 100 more for inference.
+Construct a new target if you change the model’s data.</p>
+<p>See the <a class="reference internal" href="quickstart.html#bring-a-pymc-model-into-pyvbmc"><span class="std std-ref">PyMC quickstart</span></a> for a
+worked example and the <a class="reference internal" href="api/classes/pymc_target.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> reference</span></a>
+for supported models and setup options.</p>
+</section>
+<section id="i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc">
+<span id="faq-i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc"></span><h3>I do not have a likelihood function, but another loss function. Can I still use VBMC?<a class="headerlink" href="#i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc" title="Link to this heading">#</a></h3>
+<p>For the results of VBMC to make sense, you really need a likelihood (and a prior; see <a class="reference internal" href="#faq-wait-do-i-need-a-prior">below</a>).</p>
+<p>However, sometimes you might already almost have a likelihood, and you just do not know about it. For example, suppose you are fitting a model via <em>least squares</em>, such that your target is a quadratic loss function defined as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_x</span><span class="p">,</span> <span class="n">data_y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">f</span><span class="p">(</span><span class="n">data_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">data_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">f</span></code> returns an array of model predictions for model parameters <code class="docutils literal notranslate"><span class="pre">x</span></code> and data <code class="docutils literal notranslate"><span class="pre">data_x</span></code>, and <code class="docutils literal notranslate"><span class="pre">data_y</span></code> is an array of observed responses. You can transform the above equation in a log likelihood as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_x</span><span class="p">,</span> <span class="n">data_y</span><span class="p">):</span>
+    <span class="n">sigma2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># Extract sigma^2 from log sigma</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">data_y</span><span class="p">)</span>         <span class="c1"># Number of scalar observations</span>
+    <span class="n">x_orig</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>             <span class="c1"># Parameters without log sigma</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">data_x</span><span class="p">,</span> <span class="n">x_orig</span><span class="p">)</span> <span class="o">-</span> <span class="n">data_y</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">residuals</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma2</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+        <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma2</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>where we have added <code class="docutils literal notranslate"><span class="pre">log(sigma)</span></code> as an additional model parameter at the end of the parameter vector <code class="docutils literal notranslate"><span class="pre">x_orig</span></code> (the logarithmic representation is convenient to ensure that <code class="docutils literal notranslate"><span class="pre">sigma</span></code> is positive). <code class="docutils literal notranslate"><span class="pre">sigma</span></code> is the standard deviation of the observed values <code class="docutils literal notranslate"><span class="pre">data_y</span></code> with respect to the model predictions <code class="docutils literal notranslate"><span class="pre">f(data_x,x)</span></code> (that is, the standard deviation of the residuals). The last line defines the log likelihood of a series of observations corrupted by Gaussian noise. For a fixed <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, maximizing <code class="docutils literal notranslate"><span class="pre">log_likelihood</span></code> with respect to the original model parameters is equivalent to minimizing the quadratic loss defined above. Keep the normalization term when estimating <code class="docutils literal notranslate"><span class="pre">sigma</span></code> or comparing model evidence.</p>
+</section>
+<section id="wait-do-i-need-a-prior">
+<span id="faq-wait-do-i-need-a-prior"></span><h3>Wait, do I need a prior?<a class="headerlink" href="#wait-do-i-need-a-prior" title="Link to this heading">#</a></h3>
+<p>Yes, you do. For the marginal likelihood (model evidence) to make sense as a model comparison metric, you should use a <em>proper</em> prior over the parameters (that is, a prior that integrates to 1). Horrible things happen if you compute the marginal likelihood with an improper or unnormalized prior. Since VBMC computes the ELBO, a lower bound to the (log) marginal likelihood, you need a prior.</p>
+<p>Also, a prior will come in handy to set plausible bounds for the parameters (see <a class="reference internal" href="#faq-how-do-i-choose-plb-and-pub">below</a>).</p>
+<p>A uniform bounded prior over parameters is okay (although not ideal), as long as you correctly normalize it.</p>
+</section>
+<section id="how-do-i-specify-the-prior-to-vbmc">
+<span id="faq-how-do-i-specify-the-prior-to-vbmc"></span><h3>How do I specify the prior to VBMC?<a class="headerlink" href="#how-do-i-specify-the-prior-to-vbmc" title="Link to this heading">#</a></h3>
+<p>You can pass to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> the target function <code class="docutils literal notranslate"><span class="pre">fun</span></code>, a Python callable that
+returns the log joint distribution, that is log likelihood plus log prior.
+For example, for a uniform prior over finite bounds you would have:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">UB</span> <span class="o">-</span> <span class="n">LB</span><span class="p">))</span>
+
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">log_likelihood</span></code> is the log likelihood function, and the second term
+represents the log prior (uniform over the range). PyVBMC does <em>not</em>
+automatically normalize a log prior that you write — that is up to you.</p>
+<p>Alternatively, pass a separate prior with <code class="docutils literal notranslate"><span class="pre">prior=</span></code>. For independent uniform
+priors, the same problem can be written as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform</span>
+
+<span class="n">prior</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">uniform</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">LB</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">UB</span><span class="p">))</span>
+<span class="p">]</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="n">prior</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The list holds one distribution per variable.</p>
+<p>In this case PyVBMC adds the log prior to the log likelihood, so do not
+include the prior in <code class="docutils literal notranslate"><span class="pre">log_likelihood</span></code> as well. Supported priors include
+PyVBMC prior objects and appropriate <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions. You can
+also supply a custom <code class="docutils literal notranslate"><span class="pre">log_prior=</span></code> callable. See the
+<a class="reference internal" href="api/classes/priors.html"><span class="std std-doc">prior documentation</span></a> for details.</p>
+<p>The hard bounds constrain where PyVBMC evaluates the target; they do not
+by themselves add or normalize a prior. A prior passed with <code class="docutils literal notranslate"><span class="pre">prior=</span></code> must
+have a support that covers the hard bounds, since the log joint would be
+<code class="docutils literal notranslate"><span class="pre">-inf</span></code> wherever the box reaches outside it; <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> refuses a prior that does
+not. Inside the hard bounds the prior is used as it is given: the model
+evidence is that of the prior restricted to the hard bounds, not of a prior
+truncated to them and normalized again, so for a proper evidence choose hard
+bounds that hold essentially all of the prior’s mass, or the support itself
+for a bounded prior.</p>
+</section>
+<section id="my-target-function-requires-additional-data-inputs-how-do-i-pass-them-to-vbmc">
+<span id="faq-my-target-function-requires-additional-datainputs-how-do-i-pass-them-to-vbmc"></span><h3>My target function requires additional data/inputs. How do I pass them to VBMC?<a class="headerlink" href="#my-target-function-requires-additional-data-inputs-how-do-i-pass-them-to-vbmc" title="Link to this heading">#</a></h3>
+<p>Suppose that your function takes two inputs, <code class="docutils literal notranslate"><span class="pre">fun(x,</span> <span class="pre">data)</span></code>.</p>
+<p>The first solution consists of defining a new function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">funwdata</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">fun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">data</span></code> has been defined before in the code. Now you can pass to
+<code class="docutils literal notranslate"><span class="pre">VBMC</span></code> <code class="docutils literal notranslate"><span class="pre">funwdata</span></code>, which takes a single input. The wrapper reads <code class="docutils literal notranslate"><span class="pre">data</span></code>
+when it is called; it does not embed a copy. Keep the data fixed throughout
+the inference.</p>
+<p>Alternatively, you can use <code class="docutils literal notranslate"><span class="pre">functools.partial</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+
+<span class="n">funwdata</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">funwdata</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This binds the <code class="docutils literal notranslate"><span class="pre">data</span></code> argument to the supplied object, also without copying
+it.</p>
+</section>
+<section id="does-vbmc-support-inference-with-noisy-that-is-stochastic-target-functions">
+<span id="faq-does-vbmc-support-inference-with-noisy-that-is-stochastic-target-functions"></span><h3>Does VBMC support inference with <em>noisy</em> (that is, <em>stochastic</em>) target functions?<a class="headerlink" href="#does-vbmc-support-inference-with-noisy-that-is-stochastic-target-functions" title="Link to this heading">#</a></h3>
+<p>Yes. See <a class="reference internal" href="#faq-noisy-target-function">this section</a> for more information.</p>
+</section>
+</section>
+<section id="input-arguments-domain-x0-lb-ub-plb-pub">
+<span id="faq-input-arguments-domain-x0lbubplbpub"></span><h2>Input arguments (domain: <code class="docutils literal notranslate"><span class="pre">x0</span></code>,<code class="docutils literal notranslate"><span class="pre">LB</span></code>,<code class="docutils literal notranslate"><span class="pre">UB</span></code>,<code class="docutils literal notranslate"><span class="pre">PLB</span></code>,<code class="docutils literal notranslate"><span class="pre">PUB</span></code>)<a class="headerlink" href="#input-arguments-domain-x0-lb-ub-plb-pub" title="Link to this heading">#</a></h2>
+<p>The examples use the following abbreviations for the bounds:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">VBMC</span></code> keyword argument</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LB</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lower_bounds</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">UB</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">upper_bounds</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PLB</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plausible_lower_bounds</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PUB</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plausible_upper_bounds</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="how-do-i-choose-the-starting-point-x0">
+<span id="faq-how-do-i-choose-the-starting-point-x0"></span><h3>How do I choose the starting point <code class="docutils literal notranslate"><span class="pre">x0</span></code>?<a class="headerlink" href="#how-do-i-choose-the-starting-point-x0" title="Link to this heading">#</a></h3>
+<p>First of all, keep in mind that you should run VBMC from different starting points, as a <a class="reference internal" href="#faq-how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it">sanity check</a> for your solutions.</p>
+<p>A good starting point belongs to regions of high posterior probability density (even better, to <em>typical</em> regions).
+Generally, a point in the vicinity of the mode of the posterior would represent a reasonable starting point (this is <a class="reference external" href="https://www.inference.vc/high-dimensional-gaussian-distributions-are-soap-bubble/">not necessarily true in high dimension</a>, but VBMC only operates in relatively low dimension).
+You can find such points by running a few iterations of an optimizer first.</p>
+<p>Note that a starting point should not be <em>on</em> or too close to the bounds <code class="docutils literal notranslate"><span class="pre">LB</span></code> or <code class="docutils literal notranslate"><span class="pre">UB</span></code>. PyVBMC moves such points slightly inside and warns. You can avoid this issue by constraining the preliminary optimization to be inside the plausible box, that is within <code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code> (see also <a class="reference internal" href="#faq-how-do-i-choose-plb-and-pub">below</a>).</p>
+<p>For example, you can use <a class="reference external" href="https://acerbilab.org/pybads/">Bayesian Adaptive Direct Search in Python (PyBADS)</a>, one of our <a class="reference external" href="https://acerbilab.org/model-fitting/">model-fitting tools</a>, to perform the preliminary optimization inside the plausible box:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pybads</span><span class="w"> </span><span class="kn">import</span> <span class="n">BADS</span>
+
+<span class="c1"># Pick a starting point via a preliminary optimization with PyBADS.</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">PLB</span><span class="p">)</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+<span class="n">opt_options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">D</span><span class="p">}</span>
+<span class="n">bads</span> <span class="o">=</span> <span class="n">BADS</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">fun</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x0</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opt_options</span><span class="p">)</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">bads</span><span class="o">.</span><span class="n">optimize</span><span class="p">()[</span><span class="s2">"x"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This example assumes a deterministic <code class="docutils literal notranslate"><span class="pre">fun</span></code> returning the log joint.
+Install PyBADS separately; its <a class="reference external" href="https://acerbilab.org/pybads/">documentation</a>
+also covers noisy optimization.</p>
+</section>
+<section id="how-do-i-choose-lb-and-ub">
+<span id="faq-how-do-i-choose-lb-and-ub"></span><h3>How do I choose <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>?<a class="headerlink" href="#how-do-i-choose-lb-and-ub" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code> are the <em>hard bounds</em> of the parameter space of the model of interest. These are <em>strict</em> inequalities, in that for any coordinate dimension <code class="docutils literal notranslate"><span class="pre">i</span></code>, <code class="docutils literal notranslate"><span class="pre">LB[i]</span> <span class="pre">&lt;</span> <span class="pre">x[i]</span> <span class="pre">&lt;</span> <span class="pre">UB[i]</span></code>.</p>
+<p>You can set the hard bounds to the <em>support</em> of the posterior probability density (that is, the region with nonzero probability density). For each coordinate dimension, the choice is between:</p>
+<ul class="simple">
+<li><p>unconstrained coordinates, specified with <code class="docutils literal notranslate"><span class="pre">LB[i]</span> <span class="pre">=</span> <span class="pre">-np.inf</span></code> and <code class="docutils literal notranslate"><span class="pre">UB[i]</span> <span class="pre">=</span> <span class="pre">np.inf</span></code>; or</p></li>
+<li><p>bounded coordinates, in which both <code class="docutils literal notranslate"><span class="pre">LB[i]</span></code> and <code class="docutils literal notranslate"><span class="pre">UB[i]</span></code> are finite (with <code class="docutils literal notranslate"><span class="pre">LB[i]</span> <span class="pre">&lt;</span> <span class="pre">UB[i]</span></code>).</p></li>
+</ul>
+</section>
+<section id="can-i-have-parameters-bounded-only-on-one-side">
+<span id="faq-can-i-have-parameters-bounded-only-on-one-side"></span><h3>Can I have parameters bounded only on one side?<a class="headerlink" href="#can-i-have-parameters-bounded-only-on-one-side" title="Link to this heading">#</a></h3>
+<p>Half-bounded parameters are coordinate dimensions for which one bound is finite and the other is infinite. At the moment, VBMC does not support half-bounded parameters.</p>
+<p>If you need to set a half-bound constraint, fix the ‘unbounded’ half to some large but meaningful value (e.g., the 0.01th or 99.9th percentile of the prior, for, respectively, an ‘unbounded’ lower/upper bound). Do <strong>not</strong> set the unbounded half to some impossibly large value, with respect to the scale of your problem, otherwise VBMC is likely to fail.</p>
+<p>A finite cutoff truncates the target. Check that the omitted posterior mass
+is negligible; if the cutoff defines a truncated prior for model comparison,
+include its normalization in the log prior. Another approach is to
+reparameterize, for example using the logarithm of a positive parameter.
+Include the change-of-variables Jacobian in the log density when you do so.
+For a supported PyMC model, <code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> performs this one-sided
+reparameterization and includes PyMC’s transform Jacobian automatically.</p>
+</section>
+<section id="can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value">
+<span id="faq-can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value"></span><h3>Can I set <code class="docutils literal notranslate"><span class="pre">LB</span> <span class="pre">=</span> <span class="pre">UB</span></code> for some variable to fix it to a given value?<a class="headerlink" href="#can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value" title="Link to this heading">#</a></h3>
+<p>No — at the moment, <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code> need to be distinct. To fix a parameter, remove it from the vector passed to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> and insert its fixed value inside your target function.</p>
+</section>
+<section id="how-do-i-choose-plb-and-pub">
+<span id="faq-how-do-i-choose-plb-and-pub"></span><h3>How do I choose <code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>?<a class="headerlink" href="#how-do-i-choose-plb-and-pub" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code> are the <em>plausible</em> (or <em>reasonable</em>) bounds, which denote a region of high posterior probability mass.
+Plausible bounds are used by VBMC to draw training points to construct the starting approximation of the posterior, and to initialize various hyperparameters of the algorithm, such as typical scales for the parameters.</p>
+<p>The plausible bounds need to be finite, and distinct from the hard bounds <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>.</p>
+<p>In the absence of other information, I would recommend to set the plausible range as the ~68.26% percentile interval of the prior (that is, set <code class="docutils literal notranslate"><span class="pre">PLB</span></code> to the 15.87% percentile and <code class="docutils literal notranslate"><span class="pre">PUB</span></code> to the 84.13% percentile).</p>
+<p>For example, for a Gaussian prior with a given mean <code class="docutils literal notranslate"><span class="pre">mu</span></code> and standard deviation <code class="docutils literal notranslate"><span class="pre">SD</span></code>, this would amount to</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">norm</span>
+
+<span class="n">PLB</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.1587</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">SD</span><span class="p">)</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.8413</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">SD</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which is about equivalent to</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">PLB</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">SD</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">SD</span>
+</pre></div>
+</div>
+<p>Somewhat counter-intuitively, if in doubt about the location of a high posterior probability region, it is better to choose <em>narrower</em> plausible bounds than wide ones. The rationale is that the Gaussian process approximation built by VBMC might fail if the algorithm ends up sampling from a region with extremely low posterior probability, and this is more likely to happen if the plausible bounds are arbitrarily large.</p>
+</section>
+<section id="how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space">
+<span id="faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space"></span><h3>How do I prevent VBMC from evaluating certain inputs or regions of input space?<a class="headerlink" href="#how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space" title="Link to this heading">#</a></h3>
+<p>If these regions can be identified by coordinate-wise ranges, use <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>.
+If those regions remain possible under your model, use the <a class="reference internal" href="#faq-wait-do-i-need-a-prior">prior over parameters</a> to <em>gradually</em> and continuously reduce the probability for those regions (but never to zero).</p>
+<p>Do <strong>not</strong> have <code class="docutils literal notranslate"><span class="pre">fun(x)</span></code> return <code class="docutils literal notranslate"><span class="pre">np.inf</span></code>, <code class="docutils literal notranslate"><span class="pre">-np.inf</span></code> or <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> for invalid inputs.
+VBMC would simply crash (see <a class="reference internal" href="#faq-vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do">this question</a>).
+The <code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> adapter is the exception: it returns <code class="docutils literal notranslate"><span class="pre">-np.inf</span></code> only on or
+outside its hard box, where VBMC does not evaluate the target.</p>
+<p>Returning <code class="docutils literal notranslate"><span class="pre">0</span></code> is valid for a log density, but it does not mean zero probability and will not exclude a point.</p>
+<p>Absolutely do <strong>NOT</strong> have <code class="docutils literal notranslate"><span class="pre">fun(x)</span></code> return an arbitrarily large negative number (such as <code class="docutils literal notranslate"><span class="pre">-1e100</span></code>) to enforce VBMC to avoid certain regions.
+This strategy may seem innocent enough, but in fact it may cripple VBMC by making its model of the target function nonsensical.</p>
+<p>For regions that are genuinely impossible, look for a parameterization whose
+box constraints describe the allowed domain. Arbitrarily changing the prior
+changes the inference problem.</p>
+</section>
+<section id="does-vbmc-support-inference-with-integer-parameters">
+<span id="faq-does-vbmc-support-inference-with-integer-parameters"></span><h3>Does VBMC support inference with integer parameters?<a class="headerlink" href="#does-vbmc-support-inference-with-integer-parameters" title="Link to this heading">#</a></h3>
+<p>Only as an experimental feature, through <code class="docutils literal notranslate"><span class="pre">options['integer_vars']</span></code>.
+VBMC still approximates the target with a Gaussian process over continuous
+inputs, interpolating between values on the integer grid. The target should
+therefore vary reasonably smoothly across neighboring integer values.</p>
+<p>This feature requires special hard bounds, and the initial evaluations can
+be off-grid. Read the <a class="reference internal" href="api/options/vbmc_options.html#integer-valued-variables"><span class="std std-ref">integer-variable guidance</span></a>
+before using it.</p>
+</section>
+</section>
+<section id="output-arguments">
+<span id="faq-output-arguments"></span><h2>Output arguments<a class="headerlink" href="#output-arguments" title="Link to this heading">#</a></h2>
+<section id="what-is-vp-and-what-do-i-do-with-it">
+<span id="faq-what-is-vp-and-what-do-i-do-with-it"></span><h3>What is <code class="docutils literal notranslate"><span class="pre">vp</span></code> and what do I do with it?<a class="headerlink" href="#what-is-vp-and-what-do-i-do-with-it" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">vp</span></code> is a <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> object that represents the variational
+posterior — an approximation of the true posterior — computed by the VBMC
+inference algorithm.</p>
+<p>You can query and manipulate the variational posterior with the following methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.sample(N)</span></code>: generate random samples from the variational posterior;
+returns <code class="docutils literal notranslate"><span class="pre">(samples,</span> <span class="pre">component_indices)</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.pdf(x)</span></code>: evaluate the probability density of the variational posterior
+at a given point;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.moments(cov_flag=True)</span></code>: compute mean and covariance matrix of the
+variational posterior;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.mode()</span></code>: compute the mode of the variational posterior;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.kl_div(vp2=other_vp)</span></code>: compute Kullback-Leibler divergences between two
+variational posteriors;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.mtv(other_vp)</span></code>: compute marginal total variation distances between two
+variational posteriors;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vp.plot()</span></code>: visualize the variational posterior.</p></li>
+</ul>
+<p>The mode of the variational posterior can be an unreliable estimate of the
+target’s maximum-a-posteriori (MAP) point, especially near the bounds.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span><span class="p">,</span> <span class="n">component_indices</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>These methods use original parameter coordinates by default.</p>
+<p>You can see several usage examples in the <a class="reference internal" href="examples.html"><span class="std std-doc">tutorials</span></a>, and
+the complete interface in the
+<a class="reference internal" href="api/classes/variational_posterior.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> documentation</span></a>.
+Optional <a class="reference internal" href="api/methods/variational_posterior_to_torch.html"><span class="std std-doc">Torch</span></a>
+and <a class="reference internal" href="api/methods/variational_posterior_to_arviz.html"><span class="std std-doc">ArviZ</span></a> exports
+let you use the posterior in other Python workflows. If you have several
+posteriors, <a class="reference internal" href="#faq-how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it">compare their solutions</a>
+before <a class="reference internal" href="#faq-can-i-combine-the-posteriors-of-several-runs">combining them with S-VBMC</a>.</p>
+</section>
+<section id="what-are-elbo-and-elbo-sd">
+<span id="faq-what-are-elbo-and-elbo-sd"></span><h3>What are <code class="docutils literal notranslate"><span class="pre">elbo</span></code> and <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>?<a class="headerlink" href="#what-are-elbo-and-elbo-sd" title="Link to this heading">#</a></h3>
+<p>The returned <code class="docutils literal notranslate"><span class="pre">results</span></code> dictionary contains <code class="docutils literal notranslate"><span class="pre">results[&quot;elbo&quot;]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">results[&quot;elbo_sd&quot;]</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">elbo</span></code> is the variational Evidence Lower BOund estimated by VBMC, that is an approximation of a lower bound on the log marginal likelihood (or log model evidence). Note that there are two levels of approximation:</p>
+<ul class="simple">
+<li><p>variational inference computes the ELBO, which is a lower bound on the log marginal likelihood;</p></li>
+<li><p>VBMC estimates the ELBO using a GP surrogate of the true posterior and Bayesian quadrature.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> is the uncertainty (standard deviation) on the <em>second part</em> of the above approximation. In variational inference, there is no direct way to know how far the ELBO is from the true log marginal likelihood (which would be the error of the first part).</p>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">elbo</span></code> as a metric for model selection, with <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> providing one of several diagnostics of convergence. For noiseless targets, you should not trust solutions with a fairly large uncertainty (say, <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> &gt;&gt; 0.1). Larger uncertainties are common with <a class="reference internal" href="#faq-noisy-target-function">noisy targets</a>; interpret them alongside the evaluation noise and agreement across runs. A small <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> does not guarantee that the ELBO is close to the true log evidence, and the estimated ELBO can exceed the true evidence because of surrogate error.</p>
+</section>
+<section id="how-is-overhead-in-results-defined">
+<span id="faq-how-is-overhead-in-results-defined"></span><h3>How is <code class="docutils literal notranslate"><span class="pre">overhead</span></code> in <code class="docutils literal notranslate"><span class="pre">results</span></code> defined?<a class="headerlink" href="#how-is-overhead-in-results-defined" title="Link to this heading">#</a></h3>
+<p>PyVBMC currently returns <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> for <code class="docutils literal notranslate"><span class="pre">results[&quot;overhead&quot;]</span></code>; this field is
+not implemented.</p>
+<p>The <em>fractional overhead</em> is defined as (<em>total running time</em> / <em>total
+function time</em> - 1). You can measure it by timing the complete optimization
+and the time spent evaluating your target. Typically, you would expect
+overhead to be of order 1 or smaller for normal runs of VBMC. If the
+overhead is <em>much</em> larger than 1 (e.g., 10 or more), your problem affords
+fast evaluations and it is possible that it would benefit from other
+algorithms than VBMC (see <a class="reference internal" href="#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem">above</a>).</p>
+<p>For VBMC test problems and examples, the overhead can be astronomical,
+which is expected since for demonstration purposes we are using simple
+analytical functions which are extremely fast to evaluate.</p>
+</section>
+<section id="where-can-i-find-the-internal-state-and-iteration-history">
+<span id="faq-where-can-i-find-the-internal-state-and-iteration-history"></span><h3>Where can I find the internal state and iteration history?<a class="headerlink" href="#where-can-i-find-the-internal-state-and-iteration-history" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">VBMC.optimize()</span></code> returns the variational posterior <code class="docutils literal notranslate"><span class="pre">vp</span></code> and a <code class="docutils literal notranslate"><span class="pre">results</span></code>
+dictionary. The <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object also retains <code class="docutils literal notranslate"><span class="pre">vbmc.optim_state</span></code>, which
+contains fields related to the internal state of the algorithm, and
+<code class="docutils literal notranslate"><span class="pre">vbmc.iteration_history</span></code>, which contains detailed information and
+statistics about each iteration.</p>
+<p>These attributes are useful for development and debugging, but their
+internal structure may change in future versions. Use the documented
+<a class="reference internal" href="api/classes/vbmc.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code> interface</span></a> where possible; for example,
+<code class="docutils literal notranslate"><span class="pre">vbmc.get_gp(iteration)</span></code> retrieves a recorded iteration’s GP surrogate,
+ready for prediction.</p>
+</section>
+</section>
+<section id="noisy-target-function">
+<span id="faq-noisy-target-function"></span><h2>Noisy target function<a class="headerlink" href="#noisy-target-function" title="Link to this heading">#</a></h2>
+<section id="what-s-a-noisy-target-function">
+<span id="faq-whats-a-noisy-target-function"></span><h3>What’s a noisy target function?<a class="headerlink" href="#what-s-a-noisy-target-function" title="Link to this heading">#</a></h3>
+<p>A target function is <em>noisy</em> (or <em>stochastic</em>) if it returns <em>noisy</em> observations of the true underlying log-joint (unnormalized log posterior). Conversely, a non-noisy target function is <em>deterministic</em>. Log likelihoods can be noisy when evaluated through simulation (e.g., via Monte Carlo methods).</p>
+<p>PyVBMC supports noisy target functions as input, as explained below.</p>
+</section>
+<section id="does-vbmc-automatically-detect-that-the-target-function-is-noisy">
+<span id="faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy"></span><h3>Does VBMC automatically detect that the target function is noisy?<a class="headerlink" href="#does-vbmc-automatically-detect-that-the-target-function-is-noisy" title="Link to this heading">#</a></h3>
+<p>No. You tell VBMC that the target function is noisy when constructing <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>, in one of two ways:</p>
+<ul class="simple">
+<li><p>If the target can estimate the noise of each evaluation, which is the recommended setup, set <code class="docutils literal notranslate"><span class="pre">options={&quot;specify_target_noise&quot;:</span> <span class="pre">True}</span></code> and pass to VBMC a function <code class="docutils literal notranslate"><span class="pre">fun</span></code> that returns a pair <code class="docutils literal notranslate"><span class="pre">(log_density,</span> <span class="pre">noise_sd)</span></code>, where <code class="docutils literal notranslate"><span class="pre">noise_sd</span></code> is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at <code class="docutils literal notranslate"><span class="pre">x</span></code>. See <a class="reference internal" href="#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood">below</a> and <a class="reference external" href="https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html">Example 6</a> for further information.</p></li>
+<li><p>Otherwise, set <code class="docutils literal notranslate"><span class="pre">options={&quot;uncertainty_handling&quot;:</span> <span class="pre">True}</span></code> and leave <code class="docutils literal notranslate"><span class="pre">specify_target_noise</span></code> unset: <code class="docutils literal notranslate"><span class="pre">fun</span></code> returns <code class="docutils literal notranslate"><span class="pre">log_density</span></code> alone, and VBMC infers the noise level from the evaluations.</p></li>
+</ul>
+<p>With a separate <code class="docutils literal notranslate"><span class="pre">prior=</span></code> or <code class="docutils literal notranslate"><span class="pre">log_prior=</span></code>, <code class="docutils literal notranslate"><span class="pre">log_density</span></code> is the noisy log
+likelihood; otherwise it is the noisy log joint. The SD describes the
+uncertainty of that returned estimate, not variability across observations
+or across parameter values.</p>
+</section>
+<section id="does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function">
+<span id="faq-does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function"></span><h3>Does VBMC automatically infer the amount of noise in the target function?<a class="headerlink" href="#does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function" title="Link to this heading">#</a></h3>
+<p>Only when asked to. With <code class="docutils literal notranslate"><span class="pre">options={&quot;uncertainty_handling&quot;:</span> <span class="pre">True}</span></code> and without <code class="docutils literal notranslate"><span class="pre">specify_target_noise</span></code>, the target returns the log density alone and VBMC infers the noise level from the evaluations. A target that can estimate the SD of each evaluation should return it instead, as described <a class="reference internal" href="#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy">above</a>.</p>
+</section>
+<section id="can-i-use-any-technique-to-estimate-a-noisy-log-likelihood">
+<span id="faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood"></span><h3>Can I use <em>any</em> technique to estimate a noisy log-likelihood?<a class="headerlink" href="#can-i-use-any-technique-to-estimate-a-noisy-log-likelihood" title="Link to this heading">#</a></h3>
+<p>Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see <a class="reference internal" href="#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy">above</a>). <a class="reference external" href="https://github.com/acerbilab/ibs"><em>Inverse binomial sampling</em> (IBS)</a>, one of our <a class="reference external" href="https://acerbilab.org/model-fitting/">model-fitting methods</a>, checks all these boxes. Its Python implementation is <a class="reference external" href="https://github.com/acerbilab/pyibs">PyIBS</a>. The <em>synthetic likelihood</em> (SL) method could also work.</p>
+</section>
+<section id="how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood">
+<span id="faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood"></span><h3>How do I estimate the standard deviation of the noisy log-likelihood?<a class="headerlink" href="#how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood" title="Link to this heading">#</a></h3>
+<p>If you use <a class="reference external" href="https://github.com/acerbilab/ibs"><em>inverse binomial sampling</em> (IBS)</a>, the algorithm returns the variability of the estimate as second output. Just ensure that the variability is returned as <em>standard deviation</em> (SD) and not as the variance (depending on the implementation, you may have to take the square root of the reported variance).</p>
+<p>Otherwise, you can also estimate the SD via bootstrap or similar approaches.</p>
+</section>
+<section id="how-large-can-the-noise-be-to-perform-successful-inferences-with-vbmc">
+<span id="faq-how-large-can-the-noise-be-to-perform-successful-inferences-with-vbmc"></span><h3>How large can the noise be to perform successful inferences with VBMC?<a class="headerlink" href="#how-large-can-the-noise-be-to-perform-successful-inferences-with-vbmc" title="Link to this heading">#</a></h3>
+<p>While VBMC has been shown to handle correctly up to a fairly large amount of observation noise (SD ~ 7 points in the modal region), ideally you want the SD of the noise in the log-likelihood to be around 1, and probably not larger than ~3, at least in the area covered by a meaningful fraction of posterior probability mass.</p>
+</section>
+<section id="wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call">
+<span id="faq-wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call"></span><h3>Wait, can I just remove stochasticity by fixing the random seed at each function call?<a class="headerlink" href="#wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call" title="Link to this heading">#</a></h3>
+<p>No, that is a silly idea. This approach might <em>freeze</em> the noise, but would not remove it (see <a class="reference external" href="https://github.com/acerbilab/bads/wiki#can-i-make-a-noisy-objective-function-deterministic-by-fixing-the-noise-process">here</a>).</p>
+</section>
+</section>
+<section id="display">
+<span id="faq-display"></span><h2>Display<a class="headerlink" href="#display" title="Link to this heading">#</a></h2>
+<section id="what-are-the-quantities-displayed-by-vbmc-during-the-variational-optimization">
+<span id="faq-what-are-the-quantities-displayed-by-vbmc-during-the-variational-optimization"></span><h3>What are the quantities displayed by VBMC during the variational optimization?<a class="headerlink" href="#what-are-the-quantities-displayed-by-vbmc-during-the-variational-optimization" title="Link to this heading">#</a></h3>
+<p>If <code class="docutils literal notranslate"><span class="pre">options={&quot;display&quot;:</span> <span class="pre">&quot;iter&quot;}</span></code> is passed to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> (the default), VBMC displays the traces of several quantities:</p>
+<ul class="simple">
+<li><p>the <code class="docutils literal notranslate"><span class="pre">Iteration</span></code> number;</p></li>
+<li><p>the number of target function evaluations <code class="docutils literal notranslate"><span class="pre">f-count</span></code>;</p></li>
+<li><p>the current estimate of the mean of the ELBO, <code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code>;</p></li>
+<li><p>the uncertainty (standard deviation) on the current estimate of the ELBO, <code class="docutils literal notranslate"><span class="pre">Std[ELBO]</span></code>;</p></li>
+<li><p>the change in variational posterior from the previous iteration, measured in terms of symmetrized Kullback-Leibler (KL) divergence between the two variational posteriors, <code class="docutils literal notranslate"><span class="pre">sKL-iter[q]</span></code>;</p></li>
+<li><p>the number of components of the current variational mixture <code class="docutils literal notranslate"><span class="pre">K[q]</span></code>;</p></li>
+<li><p>a metric of <code class="docutils literal notranslate"><span class="pre">Convergence</span></code> of the current solution (values less than 1 are <em>necessary</em> for convergence, but not sufficient);</p></li>
+<li><p>additional actions (such as starting and ending of the warm-up stage).</p></li>
+</ul>
+</section>
+<section id="i-noticed-that-the-series-of-displayed-mean-elbo-values-is-not-monotonically-increasing-shouldn-t-the-elbo-keep-increasing-during-the-variational-optimization">
+<span id="faq-i-noticed-that-the-series-of-displayed-meanelbo-values-is-not-monotonically-increasing-shouldnt-the-elbo-keep-increasing-during-the-variational-optimization"></span><h3>I noticed that the series of displayed <code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code> values is <em>not</em> monotonically increasing. Shouldn’t the ELBO keep increasing during the variational optimization?<a class="headerlink" href="#i-noticed-that-the-series-of-displayed-mean-elbo-values-is-not-monotonically-increasing-shouldn-t-the-elbo-keep-increasing-during-the-variational-optimization" title="Link to this heading">#</a></h3>
+<p>Well spotted, but nothing to worry about. VBMC keeps updating its <em>estimate</em> of the ELBO, which means that this value may <em>decrease</em> across iterations, and sometimes (especially at the beginning) it will oscillate.
+This is part of the normal functioning of VBMC. However, if the ELBO keeps oscillating wildly even at later stages in the inference, you may be in trouble (see <a class="reference internal" href="#faq-troubleshooting">below</a>).</p>
+</section>
+</section>
+<section id="troubleshooting">
+<span id="faq-troubleshooting"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<section id="how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it">
+<span id="faq-how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it"></span><h3>How can VBMC fail, how do I find out, and how do I fix it?<a class="headerlink" href="#how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it" title="Link to this heading">#</a></h3>
+<p>So many questions. VBMC can fail in <em>many</em> ways, some of which blatant, some which harder to detect — similarly to other inference methods such as Markov Chain Monte Carlo. For this reason, you should always check and validate the solutions found by VBMC.</p>
+<p>We list here the major failure modes, diagnostics, and possible solutions:</p>
+<ul class="simple">
+<li><p>In the simplest case, the VBMC algorithm fails to converge within the allotted budget of target function evaluations.</p>
+<ul>
+<li><p>This is easy to detect (look at <code class="docutils literal notranslate"><span class="pre">results[&quot;success_flag&quot;]</span></code> and <code class="docutils literal notranslate"><span class="pre">results[&quot;message&quot;]</span></code>). There may be several distinct reasons for failure of convergence (see below).</p></li>
+</ul>
+</li>
+<li><p>VBMC converges, but the variational optimization has only found a <em>local</em> optimum.</p>
+<ul>
+<li><p>You cannot detect this issue by looking at a <em>single</em> VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also <a class="reference external" href="https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_4_validation.html">Example 4</a>).</p></li>
+</ul>
+</li>
+<li><p>Multiple runs of VBMC converge to pretty much the same variational solution, which fails to capture important aspects of the true posterior.</p>
+<ul>
+<li><p>This problem has no obvious solution, in that it is intrinsic to the fact that we are using an approximation that it may deviate from the true posterior. For example, variational posteriors, for how the variational objective is defined, tend to underestimate the true uncertainty of the posterior. You can use <a class="reference external" href="https://stats.stackexchange.com/questions/115157/what-are-posterior-predictive-checks-and-what-makes-them-useful"><em>posterior predictive checks</em></a> to gain confidence that the found solution makes sensible predictions, also in terms of calibration.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do">
+<span id="faq-vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do"></span><h3>VBMC warned me that the <code class="docutils literal notranslate"><span class="pre">Returned</span> <span class="pre">variational</span> <span class="pre">solution</span> <span class="pre">may</span> <span class="pre">have</span> <span class="pre">not</span> <span class="pre">converged.</span></code> What should I do?<a class="headerlink" href="#vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do" title="Link to this heading">#</a></h3>
+<p>This warning means that the returned variational solution was not marked stable. A common reason is that VBMC reaches the maximum number of function evaluations before the solution has stabilized according to the reliability index. To understand better what’s going on, and how you could solve this issue, have a look at the VBMC trace across iterations:</p>
+<ul class="simple">
+<li><p>On average, <code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code> has been increasing while <code class="docutils literal notranslate"><span class="pre">Std[ELBO]</span></code> has been decreasing over the last iterations, with some fluctuations. This suggests that VBMC is converging, it probably just needs more iterations. <a class="reference internal" href="#faq-how-do-i-save-and-continue-a-run">Continue the saved run</a> with a larger total evaluation budget.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code> and <code class="docutils literal notranslate"><span class="pre">Std[ELBO]</span></code> have been fluctuating wildly across iterations. This suggests that VBMC cannot build a reasonable Gaussian process (GP) approximation of the target posterior. There could be a number of reasons for that, but in many cases, the GP approximation is failing because VBMC has accidentally sampled one or a few points with <em>extremely</em> low posterior probability density. Because of these points, the GP approximation ends up having a very high output scale parameter (that is, the GP models a wildly fluctuating function). Sometimes, starting with a <em>narrower</em> plausible range, which only includes a region of (relatively) high posterior probability mass, is enough to prevent this kind of divergence.</p></li>
+</ul>
+<p>If you change the target, prior or bounds, start a new <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance.
+PyVBMC does not implement MATLAB VBMC’s <code class="docutils literal notranslate"><span class="pre">RetryMaxFunEvals</span></code> automated retry
+option.</p>
+</section>
+<section id="vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do">
+<span id="faq-vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do"></span><h3>VBMC crashes saying that <code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">returned</span> <span class="pre">function</span> <span class="pre">value</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">finite</span> <span class="pre">real-valued</span> <span class="pre">scalar</span></code>. What do I do?<a class="headerlink" href="#vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do" title="Link to this heading">#</a></h3>
+<p>This error means that your target function has returned <code class="docutils literal notranslate"><span class="pre">Inf</span></code>, <code class="docutils literal notranslate"><span class="pre">NaN</span></code>, or a complex number. You should check your code and understand why it returned a non-finite or complex value.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Inf</span></code>s and <code class="docutils literal notranslate"><span class="pre">NaN</span></code>s often arise because there are outcomes in your dataset (e.g., responses in a trial) to which
+the tested model assigns a probability of <code class="docutils literal notranslate"><span class="pre">0</span></code> (usually due to numerical truncation). <code class="docutils literal notranslate"><span class="pre">log(0)</span></code> yields <code class="docutils literal notranslate"><span class="pre">-Inf</span></code>,
+which is then propagated. If the zero is due to numerical underflow, compute the likelihood directly in log space, using log-density functions and stable operations such as <code class="docutils literal notranslate"><span class="pre">scipy.special.logsumexp</span></code>. If the model truly assigns zero probability to an observed outcome, check the model assumptions. A non-zero <em>lapse rate</em> or contamination component may be appropriate if it describes the data-generating process; an arbitrary probability floor changes the likelihood and its model evidence.</p>
+<p>Complex numbers usually arise because you are taking either a <code class="docutils literal notranslate"><span class="pre">log</span></code> or a <code class="docutils literal notranslate"><span class="pre">sqrt</span></code> of a negative number (of a quantity that should not be negative). You might be setting wrong bounds for your variables, or maybe there are indexing issues.</p>
+<p>Note that some optimizers are robust to <code class="docutils literal notranslate"><span class="pre">Inf</span></code>s and <code class="docutils literal notranslate"><span class="pre">NaN</span></code>s and just keep going, avoiding the problematic region in parameter space. For this reason, you might have been able to fit the same models before with an optimizer, without encountering errors. However, ignoring errors in the likelihood can be dangerous as it might hide deeper issues with the model implementation.</p>
+</section>
+<section id="i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong">
+<span id="faq-i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong"></span><h3>I have been running VBMC from the same starting point, but I get different results each time. Is something wrong?<a class="headerlink" href="#i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong" title="Link to this heading">#</a></h3>
+<p>Nothing is wrong per se. VBMC uses stochastic optimization, so results will differ between different runs, even with the same initial condition <code class="docutils literal notranslate"><span class="pre">x0</span></code>. The question is whether the returned <code class="docutils literal notranslate"><span class="pre">elbo</span></code> or variational posterior <code class="docutils literal notranslate"><span class="pre">vp</span></code> vary <em>substantially</em> across runs from the same starting point. If so, it might be a sign that your posterior landscape is particularly difficult.</p>
+<p>If you want to have reproducible results (and this advice applies beyond VBMC), pass a known seed when constructing the instance (e.g., setting it to the run number):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Use the same seed, inputs, options and numerical environment to reproduce
+a run. If you omit <code class="docutils literal notranslate"><span class="pre">seed</span></code>, calling <code class="docutils literal notranslate"><span class="pre">np.random.seed(...)</span></code> before constructing
+<code class="docutils literal notranslate"><span class="pre">VBMC</span></code> also fixes the run. See the
+<a class="reference internal" href="quickstart.html#reproducible-runs"><span class="std std-ref">reproducibility guide</span></a> for using NumPy
+generators and controlling simulation noise.</p>
+<p>If your target function itself is stochastic, manage its random generator
+separately: <code class="docutils literal notranslate"><span class="pre">VBMC(seed=...)</span></code> does not seed the target. Keep drawing fresh
+noise at each target call; fixing the algorithm’s seed is different from
+<a class="reference internal" href="#faq-wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call">freezing the target’s noise</a>.</p>
+</section>
+<section id="how-do-i-save-and-continue-a-run">
+<span id="faq-how-do-i-save-and-continue-a-run"></span><h3>How do I save and continue a run?<a class="headerlink" href="#how-do-i-save-and-continue-a-run" title="Link to this heading">#</a></h3>
+<p>Save the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance so you can continue the inference without starting
+over:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"fit.pkl"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To give it more evaluations, load it with a larger total evaluation budget
+and call <code class="docutils literal notranslate"><span class="pre">optimize()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">continued</span> <span class="o">=</span> <span class="n">VBMC</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"fit.pkl"</span><span class="p">,</span> <span class="n">new_options</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">})</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">continued</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Here <code class="docutils literal notranslate"><span class="pre">1000</span></code> is the <em>total</em> budget, including evaluations already made. If
+the run reached its iteration limit, increase <code class="docutils literal notranslate"><span class="pre">max_iter</span></code> as well.</p>
+<p>Continue with the same model, data, prior and bounds, using the same Python
+minor version (3.12, say) that saved the file. Some options, such as noise
+handling, cannot be changed when resuming; create a new <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance to
+change them. See <a class="reference internal" href="api/classes/vbmc.html#pyvbmc.VBMC.load" title="pyvbmc.VBMC.load"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyvbmc.VBMC.load()</span></code></a> for the
+supported options.</p>
+<p>If you only need to use the fitted posterior later, save it with
+<code class="docutils literal notranslate"><span class="pre">vp.save(&quot;posterior.pkl&quot;)</span></code> and load it with
+<code class="docutils literal notranslate"><span class="pre">VariationalPosterior.load(&quot;posterior.pkl&quot;)</span></code>. A saved posterior can be used
+across Python versions, but does not contain the full state needed to resume
+a run.</p>
+</section>
+<section id="can-i-combine-the-posteriors-of-several-runs">
+<span id="faq-can-i-combine-the-posteriors-of-several-runs"></span><h3>Can I combine the posteriors of several runs?<a class="headerlink" href="#can-i-combine-the-posteriors-of-several-runs" title="Link to this heading">#</a></h3>
+<p>Yes. S-VBMC (Stacking Variational Bayesian Monte Carlo) combines the
+posteriors of several VBMC runs on the same model and data, without new
+model evaluations. It can be useful when individual runs capture different
+parts of the posterior. First check the individual runs and investigate
+large disagreements; stacking cannot recover a region missed by every run.</p>
+<p>With the optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> extra installed, collect the returned posteriors
+in a list <code class="docutils literal notranslate"><span class="pre">vps</span></code> and run:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">SVBMC</span>
+
+<span class="n">stacked</span> <span class="o">=</span> <span class="n">SVBMC</span><span class="p">(</span><span class="n">vps</span><span class="p">)</span>
+<span class="n">stacked</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The stacked ELBO estimate is <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code>. For noisy runs it is designed
+to reduce bias introduced by stacking; some bias can remain.
+<code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code> describes uncertainty in the raw estimate, not a confidence
+interval for <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code>. See the
+<a class="reference internal" href="api/classes/svbmc.html"><span class="std std-doc">S-VBMC documentation</span></a> for interpreting the estimates,
+saving the stacked posterior, and sampling from it, and
+<a class="reference external" href="https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_7_stacking.html">Example 7</a>
+for a complete example.</p>
+</section>
+</section>
+<section id="miscellanea">
+<span id="faq-miscellanea"></span><h2>Miscellanea<a class="headerlink" href="#miscellanea" title="Link to this heading">#</a></h2>
+<section id="i-already-run-pybads-on-my-problem-how-do-i-run-vbmc">
+<span id="faq-i-already-run-pybads-on-my-problem-how-do-i-run-vbmc"></span><h3>I already run PyBADS on my problem. How do I run VBMC?<a class="headerlink" href="#i-already-run-pybads-on-my-problem-how-do-i-run-vbmc" title="Link to this heading">#</a></h3>
+<p>The interface of VBMC is very similar to the one of PyBADS, and you may only need minor or even no changes to run VBMC on your problem. Note that:</p>
+<ul class="simple">
+<li><p>Unlike PyBADS, <em>plausible bounds</em> (<code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>) in VBMC need to be distinct from the hard bounds <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code> (see <a class="reference internal" href="#faq-how-do-i-choose-plb-and-pub">here</a>).</p></li>
+<li><p>Also, hard bounds in VBMC have slightly <a class="reference internal" href="#faq-how-do-i-choose-lb-and-ub">different meaning and constraints</a>.</p></li>
+<li><p>The target function <code class="docutils literal notranslate"><span class="pre">fun</span></code> of VBMC is a <a class="reference internal" href="#faq-what-is-the-target-function">log posterior density</a> — that is, <a class="reference internal" href="#faq-wait-do-i-need-a-prior">you have to specify a prior</a>;</p></li>
+<li><p>Beware of the sign! The target function in VBMC is the log-joint, that is log-likelihood plus log-prior — this differs from PyBADS, which <em>minimizes</em> the objective (for example, maximum-likelihood estimation in PyBADS would take as input the <em>negative</em> log-likelihood);</p></li>
+<li><p>You can use as starting point <code class="docutils literal notranslate"><span class="pre">x0</span></code> for VBMC the result of a <a class="reference internal" href="#faq-how-do-i-choose-the-starting-point-x0">preliminary optimization</a> with PyBADS, to ensure you are starting from a region of high posterior density;</p></li>
+<li><p>VBMC supports inference with noisy target functions, but it has more requirements than in PyBADS (see <a class="reference internal" href="#faq-noisy-target-function">this section</a>);</p></li>
+<li><p>Finally, VBMC does not offer a special support for circular or periodic coordinates, such as angles — just treat them as normal bounded coordinates, setting hard bounds on the length of one period (e.g, <code class="docutils literal notranslate"><span class="pre">LB</span> <span class="pre">=</span> <span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span> <span class="pre">=</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">np.pi</span></code>).</p></li>
+</ul>
+</section>
+<section id="this-is-interesting-but-why-is-it-better-than-just-using-point-estimates-e-g-maximum-likelihood-or-maximum-a-posteriori">
+<span id="faq-this-is-interesting-but-why-is-it-better-than-just-using-point-estimates-eg-maximum-likelihood-or-maximum-a-posteriori"></span><h3>This is interesting, but why is it better than just using point estimates? (e.g., maximum-likelihood or maximum-a-posteriori)<a class="headerlink" href="#this-is-interesting-but-why-is-it-better-than-just-using-point-estimates-e-g-maximum-likelihood-or-maximum-a-posteriori" title="Link to this heading">#</a></h3>
+<p>There are several reasons for which having access to the full Bayesian posterior is desirable:</p>
+<ul class="simple">
+<li><p>Knowing the uncertainty in the parameter estimates;</p></li>
+<li><p>Making overall better model predictions (that is, more accurate and more calibrated) — for example, if the posterior is asymmetric or multi-modal, it is badly characterized by a single point estimate and model predictions can be unreasonably confident (in other words, you may overfit);</p></li>
+<li><p>Understanding features of the model, such as trade-offs between parameters, which may not be obvious.</p></li>
+</ul>
+<p>Also, the log model evidence (as approximated by its lower bound, the ELBO) is a principled metric for Bayesian model comparison that takes into account goodness of fit and actual model complexity. With point estimates, you can only compute simple metrics such as Akaike’s Information Criterion (AIC) or the “Bayesian” Information Criterion (BIC), which know very little about the structure of your model.</p>
+</section>
+<section id="thanks-but-i-think-i-will-stick-to-point-estimates-for-now">
+<span id="faq-thanks-but-i-think-i-will-stick-to-point-estimates-for-now"></span><h3>Thanks, but I think I will stick to point estimates for now.<a class="headerlink" href="#thanks-but-i-think-i-will-stick-to-point-estimates-for-now" title="Link to this heading">#</a></h3>
+<p>Fair enough — just be aware that you may be missing important features of your model and data, and your estimates and predictions might be way overconfident.</p>
+<p>Our <a class="reference external" href="https://acerbilab.org/model-fitting/">model-fitting toolkit</a> includes <a class="reference external" href="https://acerbilab.org/pybads/">Bayesian Adaptive Direct Search in Python (PyBADS)</a> for efficient optimization when you only need point estimates.</p>
+</section>
+<section id="are-you-planning-to-port-vbmc-to-other-languages">
+<span id="faq-are-you-planning-to-port-vbmc-to-other-languages"></span><h3>Are you planning to port VBMC to other languages?<a class="headerlink" href="#are-you-planning-to-port-vbmc-to-other-languages" title="Link to this heading">#</a></h3>
+<p>VBMC is available in MATLAB <a class="reference external" href="https://github.com/acerbilab/vbmc">here</a> and in Python as the <a class="reference external" href="https://github.com/acerbilab/pyvbmc">PyVBMC package</a>. Currently, there is no plan to port the algorithm to other languages, since there are ways to run the Python version from several other languages (for example, our users have been able to run PyVBMC from <a class="reference external" href="https://cjdoris.github.io/PythonCall.jl/stable/">Julia</a>).</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="quickstart.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Getting started</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="examples.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general">General</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-kind-of-problems-is-vbmc-suited-for">Which kind of problems is VBMC suited for?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-do-i-do-if-vbmc-is-not-suited-for-my-problem">What do I do if VBMC is not suited for my problem?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-pyvbmc">Installing PyVBMC</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-can-i-download-pyvbmc">Where can I download PyVBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-external-packages-does-pyvbmc-require">Which external packages does PyVBMC require?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#which-version-of-python-do-i-need">Which version of Python do I need?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-know-whether-a-newer-version-of-pyvbmc-exists">How do I know whether a newer version of PyVBMC exists?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-installs-an-older-version-of-pyvbmc-why">Conda installs an older version of PyVBMC. Why?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-am-having-trouble-installing-pyvbmc-can-you-help">I am having trouble installing PyVBMC. Can you help?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#input-arguments-target-function-fun">Input arguments (target function: <code class="docutils literal notranslate"><span class="pre">fun</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-the-target-function">What is the target function?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-use-a-pymc-model-with-pyvbmc">Can I use a PyMC model with PyVBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc">I do not have a likelihood function, but another loss function. Can I still use VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-do-i-need-a-prior">Wait, do I need a prior?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-specify-the-prior-to-vbmc">How do I specify the prior to VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#my-target-function-requires-additional-data-inputs-how-do-i-pass-them-to-vbmc">My target function requires additional data/inputs. How do I pass them to VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-support-inference-with-noisy-that-is-stochastic-target-functions">Does VBMC support inference with <em>noisy</em> (that is, <em>stochastic</em>) target functions?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#input-arguments-domain-x0-lb-ub-plb-pub">Input arguments (domain: <code class="docutils literal notranslate"><span class="pre">x0</span></code>,<code class="docutils literal notranslate"><span class="pre">LB</span></code>,<code class="docutils literal notranslate"><span class="pre">UB</span></code>,<code class="docutils literal notranslate"><span class="pre">PLB</span></code>,<code class="docutils literal notranslate"><span class="pre">PUB</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-choose-the-starting-point-x0">How do I choose the starting point <code class="docutils literal notranslate"><span class="pre">x0</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-choose-lb-and-ub">How do I choose <code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-have-parameters-bounded-only-on-one-side">Can I have parameters bounded only on one side?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value">Can I set <code class="docutils literal notranslate"><span class="pre">LB</span> <span class="pre">=</span> <span class="pre">UB</span></code> for some variable to fix it to a given value?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-choose-plb-and-pub">How do I choose <code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space">How do I prevent VBMC from evaluating certain inputs or regions of input space?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-support-inference-with-integer-parameters">Does VBMC support inference with integer parameters?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#output-arguments">Output arguments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-vp-and-what-do-i-do-with-it">What is <code class="docutils literal notranslate"><span class="pre">vp</span></code> and what do I do with it?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-are-elbo-and-elbo-sd">What are <code class="docutils literal notranslate"><span class="pre">elbo</span></code> and <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-is-overhead-in-results-defined">How is <code class="docutils literal notranslate"><span class="pre">overhead</span></code> in <code class="docutils literal notranslate"><span class="pre">results</span></code> defined?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-can-i-find-the-internal-state-and-iteration-history">Where can I find the internal state and iteration history?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#noisy-target-function">Noisy target function</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-a-noisy-target-function">What’s a noisy target function?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-automatically-detect-that-the-target-function-is-noisy">Does VBMC automatically detect that the target function is noisy?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function">Does VBMC automatically infer the amount of noise in the target function?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-use-any-technique-to-estimate-a-noisy-log-likelihood">Can I use <em>any</em> technique to estimate a noisy log-likelihood?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood">How do I estimate the standard deviation of the noisy log-likelihood?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-large-can-the-noise-be-to-perform-successful-inferences-with-vbmc">How large can the noise be to perform successful inferences with VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-can-i-just-remove-stochasticity-by-fixing-the-random-seed-at-each-function-call">Wait, can I just remove stochasticity by fixing the random seed at each function call?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#display">Display</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-are-the-quantities-displayed-by-vbmc-during-the-variational-optimization">What are the quantities displayed by VBMC during the variational optimization?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-noticed-that-the-series-of-displayed-mean-elbo-values-is-not-monotonically-increasing-shouldn-t-the-elbo-keep-increasing-during-the-variational-optimization">I noticed that the series of displayed <code class="docutils literal notranslate"><span class="pre">Mean[ELBO]</span></code> values is <em>not</em> monotonically increasing. Shouldn’t the ELBO keep increasing during the variational optimization?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it">How can VBMC fail, how do I find out, and how do I fix it?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do">VBMC warned me that the <code class="docutils literal notranslate"><span class="pre">Returned</span> <span class="pre">variational</span> <span class="pre">solution</span> <span class="pre">may</span> <span class="pre">have</span> <span class="pre">not</span> <span class="pre">converged.</span></code> What should I do?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do">VBMC crashes saying that <code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">returned</span> <span class="pre">function</span> <span class="pre">value</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">finite</span> <span class="pre">real-valued</span> <span class="pre">scalar</span></code>. What do I do?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong">I have been running VBMC from the same starting point, but I get different results each time. Is something wrong?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-do-i-save-and-continue-a-run">How do I save and continue a run?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-i-combine-the-posteriors-of-several-runs">Can I combine the posteriors of several runs?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#miscellanea">Miscellanea</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#i-already-run-pybads-on-my-problem-how-do-i-run-vbmc">I already run PyBADS on my problem. How do I run VBMC?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#this-is-interesting-but-why-is-it-better-than-just-using-point-estimates-e-g-maximum-likelihood-or-maximum-a-posteriori">This is interesting, but why is it better than just using point estimates? (e.g., maximum-likelihood or maximum-a-posteriori)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#thanks-but-i-think-i-will-stick-to-point-estimates-for-now">Thanks, but I think I will stick to point estimates for now.</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#are-you-planning-to-port-vbmc-to-other-languages">Are you planning to port VBMC to other languages?</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

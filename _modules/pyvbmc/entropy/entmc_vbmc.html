@@ -26,45 +26,53 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/entropy/entmc_vbmc';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/entropy/entmc_vbmc.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/entropy/entmc_vbmc.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -90,7 +98,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -148,6 +196,7 @@
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -155,20 +204,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -176,6 +238,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
@@ -306,11 +371,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -342,33 +414,60 @@
                 <article class="bd-article">
                   
   <h1>Source code for pyvbmc.entropy.entmc_vbmc</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Integral</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.calibration.profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_CHUNK_ELEMENTS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.rng</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.variational_posterior</span><span class="w"> </span><span class="kn">import</span> <span class="n">VariationalPosterior</span>
 
 
-<div class="viewcode-block" id="entmc_vbmc">
-<a class="viewcode-back" href="../../../api/functions/entropy.html#pyvbmc.entropy.entmc_vbmc">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">entmc_vbmc</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_block_layout</span><span class="p">(</span><span class="n">Ns</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">D</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">budget</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Components and samples of the blocks a budget of doubles allows.</span>
+
+<span class="sd">    The budget bounds one ``(components, samples, D, K)`` tensor of</span>
+<span class="sd">    standardized distances. Samples are blocked only once one component's</span>
+<span class="sd">    tensor alone exceeds the budget, and one sample's ``D x K`` slab is</span>
+<span class="sd">    always used whole. The calibration campaign holds a copy of this</span>
+<span class="sd">    function, ``_entropy_blocks`` in ``pyvbmc/calibration/_campaign.py``,</span>
+<span class="sd">    which a change here repeats (see the comment on the blocks in</span>
+<span class="sd">    ``_entmc_vbmc``).</span>
+<span class="sd">    """</span>
+    <span class="n">per_component</span> <span class="o">=</span> <span class="n">Ns</span> <span class="o">*</span> <span class="n">D</span> <span class="o">*</span> <span class="n">K</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">budget</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">per_component</span><span class="p">))))</span>
+    <span class="k">if</span> <span class="n">per_component</span> <span class="o">&lt;=</span> <span class="n">budget</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">Ns</span>
+    <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">budget</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span> <span class="o">*</span> <span class="n">K</span><span class="p">)))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_entmc_vbmc</span><span class="p">(</span>
     <span class="n">vp</span><span class="p">:</span> <span class="n">VariationalPosterior</span><span class="p">,</span>
     <span class="n">Ns</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">grad_flags</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>
     <span class="n">jacobian_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">budget</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Monte Carlo estimate of entropy of variational posterior.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Monte Carlo estimate of entropy of variational posterior.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    vp : VariationalPosterior</span>
 <span class="sd">        An instance of VariationalPosterior class.</span>
 <span class="sd">    Ns : int</span>
-<span class="sd">        Number of samples to draw. Ns &gt; 0.</span>
+<span class="sd">        Number of samples to draw per component. Ns &gt; 0. Rounded up to an</span>
+<span class="sd">        even number (antithetic sampling).</span>
 <span class="sd">    grad_flags : tuple of bool, len(grad_flags)=4, default=tuple([True] * 4)</span>
 <span class="sd">        Whether to compute the gradients for [mu, sigma, lambda, w].</span>
 <span class="sd">    jacobian_flag : bool</span>
 <span class="sd">        Whether variational parameters are transformed.</span>
 <span class="sd">        The variational parameters and corresponding transformations are:</span>
 <span class="sd">        sigma (log), lambda (log), w (softmax).</span>
+<span class="sd">    rng : None, int, SeedSequence or np.random.Generator, optional</span>
+<span class="sd">        Random generator (or seed) for the Monte Carlo samples. By default</span>
+<span class="sd">        ``vp.rng`` is used.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -379,106 +478,242 @@
 <span class="sd">        :math:`dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H,</span>
 <span class="sd">        \nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H,</span>
 <span class="sd">        \nabla_{\omega}^{T} H\right]`</span>
+<span class="sd">        Only the blocks requested through ``grad_flags`` are present.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    ``Ns`` antithetic samples are drawn from each component, the mixture</span>
+<span class="sd">    density is evaluated at every sample, and ``H`` is the average of</span>
+<span class="sd">    ``-log q`` weighted by the component weights; the gradients use the</span>
+<span class="sd">    reparameterization trick (the sample of component ``j`` is</span>
+<span class="sd">    ``mu_j + sigma_j * lambda * epsilon``). All components' samples come</span>
+<span class="sd">    from one ``standard_normal((K, Ns / 2, D))`` draw, which consumes the</span>
+<span class="sd">    generator exactly as ``K`` successive draws of ``(Ns / 2, D)`` would.</span>
+<span class="sd">    The density and the gradient terms are computed as a broadcast over a</span>
+<span class="sd">    ``(components, samples, D, K)`` tensor of standardized distances, in</span>
+<span class="sd">    blocks bounded by the fixed calibration profile (unless one sample's</span>
+<span class="sd">    ``D x K`` slab already exceeds it): blocks of components, and blocks of</span>
+<span class="sd">    samples within a component when one component's tensor alone exceeds</span>
+<span class="sd">    the budget. The canonical blocks are the blocks of</span>
+<span class="sd">    ``DEFAULT_CHUNK_ELEMENTS`` doubles, and the mixture densities and every</span>
+<span class="sd">    sum over samples and components are taken over them whatever budget is</span>
+<span class="sd">    in force, so neither the estimate nor its gradients depend on it: a</span>
+<span class="sd">    computed block either subdivides one canonical block, whose component</span>
+<span class="sd">    densities it fills in, or is a union of whole canonical blocks that it</span>
+<span class="sd">    is split back into. The mixture sum over the components is a</span>
+<span class="sd">    matrix-vector product, whose rounding follows the number of samples in</span>
+<span class="sd">    a canonical block, so the estimate depends on the BLAS build at the</span>
+<span class="sd">    level of its rounding.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">budget</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">))</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">budget</span><span class="p">,</span> <span class="n">Integral</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">budget</span> <span class="o">&lt;</span> <span class="mi">1</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"budget must be a positive integer."</span><span class="p">)</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">rng</span> <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 
-    <span class="n">D</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">D</span>
-    <span class="n">K</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">K</span>
-    <span class="n">mu</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">mu</span>  <span class="c1"># [D,K]</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>  <span class="c1"># [1,K] -&gt; [K, ]</span>
-    <span class="n">lambd</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>  <span class="c1"># [D,1] -&gt; [D, ]</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>  <span class="c1"># [1,K] -&gt; [K, ]</span>
-    <span class="n">eta</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>  <span class="c1"># [1,K] -&gt; [K, ]</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># [D, K]</span>
+    <span class="k">if</span> <span class="n">mu</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vp.mu must have shape </span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="w"> </span><span class="n">K</span><span class="p">)</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="n">mu_t</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># [K, D]</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [K, ]</span>
+    <span class="n">lambd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">lambd</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [D, ]</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [K, ]</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [K, ]</span>
 
-    <span class="c1"># Check which gradients are computed</span>
-    <span class="n">mu_grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">D</span><span class="p">,</span> <span class="n">K</span><span class="p">])</span> <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">sigma_grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">K</span><span class="p">)</span> <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">lambd_grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">w_grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">K</span><span class="p">)</span> <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">grad_mu</span><span class="p">,</span> <span class="n">grad_sigma</span><span class="p">,</span> <span class="n">grad_lambd</span><span class="p">,</span> <span class="n">grad_w</span> <span class="o">=</span> <span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">grad_flags</span><span class="p">)</span>
+    <span class="n">need_lsum</span> <span class="o">=</span> <span class="n">grad_mu</span> <span class="ow">or</span> <span class="n">grad_sigma</span> <span class="ow">or</span> <span class="n">grad_lambd</span>
 
-    <span class="n">sigmalambd</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">lambd</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># [D, K]</span>
-    <span class="n">nconst</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">lambd</span><span class="p">)</span>
-    <span class="p">)</span>  <span class="c1"># Common normalization factor</span>
-
-    <span class="n">H</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sigmalambd</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">lambd</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># [D, K]</span>
+    <span class="c1"># Common normalization factor, and per component nf_k = nconst / sigma^D</span>
+    <span class="n">nconst</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">lambd</span><span class="p">)</span>
+    <span class="n">nf</span> <span class="o">=</span> <span class="n">nconst</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="n">D</span><span class="p">)</span>  <span class="c1"># [K, ]</span>
+    <span class="n">wnf</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">nf</span>  <span class="c1"># [K, ]: w_k * norm_k = wnf_k * exp(-d2_k / 2)</span>
+    <span class="c1"># Factor turning delta_k = (x - mu_k) / (sigma_k lambd) and</span>
+    <span class="c1"># exp(-d2_k / 2) into (x - mu_k) / (sigma_k lambd)^2 * w_k * norm_k</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">wnf</span> <span class="o">/</span> <span class="n">sigmalambd</span>  <span class="c1"># [D, K]</span>
 
     <span class="c1"># Make sure Ns is even</span>
-    <span class="n">Ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">Ns</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">epsilon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">Ns</span><span class="p">,</span> <span class="n">D</span><span class="p">])</span>
+    <span class="n">Ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">Ns</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">half</span> <span class="o">=</span> <span class="n">Ns</span> <span class="o">//</span> <span class="mi">2</span>
 
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
-        <span class="c1"># Draw Monte Carlo samples from the j-th component</span>
-        <span class="c1"># Antithetic sampling</span>
-        <span class="n">epsilon</span><span class="p">[:</span> <span class="n">Ns</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">Ns</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
-        <span class="n">epsilon</span><span class="p">[</span><span class="n">Ns</span> <span class="o">//</span> <span class="mi">2</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">epsilon</span><span class="p">[:</span> <span class="n">Ns</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="c1"># Antithetic samples for every component (component j's block is what</span>
+    <span class="c1"># a draw of (half, D) for that component alone would have produced)</span>
+    <span class="n">eps_half</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">half</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+    <span class="n">epsilon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">eps_half</span><span class="p">,</span> <span class="o">-</span><span class="n">eps_half</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [K, Ns, D]</span>
+    <span class="k">del</span> <span class="n">eps_half</span>  <span class="c1"># epsilon is the one (K, Ns, D) array kept for the call</span>
 
-        <span class="n">Xs</span> <span class="o">=</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">lambd</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">mu</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># [Ns, D]</span>
+    <span class="c1"># Sums over the samples of each component; the weights w_j and 1 / Ns</span>
+    <span class="c1"># are applied at the end.</span>
+    <span class="n">sum_logq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>  <span class="c1"># sum_n log q(x_jn)</span>
+    <span class="n">mu_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span> <span class="k">if</span> <span class="n">grad_mu</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">sigma_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">K</span><span class="p">)</span> <span class="k">if</span> <span class="n">grad_sigma</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">lambd_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="k">if</span> <span class="n">grad_lambd</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">w_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">K</span><span class="p">)</span> <span class="k">if</span> <span class="n">grad_w</span> <span class="k">else</span> <span class="kc">None</span>
 
-        <span class="c1"># Compute pdf</span>
-        <span class="n">ys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Ns</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">Xs</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">lambd</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># [Ns, D]</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="n">d2</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">nn</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">nconst</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="n">D</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">d2</span><span class="p">)</span>
-            <span class="n">ys</span> <span class="o">+=</span> <span class="n">nn</span>
+    <span class="n">budget</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">budget</span><span class="p">)</span>
+    <span class="c1"># Everything from the mixture density on runs over the canonical blocks;</span>
+    <span class="c1"># the budget in force only decides how the component densities and the</span>
+    <span class="c1"># location sums of a canonical block are produced. A change to how the</span>
+    <span class="c1"># work is split into blocks is repeated in the calibration campaign's</span>
+    <span class="c1"># copy of this layout (_entropy_blocks, the copy of _block_layout, and</span>
+    <span class="c1"># _layout_signature, the copy of the lines below, in</span>
+    <span class="c1"># pyvbmc/calibration/_campaign.py) and bumps KERNEL_REVISION in</span>
+    <span class="c1"># pyvbmc/calibration/_cache.py, so that cached calibrations measured on</span>
+    <span class="c1"># the old blocks are not reused. A test of the campaign</span>
+    <span class="c1"># (test_the_campaign_layout_matches_the_blocks_the_kernels_compute)</span>
+    <span class="c1"># compares the copy with the blocks computed here.</span>
+    <span class="n">g_c</span><span class="p">,</span> <span class="n">step_c</span> <span class="o">=</span> <span class="n">_block_layout</span><span class="p">(</span><span class="n">Ns</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">DEFAULT_CHUNK_ELEMENTS</span><span class="p">)</span>
+    <span class="n">g_x</span><span class="p">,</span> <span class="n">step_x</span> <span class="o">=</span> <span class="n">_block_layout</span><span class="p">(</span><span class="n">Ns</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">budget</span><span class="p">)</span>
+    <span class="c1"># A computed block subdivides one canonical block or is the union of</span>
+    <span class="c1"># whole ones. Components are grouped only in a block that spans every</span>
+    <span class="c1"># sample, so that canonical blocks reach the sums in the canonical order.</span>
+    <span class="k">if</span> <span class="n">step_x</span> <span class="o">&gt;=</span> <span class="n">Ns</span><span class="p">:</span>
+        <span class="n">step_x</span> <span class="o">=</span> <span class="n">Ns</span>
+    <span class="k">elif</span> <span class="n">step_x</span> <span class="o">&gt;</span> <span class="n">step_c</span><span class="p">:</span>
+        <span class="n">step_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">step_x</span> <span class="o">//</span> <span class="n">step_c</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_c</span>
+    <span class="k">if</span> <span class="n">g_x</span> <span class="o">&gt;</span> <span class="n">g_c</span><span class="p">:</span>
+        <span class="n">g_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">g_x</span> <span class="o">//</span> <span class="n">g_c</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_c</span> <span class="k">if</span> <span class="n">step_x</span> <span class="o">&gt;=</span> <span class="n">Ns</span> <span class="k">else</span> <span class="n">g_c</span>
+    <span class="n">fill</span> <span class="o">=</span> <span class="n">g_x</span> <span class="o">&lt;</span> <span class="n">g_c</span> <span class="ow">or</span> <span class="n">step_x</span> <span class="o">&lt;</span> <span class="n">step_c</span>
+    <span class="n">split</span> <span class="o">=</span> <span class="n">g_x</span> <span class="o">&gt;</span> <span class="n">g_c</span> <span class="ow">or</span> <span class="n">step_x</span> <span class="o">&gt;</span> <span class="n">step_c</span>
+    <span class="n">outer_g</span><span class="p">,</span> <span class="n">outer_n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">g_c</span><span class="p">,</span> <span class="n">g_x</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">step_c</span><span class="p">,</span> <span class="n">step_x</span><span class="p">)</span>
 
-        <span class="n">H</span> <span class="o">+=</span> <span class="o">-</span><span class="n">w</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">Ns</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_component_terms</span><span class="p">(</span><span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Component densities and the location sum at a block's samples."""</span>
+        <span class="n">eps_b</span> <span class="o">=</span> <span class="n">epsilon</span><span class="p">[</span><span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">]</span>  <span class="c1"># [g, n, D]</span>
+        <span class="c1"># Samples of the block's components (reparameterization)</span>
+        <span class="n">X_b</span> <span class="o">=</span> <span class="n">eps_b</span> <span class="o">*</span> <span class="n">lambd</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">[</span><span class="n">jj</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">mu_t</span><span class="p">[</span><span class="n">jj</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="c1"># Standardized distance of every sample to every component</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_b</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigmalambd</span>  <span class="c1"># [g, n, D, K]</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"jndk,jndk-&gt;jnk"</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>  <span class="c1"># [g, n, K]</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">d2</span><span class="p">)</span>  <span class="c1"># [g, n, K]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">need_lsum</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="c1"># sum_k (x - mu_k) / (sigma_k lambd)^2 * w_k * norm_k</span>
+        <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"jndk,dk,jnk-&gt;jnd"</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>  <span class="c1"># [g, n, D]</span>
 
-        <span class="c1"># Compute gradient via reparameterization trick</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">grad_flags</span><span class="p">):</span>
-            <span class="c1"># Full mixture (for sample from the j-th component)</span>
-            <span class="n">norm_j1</span> <span class="o">=</span> <span class="p">((</span><span class="n">Xs</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigmalambd</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># [Ns, D, K]</span>
-            <span class="n">norm_j1</span> <span class="o">=</span> <span class="n">norm_j1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [Ns, K]</span>
-            <span class="n">norm_j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">norm_j1</span><span class="p">)</span>
-            <span class="n">norm_j1</span> <span class="o">=</span> <span class="n">nconst</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="n">D</span><span class="p">)</span> <span class="o">*</span> <span class="n">norm_j1</span>  <span class="c1"># [Ns, K]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_filled_block</span><span class="p">(</span><span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""One canonical block filled in from budget-sized rectangles."""</span>
+        <span class="n">gl</span><span class="p">,</span> <span class="n">nl</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">jj</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">nn</span><span class="o">.</span><span class="n">start</span>
+        <span class="n">E_blk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">gl</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">K</span><span class="p">))</span>
+        <span class="n">lsum_blk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">gl</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span> <span class="k">if</span> <span class="n">need_lsum</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">a0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">gl</span><span class="p">,</span> <span class="n">g_x</span><span class="p">):</span>
+            <span class="n">a1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">gl</span><span class="p">,</span> <span class="n">a0</span> <span class="o">+</span> <span class="n">g_x</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">b0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">step_x</span><span class="p">):</span>
+                <span class="n">b1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nl</span><span class="p">,</span> <span class="n">b0</span> <span class="o">+</span> <span class="n">step_x</span><span class="p">)</span>
+                <span class="n">E_part</span><span class="p">,</span> <span class="n">lsum_part</span> <span class="o">=</span> <span class="n">_component_terms</span><span class="p">(</span>
+                    <span class="nb">slice</span><span class="p">(</span><span class="n">jj</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">a0</span><span class="p">,</span> <span class="n">jj</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">a1</span><span class="p">),</span>
+                    <span class="nb">slice</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">b0</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">b1</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">E_blk</span><span class="p">[</span><span class="n">a0</span><span class="p">:</span><span class="n">a1</span><span class="p">,</span> <span class="n">b0</span><span class="p">:</span><span class="n">b1</span><span class="p">]</span> <span class="o">=</span> <span class="n">E_part</span>
+                <span class="k">if</span> <span class="n">need_lsum</span><span class="p">:</span>
+                    <span class="n">lsum_blk</span><span class="p">[</span><span class="n">a0</span><span class="p">:</span><span class="n">a1</span><span class="p">,</span> <span class="n">b0</span><span class="p">:</span><span class="n">b1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lsum_part</span>
+        <span class="k">return</span> <span class="n">E_blk</span><span class="p">,</span> <span class="n">lsum_blk</span>
 
-            <span class="n">q_j</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">norm_j1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [Ns, ]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_canonical_parts</span><span class="p">(</span><span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">E_blk</span><span class="p">,</span> <span class="n">lsum_blk</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The canonical blocks of a computed block, C-contiguous."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">split</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">E_blk</span><span class="p">,</span> <span class="n">lsum_blk</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">a0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">jj</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">jj</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">g_c</span><span class="p">):</span>
+            <span class="n">a1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">jj</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">jj</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">a0</span> <span class="o">+</span> <span class="n">g_c</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">b0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">nn</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">step_c</span><span class="p">):</span>
+                <span class="n">b1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">nn</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">b0</span> <span class="o">+</span> <span class="n">step_c</span><span class="p">)</span>
+                <span class="n">lsum_part</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">need_lsum</span><span class="p">:</span>
+                    <span class="n">lsum_part</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">lsum_blk</span><span class="p">[</span><span class="n">a0</span><span class="p">:</span><span class="n">a1</span><span class="p">,</span> <span class="n">b0</span><span class="p">:</span><span class="n">b1</span><span class="p">])</span>
+                <span class="k">yield</span> <span class="p">(</span>
+                    <span class="nb">slice</span><span class="p">(</span><span class="n">jj</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">a0</span><span class="p">,</span> <span class="n">jj</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">a1</span><span class="p">),</span>
+                    <span class="nb">slice</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">b0</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">b1</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">E_blk</span><span class="p">[</span><span class="n">a0</span><span class="p">:</span><span class="n">a1</span><span class="p">,</span> <span class="n">b0</span><span class="p">:</span><span class="n">b1</span><span class="p">]),</span>
+                    <span class="n">lsum_part</span><span class="p">,</span>
+                <span class="p">)</span>
 
-            <span class="c1"># Compute sum for gradient wrt mu</span>
-            <span class="n">lsum</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xs</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigmalambd</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># [Ns, D, K]</span>
-            <span class="n">lsum</span> <span class="o">=</span> <span class="n">lsum</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">norm_j1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># [Ns, D, K]</span>
-            <span class="n">lsum</span> <span class="o">=</span> <span class="n">lsum</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># [Ns, D]</span>
+    <span class="k">for</span> <span class="n">j0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">outer_g</span><span class="p">):</span>
+        <span class="n">jo</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">j0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">j0</span> <span class="o">+</span> <span class="n">outer_g</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">n0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ns</span><span class="p">,</span> <span class="n">outer_n</span><span class="p">):</span>
+            <span class="n">no</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">n0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">Ns</span><span class="p">,</span> <span class="n">n0</span> <span class="o">+</span> <span class="n">outer_n</span><span class="p">))</span>
+            <span class="n">computed</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_filled_block</span><span class="p">(</span><span class="n">jo</span><span class="p">,</span> <span class="n">no</span><span class="p">)</span> <span class="k">if</span> <span class="n">fill</span> <span class="k">else</span> <span class="n">_component_terms</span><span class="p">(</span><span class="n">jo</span><span class="p">,</span> <span class="n">no</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">lsum</span> <span class="ow">in</span> <span class="n">_canonical_parts</span><span class="p">(</span><span class="n">jo</span><span class="p">,</span> <span class="n">no</span><span class="p">,</span> <span class="o">*</span><span class="n">computed</span><span class="p">):</span>
+                <span class="n">eps_b</span> <span class="o">=</span> <span class="n">epsilon</span><span class="p">[</span><span class="n">jj</span><span class="p">,</span> <span class="n">nn</span><span class="p">]</span>  <span class="c1"># [g, n, D]</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">E</span> <span class="o">@</span> <span class="n">wnf</span>  <span class="c1"># [g, n]: mixture density at each sample</span>
+                <span class="n">sum_logq</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">mu_grad</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">lsum</span> <span class="o">/</span> <span class="n">q_j</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ns</span>
+                <span class="k">if</span> <span class="n">need_lsum</span><span class="p">:</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">lsum</span> <span class="o">/</span> <span class="n">q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># [g, n, D]</span>
+                    <span class="k">if</span> <span class="n">grad_mu</span><span class="p">:</span>
+                        <span class="n">mu_acc</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+=</span> <span class="n">r</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">grad_sigma</span><span class="p">:</span>
+                        <span class="n">sigma_acc</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">eps_b</span> <span class="o">*</span> <span class="n">lambd</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">grad_lambd</span><span class="p">:</span>
+                        <span class="n">lambd_acc</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+                            <span class="s2">"j,jnd,jnd-&gt;d"</span><span class="p">,</span> <span class="n">w</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">[</span><span class="n">jj</span><span class="p">],</span> <span class="n">eps_b</span><span class="p">,</span> <span class="n">r</span>
+                        <span class="p">)</span>
+                <span class="k">if</span> <span class="n">grad_w</span><span class="p">:</span>
+                    <span class="c1"># sum_j w_j sum_n exp(-d2_jnk / 2) / q_jn (nf_k below)</span>
+                    <span class="n">w_acc</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"j,jnk,jn-&gt;k"</span><span class="p">,</span> <span class="n">w</span><span class="p">[</span><span class="n">jj</span><span class="p">],</span> <span class="n">E</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">q</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="c1"># Compute sum for gradient wrt sigma</span>
-                <span class="n">isum</span> <span class="o">=</span> <span class="p">(</span><span class="n">lsum</span> <span class="o">*</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">lambd</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [Ns, ]</span>
-                <span class="n">sigma_grad</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">isum</span> <span class="o">/</span> <span class="n">q_j</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">Ns</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">sum_logq</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">Ns</span>
 
-            <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
-                <span class="n">lambd_grad</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="n">w</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">lsum</span> <span class="o">/</span> <span class="n">q_j</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-                <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ns</span>
-
-            <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
-                <span class="n">w_grad</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q_j</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">Ns</span>
-                <span class="n">w_grad</span><span class="p">[:]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">norm_j1</span> <span class="o">/</span> <span class="n">q_j</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ns</span>
+    <span class="n">mu_grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu_acc</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">/</span> <span class="n">Ns</span> <span class="k">if</span> <span class="n">grad_mu</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sigma_grad</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">sigma_acc</span> <span class="o">/</span> <span class="n">Ns</span> <span class="k">if</span> <span class="n">grad_sigma</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">lambd_grad</span> <span class="o">=</span> <span class="n">lambd_acc</span> <span class="o">/</span> <span class="n">Ns</span> <span class="k">if</span> <span class="n">grad_lambd</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">w_grad</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">sum_logq</span> <span class="o">+</span> <span class="n">nf</span> <span class="o">*</span> <span class="n">w_acc</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ns</span> <span class="k">if</span> <span class="n">grad_w</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># Correct for standard log reparameterization of SIGMA</span>
-    <span class="k">if</span> <span class="n">jacobian_flag</span> <span class="ow">and</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">jacobian_flag</span> <span class="ow">and</span> <span class="n">grad_sigma</span><span class="p">:</span>
         <span class="n">sigma_grad</span> <span class="o">=</span> <span class="n">sigma_grad</span> <span class="o">*</span> <span class="n">sigma</span>
 
     <span class="c1"># Correct for standard log reparameterization of LAMBDA</span>
-    <span class="k">if</span> <span class="n">jacobian_flag</span> <span class="ow">and</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">jacobian_flag</span> <span class="ow">and</span> <span class="n">grad_lambd</span><span class="p">:</span>
         <span class="n">lambd_grad</span> <span class="o">=</span> <span class="n">lambd_grad</span> <span class="o">*</span> <span class="n">lambd</span>
 
     <span class="c1"># Correct for standard softmax reparameterization of W</span>
-    <span class="k">if</span> <span class="n">jacobian_flag</span> <span class="ow">and</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">jacobian_flag</span> <span class="ow">and</span> <span class="n">grad_w</span><span class="p">:</span>
         <span class="n">eta_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">eta</span><span class="p">)</span>
         <span class="n">eta_sum</span> <span class="o">=</span> <span class="n">eta_exp</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">J_w</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="o">-</span><span class="n">eta_exp</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">eta_exp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/</span> <span class="n">eta_sum</span><span class="o">**</span><span class="mi">2</span>
+            <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">eta_exp</span><span class="p">,</span> <span class="n">eta_exp</span><span class="p">)</span> <span class="o">/</span> <span class="n">eta_sum</span><span class="o">**</span><span class="mi">2</span>
             <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">eta_exp</span><span class="p">)</span> <span class="o">/</span> <span class="n">eta_sum</span>
         <span class="p">)</span>
         <span class="n">w_grad</span> <span class="o">=</span> <span class="n">J_w</span> <span class="o">@</span> <span class="n">w_grad</span>
 
-    <span class="n">dH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">mu_grad</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">),</span> <span class="n">sigma_grad</span><span class="p">,</span> <span class="n">lambd_grad</span><span class="p">,</span> <span class="n">w_grad</span><span class="p">])</span>
+    <span class="n">dH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">mu_grad</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="s2">"F"</span><span class="p">),</span> <span class="n">sigma_grad</span><span class="p">,</span> <span class="n">lambd_grad</span><span class="p">,</span> <span class="n">w_grad</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">H</span><span class="p">,</span> <span class="n">dH</span></div>
+    <span class="k">return</span> <span class="n">H</span><span class="p">,</span> <span class="n">dH</span>
 
+
+<div class="viewcode-block" id="entmc_vbmc">
+<a class="viewcode-back" href="../../../api/functions/entropy.html#pyvbmc.entropy.entmc_vbmc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">entmc_vbmc</span><span class="p">(</span>
+    <span class="n">vp</span><span class="p">:</span> <span class="n">VariationalPosterior</span><span class="p">,</span>
+    <span class="n">Ns</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">grad_flags</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="n">jacobian_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">profile</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">_resolve_calibration</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">grad_flags</span><span class="p">):</span>
+        <span class="n">budget</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">entropy_grad_chunk_elements</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">budget</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">entropy_value_chunk_elements</span>
+    <span class="k">return</span> <span class="n">_entmc_vbmc</span><span class="p">(</span>
+        <span class="n">vp</span><span class="p">,</span>
+        <span class="n">Ns</span><span class="p">,</span>
+        <span class="n">grad_flags</span><span class="p">,</span>
+        <span class="n">jacobian_flag</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">,</span>
+        <span class="n">budget</span><span class="o">=</span><span class="n">budget</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="n">entmc_vbmc</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_entmc_vbmc</span><span class="o">.</span><span class="vm">__doc__</span>
 </pre></div>
 
                 </article>
@@ -530,6 +765,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -541,8 +779,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

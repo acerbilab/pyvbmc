@@ -1,0 +1,6 @@
+/* Literal blocks whose long lines wrap instead of scrolling, such as the
+   option listings, whose comments are the options' descriptions. */
+div.wrap div.highlight pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

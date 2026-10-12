@@ -26,45 +26,53 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/parameter_transformer/parameter_transformer';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/parameter_transformer/parameter_transformer.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/parameter_transformer/parameter_transformer.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -90,7 +98,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -148,6 +196,7 @@
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -155,20 +204,33 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -176,6 +238,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
@@ -306,11 +371,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -354,7 +426,7 @@
 <div class="viewcode-block" id="ParameterTransformer">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParameterTransformer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A class used to enable transforming of variables from unconstrained to</span>
 <span class="sd">    constrained space and vice versa.</span>
 
@@ -365,23 +437,35 @@
 <span class="sd">    lb_orig : np.ndarray, optional</span>
 <span class="sd">        The lower bounds of the space. ``lb_orig`` and ``ub_orig`` define a set</span>
 <span class="sd">        of strict lower and upper bounds for each parameter, given in the</span>
-<span class="sd">        original space. By default `None`.</span>
+<span class="sd">        original space. Each parameter is bounded on both sides or on</span>
+<span class="sd">        neither. By default `None`.</span>
 <span class="sd">    ub_orig : np.ndarray, optional</span>
 <span class="sd">        The upper bounds of the space. ``lb_orig`` and ``ub_orig`` define a set</span>
 <span class="sd">        of strict lower and upper bounds for each parameter, given in the</span>
-<span class="sd">        original space. By default `None`.</span>
+<span class="sd">        original space. Each parameter is bounded on both sides or on</span>
+<span class="sd">        neither. By default `None`.</span>
 <span class="sd">    plb_orig : np.ndarray, optional</span>
-<span class="sd">        The plausible lower bounds such that ``lb_orig &lt; plb_orig &lt; pub_orig &lt;</span>
-<span class="sd">        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a &quot;plausible&quot; range</span>
-<span class="sd">        for each parameter, given in the original space. By default `None`.</span>
+<span class="sd">        The plausible lower bounds such that ``lb_orig &lt;= plb_orig &lt; pub_orig</span>
+<span class="sd">        &lt;= ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible"</span>
+<span class="sd">        range for each parameter, given in the original space. By default</span>
+<span class="sd">        `None`, which takes the hard bounds.</span>
 <span class="sd">    pub_orig : np.ndarray, optional</span>
-<span class="sd">        The plausible upper bounds such that ``lb_orig &lt; plb_orig &lt; pub_orig &lt;</span>
-<span class="sd">        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a &quot;plausible&quot; range</span>
-<span class="sd">        for each parameter, given in the original space. By default `None`.</span>
-<span class="sd">    bounded_transform_type : str, optional</span>
+<span class="sd">        The plausible upper bounds such that ``lb_orig &lt;= plb_orig &lt; pub_orig</span>
+<span class="sd">        &lt;= ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible"</span>
+<span class="sd">        range for each parameter, given in the original space. By default</span>
+<span class="sd">        `None`, which takes the hard bounds.</span>
+<span class="sd">    scale : np.ndarray, optional</span>
+<span class="sd">        Per-coordinate scale applied after transforming and rotating the</span>
+<span class="sd">        parameters, of shape ``(D,)`` and finite and positive throughout.</span>
+<span class="sd">        By default `None`.</span>
+<span class="sd">    rotation_matrix : np.ndarray, optional</span>
+<span class="sd">        A finite orthogonal matrix of shape ``(D, D)`` applied after the</span>
+<span class="sd">        coordinate-wise transformation. Reflections are accepted. By default</span>
+<span class="sd">        `None`.</span>
+<span class="sd">    transform_type : str, optional</span>
 <span class="sd">        A string indicating the type of transform for bounded variables: one of</span>
-<span class="sd">        [&quot;logit&quot;, (&quot;norminv&quot; || &quot;probit&quot;), &quot;student4&quot;]. Default &quot;logit&quot;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        ["logit", ("norminv" || "probit"), "student4"]. Default "logit".</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -392,10 +476,47 @@
         <span class="n">pub_orig</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">transform_type</span><span class="o">=</span><span class="s2">&quot;logit&quot;</span><span class="p">,</span>
+        <span class="n">transform_type</span><span class="o">=</span><span class="s2">"logit"</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span> <span class="o">=</span> <span class="n">rotation_matrix</span>
+        <span class="k">if</span> <span class="n">rotation_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"`rotation_matrix` must have shape (</span><span class="si">{</span><span class="n">D</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">D</span><span class="si">}</span><span class="s2">)."</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isrealobj</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`rotation_matrix` must be real-valued."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"`rotation_matrix` must contain finite values."</span>
+                <span class="p">)</span>
+            <span class="n">orthogonality_tolerance</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+                <span class="n">rotation_matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">rotation_matrix</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">D</span><span class="p">),</span>
+                <span class="n">rtol</span><span class="o">=</span><span class="n">orthogonality_tolerance</span><span class="p">,</span>
+                <span class="n">atol</span><span class="o">=</span><span class="n">orthogonality_tolerance</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`rotation_matrix` must be orthogonal."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">scale</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">D</span><span class="p">,):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`scale` must have shape (</span><span class="si">{</span><span class="n">D</span><span class="si">}</span><span class="s2">,)."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isrealobj</span><span class="p">(</span><span class="n">scale</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`scale` must be real-valued."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">scale</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`scale` must contain finite values."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`scale` must contain positive values."</span><span class="p">)</span>
+
+        <span class="c1"># The transform is fixed at construction, so it keeps copies of</span>
+        <span class="c1"># the arrays it is given: a later change of one of them by the</span>
+        <span class="c1"># caller must not move it.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span> <span class="k">if</span> <span class="n">rotation_matrix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="c1"># Empty LB and UB are Infs</span>
         <span class="k">if</span> <span class="n">lb_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -409,41 +530,36 @@
         <span class="k">if</span> <span class="n">pub_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pub_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">ub_orig</span><span class="p">)</span>
 
-        <span class="c1"># Convert scalar inputs to row vectors (I do not think it is necessary)</span>
+        <span class="c1"># Check that LB &lt;= PLB &lt; PUB &lt;= UB in every variable.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">lb_orig</span> <span class="o">&lt;=</span> <span class="n">plb_orig</span><span class="p">)</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">plb_orig</span> <span class="o">&lt;</span> <span class="n">pub_orig</span><span class="p">)</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pub_orig</span> <span class="o">&lt;=</span> <span class="n">ub_orig</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;Variable bounds should be LB &lt;= PLB &lt; PUB &lt;= UB</span>
-<span class="sd">                for all variables.&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""Variable bounds should be LB &lt;= PLB &lt; PUB &lt;= UB</span>
+<span class="sd">                for all variables."""</span>
             <span class="p">)</span>
 
-        <span class="c1"># Transform to log coordinates</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span> <span class="o">=</span> <span class="n">lb_orig</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span> <span class="o">=</span> <span class="n">ub_orig</span>
+        <span class="c1"># A variable bounded on one side only would need a log transform,</span>
+        <span class="c1"># which this class does not provide: it would carry such a variable</span>
+        <span class="c1"># through the identity, and the inverse would then return points</span>
+        <span class="c1"># outside the declared support.</span>
+        <span class="n">half_bounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lb_orig</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ub_orig</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">half_bounded</span><span class="p">):</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">half_bounded</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"Variables bounded on one side only are not supported; "</span>
+                <span class="s2">"give both bounds or neither. Offending dimensions: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dimensions</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Keep copies of the hard bounds, in the original space.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">lb_orig</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">ub_orig</span><span class="p">)</span>
 
         <span class="c1"># Select and validate the type of transform:</span>
-        <span class="n">transform_types</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;logit&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="s2">&quot;norminv&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-            <span class="s2">&quot;probit&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-            <span class="s2">&quot;student4&quot;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">transform_type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">bounded_type</span> <span class="o">=</span> <span class="n">transform_types</span><span class="p">[</span><span class="n">transform_type</span><span class="p">]</span>
-            <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Unrecognized bounded transform </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">transform_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">transform_types</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Unrecognized bounded transform </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
-            <span class="n">bounded_type</span> <span class="o">=</span> <span class="n">transform_type</span>
+        <span class="n">bounded_type</span> <span class="o">=</span> <span class="n">_bounded_transform_type</span><span class="p">(</span><span class="n">transform_type</span><span class="p">)</span>
 
         <span class="c1"># Setup bounded transforms:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">bounded_type</span><span class="p">]</span>
@@ -468,8 +584,18 @@
             <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">plb_orig</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">)</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pub_orig</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">)</span>
         <span class="p">):</span>
-            <span class="n">plb_tran</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">plb_orig</span><span class="p">)</span>
-            <span class="n">pub_tran</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">pub_orig</span><span class="p">)</span>
+            <span class="c1"># The centering is applied to the coordinates before they are</span>
+            <span class="c1"># rotated and rescaled, so it is derived from them: the</span>
+            <span class="c1"># rotation and the rescaling are held back for the two calls</span>
+            <span class="c1"># that measure the plausible box.</span>
+            <span class="n">rotation</span><span class="p">,</span> <span class="n">rescaling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">plb_tran</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">plb_orig</span><span class="p">)</span>
+                <span class="n">pub_tran</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">pub_orig</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">rescaling</span>
 
             <span class="c1"># Center in transformed space</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
@@ -479,9 +605,9 @@
 
 <div class="viewcode-block" id="ParameterTransformer.__call__">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.__call__">[docs]</a>
-    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">"x"</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Performs direct transform of original variables ``x`` into</span>
 <span class="sd">        unconstrained variables ``u``.</span>
 
@@ -495,7 +621,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        u : np.ndarray</span>
 <span class="sd">            The variables transformed to unconstrained variables.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -508,7 +634,7 @@
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">t</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                <span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">](</span>
+                <span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"direct"</span><span class="p">](</span>
                     <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span>
                 <span class="p">)</span>
 
@@ -524,9 +650,9 @@
 
 <div class="viewcode-block" id="ParameterTransformer.inverse">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.inverse">[docs]</a>
-    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">"u"</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Performs inverse transform of unconstrained variables ``u`` into</span>
 <span class="sd">        variables ``x`` in the original space</span>
 
@@ -539,7 +665,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        x : np.ndarray</span>
 <span class="sd">            The original variables which result of the transformation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
@@ -561,7 +687,7 @@
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">t</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                <span class="n">xNew</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">](</span>
+                <span class="n">xNew</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"inverse"</span><span class="p">](</span>
                     <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span>
                 <span class="p">)</span>
 
@@ -571,13 +697,13 @@
 <div class="viewcode-block" id="ParameterTransformer.log_abs_det_jacobian">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.log_abs_det_jacobian">[docs]</a>
     <span class="nd">@handle_0D_1D_input</span><span class="p">(</span>
-        <span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">return_scalar</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">"u"</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">return_scalar</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">log_abs_det_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ``log_abs_det_jacobian(u)`` returns the log absolute value of the</span>
-<span class="sd">        determinant of the Jacobian of the parameter transformation evaluated</span>
-<span class="sd">        at ``u``, that is :math: `log \|D \du(g^-1(u))\|`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        The log absolute determinant of the Jacobian of the inverse</span>
+<span class="sd">        transform at ``u``, :math:`\log |\det J_{g^{-1}}(u)|`, where</span>
+<span class="sd">        :math:`g` maps the original space to the transformed space.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -589,7 +715,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        p : np.ndarray</span>
 <span class="sd">            The log absolute determinant of the Jacobian.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">u_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
@@ -611,7 +737,7 @@
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">t</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                <span class="n">p</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">](</span>
+                <span class="n">p</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"jacobian"</span><span class="p">](</span>
                     <span class="bp">self</span><span class="p">,</span> <span class="n">u_c</span><span class="p">,</span> <span class="n">mask</span>
                 <span class="p">)</span>
 
@@ -624,13 +750,13 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_bounded_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initialize functions for bounded transform(s) by type.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Initialize functions for bounded transform(s) by type.</span>
 
 <span class="sd">        Stores the resulting callables in a dictionary</span>
 <span class="sd">        ``self._bounded_transforms[t][case]``, where ``t`` is the integer name</span>
-<span class="sd">        of the transform type, and ``case`` is one of ``[&quot;direct&quot;, &quot;inverse&quot;,</span>
-<span class="sd">        &quot;jacobian&quot;]`` for the corresponding function.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        of the transform type, and ``case`` is one of ``["direct", "inverse",</span>
+<span class="sd">        "jacobian"]`` for the corresponding function.</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -649,7 +775,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
                     <span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"direct"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
@@ -662,20 +788,25 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span>
                     <span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"inverse"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
-                    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="p">))</span>
-                    <span class="n">j2</span> <span class="o">=</span> <span class="o">-</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z</span>
+                    <span class="n">tail</span> <span class="o">=</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+                    <span class="n">j2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                    <span class="n">ordinary</span> <span class="o">=</span> <span class="o">~</span><span class="n">tail</span>
+                    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="n">ordinary</span><span class="p">]))</span>
+                    <span class="n">j2</span><span class="p">[</span><span class="n">ordinary</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="n">ordinary</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z</span>
+                    <span class="n">j2</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">tail</span><span class="p">]))</span>
                     <span class="n">j3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="k">return</span> <span class="n">j1</span> <span class="o">+</span> <span class="n">j2</span> <span class="o">+</span> <span class="n">j3</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"jacobian"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
 
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
-                <span class="c1"># probit: inverse normal CDF (probit) transform (default)</span>
+                <span class="c1"># probit: inverse normal CDF transform (the default of</span>
+                <span class="c1"># VBMC's option bounded_transform; the class defaults to logit)</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
@@ -690,7 +821,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
                     <span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"direct"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
@@ -703,7 +834,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span>
                     <span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"inverse"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
@@ -712,10 +843,10 @@
                     <span class="n">j3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="k">return</span> <span class="n">j1</span> <span class="o">+</span> <span class="n">j2</span> <span class="o">+</span> <span class="n">j3</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"jacobian"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
 
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
-                <span class="c1"># student4: Student&#39;s T with nu=4 CDF transform</span>
+                <span class="c1"># student4: Student's T with nu=4 CDF transform</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
@@ -730,7 +861,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
                     <span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"direct"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
@@ -743,7 +874,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span>
                     <span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"inverse"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
                 <span class="k">def</span><span class="w"> </span><span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
@@ -752,47 +883,78 @@
                     <span class="n">j3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="k">return</span> <span class="n">j1</span> <span class="o">+</span> <span class="n">j2</span> <span class="o">+</span> <span class="n">j3</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">"jacobian"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The state to pickle or copy: everything but the bounded transforms.</span>
+
+<span class="sd">        They are functions that ``_set_bounded_transforms`` builds from</span>
+<span class="sd">        ``bounded_types``. A pickle would hold them by value, as bytecode of</span>
+<span class="sd">        the Python version that writes the file, and calling such a function</span>
+<span class="sd">        under another Python version brings the interpreter down.</span>
+<span class="sd">        """</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_bounded_transforms"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">state</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Restore the state and build the bounded transforms afresh.</span>
+
+<span class="sd">        A file written by a version that stored the functions still holds</span>
+<span class="sd">        them; they are dropped here, never called, so such a file can be</span>
+<span class="sd">        used under any Python version too.</span>
+<span class="sd">        """</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_bounded_transforms"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_bounded_transforms</span><span class="p">()</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ParameterTransformer</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">equal_optional_arrays</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">second</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">first</span> <span class="ow">is</span> <span class="n">second</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">R_mat</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-                <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-            <span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+            <span class="n">equal_optional_arrays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">equal_optional_arrays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">R_mat</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">bounded_types</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Print a string summary."""</span>
         <span class="n">transform_names</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;unbounded&quot;</span><span class="p">,</span>
-            <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;logit&quot;</span><span class="p">,</span>
-            <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;probit (norminv)&quot;</span><span class="p">,</span>
-            <span class="mi">13</span><span class="p">:</span> <span class="s2">&quot;student4&quot;</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="s2">"unbounded"</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="s2">"logit"</span><span class="p">,</span>
+            <span class="mi">12</span><span class="p">:</span> <span class="s2">"probit (norminv)"</span><span class="p">,</span>
+            <span class="mi">13</span><span class="p">:</span> <span class="s2">"student4"</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">transforms</span> <span class="o">=</span> <span class="p">[</span><span class="n">transform_names</span><span class="p">[</span><span class="n">number</span><span class="p">]</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
-        <span class="k">return</span> <span class="s2">&quot;ParameterTransformer:&quot;</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">"ParameterTransformer:"</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">dimension = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">lower bounds = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">upper bounds = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">bounded transform type(s) = </span><span class="si">{</span><span class="n">transforms</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;    &quot;</span><span class="p">,</span>
+<span class="s2">bounded transform type(s) = </span><span class="si">{</span><span class="n">transforms</span><span class="si">}</span><span class="s2">"""</span><span class="p">,</span>
+            <span class="s2">"    "</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+<span class="w">        </span><span class="sd">"""Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -810,23 +972,56 @@
 <span class="sd">        -------</span>
 <span class="sd">        string : str</span>
 <span class="sd">            The string representation of ``self``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">full_repr</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="s2">&quot;ParameterTransformer&quot;</span><span class="p">,</span>
+            <span class="s2">"ParameterTransformer"</span><span class="p">,</span>
             <span class="n">order</span><span class="o">=</span><span class="p">[</span>
-                <span class="s2">&quot;lb_orig&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;ub_orig&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;mu&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;delta&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;scale&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;R_mat&quot;</span><span class="p">,</span>
+                <span class="s2">"lb_orig"</span><span class="p">,</span>
+                <span class="s2">"ub_orig"</span><span class="p">,</span>
+                <span class="s2">"type"</span><span class="p">,</span>
+                <span class="s2">"mu"</span><span class="p">,</span>
+                <span class="s2">"delta"</span><span class="p">,</span>
+                <span class="s2">"scale"</span><span class="p">,</span>
+                <span class="s2">"R_mat"</span><span class="p">,</span>
             <span class="p">],</span>
             <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
             <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
+
+<span class="c1">#: The bounded transforms by name, and the number of each.</span>
+<span class="n">_BOUNDED_TRANSFORM_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"logit"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">"norminv"</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="s2">"probit"</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="s2">"student4"</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bounded_transform_type</span><span class="p">(</span><span class="n">transform_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The number of the bounded transform that ``transform_type`` names.</span>
+
+<span class="sd">    A string (of the type ``str`` itself) is read as the name of a</span>
+<span class="sd">    transform, and any other value has to be one of the numbers.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value names no transform.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">transform_type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_BOUNDED_TRANSFORM_TYPES</span><span class="p">[</span><span class="n">transform_type</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Unrecognized bounded transform </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">if</span> <span class="n">transform_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_BOUNDED_TRANSFORM_TYPES</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unrecognized bounded transform </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">transform_type</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_to_unit_interval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -950,6 +1145,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -961,8 +1159,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

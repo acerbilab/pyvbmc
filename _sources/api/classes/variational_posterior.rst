@@ -12,6 +12,10 @@
   -  ``pdf``: evaluate the variational posterior density at a point;
   - ``plot``: plot the variational posterior as a corner plot (1D and 2D marginals);
   - ``sample``: draw random samples from the variational posterior.
+  - :meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_torch`: export an independent
+    torch distribution;
+  - :meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_arviz`: export independent draws
+    in the current ArviZ DataTree format.
 
   There are also methods to compare variational posteriors:
 
@@ -20,17 +24,34 @@
 
   See below for the full ``VariationalPosterior`` class methods and interface.
 
+  Density gradients from ``pdf`` and ``log_pdf`` are available in transformed
+  coordinates (``orig_flag=False``). Requests for gradients in the original
+  parameter space raise ``NotImplementedError``.
+
+
+Performance settings
+--------------------
+
+A fitted posterior retains the fixed :doc:`calibration_profile` used by its
+VBMC run. Standalone posteriors use historical defaults; pass
+``calibration=profile`` or ``calibration="cached"`` to opt in. A cache lookup
+never initiates a campaign. See :doc:`../functions/calibrate` for measuring
+settings and the reproducibility contract.
 
 .. autoclass:: pyvbmc.variational_posterior.VariationalPosterior
-   :exclude-members: kl_div, log_pdf, load, moments, mtv, pdf, plot, sample, save
+   :exclude-members: to_arviz, to_torch
    :members:
 
-   .. autofunction:: pyvbmc.VariationalPosterior.kl_div
-   .. autofunction:: pyvbmc.VariationalPosterior.log_pdf
-   .. autofunction:: pyvbmc.VariationalPosterior.load
-   .. autofunction:: pyvbmc.VariationalPosterior.moments
-   .. autofunction:: pyvbmc.VariationalPosterior.mtv
-   .. autofunction:: pyvbmc.VariationalPosterior.pdf
-   .. autofunction:: pyvbmc.VariationalPosterior.plot
-   .. autofunction:: pyvbmc.VariationalPosterior.sample
-   .. autofunction:: pyvbmc.VariationalPosterior.save
+Export methods
+--------------
+
+The export methods have dedicated API pages:
+
+- :doc:`Export to a torch distribution <../methods/variational_posterior_to_torch>`
+- :doc:`Export to an ArviZ DataTree <../methods/variational_posterior_to_arviz>`
+
+.. toctree::
+   :hidden:
+
+   ../methods/variational_posterior_to_torch
+   ../methods/variational_posterior_to_arviz

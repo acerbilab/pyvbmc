@@ -27,18 +27,19 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,29 +48,36 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/pyvbmc_example_6_noisy_likelihoods';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Documentation" href="../documentation.html" />
+    <link rel="next" title="PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)" href="pyvbmc_example_7_stacking.html" />
     <link rel="prev" title="PyVBMC Example 5: Prior distributions" href="pyvbmc_example_5_prior_distributions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -95,7 +103,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -151,6 +203,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -158,20 +211,33 @@
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -179,6 +245,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/entropy.html">Entropy</a></li>
@@ -257,25 +326,7 @@
       
       
       
-      <li><a href="https://mybinder.org/v2/gh/acerbilab/pyvbmc/main?urlpath=lab/tree/docsrc/source/_examples/pyvbmc_example_6_noisy_likelihoods.ipynb" target="_blank"
-   class="btn btn-sm dropdown-item"
-   title="Launch on Binder"
-   data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  
-    <img alt="Binder logo" src="../_static/images/logo_binder.svg">
-  </span>
-<span class="btn__text-container">Binder</span>
-</a>
-</li>
-      
-      
-      
-      
-      <li><a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/docsrc/source/_examples/pyvbmc_example_6_noisy_likelihoods.ipynb" target="_blank"
+      <li><a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_6_noisy_likelihoods.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -323,7 +374,7 @@
       
       
       
-      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/docsrc/source/_examples/pyvbmc_example_6_noisy_likelihoods.ipynb" target="_blank"
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/examples/pyvbmc_example_6_noisy_likelihoods.ipynb" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -423,11 +474,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -455,7 +513,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-log-prior-noisy-log-likelihood-and-log-joint">1. Model definition: log-prior, noisy log-likelihood and log-joint</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-a-noisy-vbmc-instance">2. Setting up a noisy <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">3. Conclusions</a></li>
@@ -473,13 +531,23 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-6-noisy-log-likelihood-evaluations">
 <h1>PyVBMC Example 6: Noisy log-likelihood evaluations<a class="headerlink" href="#pyvbmc-example-6-noisy-log-likelihood-evaluations" title="Link to this heading">#</a></h1>
-<p>In this notebook, we demonstrate running PyVBMC with noisy evaluations of the log-likelihood. Here we emulate a noisy scenario by adding random Gaussian noise to the log-likelihood. In practice, noisy evaluations often emerge from estimation techniques for simulation-based models, such as <a class="reference external" href="https://github.com/acerbilab/ibs">Inverse Binomial Sampling (IBS)</a>. However the noise estimate is obtained, it is allowed to be (and in practice, often is) <em>heteroskedastic</em>: that is, the amount of noise in the estimate may vary across parameter space.</p>
-<p>This notebook is Part 6 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_5_full_code.py">here</a>.</p>
+<p>In this notebook, we demonstrate running PyVBMC with noisy evaluations of the log-likelihood. Here we emulate a noisy scenario by adding random Gaussian noise to the log-likelihood. In practice, noisy evaluations often emerge from estimation techniques for simulation-based models, such as <a class="reference external" href="https://github.com/acerbilab/ibs">Inverse Binomial Sampling (IBS)</a>. Its Python implementation, <a class="reference external" href="https://github.com/acerbilab/pyibs">PyIBS</a>, is one of the lab’s <a class="reference external" href="https://acerbilab.org/model-fitting/">tools for model fitting</a>. However the noise estimate is obtained, it is allowed to be (and in practice, often is) <em>heteroskedastic</em>: that is, the amount of noise in the estimate may vary across parameter space.</p>
+<p>This notebook is Part 6 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_6_full_code.py">here</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">if</span> <span class="s2">"google.colab"</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>  <span class="c1"># Colab lacks PyVBMC: install it</span>
+    <span class="o">%</span><span class="k">pip</span> install --upgrade pyvbmc
+</pre></div>
+</div>
+</div>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scs</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span><span class="p">,</span> <span class="n">VariationalPosterior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
@@ -490,7 +558,7 @@
 <p>We use the same toy target function as in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>. But this time, we add random heteroskedastic Gaussian noise to the function evaluations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We&#39;ll use a 2-D problem, again for speed</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We'll use a 2-D problem, again for speed</span>
 <span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 <span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 <span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
@@ -500,7 +568,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multivariate normal prior on theta, same as before.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Multivariate normal prior on theta, same as before."""</span>
     <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 </pre></div>
@@ -512,19 +580,20 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># log-likelihood (Rosenbrock)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">noise_free_log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""D-dimensional Rosenbrock's banana function."""</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">n</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">shape</span>
-
-    <span class="c1"># Standard deviation of synthetic noise:</span>
-    <span class="n">noise_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-
-    <span class="c1"># Rosenbrock likelihood:</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
-    <span class="n">base_density</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">noisy_estimate</span> <span class="o">=</span> <span class="n">base_density</span> <span class="o">+</span> <span class="n">noise_sd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Rosenbrock log-likelihood with synthetic noise."""</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">noise_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">noisy_estimate</span> <span class="o">=</span> <span class="n">noise_free_log_likelihood</span><span class="p">(</span>
+        <span class="n">theta</span>
+    <span class="p">)</span> <span class="o">+</span> <span class="n">noise_sd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">noisy_estimate</span><span class="p">,</span> <span class="n">noise_sd</span>
 </pre></div>
 </div>
@@ -535,7 +604,7 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Full model:</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""log-density of the joint distribution."""</span>
     <span class="n">log_p</span> <span class="o">=</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
     <span class="n">log_l</span><span class="p">,</span> <span class="n">noise_est</span> <span class="o">=</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
     <span class="c1"># For the joint, we have to add log densities and carry-through the noise estimate.</span>
@@ -547,14 +616,15 @@
 </div>
 </div>
 </div>
-<p>We omit optimizing <code class="docutils literal notranslate"><span class="pre">x0</span></code> to find a good starting point, as previously suggested, because naive optimization would fail badly for a noisy objective anyway. For noisy optimization, consider using <a class="reference external" href="https://github.com/acerbilab/bads">BADS</a> or its Python port PyBADS — coming soon!</p>
+<p>We omit optimizing <code class="docutils literal notranslate"><span class="pre">x0</span></code> to find a good starting point, as previously suggested, because naive optimization would fail badly for a noisy objective anyway. For noisy optimization, consider using <a class="reference external" href="https://github.com/acerbilab/pybads">PyBADS</a>, the Python port of <a class="reference external" href="https://github.com/acerbilab/bads">BADS</a> from the lab’s <a class="reference external" href="https://acerbilab.org/model-fitting/">model-fitting toolkit</a>.</p>
 </section>
 <section id="setting-up-a-noisy-vbmc-instance">
 <h2>2. Setting up a noisy <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance<a class="headerlink" href="#setting-up-a-noisy-vbmc-instance" title="Link to this heading">#</a></h2>
 <p>As a final step, we have to tell PyVBMC that we are working with a noisy likelihood, by turning on the <code class="docutils literal notranslate"><span class="pre">specify_target_noise</span></code> option. Otherwise PyVBMC will throw an <code class="docutils literal notranslate"><span class="pre">InvalidFuncValue</span></code> error, indicating that the target function is returning unexpected values.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;specify_target_noise&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"specify_target_noise"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
     <span class="n">log_joint</span><span class="p">,</span>
     <span class="n">x0</span><span class="p">,</span>
@@ -570,77 +640,96 @@
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming NOISY observations of the log-joint
+PyVBMC is using standard performance settings. You can optionally tune these for your machine by running pyvbmc.calibrate(). Calibration takes tens of seconds and does not evaluate your model.
+Performance settings: standard settings.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -1.09         0.67    254282.65        2        inf     start warm-up
-     1         15          -2.73         0.59         4.37        2        inf     
-     2         20          -2.82         0.44         0.02        2      0.964     
-     3         25          -2.72         0.40         0.31        2       7.87     
-     4         30          -2.81         0.33         0.01        2      0.603     end warm-up
-     5         35          -2.14         0.39         0.21        2       5.82     
-     6         40          -2.22         0.31         0.02        2       0.89     
-     7         45          -1.95         0.26         0.04        5       1.41     
-     8         50          -1.92         0.24         0.01        6      0.492     rotoscale, undo rotoscale
-     9         55          -1.74         0.24         0.04        9       1.31     
-    10         60          -1.83         0.23         0.01       10      0.583     
-    11         65          -1.93         0.21         0.02       10      0.829     
-    12         70          -1.86         0.20         0.00       10      0.288     
-    13         75          -1.85         0.19         0.00       10      0.211     
-    14         80          -1.79         0.18         0.01       13      0.452     
-    15         85          -1.73         0.18         0.02       16      0.657     
-    16         90          -1.72         0.17         0.00       19      0.204     
-    17         95          -1.67         0.17         0.01       20      0.332     
-    18        100          -1.63         0.17         0.01       19      0.393     
-    19        105          -1.62         0.17         0.01       19      0.336     rotoscale, undo rotoscale
-    20        110          -1.69         0.16         0.01       20      0.342     
-    21        115          -1.67         0.16         0.00       18       0.25     stable
-   inf        115          -1.67         0.16         0.01       50       0.25     finalize
+     0         10          -1.47         0.32     14118.20        2        inf     start warm-up
+     1         15          -2.31         0.32         0.03        2        inf     
+     2         20          -1.32         0.43         1.59        2       38.8     
+     3         25          -1.66         0.30         0.14        2       3.96     
+     4         30          -1.91         0.26         0.09        2       2.75     end warm-up
+     5         35          -2.11         0.23         0.10        2        2.8     
+     6         40          -2.29         0.20         0.14        2       3.58     
+     7         45          -2.19         0.22         0.07        3       2.08     
+     8         50          -1.78         0.46         0.63        4       15.8     
+     9         55          -1.78         0.25         0.02        4      0.668     
+    10         60          -1.79         0.21         0.01        7      0.469     
+    11         65          -1.76         0.20         0.00       10      0.247     rotoscale, undo rotoscale
+    12         70          -1.68         0.19         0.01       11      0.414     
+    13         75          -1.61         0.20         0.03       11          1     
+    14         80          -1.72         0.17         0.02       12      0.784     
+    15         85          -1.70         0.17         0.00       12      0.206     
+    16         90          -1.65         0.16         0.00       12      0.266     
+    17         95          -1.68         0.16         0.00       13      0.222     
+    18        100          -1.70         0.15         0.00       13       0.19     
+    19        105          -1.67         0.16         0.00       13      0.243     
+    20        110          -1.68         0.15         0.00       16      0.199     
+    21        115          -1.64         0.14         0.00       16      0.225     
+    22        120          -1.67         0.14         0.00       17      0.229     rotoscale, undo rotoscale
+    23        125          -1.66         0.14         0.01       16       0.26     
+    24        130          -1.67         0.14         0.01       16      0.308     stable
+   inf        130          -1.67         0.14         0.00       50      0.308     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.673 +/-0.157.
+Estimated ELBO: -1.670 +/-0.139.
 </pre></div>
 </div>
 </div>
 </div>
-<p>PyVBMC found a solution, even in the presence of noise. Let’s compare to the variational posterior we found in the previous notebook, for the noise-free version of the same problem.</p>
+<p>PyVBMC found a solution, even in the presence of noise. Let’s compare it to a fit of the same problem without noise, as in Example 4.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_free_vp</span> <span class="o">=</span> <span class="n">VariationalPosterior</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;noise_free_vp.pkl&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">noise_free_log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">noise_free_log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+
+<span class="n">noise_free_vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">noise_free_log_joint</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">,</span>
+    <span class="n">LB</span><span class="p">,</span>
+    <span class="n">UB</span><span class="p">,</span>
+    <span class="n">PLB</span><span class="p">,</span>
+    <span class="n">PUB</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"display"</span><span class="p">:</span> <span class="s2">"off"</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">noise_free_vp</span><span class="p">,</span> <span class="n">noise_free_results</span> <span class="o">=</span> <span class="n">noise_free_vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+
 <span class="c1"># KL divergence between this VP and the noise-free VP:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">vbmc</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">vp2</span><span class="o">=</span><span class="n">noise_free_vp</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">vp2</span><span class="o">=</span><span class="n">noise_free_vp</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0.02898929 0.02879815]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0.08043828 0.10800525]
 </pre></div>
 </div>
 </div>
 </div>
-<p>The KL divergence in both directions is small, and the ELBO is close to what we obtained before. We can also compare the densities visually and see that they are quite similar despite the noisy target:</p>
+<p>The KL divergence in both directions is small. We can also compare the densities visually and see that they are quite similar despite the noisy target:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Noisy VP&quot;</span><span class="p">);</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Noisy VP"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/9337203b45ce3a0db051074df50c4f22eecc5566640df956e645c73b66700788.png" src="../_images/9337203b45ce3a0db051074df50c4f22eecc5566640df956e645c73b66700788.png" />
+<img alt="../_images/d92f9674db7f0f651ba48a7a515f66adc0c9be1264454ec479ec18da5a368848.png" src="../_images/d92f9674db7f0f651ba48a7a515f66adc0c9be1264454ec479ec18da5a368848.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_free_vp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Noise-Free VP&quot;</span><span class="p">);</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_free_vp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Noise-Free VP"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/f476fda81d8b753111c5aff7b5e16db99c868cf295906cf5510b75b60ae5c7b3.png" src="../_images/f476fda81d8b753111c5aff7b5e16db99c868cf295906cf5510b75b60ae5c7b3.png" />
+<img alt="../_images/6e58b75e48c5aefd9345508d525352ac7d7c9a614fb590810b942de4f757d844.png" src="../_images/6e58b75e48c5aefd9345508d525352ac7d7c9a614fb590810b942de4f757d844.png" />
 </div>
 </div>
 </section>
@@ -650,7 +739,7 @@ Estimated ELBO: -1.673 +/-0.157.
 </section>
 <section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
-<p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
+<p>Work on the PyVBMC package is supported by the Research Council of Finland (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme: <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
 </section>
 </section>
 
@@ -675,11 +764,11 @@ Estimated ELBO: -1.673 +/-0.157.
       </div>
     </a>
     <a class="right-next"
-       href="../documentation.html"
+       href="pyvbmc_example_7_stacking.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Documentation</p>
+        <p class="prev-next-title">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -700,7 +789,7 @@ Estimated ELBO: -1.673 +/-0.157.
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-log-prior-noisy-log-likelihood-and-log-joint">1. Model definition: log-prior, noisy log-likelihood and log-joint</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-a-noisy-vbmc-instance">2. Setting up a noisy <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">3. Conclusions</a></li>
@@ -742,6 +831,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -753,8 +845,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

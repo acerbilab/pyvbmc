@@ -1,0 +1,806 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyvbmc.pymc._compat &#8212; PyVBMC</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wrap.css?v=fad812b3" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/pymc/_compat';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_modules/pyvbmc/pymc/_compat.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <img src="../../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">PyVBMC: Frequently Asked Questions</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../_examples/pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Instructions for developers and contributors</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../about_us.html">About us</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_modules/pyvbmc/pymc/_compat.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pyvbmc.pymc._compat</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Compatibility helpers for the optional PyMC target adapter.</span>
+
+<span class="sd">This module must remain importable without PyMC or PyTensor installed.</span>
+<span class="sd">Imports of either dependency therefore happen only inside functions.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">TESTED_RANGE</span> <span class="o">=</span> <span class="s2">"PyMC 6.3.2, PyTensor 3.3.1–3.3.3 and ArviZ 1.3.0"</span>
+
+
+<div class="viewcode-block" id="UnsupportedModel">
+<a class="viewcode-back" href="../../../api/classes/pymc_target.html#pyvbmc.pymc.UnsupportedModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnsupportedModel</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Raised when a PyMC model is outside the adapter's supported scope."""</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">import_pymc</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Import and return the optional PyMC modules used by the adapter."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pymc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pytensor</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pytensor.tensor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pt</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"pymc"</span><span class="p">,</span> <span class="s2">"pytensor"</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">"PyMC targets require the pymc extra; install "</span>
+                <span class="s2">"pyvbmc[pymc] on Python 3.12+."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">raise</span>
+    <span class="k">return</span> <span class="n">pm</span><span class="p">,</span> <span class="n">pytensor</span><span class="p">,</span> <span class="n">pt</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="n">capability</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exc</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"__version__"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">)</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="ne">ImportError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"PyMC </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> does not provide the </span><span class="si">{</span><span class="n">capability</span><span class="si">}</span><span class="s2"> required by "</span>
+        <span class="sa">f</span><span class="s2">"PyVBMC. This adapter was tested with </span><span class="si">{</span><span class="n">TESTED_RANGE</span><span class="si">}</span><span class="s2">."</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">exc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">error</span><span class="o">.</span><span class="n">__cause__</span> <span class="o">=</span> <span class="n">exc</span>
+    <span class="k">return</span> <span class="n">error</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">transform_classes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Return the exact transform classes supported by the adapter."""</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pymc.distributions.transforms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">Interval</span><span class="p">,</span>
+            <span class="n">IntervalTransform</span><span class="p">,</span>
+            <span class="n">LogOddsTransform</span><span class="p">,</span>
+            <span class="n">LogTransform</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"supported transform classes"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"log"</span><span class="p">:</span> <span class="n">LogTransform</span><span class="p">,</span>
+        <span class="s2">"logodds"</span><span class="p">:</span> <span class="n">LogOddsTransform</span><span class="p">,</span>
+        <span class="s2">"interval"</span><span class="p">:</span> <span class="n">Interval</span><span class="p">,</span>
+        <span class="s2">"interval_base"</span><span class="p">:</span> <span class="n">IntervalTransform</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">default_transform</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">rv</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return PyMC's registered default transform for a random variable."""</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pymc.distributions.transforms</span><span class="w"> </span><span class="kn">import</span> <span class="n">_default_transform</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"default-transform registry"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_default_transform</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">rv</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">missing_derivative_errors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Return the exceptions PyTensor raises for an absent derivative.</span>
+
+<span class="sd">    A graph whose operators carry no derivative rule signals this either</span>
+<span class="sd">    through a null gradient type or through the missing pullback method of</span>
+<span class="sd">    a scalar operator.</span>
+<span class="sd">    """</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pytensor.gradient</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullTypeGradError</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pytensor.graph.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">MethodNotDefined</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"gradient-availability signals"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="n">NullTypeGradError</span><span class="p">,</span> <span class="n">MethodNotDefined</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_value_transforms</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">vars</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Remove selected transforms while preserving supported initial values."""</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pymc.model.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">remove_value_transforms</span> <span class="k">as</span> <span class="n">remove</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"value-transform removal"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+
+    <span class="n">saved</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">rvs_to_initial_values</span><span class="p">)</span>
+    <span class="n">by_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">rv</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">rv</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">saved</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rv</span> <span class="ow">in</span> <span class="n">saved</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">rvs_to_initial_values</span><span class="p">[</span><span class="n">rv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">transformed</span> <span class="o">=</span> <span class="n">remove</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="nb">vars</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"value-transform removal"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">rvs_to_initial_values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">by_name</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">transformed</span><span class="o">.</span><span class="n">set_initval</span><span class="p">(</span><span class="n">transformed</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"initial-value reconstruction"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">transformed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">clone_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Clone a PyMC model while preserving supported initial values.</span>
+
+<span class="sd">    PyMC's ordinary model clone delegates directly to its graph round trip,</span>
+<span class="sd">    which does not carry nondefault initial values.  Clearing and restoring</span>
+<span class="sd">    them around that round trip also makes this helper suitable for target</span>
+<span class="sd">    ``deepcopy`` implementations.</span>
+<span class="sd">    """</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pymc.model.fgraph</span><span class="w"> </span><span class="kn">import</span> <span class="n">clone_model</span> <span class="k">as</span> <span class="n">clone</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"model graph cloning"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+
+    <span class="n">saved</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">rvs_to_initial_values</span><span class="p">)</span>
+    <span class="n">by_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">rv</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">rv</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">saved</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rv</span> <span class="ow">in</span> <span class="n">saved</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">rvs_to_initial_values</span><span class="p">[</span><span class="n">rv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cloned</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"model graph cloning"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">rvs_to_initial_values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">by_name</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">cloned</span><span class="o">.</span><span class="n">set_initval</span><span class="p">(</span><span class="n">cloned</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"initial-value reconstruction"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cloned</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check the undocumented PyMC model capabilities used by the adapter."""</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="n">required</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"free_RVs"</span><span class="p">,</span>
+        <span class="s2">"observed_RVs"</span><span class="p">,</span>
+        <span class="s2">"deterministics"</span><span class="p">,</span>
+        <span class="s2">"potentials"</span><span class="p">,</span>
+        <span class="s2">"data_vars"</span><span class="p">,</span>
+        <span class="s2">"rvs_to_values"</span><span class="p">,</span>
+        <span class="s2">"rvs_to_transforms"</span><span class="p">,</span>
+        <span class="s2">"rvs_to_initial_values"</span><span class="p">,</span>
+        <span class="s2">"named_vars_to_dims"</span><span class="p">,</span>
+        <span class="s2">"dim_lengths"</span><span class="p">,</span>
+        <span class="s2">"coords"</span><span class="p">,</span>
+        <span class="s2">"set_initval"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">required</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span>
+            <span class="n">pm</span><span class="p">,</span>
+            <span class="s2">"PyMC Model attributes "</span> <span class="o">+</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">),</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expit</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">nonnegative</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">nonnegative</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">value</span><span class="p">[</span><span class="n">nonnegative</span><span class="p">]))</span>
+    <span class="n">exp_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="o">~</span><span class="n">nonnegative</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="o">~</span><span class="n">nonnegative</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp_value</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">exp_value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">closed_form</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Evaluate a supported transform's backward map with NumPy."""</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"log"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"logodds"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_expit</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"interval"</span><span class="p">,</span> <span class="s2">"interval_base"</span><span class="p">}:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown transform kind </span><span class="si">{</span><span class="n">kind</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+
+    <span class="n">lower</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lower</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">upper</span>
+    <span class="n">value</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span>
+        <span class="n">value</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">upper</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">lower_finite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span>
+    <span class="n">upper_finite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">upper</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="o">~</span><span class="n">lower_finite</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">upper_finite</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"Every interval-transform coordinate needs a finite bound."</span>
+        <span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">two_sided</span> <span class="o">=</span> <span class="n">lower_finite</span> <span class="o">&amp;</span> <span class="n">upper_finite</span>
+    <span class="n">lower_only</span> <span class="o">=</span> <span class="n">lower_finite</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">upper_finite</span>
+    <span class="n">upper_only</span> <span class="o">=</span> <span class="o">~</span><span class="n">lower_finite</span> <span class="o">&amp;</span> <span class="n">upper_finite</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">two_sided</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower</span><span class="p">[</span><span class="n">two_sided</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">upper</span><span class="p">[</span><span class="n">two_sided</span><span class="p">]</span> <span class="o">-</span> <span class="n">lower</span><span class="p">[</span><span class="n">two_sided</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="n">_expit</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">two_sided</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">lower_only</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower</span><span class="p">[</span><span class="n">lower_only</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">lower_only</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">upper_only</span><span class="p">]</span> <span class="o">=</span> <span class="n">upper</span><span class="p">[</span><span class="n">upper_only</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">upper_only</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">real_line_support_types</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">type</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Return exact operator types with documented whole-real support.</span>
+
+<span class="sd">    The registry is intentionally narrow. PyMC documents Normal, StudentT,</span>
+<span class="sd">    Cauchy, Laplace, Logistic, Gumbel and SkewNormal on the real line,</span>
+<span class="sd">    MvNormal on :math:`R^k`, and MatrixNormal on :math:`R^{m x n}`.</span>
+<span class="sd">    Improper flat distributions and user-defined operators are excluded.</span>
+<span class="sd">    """</span>
+    <span class="n">pm</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_pymc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pymc.distributions.continuous</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkewNormalRV</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pymc.distributions.multivariate</span><span class="w"> </span><span class="kn">import</span> <span class="n">MatrixNormalRV</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pytensor.tensor.random.basic</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">CauchyRV</span><span class="p">,</span>
+            <span class="n">GumbelRV</span><span class="p">,</span>
+            <span class="n">LaplaceRV</span><span class="p">,</span>
+            <span class="n">LogisticRV</span><span class="p">,</span>
+            <span class="n">MvNormalRV</span><span class="p">,</span>
+            <span class="n">NormalRV</span><span class="p">,</span>
+            <span class="n">StudentTRV</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_version_error</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="s2">"real-line distribution operators"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">frozenset</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="n">NormalRV</span><span class="p">,</span>
+            <span class="n">StudentTRV</span><span class="p">,</span>
+            <span class="n">CauchyRV</span><span class="p">,</span>
+            <span class="n">LaplaceRV</span><span class="p">,</span>
+            <span class="n">LogisticRV</span><span class="p">,</span>
+            <span class="n">GumbelRV</span><span class="p">,</span>
+            <span class="n">MvNormalRV</span><span class="p">,</span>
+            <span class="n">SkewNormalRV</span><span class="p">,</span>
+            <span class="n">MatrixNormalRV</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_known_real_line</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return whether ``op`` has a recognized whole-real support."""</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="ow">in</span> <span class="n">real_line_support_types</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">snapshot_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return a fixed numerical model and the source free-variable order."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.pymc._snapshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">snapshot_model</span> <span class="k">as</span> <span class="n">make_snapshot</span>
+
+    <span class="k">return</span> <span class="n">make_snapshot</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">copy_array_constants</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">owned</span><span class="o">=</span><span class="p">()):</span>
+<span class="w">    </span><span class="sd">"""Return graphs computing ``outputs`` from copies of their arrays."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.pymc._snapshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_array_constants</span> <span class="k">as</span> <span class="n">copy_constants</span>
+
+    <span class="k">return</span> <span class="n">copy_constants</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">owned</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">constants_digest</span><span class="p">(</span><span class="n">functions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return a digest of the arrays that compiled ``functions`` read."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.pymc._snapshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">constants_digest</span> <span class="k">as</span> <span class="n">digest</span>
+
+    <span class="k">return</span> <span class="n">digest</span><span class="p">(</span><span class="n">functions</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">numeric_array_constants</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the numeric array constants of a model's graph."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.pymc._snapshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">_numeric_array_constants</span>
+
+    <span class="k">return</span> <span class="n">_numeric_array_constants</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"TESTED_RANGE"</span><span class="p">,</span>
+    <span class="s2">"UnsupportedModel"</span><span class="p">,</span>
+    <span class="s2">"check_model"</span><span class="p">,</span>
+    <span class="s2">"clone_model"</span><span class="p">,</span>
+    <span class="s2">"closed_form"</span><span class="p">,</span>
+    <span class="s2">"constants_digest"</span><span class="p">,</span>
+    <span class="s2">"copy_array_constants"</span><span class="p">,</span>
+    <span class="s2">"default_transform"</span><span class="p">,</span>
+    <span class="s2">"import_pymc"</span><span class="p">,</span>
+    <span class="s2">"is_known_real_line"</span><span class="p">,</span>
+    <span class="s2">"missing_derivative_errors"</span><span class="p">,</span>
+    <span class="s2">"numeric_array_constants"</span><span class="p">,</span>
+    <span class="s2">"real_line_support_types"</span><span class="p">,</span>
+    <span class="s2">"remove_value_transforms"</span><span class="p">,</span>
+    <span class="s2">"snapshot_model"</span><span class="p">,</span>
+    <span class="s2">"transform_classes"</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

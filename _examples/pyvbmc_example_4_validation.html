@@ -27,18 +27,19 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/wrap.css?v=fad812b3" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,8 +48,9 @@
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/pyvbmc_example_4_validation';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_4_validation.html" />
+    <link rel="canonical" href="https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_4_validation.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="PyVBMC Example 5: Prior distributions" href="pyvbmc_example_5_prior_distributions.html" />
@@ -56,20 +58,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -95,7 +103,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -151,6 +203,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">PyVBMC: Frequently Asked Questions</a></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
@@ -158,20 +211,33 @@
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">PyVBMC Example 4: Multiple runs as validation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_7_stacking.html">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_8_pymc.html">PyVBMC Example 8: Fitting a PyMC model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_9_torch_jax.html">PyVBMC Example 9: Torch and JAX models and posterior exports</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../documentation.html">Documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/methods/variational_posterior_to_torch.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_torch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/methods/variational_posterior_to_arviz.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior.to_arviz</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/options/vbmc_options.html">VBMC options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../api/advanced_docs.html">Advanced documentation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../api/classes/classes.html">Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/calibration_profile.html"><code class="docutils literal notranslate"><span class="pre">CalibrationProfile</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/pymc_target.html"><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/svbmc.html"><code class="docutils literal notranslate"><span class="pre">SVBMC</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
@@ -179,6 +245,9 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../api/functions/functions.html">Functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/algorithm_helpers.html">VBMC algorithm helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/calibrate.html"><code class="docutils literal notranslate"><span class="pre">calibrate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/check_for_updates.html"><code class="docutils literal notranslate"><span class="pre">check_for_updates</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/functions/entropy.html">Entropy</a></li>
@@ -257,25 +326,7 @@
       
       
       
-      <li><a href="https://mybinder.org/v2/gh/acerbilab/pyvbmc/main?urlpath=lab/tree/docsrc/source/_examples/pyvbmc_example_4_validation.ipynb" target="_blank"
-   class="btn btn-sm dropdown-item"
-   title="Launch on Binder"
-   data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  
-    <img alt="Binder logo" src="../_static/images/logo_binder.svg">
-  </span>
-<span class="btn__text-container">Binder</span>
-</a>
-</li>
-      
-      
-      
-      
-      <li><a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/docsrc/source/_examples/pyvbmc_example_4_validation.ipynb" target="_blank"
+      <li><a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_4_validation.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -323,7 +374,7 @@
       
       
       
-      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/docsrc/source/_examples/pyvbmc_example_4_validation.ipynb" target="_blank"
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/examples/pyvbmc_example_4_validation.ipynb" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -423,11 +474,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -455,7 +513,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition">1. Model definition</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validation">2. Validation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">3. Conclusions</a></li>
@@ -477,6 +535,16 @@
 <p>This notebook is Part 4 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_4_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">if</span> <span class="s2">"google.colab"</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>  <span class="c1"># Colab lacks PyVBMC: install it</span>
+    <span class="o">%</span><span class="k">pip</span> install --upgrade pyvbmc
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span>
@@ -491,20 +559,20 @@
 <p>We use the same toy target function as in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>, with unbounded parameters:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We&#39;ll use a 2-D problem for a quicker demonstration</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We'll use a 2-D problem for a quicker demonstration</span>
 <span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 <span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multivariate normal prior on theta.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Multivariate normal prior on theta."""</span>
     <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
 
 <span class="c1"># log-likelihood (Rosenbrock)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""D-dimensional Rosenbrock's banana function."""</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
@@ -513,7 +581,7 @@
 
 <span class="c1"># Full model:</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""log-density of the joint distribution."""</span>
     <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
 
@@ -522,7 +590,7 @@
 <span class="n">PLB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible lower bounds</span>
 <span class="n">PUB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible upper bounds</span>
 <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">D</span>  <span class="c1"># Slightly reduced from 50 * (D + 2), for speed</span>
+    <span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">D</span>  <span class="c1"># Slightly reduced from 50 * (D + 2), for speed</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -538,7 +606,7 @@
 <span class="n">n_runs</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">vps</span><span class="p">,</span> <span class="n">elbos</span><span class="p">,</span> <span class="n">elbo_sds</span><span class="p">,</span> <span class="n">success_flags</span><span class="p">,</span> <span class="n">result_dicts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PyVBMC run </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n_runs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PyVBMC run </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n_runs</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Determine initial point x0:</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -566,9 +634,9 @@
 
     <span class="c1"># Record the results:</span>
     <span class="n">vps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
-    <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo&quot;</span><span class="p">])</span>
-    <span class="n">elbo_sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo_sd&quot;</span><span class="p">])</span>
-    <span class="n">success_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;success_flag&quot;</span><span class="p">])</span>
+    <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">])</span>
+    <span class="n">elbo_sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"elbo_sd"</span><span class="p">])</span>
+    <span class="n">success_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"success_flag"</span><span class="p">])</span>
     <span class="n">result_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -577,64 +645,73 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PyVBMC run 0 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
+PyVBMC is using standard performance settings. You can optionally tune these for your machine by running pyvbmc.calibrate(). Calibration takes tens of seconds and does not evaluate your model.
+Performance settings: standard settings.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -1.69         0.80     73438.00        2        inf     start warm-up
-     1         15          -1.80         0.08         1.20        2        inf     
-     2         20          -1.82         0.00         0.03        2      0.889     
-     3         25          -1.81         0.00         0.00        2     0.0555     
-     4         30          -1.81         0.00         0.00        2     0.0611     end warm-up
-     5         35          -1.80         0.00         0.00        2       0.06     
-     6         40          -1.81         0.00         0.00        2      0.127     
-     7         45          -1.61         0.00         0.09        5       2.92     
-     8         50          -1.58         0.00         0.02        6       0.52     rotoscale, undo rotoscale
-     9         55          -1.57         0.00         0.00        9     0.0435     
-    10         60          -1.56         0.00         0.00       12     0.0439     
-    11         65          -1.54         0.00         0.00       15     0.0994     
-    12         70          -1.53         0.00         0.01       17      0.192     stable
-   inf         70          -1.53         0.00         0.01       50      0.192     finalize
+     0         10          -1.24         1.21    154443.24        2        inf     start warm-up
+     1         15          -1.85         0.08         4.75        2        inf     
+     2         20          -1.80         0.00         0.11        2       2.79     
+     3         25          -1.80         0.00         0.01        2      0.244     
+     4         30          -1.82         0.00         0.01        2      0.241     end warm-up
+     5         35          -1.80         0.00         0.00        2      0.139     
+     6         40          -1.80         0.00         0.00        2     0.0517     
+     7         45          -1.59         0.00         0.12        5       3.57     
+     8         50          -1.60         0.00         0.00        6     0.0433     
+     9         55          -1.57         0.00         0.00        6       0.18     
+    10         60          -1.57         0.00         0.00        9     0.0886     rotoscale, undo rotoscale
+    11         65          -1.57         0.00         0.00        9      0.036     
+    12         70          -1.54         0.00         0.00       12      0.145     
+    13         75          -1.54         0.00         0.00       15     0.0138     stable
+   inf         75          -1.53         0.00         0.00       50     0.0138     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.527 +/-0.001.
+Estimated ELBO: -1.530 +/-0.001.
 PyVBMC run 1 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
+Performance settings: standard settings.
+Tip: A maximum-likelihood (MLE) or maximum a posteriori (MAP) estimate can provide a good starting point for PyVBMC. You can use PyBADS, one of our model-fitting tools, to find one, then pass it as x0.
+https://acerbilab.org/model-fitting/
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -1.39         0.60    183360.39        2        inf     start warm-up
-     1         15          -1.79         0.17         5.72        2        inf     
-     2         20          -1.83         0.00         0.01        2      0.356     
-     3         25          -1.79         0.00         0.01        2      0.474     
-     4         30          -1.83         0.00         0.00        2      0.127     end warm-up
-     5         35          -1.81         0.00         0.00        2      0.118     
-     6         40          -1.81         0.00         0.00        2     0.0519     
-     7         45          -1.62         0.00         0.11        5       3.22     
-     8         50          -1.60         0.00         0.00        6      0.176     
-     9         55          -1.55         0.00         0.01        9       0.34     rotoscale, undo rotoscale
-    10         60          -1.55         0.00         0.01       12      0.207     
-    11         65          -1.54         0.00         0.00       15     0.0598     
-    12         70          -1.55         0.00         0.00       17     0.0632     stable
-   inf         70          -1.52         0.00         0.00       50     0.0632     finalize
+     0         10          -1.29         0.94    225710.68        2        inf     start warm-up
+     1         15          -1.80         0.09         6.33        2        inf     
+     2         20          -1.79         0.01         0.18        2       4.23     
+     3         25          -1.80         0.00         0.00        2     0.0908     
+     4         30          -1.81         0.00         0.01        2       0.21     end warm-up
+     5         35          -1.80         0.00         0.03        2      0.734     
+     6         40          -1.81         0.00         0.00        2      0.071     
+     7         45          -1.65         0.00         0.07        5       2.13     
+     8         50          -1.63         0.00         0.02        6      0.494     
+     9         55          -1.58         0.00         0.01        9      0.309     
+    10         60          -1.58         0.00         0.00       12     0.0467     rotoscale, undo rotoscale
+    11         65          -1.55         0.00         0.00       12      0.199     
+    12         70          -1.54         0.00         0.00       14     0.0979     
+    13         75          -1.54         0.00         0.00       13     0.0653     stable
+   inf         75          -1.54         0.00         0.00       50     0.0653     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.525 +/-0.000.
+Estimated ELBO: -1.541 +/-0.001.
 PyVBMC run 2 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
+Performance settings: standard settings.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -2.19         0.92     19097.79        2        inf     start warm-up
-     1         15          -1.93         0.10         0.03        2        inf     
-     2         20          -1.84         0.00         0.03        2        1.1     
-     3         25          -1.85         0.00         0.01        2      0.178     
-     4         30          -1.86         0.00         0.00        2      0.047     end warm-up
-     5         35          -1.83         0.00         0.00        2      0.113     
-     6         40          -1.85         0.00         0.00        2     0.0818     
-     7         45          -1.78         0.00         0.01        5      0.429     
-     8         50          -1.62         0.00         0.09        8       2.56     rotoscale, undo rotoscale
-     9         55          -1.58         0.00         0.01        9      0.432     
-    10         60          -1.57         0.00         0.00       12     0.0779     
-    11         65          -1.54         0.00         0.00       15      0.147     
-    12         70          -1.53         0.00         0.01       17      0.249     
-    13         75          -1.53         0.00         0.00       18     0.0368     stable
-   inf         75          -1.53         0.00         0.00       50     0.0368     finalize
+     0         10          -1.27         0.76    184852.14        2        inf     start warm-up
+     1         15          -1.91         0.01         6.58        2        inf     
+     2         20          -1.85         0.00         0.04        2       1.18     
+     3         25          -1.87         0.00         0.01        2      0.278     
+     4         30          -1.86         0.00         0.01        2      0.272     end warm-up
+     5         35          -1.83         0.00         0.14        2       3.48     
+     6         40          -1.80         0.00         0.04        2        1.1     
+     7         45          -1.71         0.00         0.02        3      0.812     
+     8         50          -1.65         0.00         0.02        6      0.723     
+     9         55          -1.61         0.00         0.03        9       0.83     
+    10         60          -1.60         0.00         0.00       12     0.0715     rotoscale, undo rotoscale
+    11         65          -1.59         0.00         0.00       15     0.0861     
+    12         70          -1.58         0.00         0.00       16     0.0347     
+    13         75          -1.58         0.00         0.00       15     0.0615     
+    14         80          -1.57         0.00         0.00       14     0.0502     stable
+   inf         80          -1.53         0.00         0.01       50     0.0502     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.529 +/-0.000.
+Estimated ELBO: -1.529 +/-0.001.
 </pre></div>
 </div>
 </div>
@@ -642,12 +719,12 @@ Estimated ELBO: -1.529 +/-0.000.
 <p>We now perform some diagnostic checks on the variational solution. First, we check that the ELBO’s from different runs are close to each other (i.e. with a difference much smaller than 1):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">elbos</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elbos</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[-1.5273433504679828, -1.5248830970271374, -1.5290414540115609]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[-1.53002795 -1.54059281 -1.52906984]
 </pre></div>
 </div>
 </div>
@@ -658,7 +735,7 @@ Estimated ELBO: -1.529 +/-0.000.
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kl_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_runs</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">):</span>
-        <span class="c1"># The `kldiv` method computes the divergence in both directions:</span>
+        <span class="c1"># The `kl_div` method computes the divergence in both directions:</span>
         <span class="n">kl_ij</span><span class="p">,</span> <span class="n">kl_ji</span> <span class="o">=</span> <span class="n">vps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">vp2</span><span class="o">=</span><span class="n">vps</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
         <span class="n">kl_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_ij</span>
         <span class="n">kl_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_ji</span>
@@ -674,9 +751,9 @@ Estimated ELBO: -1.529 +/-0.000.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[-0.          0.0126071   0.00961694]
- [ 0.01044285 -0.          0.0136719 ]
- [ 0.01059469  0.01364032 -0.        ]]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[-0.          0.07969042  0.0535709 ]
+ [ 0.04087624 -0.          0.00929074]
+ [ 0.03297249  0.00921507 -0.        ]]
 </pre></div>
 </div>
 </div>
@@ -690,21 +767,21 @@ Estimated ELBO: -1.529 +/-0.000.
         <span class="n">samples</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
         <span class="n">samples</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
         <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">vps</span><span class="p">),</span>
-        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;VP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"VP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Variational Posterior Samples&quot;&quot;&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"""Variational Posterior Samples"""</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"x0"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"x1"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/fc598665a14e73f5c1aa68a5bb4da03808ab86e65676a16446121058f47e4ba4.png" src="../_images/fc598665a14e73f5c1aa68a5bb4da03808ab86e65676a16446121058f47e4ba4.png" />
+<img alt="../_images/86852e67b908fbae38132220fc3c788e6fdcdc44dcf2d0b05f4cfca29e89b9cf.png" src="../_images/86852e67b908fbae38132220fc3c788e6fdcdc44dcf2d0b05f4cfca29e89b9cf.png" />
 </div>
 </div>
-<p>We can also check that convergence was acheived in all runs, according to PyVBMC (we want <code class="docutils literal notranslate"><span class="pre">success_flag</span> <span class="pre">=</span> <span class="pre">True</span></code> for each run):</p>
+<p>We can also check that convergence was achieved in all runs, according to PyVBMC (we want <code class="docutils literal notranslate"><span class="pre">success_flag</span> <span class="pre">=</span> <span class="pre">True</span></code> for each run):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">success_flags</span><span class="p">)</span>
@@ -729,15 +806,15 @@ Estimated ELBO: -1.529 +/-0.000.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2
 </pre></div>
 </div>
 </div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class implements <code class="docutils literal notranslate"><span class="pre">save</span></code> and <code class="docutils literal notranslate"><span class="pre">load</span></code> methods, similar to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> (as we saw in Example 3). We’ll save this best posterior to a file, so we can compare it against our results in Example 6:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class implements <code class="docutils literal notranslate"><span class="pre">save</span></code> and <code class="docutils literal notranslate"><span class="pre">load</span></code> methods, similar to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> (as we saw in Example 3). We’ll save this best posterior to a file for later use:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vps</span><span class="p">[</span><span class="n">idx_best</span><span class="p">]</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;noise_free_vp.pkl&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vps</span><span class="p">[</span><span class="n">idx_best</span><span class="p">]</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"noise_free_vp.pkl"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -745,12 +822,12 @@ Estimated ELBO: -1.529 +/-0.000.
 </section>
 <section id="conclusions">
 <h2>3. Conclusions<a class="headerlink" href="#conclusions" title="Link to this heading">#</a></h2>
-<p>In this notebook, we have shown you some techniques to validate the results of PyVBMC by comparing statitics across multiple runs.</p>
-<p>In the next notebook, we will demonstrate using PyVBMC with models in which the likelihood function is noisy, or can only be estimated up to some noise.</p>
+<p>In this notebook, we have shown you some techniques to validate the results of PyVBMC by comparing statistics across multiple runs.</p>
+<p>In the next notebook, we will discuss how to specify prior distributions with PyVBMC.</p>
 </section>
 <section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
-<p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
+<p>Work on the PyVBMC package is supported by the Research Council of Finland (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme: <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
 </section>
 </section>
 
@@ -800,7 +877,7 @@ Estimated ELBO: -1.529 +/-0.000.
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition">1. Model definition</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validation">2. Validation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">3. Conclusions</a></li>
@@ -842,6 +919,9 @@ By Author name not set
   
   <div class="footer-item">
     
+<div class="extra_footer">
+  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+</div>
   </div>
   
 </div>
@@ -853,8 +933,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>
