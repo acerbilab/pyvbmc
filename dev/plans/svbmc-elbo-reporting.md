@@ -84,8 +84,8 @@ Deterministic corrections intentionally move S-VBMC weights and references.
 Torch remains lazy and optional, numerical state remains float64, and input
 posteriors and generators remain untouched. The VBMC core change only adds
 noise metadata and must preserve every numerical output and random draw.
-Phase 2 surrogate experiments, entropy speedups, the standalone forwarding
-release and golden population completion are separate work.
+Phase 2 surrogate experiments, entropy speedups, the deprecation of the
+standalone package and golden population completion are separate work.
 
 Keep planning/status edits on `dev-next`; implement on a feature branch.
 At most one heavy computation runs at a time, in the main thread.

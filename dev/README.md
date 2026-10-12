@@ -182,9 +182,9 @@ plan and consolidated human summary.
   independent sampling with a balanced option, `seed`, float64, snapshot
   fixtures plus a generated D=1, bounded and warped set), layout, the
   parity gate against upstream, the test suite, verification, the
-  `SVBMC.save` and `SVBMC.load` methods (2026-09-24) and the remaining
-  follow-up (forwarding release after 1.5); the speedups have their own
-  plan below.
+  `SVBMC.save` and `SVBMC.load` methods (2026-09-24) and the deprecation
+  of the standalone package after 1.5 (2026-10-12); the speedups have
+  their own plan below.
 - [plans/svbmc-speedups.md](plans/svbmc-speedups.md) — S-VBMC
   preparation and entropy speedups: per-run transforms and Jacobians,
   broadcast component densities, vectorized per-component reduction;

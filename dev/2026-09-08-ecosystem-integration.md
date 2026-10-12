@@ -136,6 +136,11 @@ in favor of `pyvbmc.SVBMC`: the forwarding release is its last, and it
 warns on import that the package is deprecated
 ([integration plan](plans/svbmc-integration.md)). This settles question
 (4) of the review scope below.
+*Added 2026-10-12:* the PI ruled that no forwarding release is made. The
+deprecation stands: the standalone package's README directs users to
+`pyvbmc.SVBMC`, and its last release, 0.1.2, has the code of 0.1.1 and
+carries that notice to PyPI
+([integration plan](plans/svbmc-integration.md)).
 
 The thirty compatibility fixtures are input `VariationalPosterior` pickles.
 They encode the existing

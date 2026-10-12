@@ -3,7 +3,7 @@
 Execution plan and worklog for bringing the S-VBMC implementation into
 PyVBMC. Implementation is complete: work on `dev-svbmc-integration`, opened
 from `dev-next` at `e29c5e7`, was merged into `dev-next` on 2026-09-11.
-The release that deprecates the standalone `svbmc` package follows PyVBMC
+The standalone `svbmc` package was deprecated on 2026-10-12, after PyVBMC
 1.5 publication. The design is the
 [integration proposal](../2026-09-08-ecosystem-integration.md), whose open
 questions the PI settled on 2026-09-11 as recorded below. Evidence the plan
@@ -63,17 +63,18 @@ adding Torch to the repository venv.
   warped and unwarped runs. Regression references (weights, ELBO, entropy of a
   seeded short optimization) pin the numerics for the later performance
   change.
-- **Deprecation release.** The standalone package is deprecated in favor
-  of `pyvbmc.SVBMC` (PI, 2026-10-08), and its last release, depending on
-  `pyvbmc[torch]>=1.5`, is prepared and published only after PyVBMC 1.5
-  is on PyPI. It forwards `svbmc.SVBMC`, `svbmc.svbmc.SVBMC` and
-  `svbmc.utils`, keeps its own `targets`, maps `testing=True` to a fixed
-  seed with a deprecation warning, and reports its own `__version__`. On
-  import it warns that the package is deprecated, naming `pyvbmc.SVBMC`
-  and the migration table of the `SVBMC` page. The repository
-  `acerbilab/svbmc` stays, as the code of the S-VBMC paper, and its README
-  opens with a note that S-VBMC is integrated in PyVBMC. Out of scope for
-  this plan.
+- **Deprecation.** The standalone package is deprecated in favor of
+  `pyvbmc.SVBMC` (PI, 2026-10-08). Users move to PyVBMC rather than being
+  kept on the old imports, so the forwarding release that the integration
+  proposal describes is not made, and no release is yanked (PI,
+  2026-10-12). After PyVBMC 1.5 is on PyPI, the README of
+  `acerbilab/svbmc` and its two example notebooks open with a notice that
+  points to `pyvbmc.SVBMC`, its migration notes and Example 7. A last
+  release, 0.1.2, with the code of 0.1.1, carries the notice to PyPI,
+  whose project page shows the README of the newest release. Neither the
+  PyPI project nor the repository is archived (PI, 2026-10-12); the
+  repository stays as the code of the S-VBMC paper. Done on 2026-10-12;
+  the execution record below gives the steps.
 - **Performance follow-up (PI, 2026-09-13).** The shared-preparation and
   vectorized-entropy speedups measured in the prototype are in scope for
   1.5 as a separate change after integration. Preserve the method and sampled
@@ -372,3 +373,21 @@ added there, and the fixture globs go into `MANIFEST.in`.
   new warning, and the full CI matrix on `482c6f1a` (run 36055045741,
   green in all nine cells, each of which ran the three tests of the saved
   stack; the Torch cell ran the nine others).
+- 2026-10-12: PyVBMC 1.5.0 is on PyPI. The PI ruled out the forwarding
+  release and the yanking of the PyPI releases (decision above). The
+  notices of the standalone repository went into its `main` through its
+  PR #1 (`7cace9b`, merged as `1fd8399`). The bump to 0.1.2 is its PR #2
+  (merged as `b052b43`, tagged `v0.1.2`). PyPI's renderer
+  (`readme_renderer`) does not render GitHub's alert syntax, which PR #1
+  used for the notice, so PR #2 turns it into a plain blockquote. 0.1.2
+  was built from an export of the tag and uploaded by the PI; the files on
+  PyPI have the hashes of that build, and PyPI reports 0.1.2, with the
+  notice, as the project's latest version. Its wheel differs from that of
+  0.1.1 only in the version string and the metadata, the README included,
+  and it installs with PyVBMC 1.5.0 and imports. The PI then left the PyPI
+  project and the repository unarchived, which completes the
+  deprecation. Checked on the way, with the 1.5 code and Torch 2.14.0: the
+  thirty posteriors under `vbmc_runs/` of the standalone repository,
+  loaded with plain `pickle.load` as its README does, stack, optimize
+  (ten steps) and sample without a warning, so posteriors that users
+  saved for the standalone package carry over to `pyvbmc.SVBMC`.
