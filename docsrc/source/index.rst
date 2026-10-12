@@ -4,7 +4,7 @@ PyVBMC
 
 PyVBMC is one of the open-source `tools for fitting models to data <https://acerbilab.org/model-fitting/>`__ from `Luigi Acerbi's group <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence>`__ at the University of Helsinki. Check out our other tools, such as :labrepos:`PyBADS <pybads>` for point estimates and :labrepos:`PyIBS <pyibs>` for models that can only be simulated.
 
-PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented :labrepos:`in MATLAB <vbmc>`.
+PyVBMC `(Huggins et al., 2023) <#references>`_ is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented :labrepos:`in MATLAB <vbmc>`.
 
 What is it?
 ###########
