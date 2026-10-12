@@ -14,7 +14,7 @@ PyVBMC is one of the open-source [tools for fitting models to data](https://acer
 
 ### What is it?
 
-PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
+PyVBMC [[1](#references-and-citation)] is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
