@@ -135,13 +135,6 @@ records the release and the checks before it.
 - [ ] **PR #73.** The pull request "pymc integration" (aloctavodia, open
   since 2022) is superseded by `pyvbmc.PyMCTarget`; close it with thanks
   and a pointer to the PyMC guide of the quickstart and Example 8.
-- [ ] **Two ambiguous cross-references.** The attributes `log_pdf` and
-  `sample` of the `UserFunction` docstring
-  (`pyvbmc/priors/user_function.py`) are cross-references that the
-  `docs` workflow's builds of 2026-10-12 find ambiguous: `log_pdf` matches
-  the methods of `Prior` and `VariationalPosterior`, and `sample` those of
-  `Prior`, `SVBMC` and `VariationalPosterior`. Sphinx links each to one of
-  them. Qualify them.
 - [ ] **The `vp.plot()` tip's anchor, for 1.5.1.** The startup tip about
   `vp.plot()` (`pyvbmc/vbmc/_tip_catalog.py`) links
   `variational_posterior.html#pyvbmc.VariationalPosterior.VariationalPosterior.plot`,
