@@ -64,11 +64,11 @@ for i in range(n_runs):
 stacked = SVBMC(vps, seed=0)
 stacked.optimize(n_samples_final=100)
 
-print("Headline stacked ELBO:", round(stacked.elbo, 3))
-print("SD of the raw estimate: ", round(stacked.elbo_sd, 3))
-print("Headline method:        ", stacked.elbo_details["headline_method"])
-print("Raw ELBO:               ", round(stacked.elbo_details["raw"], 3))
-print("Noise status source:    ", stacked.noise_status_source)
+print("Stacked ELBO:          ", round(stacked.elbo, 3))
+print("SD of the raw estimate:", round(stacked.elbo_sd, 3))
+print("Estimate reported:     ", stacked.elbo_details["headline_method"])
+print("Raw ELBO:              ", round(stacked.elbo_details["raw"], 3))
+print("Noise status source:   ", stacked.noise_status_source)
 
 # Total weight assigned to each retained run:
 offsets = np.concatenate([[0], np.cumsum(stacked.K)])
@@ -108,4 +108,4 @@ stacked.save("stacked_posterior.pkl", overwrite=True)
 
 restored = SVBMC.load("stacked_posterior.pkl")
 print("Same weights:      ", np.array_equal(restored.w, stacked.w))
-print("Same headline ELBO:", restored.elbo == stacked.elbo)
+print("Same stacked ELBO: ", restored.elbo == stacked.elbo)
