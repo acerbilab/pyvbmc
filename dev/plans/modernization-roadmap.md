@@ -1521,6 +1521,15 @@ code, API and behavior.
   execution the outputs of Examples 1–6 and 8 changed only in those
   start-of-run lines, every trace and result unchanged; Examples 7 and 9
   print neither line. The release `v1.5.0` holds these outputs.
+  After the release, Example 7 moved to an equal mixture of four
+  Gaussians at (±3.5, ±3.5) with SD 0.6, run six times (`4e73cb3e`,
+  executed in `5907046f`): over 20 seeds, one run in 20 found all four
+  modes, and none of the notebook's six does, so that the run with the
+  highest ELBO still misses a mode while the stack gives each mode about a
+  quarter of the mass. Its check asserts that each run finds one to three
+  modes, with an ELBO near log(k/4), and that the stack's share of each
+  mode is within 0.1 of 0.25 (`dev/scripts/runs/LOCAL.md`, "Example 7 on
+  four modes (2026-10-12)").
 - [x] Prepare the 1.5.0 changelog heading and `RELEASE_DATE` in
   `pyvbmc/_release.py` with the planned release date, 2026-10-13
   (PI, 2026-10-08). The old-release reminder reads this date;
