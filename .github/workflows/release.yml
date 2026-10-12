@@ -1,8 +1,11 @@
 name: publish-release
 
 on:
+  # `published` is sent whether a release is published at once or as a saved
+  # draft; `created` is sent for a draft when it is saved, and Actions ignores
+  # it then, so publishing that draft later would not start the upload.
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
 
 jobs:
