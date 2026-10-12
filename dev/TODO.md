@@ -124,8 +124,9 @@ records the release and the checks before it.
   environment whose Python or other packages exclude 1.5.0. Follow it up
   until it merges.
 - [ ] **PR #73.** The pull request "pymc integration" (aloctavodia, open
-  since 2022) is superseded by `pyvbmc.PyMCTarget`; close it with thanks
-  and a pointer to the PyMC guide of the quickstart and Example 8.
+  since 2022) is superseded by `pyvbmc.PyMCTarget`. The PI replied on
+  2026-10-12, with thanks and a pointer to the PyMC support of 1.5; close
+  it.
 - [ ] **The `vp.plot()` tip's anchor, for 1.5.1.** The startup tip about
   `vp.plot()` (`pyvbmc/vbmc/_tip_catalog.py`) links
   `variational_posterior.html#pyvbmc.VariationalPosterior.VariationalPosterior.plot`,
@@ -136,8 +137,6 @@ records the release and the checks before it.
   output of Example 6 shows it. Correct the anchor, check the other links
   of both tip catalogs, anchors included, against the published
   documentation, and execute Example 6 again.
-- [ ] **Respond to issue #138 about RNG control** with the released API/docs.
-  See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 - [ ] **Packaging metadata.** A build of 1.5.0 warns of two parts of its
   configuration that setuptools will stop accepting: the `project.license`
   table, which setuptools stops supporting on 2027-02-18 (a `license` SPDX
