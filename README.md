@@ -10,11 +10,11 @@
 [![docs](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/docs.yml?branch=main&label=docs)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
 [![build](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/build.yml?branch=main&label=build)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
 
-PyVBMC is one of the open-source [tools for fitting models to data](https://acerbilab.org/model-fitting/) from [Luigi Acerbi's group](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki. Check out our other tools, such as [PyBADS](https://github.com/acerbilab/pybads) for point estimates and [PyIBS](https://github.com/acerbilab/pyibs) for models that can only be simulated.
+PyVBMC is one of the open-source [tools for fitting models to data](https://acerbilab.org/model-fitting/) from the [Machine and Human Intelligence Group](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki. Check out our other tools, such as [PyBADS](https://github.com/acerbilab/pybads) for point estimates and [PyIBS](https://github.com/acerbilab/pyibs) for models that can only be simulated.
 
 ### What is it?
 
-PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
+PyVBMC [[1](#references-and-citation)] is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
@@ -316,5 +316,5 @@ PyVBMC is released under the terms of the [BSD 3-Clause License](https://github.
 
 ### Acknowledgments
 
-PyVBMC is developed by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki and [ELLIS Institute Finland](https://www.ellisinstitute.fi/). Development of PyVBMC 1.5 was assisted by coding agents, including Anthropic's [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) and OpenAI's [GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra).
+PyVBMC is developed by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Group](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki and [ELLIS Institute Finland](https://www.ellisinstitute.fi/). Development of PyVBMC 1.5 was assisted by coding agents, including Anthropic's [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) and OpenAI's [GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra).
 Work on the PyVBMC package is supported by the Research Council of Finland (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme: [Finnish Center for Artificial Intelligence FCAI](https://fcai.fi/).

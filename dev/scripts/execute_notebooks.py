@@ -200,12 +200,19 @@ CHECKS = {
             None,
             """
             assert all(vp.stats["stable"] for vp in vps)
-            run_elbos = [vp.stats["elbo"] for vp in vps]
-            assert any(abs(e - np.log(0.5)) < 0.1 for e in run_elbos), run_elbos
+            assert stacked.M == len(vps), stacked.M
+            # A run has found a mode when at least 0.05 of its samples lie
+            # within three SDs of it (mode_shares); a found mode holds
+            # about 1/k of the mass of a run that found k of them.
+            for vp in vps:
+                found = int(np.sum(mode_shares(vp.sample(20000)[0]) >= 0.05))
+                assert 1 <= found < 4, found
+                gap = abs(vp.stats["elbo"] - np.log(found / 4))
+                assert gap < 0.1, (found, vp.stats["elbo"])
             assert stacked.elbo_details["headline_method"] == "raw"
             assert abs(stacked.elbo) < 0.1, stacked.elbo
-            share = np.mean(stacked.sample(20000)[:, 0] > 0)
-            assert abs(share - 0.5) < 0.1, share
+            shares = mode_shares(stacked.sample(20000))
+            assert np.max(np.abs(shares - 0.25)) < 0.1, shares
             """,
         ),
     ],

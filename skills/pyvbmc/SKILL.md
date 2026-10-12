@@ -39,7 +39,9 @@ this skill folder has been copied elsewhere.
 | Migrate code that imports the standalone `svbmc` package | It is deprecated in favor of `pyvbmc.SVBMC`: the [`SVBMC` API page](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/api/classes/svbmc.rst), section “Differences from the standalone `svbmc` package”, with its migration table. |
 | Look up exact arguments, options or posterior methods | The [API reference](https://acerbilab.org/pyvbmc/documentation.html), with sources under `docsrc/source/api/` and implementation docstrings under `pyvbmc/`. The quickstart also covers vectorized targets and optional exports; the FAQ's “Troubleshooting” section covers reproducibility. |
 
-The FAQ is [docsrc/source/faq.md](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/faq.md).
+The FAQ is published at <https://acerbilab.org/pyvbmc/faq.html>, where its
+section links work; its source is
+[docsrc/source/faq.md](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/faq.md).
 
 The lab's [model-fitting software](https://acerbilab.org/model-fitting/)
 also includes [PyBADS](https://acerbilab.org/pybads/) for point

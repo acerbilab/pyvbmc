@@ -181,13 +181,6 @@ records the release and the checks before it.
   would leave out of the wheel. Both hold since 1.0.4; fix them in the next
   release, checking that the wheel still holds every runtime file and no
   test.
-- [ ] **Merged branches.** `feat-*` branches read as live work (`AGENTS.md`,
-  "Branches"), so delete those on `origin` that the release merge holds,
-  with the merged `fix-*` branch: `feat-ci-python-313-314`,
-  `feat-pymc-snapshot-constants`, `feat-release-1.5-preparation`,
-  `feat-release-1.5-procedure`, `feat-release-validation-191` and
-  `fix-arm0-failure-record`, and `feat-release-1.5-publication` once it
-  merges.
 - [ ] **A readable `print(target)`, for 1.5.1.** `PyMCTarget.__str__`
   (`pyvbmc/pymc/_target.py`) prints a variable's hard and plausible bounds
   as two NumPy arrays at full precision, the lower bounds of all its
