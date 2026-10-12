@@ -98,25 +98,20 @@ records the release and the checks before it.
   page. The repository `acerbilab/svbmc` stays, as the code of the S-VBMC
   paper, and its README opens with a note that S-VBMC is integrated in
   PyVBMC. See the [integration plan](plans/svbmc-integration.md).
-- [ ] **Zenodo.** The repository's webhook to Zenodo archives each release
-  as a new version of the record
+- [ ] **Zenodo at the next release.** The repository's webhook to Zenodo
+  archives each release as a new version of the record
   [10.5281/zenodo.10659431](https://doi.org/10.5281/zenodo.10659431),
-  which holds v1.0.2 to v1.0.4 and archived v1.0.4 six seconds after its
-  publication; an older record, 10.5281/zenodo.7966314, holds v1.0.1
-  alone. For `v1.5.0` the webhook's deliveries on 2026-10-12 got HTTP 409
-  for `published` ("The release has already been received") and 202 for
-  `released`, after a 202 for `created` when the draft was saved on
-  2026-10-11, and no record of 1.5.0 existed at 08:04 UTC. The owner of
-  the Zenodo account that holds the integration can see the release's
-  state on its GitHub page, and can otherwise add 1.5.0 by hand, as a new
-  version of 10659431 with the release's source archive. A version's
-  authors come from `CITATION.cff`, which lists Francesco Silvestrin, the
-  first author of the S-VBMC paper, since 2026-10-12 (PI); a version made
-  from `v1.5.0`, whose `CITATION.cff` does not, takes him in by an edit on
-  Zenodo. `CITATION.cff`'s `doi` is 10659431's concept DOI, which resolves
-  to the latest version, since the same day. If the draft saved before
-  publication is what kept Zenodo from archiving 1.5.0, a release prepared
-  the same way meets the same; check Zenodo after the next one.
+  whose concept DOI `CITATION.cff` gives; it holds v1.0.2 to v1.0.4 and
+  archived v1.0.4 six seconds after its publication. It archived no 1.5.0:
+  the webhook's deliveries on 2026-10-12 got HTTP 409 for `published`
+  ("The release has already been received") and 202 for `released`, after
+  a 202 for `created` when the draft was saved on 2026-10-11. 1.5.0 is not
+  added by hand (PI, 2026-10-12): the papers are what users cite. If the
+  draft saved before publication is what kept Zenodo from archiving 1.5.0,
+  a release prepared the same way meets the same; check Zenodo after the
+  next release. A version's authors come from `CITATION.cff`, which lists
+  Francesco Silvestrin, the first author of the S-VBMC paper, since
+  2026-10-12 (PI).
 - [ ] **The old PyPI token.** Until 2026-10-12, `PYPI_PASSWORD` held a
   token set on 2023-03-16 whose owner is not known: the PI's PyPI account
   holds no token for pyvbmc, and only the owner can revoke it. pyvbmc's
