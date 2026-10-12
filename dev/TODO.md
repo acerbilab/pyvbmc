@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-11. These lists describe scope, not priority or execution
+Updated 2026-10-12. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -196,6 +196,19 @@ announcement, likely on 2026-10-13, a date that does not bind (PI,
   `feat-pymc-snapshot-constants`, `feat-release-1.5-preparation`,
   `feat-release-1.5-procedure`, `feat-release-validation-191` and
   `fix-arm0-failure-record`.
+- [ ] **A readable `print(target)`, for 1.5.1.** `PyMCTarget.__str__`
+  (`pyvbmc/pymc/_target.py`) prints a variable's hard and plausible bounds
+  as two NumPy arrays at full precision, the lower bounds of all its
+  coordinates and then the upper ones, so that Example 8 shows the plausible
+  bounds of `beta` as `[[-0.09952025  0.24172931], [0.52304277 1.28427527]]`,
+  which reads as one interval for each coefficient. Lay the table out so that
+  each coordinate's lower and upper bounds stand together, with fewer
+  digits (one row per VBMC coordinate, say), re-execute Example 8
+  (`dev/scripts/execute_notebooks.py --only 8`) and check the quickstart's
+  description of the table. `test_mapping_validation_and_string_table`
+  (`pyvbmc/testing/pymc/test_target.py`) asserts only the header and two
+  coordinate names. Left out of 1.5.0, whose code is settled (PI,
+  2026-10-12).
 
 ## Dependencies and working rules
 

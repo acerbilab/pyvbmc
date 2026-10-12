@@ -6,11 +6,14 @@ if "google.colab" in sys.modules:  # Colab lacks PyVBMC: install it
 
 import arviz as az
 import numpy as np
+import pandas as pd
 import pymc as pm
+import scipy.stats as scs
+from scipy.integrate import quad
 
 from pyvbmc import VBMC, PyMCTarget
 
-SEED = 7
+SEED = 7  # Fix the seed, so that the results below are reproducible
 
 
 rng = np.random.default_rng(SEED)
@@ -44,32 +47,38 @@ target = PyMCTarget(model, seed=SEED)
 print(target)
 
 
-total_budget = 150
-vbmc = VBMC(
-    target,
-    options={"max_fun_evals": total_budget, "display": "off"},
-    seed=SEED,
-)
+vbmc = VBMC(target, seed=SEED)
 vp, results = vbmc.optimize()
 
-budget = results["evaluation_budget"]
-print(f"Convergence status: {results['convergence_status']}")
-print(
-    "Function-equivalent budget: "
-    f"{budget['used']} used of {budget['limit']} "
-    f"({budget['initialization']} setup + {budget['new_calls']} fresh)"
-)
-print(
-    "Reused setup observations: "
-    f"{results.get('precomputed_observations', 0)}"
-)
+
+def log_evidence_given_sigma(s):
+    """log p(y | sigma), with the coefficients integrated out."""
+    cov = s**2 * np.eye(n_observations) + 5.0**2 * design @ design.T
+    return scs.multivariate_normal(np.zeros(n_observations), cov).logpdf(
+        observed
+    )
 
 
-posterior_data = target.to_arviz(vp, n_samples=1000)
+# Factor out exp(shift), so that the integrand is of order one:
+shift = log_evidence_given_sigma(sigma_true)
+integral, _ = quad(
+    lambda s: np.exp(log_evidence_given_sigma(s) - shift)
+    * scs.halfnorm(scale=2.0).pdf(s),
+    0,
+    np.inf,
+)
+lml_true = shift + np.log(integral)
+
+print("The true log model evidence is:", format(lml_true, ".3f"))
+print("The obtained ELBO is:", format(results["elbo"], ".3f"))
+print("The obtained ELBO_SD is:", format(results["elbo_sd"], ".3f"))
+
+
+posterior_data = target.to_arviz(vp, n_samples=4000)
 vbmc_summary = az.summary(
     posterior_data,
     var_names=["beta", "sigma"],
-    kind="stats",
+    kind="stats",  # MCMC diagnostics do not apply to independent draws
     round_to=3,
 )
 vbmc_summary
@@ -77,18 +86,14 @@ vbmc_summary
 
 posterior_data = pm.compute_deterministics(
     posterior_data,
-    model=target.model,
+    model=model,
     var_names=["mu"],
-    extend_dataset=True,
+    extend_dataset=True,  # keep beta and sigma beside mu
     progressbar=False,
 )
-assert {"beta", "sigma", "mu"} <= set(posterior_data.posterior.data_vars)
-posterior_data.posterior["mu"]
-
-
 posterior_predictive = pm.sample_posterior_predictive(
     posterior_data,
-    model=target.model,
+    model=model,
     var_names=["y"],
     random_seed=SEED,
     progressbar=False,
@@ -103,36 +108,18 @@ az.plot_ppc_interval(
 
 with model:
     nuts_data = pm.sample(
-        draws=500,
-        tune=500,
-        chains=2,
-        cores=1,
-        target_accept=0.9,
-        random_seed=SEED,
-        progressbar=False,
+        chains=4, cores=1, random_seed=SEED, progressbar=False
     )
 
-az.summary(
-    nuts_data,
-    var_names=["beta", "sigma"],
-    kind="all",
-    round_to=3,
+nuts_summary = az.summary(
+    nuts_data, var_names=["beta", "sigma"], kind="stats", round_to=3
 )
+pd.concat({"PyVBMC": vbmc_summary, "NUTS": nuts_summary}, axis=1)
 
 
-# Use a common sample axis for the independent draws and NUTS chains.
-forest_data = {
-    label: az.extract(data, var_names=["beta", "sigma"]).reset_index(
-        "sample", drop=True
-    )
-    for label, data in {"PyVBMC": posterior_data, "NUTS": nuts_data}.items()
-}
-forest = az.plot_forest(
-    forest_data,
-    var_names=["beta", "sigma"],
-    sample_dims="sample",
-    combined=True,
-    point_estimate="mean",
-    ci_probs=(0.5, 0.9),
+n_gradients = int(nuts_data.sample_stats["n_steps"].sum())
+print(
+    "PyVBMC evaluations of the log density:",
+    results["evaluation_budget"]["used"],
 )
-forest.add_legend("model", title="method")
+print("NUTS evaluations of the log density and its gradient:", n_gradients)
