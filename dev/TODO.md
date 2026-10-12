@@ -125,26 +125,13 @@ records the release and the checks before it.
   `created` as PyVBMC's did, so publishing a saved draft does not start its
   upload; [acerbilab/gpyreg#70](https://github.com/acerbilab/gpyreg/pull/70)
   changes it to `published`, for version tags.
-- [ ] **conda-forge.** Merge or close the feedstock's PR 11 (open since
-  2026-09-25). It proposes `bot: {automerge: true, inspection:
-  update-grayskull}` in the feedstock's `conda-forge.yml`, as gpyreg's and
-  PyBADS's feedstocks have, so that the version bot's PR takes the
-  requirements from the PyPI metadata and merges itself once the
-  feedstock's CI passes. Under those settings the bot's PR for gpyreg
-  1.4.0 (`conda-forge/gpyreg-feedstock` #13) changed the version and the
-  hash alone, though its analysis listed the run requirements that 1.4.0
-  had dropped, and merged itself. So a release that changes the
-  requirements has them changed by hand, in a PR opened before the bot's
-  or pushed to the bot's before it merges; removing `[bot-automerge]` from
-  the bot's title keeps it from merging itself. The repodata patch
+- [ ] **The conda-forge repodata patch.** The patch
   `conda-forge/conda-forge-repodata-patches-feedstock` #1274 (open since
   2026-10-08) bounds every release from 0.9.0 to 1.0.4 at `gpyreg <1.3`
   and `numpy <2.4`, beyond which they fail; until it merges, conda can
   install 1.0.4 with a gpyreg or a NumPy that it fails with, in an
-  environment whose Python or other packages exclude 1.5.0. The conda
-  package's Python floor is conda-forge's `python_min` at the feedstock's
-  last rerender (3.11 for 1.5.0), which the README and the installation
-  page state; a rerender after conda-forge raises it raises the floor.
+  environment whose Python or other packages exclude 1.5.0. Follow it up
+  until it merges.
 - [ ] **PR #73.** The pull request "pymc integration" (aloctavodia, open
   since 2022) is superseded by `pyvbmc.PyMCTarget`; close it with thanks
   and a pointer to the PyMC guide of the quickstart and Example 8.
