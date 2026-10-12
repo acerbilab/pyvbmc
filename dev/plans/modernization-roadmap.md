@@ -1619,7 +1619,12 @@ code, API and behavior.
   `origin/dev-port-review`, every commit of which `main` holds, was deleted
   the same day. PR #197, which rewrites Examples 8 and 9, executes the nine
   notebooks again (above) and changes no code, merged into `main` after
-  it, at `864ee717`, the commit that the release tags.
+  it, at `864ee717`, the commit that the release tags. The merged branches
+  `feat-ci-python-313-314`, `feat-pymc-snapshot-constants`,
+  `feat-release-1.5-preparation`, `feat-release-1.5-procedure`,
+  `feat-release-validation-191`, `fix-arm0-failure-record` and
+  `feat-release-1.5-publication` (PR #198), every commit of which `main`
+  holds, were deleted on `origin` the same day.
 - [x] Publish the release on 2026-10-12, after the release merge. The
   draft release `v1.5.0` holds the release notes and the public archives.
   Its target, `main`, is resolved when it is published: published before
