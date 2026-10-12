@@ -20,6 +20,14 @@ PyVBMC simultaneously computes:
 
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood), a metric used for Bayesian model selection.
 
+.. figure:: _static/pyvbmc-film-thumbnail.jpg
+    :target: https://www.youtube.com/watch?v=dEwiE5PLcA4
+    :alt: PyVBMC: efficient Bayesian posterior inference for model fitting (video)
+    :width: 560px
+    :align: center
+
+    Watch a `three-minute film <https://www.youtube.com/watch?v=dEwiE5PLcA4>`__ that explains how PyVBMC works.
+
 
 What's new in PyVBMC 1.5
 ------------------------
@@ -63,6 +71,10 @@ versions and what to check in an existing script.
 
 Example run
 -----------
+
+.. tip::
+
+   Watch a `three-minute film <https://www.youtube.com/watch?v=dEwiE5PLcA4>`__ that explains how PyVBMC works.
 
 The figure below shows an example PyVBMC run on a "banana" target density.
 The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals).

@@ -20,6 +20,10 @@ PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC)
 
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference [[2,3](#references-and-citation)].
 
+**Watch a [three-minute film](https://www.youtube.com/watch?v=dEwiE5PLcA4) that explains how PyVBMC works.**
+
+<a href="https://www.youtube.com/watch?v=dEwiE5PLcA4"><img src="https://raw.githubusercontent.com/acerbilab/pyvbmc/main/docsrc/source/_static/pyvbmc-film-thumbnail.jpg" alt="PyVBMC: efficient Bayesian posterior inference for model fitting (video)" width="560"></a>
+
 ### What's new in PyVBMC 1.5
 
 The main additions and changes in PyVBMC 1.5 are:
@@ -196,6 +200,8 @@ Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` 
 For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the [PyVBMC FAQ](https://acerbilab.org/pyvbmc/faq.html).
 
 ## How does it work?
+
+**Watch a [three-minute film](https://www.youtube.com/watch?v=dEwiE5PLcA4) that explains how PyVBMC works.**
 
 VBMC/PyVBMC combine two machine learning techniques in a novel way:
 - [variational inference](https://en.wikipedia.org/wiki/Variational_Bayesian_methods), a method to perform approximate Bayesian inference;
