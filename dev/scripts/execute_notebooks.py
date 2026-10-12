@@ -19,6 +19,18 @@ Plotly JSON, which they skip, with ``PYVBMC_NO_UPDATE_REMINDER`` set so that
 no old-release reminder enters the stored outputs, and, on a machine without
 ``g++``, with ``PYTENSOR_FLAGS`` stating that PyTensor has no C compiler.
 
+The kernel also runs calibrated, as a user's does after
+``pyvbmc.calibrate()``, so that the start of a run shows a tip where an
+uncalibrated kernel suggests calibrating. ``PYVBMC_CACHE_DIR`` names a
+calibration directory of the kernel's own (``--calibration-dir``). A saved
+calibration serves only a process whose loaded thread pools match those it
+was measured with, and a notebook that imports Torch before its first run
+loads Torch's OpenMP beside NumPy's BLAS, so before the first notebook runs,
+the script checks, for each set of modules in ``CALIBRATION_IMPORTS``, that
+a fresh process of the kernel's environment that has imported them finds a
+saved calibration, and calibrates that process when it finds none. A stored
+output that still suggests calibrating fails the notebook.
+
 After a notebook's cells, and after the cells that ``CHECKS`` names, the
 script runs check cells that assert what the notebook's text says about its
 results, and a cell that prints the versions the notebook ran with. It
@@ -60,6 +72,40 @@ KERNEL_ENV = {
     # The stored outputs ship with the release: no old-release reminder.
     "PYVBMC_NO_UPDATE_REMINDER": "1",
 }
+# The modules, beyond NumPy and SciPy, that a notebook has imported when its
+# first run starts and that load thread pools of their own: none (Examples 1
+# to 8, whose other imports load none) and Torch (Example 9).
+CALIBRATION_IMPORTS = ((), ("torch",))
+CALIBRATION_NOTICE = "PyVBMC is using standard performance settings."
+# Run in a fresh process of the kernel's environment: import the modules
+# named after the action, calibrate if the action says so, and report what
+# a run started then would use.
+CALIBRATION_PROBE = """
+import importlib
+import importlib.util
+import json
+import sys
+
+action, *imports = sys.argv[1:]
+if any(importlib.util.find_spec(name) is None for name in imports):
+    print(json.dumps({"unavailable": True}))
+    sys.exit()
+for name in imports:
+    importlib.import_module(name)
+import pyvbmc
+from pyvbmc.calibration._cache import fingerprint, resolve_cached_profile
+
+if action == "calibrate":
+    profile = pyvbmc.calibrate(verbose=False)
+else:
+    profile = resolve_cached_profile()
+print(json.dumps({
+    "fingerprint": fingerprint(),
+    "source": profile.source,
+    "status": profile.status,
+    "cache_path": None if profile.cache_path is None else str(profile.cache_path),
+}))
+"""
 STANDARD_KERNELSPEC = {
     "display_name": "Python 3 (ipykernel)",
     "language": "python",
@@ -352,6 +398,11 @@ def _output_problems(number, notebook):
                 texts.append(str(output.data.get("text/plain", "")))
     if any("np.float64(" in text for text in texts):
         problems.append("an output shows a NumPy scalar as np.float64(...)")
+    if any(CALIBRATION_NOTICE in text for text in texts):
+        problems.append(
+            "a run suggests calibrating: no saved calibration matches the "
+            "thread pools its kernel had loaded (CALIBRATION_IMPORTS)"
+        )
     if number == 2:
         has_html_figure = any(
             "plotly" in str(output.get("data", {}).get("text/html", ""))
@@ -371,10 +422,14 @@ def _output_problems(number, notebook):
     return problems
 
 
-def _kernel_spec(data_dir, python):
+def _kernel_spec(data_dir, python, calibration_dir):
     kernel_dir = data_dir / "kernels" / KERNEL_NAME
     kernel_dir.mkdir(parents=True, exist_ok=True)
-    env = dict(KERNEL_ENV, PYTHONPATH=str(ROOT))
+    env = dict(
+        KERNEL_ENV,
+        PYTHONPATH=str(ROOT),
+        PYVBMC_CACHE_DIR=str(calibration_dir),
+    )
     if shutil.which("g++") is None:
         # Without a C compiler PyTensor (Example 8) warns about it on import,
         # and the warning would be stored; stating that there is none keeps
@@ -396,6 +451,51 @@ def _kernel_spec(data_dir, python):
         json.dumps(spec, indent=1), encoding="utf-8"
     )
     return env
+
+
+def _calibration_probe(python, env, workdir, action, imports):
+    result = subprocess.run(
+        [str(python), "-c", CALIBRATION_PROBE, action, *imports],
+        cwd=workdir,
+        env=dict(os.environ, **env),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return json.loads(result.stdout.strip().splitlines()[-1])
+
+
+def _ensure_calibration(python, env, workdir):
+    """Give each set of CALIBRATION_IMPORTS a saved calibration."""
+    outcomes = []
+    for imports in CALIBRATION_IMPORTS:
+        label = " + ".join(("NumPy",) + imports)
+        found = _calibration_probe(python, env, workdir, "check", imports)
+        if found.get("unavailable"):
+            print(f"Calibration ({label}): not installed, skipped", flush=True)
+            outcomes.append({"imports": list(imports), "unavailable": True})
+            continue
+        campaign = None
+        if found["source"] != "cache":
+            print(f"Calibration ({label}): calibrating ...", flush=True)
+            campaign = _calibration_probe(
+                python, env, workdir, "calibrate", imports
+            )
+            found = _calibration_probe(python, env, workdir, "check", imports)
+        if found["source"] != "cache":
+            raise RuntimeError(
+                f"Calibration ({label}): a fresh process finds no saved "
+                f"calibration after the campaign {campaign}."
+            )
+        print(
+            f"Calibration ({label}): "
+            f"{'calibrated' if campaign else 'saved'}, {found['cache_path']}",
+            flush=True,
+        )
+        outcomes.append(
+            {"imports": list(imports), "campaign": campaign, **found}
+        )
+    return outcomes
 
 
 def _git(*args):
@@ -443,6 +543,13 @@ def main():
         help="where the record and the scratch directory go",
     )
     parser.add_argument(
+        "--calibration-dir",
+        type=Path,
+        default=ROOT / "dev/scripts/runs/notebook_calibration",
+        help="the kernel's PYVBMC_CACHE_DIR, kept between runs "
+        "(default: dev/scripts/runs/notebook_calibration)",
+    )
+    parser.add_argument(
         "--timeout",
         type=int,
         default=1800,
@@ -456,7 +563,9 @@ def main():
         tempfile.mkdtemp(prefix=f"work_{stamp}_", dir=args.record_dir)
     )
     data_dir = workdir / "_jupyter"
-    kernel_env = _kernel_spec(data_dir, args.python.resolve())
+    kernel_env = _kernel_spec(
+        data_dir, args.python.resolve(), args.calibration_dir.resolve()
+    )
     os.environ["JUPYTER_PATH"] = str(data_dir)
     os.environ["JUPYTER_RUNTIME_DIR"] = str(data_dir / "runtime")
     os.environ["IPYTHONDIR"] = str(data_dir / "ipython")
@@ -475,6 +584,9 @@ def main():
     record_path = args.record_dir / f"record_{stamp}.json"
     print(f"Record: {record_path}", flush=True)
     print(f"Scratch directory: {workdir}", flush=True)
+    record["calibration"] = _ensure_calibration(
+        args.python.resolve(), kernel_env, workdir
+    )
 
     all_passed = True
     for number in numbers:

@@ -1252,6 +1252,16 @@ reason.
   The script removes from that HTML the MathJax that Plotly loads, which
   breaks the math of the docs page it is on; Example 2 executed any other
   way stores it again.
+  The kernel runs calibrated, so that the start of a run shows a tip where
+  an uncalibrated kernel suggests `pyvbmc.calibrate()`. Its
+  `PYVBMC_CACHE_DIR` is `--calibration-dir` (default
+  `scripts/runs/notebook_calibration/`, kept between runs). A saved
+  calibration serves only a process with the same thread pools loaded, so
+  before the notebooks run, the script calibrates each set of modules in
+  `CALIBRATION_IMPORTS` that finds no saved calibration (NumPy alone, and
+  Torch, which Example 9 imports before its first run), a minute or so
+  when the environment is new; a stored output that still suggests
+  calibrating fails its notebook.
   Check cells assert what each notebook's text says about its results
   (`CHECKS` in the script, to be kept in step with the text); they are
   removed, with a cell recording the versions, before the notebook is
