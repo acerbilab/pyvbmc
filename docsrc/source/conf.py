@@ -85,6 +85,13 @@ html_static_path = ["css/wrap.css"]
 html_css_files = ["wrap.css"]
 html_show_sourcelink = False
 html_theme_options = {
+    # The theme's default footer less its first item, "By <author>", which
+    # reads "By Author name not set" since no author is set.
+    "footer_content_items": [
+        "copyright.html",
+        "last-updated.html",
+        "extra-footer.html",
+    ],
     "extra_footer": (
         "<p>PyVBMC is one of the open-source "
         '<a href="https://acerbilab.org/model-fitting/">model-fitting '
