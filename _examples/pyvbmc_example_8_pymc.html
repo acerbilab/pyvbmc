@@ -534,8 +534,8 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-8-fitting-a-pymc-model">
 <h1>PyVBMC Example 8: Fitting a PyMC model<a class="headerlink" href="#pyvbmc-example-8-fitting-a-pymc-model" title="Link to this heading">#</a></h1>
-<p>In this notebook, we fit a model written in <a class="reference external" href="https://www.pymc.io/">PyMC</a> with PyVBMC, return the posterior to PyMC and <a class="reference external" href="https://www.arviz.org/">ArviZ</a> for analysis and prediction, and compare the results with PyMC’s NUTS sampler.</p>
-<p>PyMC models are usually fit with NUTS, which evaluates the log density of the model and its gradient many thousands of times. PyVBMC needs far fewer evaluations and no gradients, so it is worth using when each evaluation of the model is expensive, as when the likelihood solves differential equations or calls external code, or when you also want an estimate of the model evidence, which NUTS does not provide. The model in this notebook is cheap, so that the notebook runs in seconds and its results can be checked.</p>
+<p>In this notebook, we fit a model written in <a class="reference external" href="https://www.pymc.io/">PyMC</a> with PyVBMC, return the posterior to PyMC and <a class="reference external" href="https://www.arviz.org/">ArviZ</a> for analysis and prediction, and compare the results with those of NUTS, the No-U-Turn Sampler that PyMC uses by default (<a class="reference external" href="https://jmlr.org/papers/v15/hoffman14a.html">Hoffman and Gelman, 2014</a>).</p>
+<p>PyMC models are usually fit with NUTS, a Hamiltonian Monte Carlo method, which evaluates the log density of the model and its gradient many thousands of times. PyVBMC needs far fewer evaluations and no gradients, so it is worth using when each evaluation of the model is expensive, as when the likelihood solves differential equations or calls external code, or when you also want an estimate of the model evidence, which NUTS does not provide. The model in this notebook is cheap, so that the notebook runs in seconds and its results can be checked.</p>
 <p>This notebook is Part 8 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_8_full_code.py">here</a>. The PyMC integration needs Python 3.12 or newer and the optional <code class="docutils literal notranslate"><span class="pre">pymc</span></code> dependencies, installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[pymc]&quot;</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1002,14 +1002,6 @@ NUTS evaluations of the log density and its gradient: 12600
   
   <div class="footer-item">
     
-<p class="component-author">
-By Author name not set
-</p>
-
-  </div>
-  
-  <div class="footer-item">
-    
 
   <p class="copyright">
     
@@ -1027,7 +1019,7 @@ By Author name not set
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+  <p>PyVBMC is one of the open-source <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from the <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Machine and Human Intelligence Group</a> at the University of Helsinki.</p>
 </div>
   </div>
   

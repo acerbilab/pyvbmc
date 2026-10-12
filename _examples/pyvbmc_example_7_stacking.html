@@ -514,7 +514,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-a-bimodal-target">1. Model definition: a bimodal target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-a-target-with-four-modes">1. Model definition: a target with four modes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-pyvbmc-several-times">2. Run PyVBMC several times</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stack-the-posteriors">3. Stack the posteriors</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-from-the-stacked-posterior">4. Sample from the stacked posterior</a></li>
@@ -552,7 +552,6 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logsumexp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span><span class="p">,</span> <span class="n">SVBMC</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.svbmc.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_init_bounds</span><span class="p">,</span> <span class="n">overlay_corner_plot</span>
@@ -560,14 +559,14 @@
 </div>
 </div>
 </div>
-<section id="model-definition-a-bimodal-target">
-<h2>1. Model definition: a bimodal target<a class="headerlink" href="#model-definition-a-bimodal-target" title="Link to this heading">#</a></h2>
-<p>We take a two-dimensional target with two well-separated modes, an equal mixture of two Gaussians, as a stand-in for a multimodal posterior. Since we know the target, we can later compare the individual runs and the stacked posterior against ground-truth samples. As usual, PyVBMC only needs the unnormalized log density (the log-joint), here defined directly.</p>
+<section id="model-definition-a-target-with-four-modes">
+<h2>1. Model definition: a target with four modes<a class="headerlink" href="#model-definition-a-target-with-four-modes" title="Link to this heading">#</a></h2>
+<p>We take a two-dimensional target with four well-separated modes, an equal mixture of four Gaussians centered on the corners of a square, as a stand-in for a multimodal posterior. Since we know the target, we can later compare the individual runs and the stacked posterior against ground-truth samples, and measure how much of each posterior lies near each mode (<code class="docutils literal notranslate"><span class="pre">mode_shares</span></code>). As usual, PyVBMC only needs the unnormalized log density (the log-joint), here defined directly.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">modes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]])</span>
-<span class="n">mode_sd</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="n">modes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">3.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">]])</span>
+<span class="n">mode_sd</span> <span class="o">=</span> <span class="mf">0.6</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">log_joint</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -575,12 +574,18 @@
     <span class="n">log_comps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
         <span class="p">[</span><span class="n">scs</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">mode_sd</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log_comps</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log_comps</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">modes</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">sample_truth</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
     <span class="n">which</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">modes</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">modes</span><span class="p">[</span><span class="n">which</span><span class="p">]</span> <span class="o">+</span> <span class="n">mode_sd</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_shares</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="c1"># The share of the samples within three SDs of each mode.</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">samples</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">modes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dist</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">mode_sd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 
 <span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">)</span>  <span class="c1"># hard bounds</span>
@@ -594,10 +599,10 @@
 </section>
 <section id="run-pyvbmc-several-times">
 <h2>2. Run PyVBMC several times<a class="headerlink" href="#run-pyvbmc-several-times" title="Link to this heading">#</a></h2>
-<p>We start each run from a different random point in the plausible box. <code class="docutils literal notranslate"><span class="pre">find_init_bounds</span></code> returns the box to draw starting points from (the plausible bounds when given, else the bounds). We run four times with different seeds and keep the returned posteriors. Each posterior carries the run’s ELBO estimate and its uncertainty, whether PyVBMC judged the run converged (<code class="docutils literal notranslate"><span class="pre">stable</span></code>), and the expected log-joint statistics that stacking needs. S-VBMC keeps only the converged runs whose expected log-joint is precise enough, and uses their ELBOs to initialize the weights.</p>
+<p>We start each run from a different random point in the plausible box. <code class="docutils literal notranslate"><span class="pre">find_init_bounds</span></code> returns the box to draw starting points from (the plausible bounds when given, else the bounds). We run six times with different seeds, a few more runs than usual since there are four modes to find, and keep the returned posteriors. Each posterior carries the run’s ELBO estimate and its uncertainty, whether PyVBMC judged the run converged (<code class="docutils literal notranslate"><span class="pre">stable</span></code>), and the expected log-joint statistics that stacking needs. S-VBMC keeps only the converged runs whose expected log-joint is precise enough, and uses their ELBOs to initialize the weights.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_runs</span> <span class="o">=</span> <span class="mi">4</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_runs</span> <span class="o">=</span> <span class="mi">6</span>
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">sample_lb</span><span class="p">,</span> <span class="n">sample_ub</span> <span class="o">=</span> <span class="n">find_init_bounds</span><span class="p">(</span><span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
 
@@ -618,15 +623,17 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Run 0: x0 = [ 1.37 -2.3 ], ELBO = 0.009 +/- 0.001, converged: True
-Run 1: x0 = [-4.59 -4.83], ELBO = -0.694 +/- 0.001, converged: True
-Run 2: x0 = [3.13 4.13], ELBO = -0.000 +/- 0.001, converged: True
-Run 3: x0 = [1.07 2.29], ELBO = 0.010 +/- 0.001, converged: True
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Run 0: x0 = [ 1.37 -2.3 ], ELBO = -1.379 +/- 0.001, converged: True
+Run 1: x0 = [-4.59 -4.83], ELBO = -1.384 +/- 0.001, converged: True
+Run 2: x0 = [3.13 4.13], ELBO = -0.691 +/- 0.001, converged: True
+Run 3: x0 = [1.07 2.29], ELBO = -1.385 +/- 0.001, converged: True
+Run 4: x0 = [0.44 4.35], ELBO = -0.284 +/- 0.001, converged: True
+Run 5: x0 = [ 3.16 -4.97], ELBO = -0.694 +/- 0.001, converged: True
 </pre></div>
 </div>
 </div>
 </div>
-<p>The target is normalized, so its log evidence is 0. A run that captures a single mode misses half of the probability mass and reports an ELBO close to <span class="math notranslate nohighlight">\(\log(1/2) \approx -0.69\)</span>; a run that captures both modes reports an ELBO close to 0. Every run is converged by PyVBMC’s criteria, which judge the stability of the solution found, not whether every mode was found: this is exactly the situation stacking is for.</p>
+<p>The target is normalized, so its log evidence is 0. A run that captures <span class="math notranslate nohighlight">\(k\)</span> of the four equally weighted modes misses the probability mass of the others and reports an ELBO close to <span class="math notranslate nohighlight">\(\log(k/4)\)</span>: about <span class="math notranslate nohighlight">\(-1.39\)</span> for one mode, <span class="math notranslate nohighlight">\(-0.69\)</span> for two and <span class="math notranslate nohighlight">\(-0.29\)</span> for three. Here no run reports an ELBO close to 0: each run found only some of the modes, as single runs on this target typically do, so keeping the run with the highest ELBO would still lose part of the posterior. Every run is converged by PyVBMC’s criteria, which judge the stability of the solution found, not whether every mode was found: this is exactly the situation stacking is for.</p>
 </section>
 <section id="stack-the-posteriors">
 <h2>3. Stack the posteriors<a class="headerlink" href="#stack-the-posteriors" title="Link to this heading">#</a></h2>
@@ -637,49 +644,52 @@ Run 3: x0 = [1.07 2.29], ELBO = 0.010 +/- 0.001, converged: True
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stacked</span> <span class="o">=</span> <span class="n">SVBMC</span><span class="p">(</span><span class="n">vps</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">stacked</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">n_samples_final</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Headline stacked ELBO:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"SD of the raw estimate: "</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Headline method:        "</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"headline_method"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Raw ELBO:               "</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Noise status source:    "</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">noise_status_source</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Stacked ELBO:          "</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"SD of the raw estimate:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Estimate reported:     "</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"headline_method"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Raw ELBO:              "</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Noise status source:   "</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">noise_status_source</span><span class="p">)</span>
 
 <span class="c1"># Total weight assigned to each retained run:</span>
 <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">K</span><span class="p">)])</span>
 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">M</span><span class="p">):</span>
     <span class="n">share</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="p">:</span> <span class="n">offsets</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Run </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">: total weight </span><span class="si">{</span><span class="n">share</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Run </span><span class="si">{</span><span class="n">vps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">vp_list</span><span class="p">[</span><span class="n">m</span><span class="p">])</span><span class="si">}</span><span class="s2">: total weight </span><span class="si">{</span><span class="n">share</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Got 4 well-converged runs after filters.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Got 6 well-converged runs after filters.
 Tip: Stacking 3–5 well-converged VBMC runs is usually enough. On hard problems, such as multimodal posteriors, stacking more runs can still improve the posterior.
 https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_7_stacking.html
 Optimizing the stacked ELBO w.r.t. all weights.
-Initial elbo = 0.02524028723755123
-iter 5: elbo = 0.03058804897233003
-iter 10: elbo = -0.006145802149877255
-Headline stacked ELBO: 0.018
-SD of the raw estimate:  0.014
-Headline method:         raw
-Raw ELBO:                0.018
-Noise status source:     ('recorded', 'recorded', 'recorded', 'recorded')
-Run 0: total weight 0.321
-Run 1: total weight 0.122
-Run 2: total weight 0.286
-Run 3: total weight 0.271
+Initial elbo = -0.10810092317690723
+iter 5: elbo = -0.05701520411276606
+iter 10: elbo = 0.050095678492897644
+iter 15: elbo = -0.0320959044468494
+Stacked ELBO:           -0.014
+SD of the raw estimate: 0.014
+Estimate reported:      raw
+Raw ELBO:               -0.014
+Noise status source:    ('recorded', 'recorded', 'recorded', 'recorded', 'recorded', 'recorded')
+Run 0: total weight 0.058
+Run 1: total weight 0.146
+Run 2: total weight 0.209
+Run 3: total weight 0.058
+Run 4: total weight 0.373
+Run 5: total weight 0.156
 </pre></div>
 </div>
 </div>
 </div>
-<p>The scalar <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> is the headline estimate of the stacked ELBO. This target is noiseless, so S-VBMC reports a fresh raw estimate at the selected weights. The target’s exact log evidence is 0, but the reported ELBO remains an estimate. If any retained run is noisy, <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> normally reports a two-level shrinkage estimate designed to reduce the upward selection bias from optimizing the weights on uncertain GP estimates. Residual bias may remain.</p>
-<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code> combines the Monte Carlo uncertainty of the entropy estimate and the GP quadrature uncertainty for the raw estimate at the selected weights. It excludes selection bias and does not propagate the shrinkage, so it is not a calibrated confidence interval for the headline of a noisy stack.</p>
+<p>The scalar <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> is S-VBMC’s estimate of the stacked ELBO. S-VBMC computes several estimates at the selected weights, listed in <code class="docutils literal notranslate"><span class="pre">stacked.elbo_details</span></code> with a baseline and diagnostics, and reports the one that suits the stack, named in <code class="docutils literal notranslate"><span class="pre">stacked.elbo_details[&quot;headline_method&quot;]</span></code>. This target is noiseless, so it reports <code class="docutils literal notranslate"><span class="pre">raw</span></code>, a fresh estimate at the selected weights. The target’s exact log evidence is 0, but the reported ELBO remains an estimate. If any retained run is noisy, <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> normally reports a two-level shrinkage estimate designed to reduce the upward selection bias from optimizing the weights on uncertain GP estimates. Residual bias may remain.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo_sd</span></code> combines the Monte Carlo uncertainty of the entropy estimate and the GP quadrature uncertainty for the raw estimate at the selected weights. It excludes selection bias and does not propagate the shrinkage, so it is not a calibrated confidence interval for the estimate that a noisy stack reports.</p>
 <p>See the <a class="reference external" href="https://acerbilab.org/pyvbmc/api/classes/svbmc.html">S-VBMC API reference</a> for the complete estimator report, the treatment of noisy runs, and migration from the standalone <code class="docutils literal notranslate"><span class="pre">svbmc</span></code> package.</p>
 </section>
 <section id="sample-from-the-stacked-posterior">
 <h2>4. Sample from the stacked posterior<a class="headerlink" href="#sample-from-the-stacked-posterior" title="Link to this heading">#</a></h2>
 <p>Each run works in its own transformed parameter space, so the mixture components of different runs are <strong>not</strong> directly comparable and the stacked posterior is not a single Gaussian mixture in the original space. Always use <code class="docutils literal notranslate"><span class="pre">stacked.sample(n)</span></code> for estimates and plots: it returns <code class="docutils literal notranslate"><span class="pre">n</span></code> independent draws in the original parameter space (a run is picked at random by its total weight, then a point from that run’s components under the optimized weights).</p>
-<p>Below we compare samples from the individual runs, from the stacked posterior and from the true target with <code class="docutils literal notranslate"><span class="pre">overlay_corner_plot</span></code>.</p>
+<p>Below we draw samples from the true target, from each run and from the stacked posterior, and print the share of each sample set that lies within three SDs of each mode (0.25 for each mode under the true target).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">5000</span>
@@ -691,15 +701,47 @@ Run 3: total weight 0.271
 <span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">))</span>
 <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"Stacked"</span><span class="p">)</span>
 
-<span class="n">fig</span> <span class="o">=</span> <span class="n">overlay_corner_plot</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Share of samples within three SDs of each mode:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">"  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">+.1f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">+.1f</span><span class="si">}</span><span class="s2">)"</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">^12.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">mode_shares</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/b70603968e083d7dbf24cf5ec5df47fc39117e83ba232669fbf590a8b01abbdc.png" src="../_images/b70603968e083d7dbf24cf5ec5df47fc39117e83ba232669fbf590a8b01abbdc.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Share of samples within three SDs of each mode:
+             (-3.5, -3.5)  (-3.5, +3.5)  (+3.5, -3.5)  (+3.5, +3.5)
+Ground truth     0.25          0.25          0.24          0.26    
+       Run 0     0.00          0.00          0.99          0.00    
+       Run 1     0.99          0.00          0.00          0.00    
+       Run 2     0.49          0.00          0.00          0.50    
+       Run 3     0.00          0.00          0.98          0.00    
+       Run 4     0.00          0.33          0.33          0.32    
+       Run 5     0.00          0.00          0.48          0.50    
+     Stacked     0.28          0.23          0.24          0.23    
+</pre></div>
 </div>
 </div>
-<p>A run that found a single mode places all of its mass there, while the stacked posterior recovers both modes in the right proportions. <code class="docutils literal notranslate"><span class="pre">stacked.plot()</span></code> draws the corner plot of the stacked posterior alone:</p>
+</div>
+<p>Each run puts its mass on the modes it found, in about equal shares; typically no run finds all four. Here the runs together cover every mode, and the stacked posterior gives each mode roughly its true share of 0.25, however many runs found it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">overlay_corner_plot</span></code> draws several sample sets on one corner plot. Here we compare the ground truth with the run with the highest ELBO and with the stacked posterior:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">best</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">([</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">]</span> <span class="k">for</span> <span class="n">vp</span> <span class="ow">in</span> <span class="n">vps</span><span class="p">]))</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">overlay_corner_plot</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vps</span><span class="p">[</span><span class="n">best</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">samples</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"Ground truth"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Run </span><span class="si">{</span><span class="n">best</span><span class="si">}</span><span class="s2"> (highest ELBO)"</span><span class="p">,</span> <span class="s2">"Stacked"</span><span class="p">],</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+    <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/3efa2f94264519e3d7d6b4d46e0dc38f7a91493c5dcf179ea1684ed5d092d074.png" src="../_images/3efa2f94264519e3d7d6b4d46e0dc38f7a91493c5dcf179ea1684ed5d092d074.png" />
+</div>
+</div>
+<p>Here even the run with the highest ELBO misses a mode (one corner of the two-dimensional panel lacks its contours), while the stacked posterior matches the ground truth. <code class="docutils literal notranslate"><span class="pre">stacked.plot()</span></code> draws the corner plot of the stacked posterior alone:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
@@ -707,7 +749,7 @@ Run 3: total weight 0.271
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/e337f05eef25cbebc51f560e95731479825af178b494785d1827f2e896b237c1.png" src="../_images/e337f05eef25cbebc51f560e95731479825af178b494785d1827f2e896b237c1.png" />
+<img alt="../_images/a5a2832e285cf7b737729859a9b06958244b3ebd8127cf04c4548db305c87c5c.png" src="../_images/a5a2832e285cf7b737729859a9b06958244b3ebd8127cf04c4548db305c87c5c.png" />
 </div>
 </div>
 </section>
@@ -720,13 +762,13 @@ Run 3: total weight 0.271
 
 <span class="n">restored</span> <span class="o">=</span> <span class="n">SVBMC</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"stacked_posterior.pkl"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Same weights:      "</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">restored</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">stacked</span><span class="o">.</span><span class="n">w</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Same headline ELBO:"</span><span class="p">,</span> <span class="n">restored</span><span class="o">.</span><span class="n">elbo</span> <span class="o">==</span> <span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Same stacked ELBO: "</span><span class="p">,</span> <span class="n">restored</span><span class="o">.</span><span class="n">elbo</span> <span class="o">==</span> <span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Same weights:       True
-Same headline ELBO: True
+Same stacked ELBO:  True
 </pre></div>
 </div>
 </div>
@@ -796,7 +838,7 @@ Same headline ELBO: True
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-a-bimodal-target">1. Model definition: a bimodal target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-a-target-with-four-modes">1. Model definition: a target with four modes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-pyvbmc-several-times">2. Run PyVBMC several times</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stack-the-posteriors">3. Stack the posteriors</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-from-the-stacked-posterior">4. Sample from the stacked posterior</a></li>
@@ -813,14 +855,6 @@ Same headline ELBO: True
           <footer class="bd-footer-content">
             
 <div class="bd-footer-content__inner container">
-  
-  <div class="footer-item">
-    
-<p class="component-author">
-By Author name not set
-</p>
-
-  </div>
   
   <div class="footer-item">
     
@@ -841,7 +875,7 @@ By Author name not set
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+  <p>PyVBMC is one of the open-source <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from the <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Machine and Human Intelligence Group</a> at the University of Helsinki.</p>
 </div>
   </div>
   

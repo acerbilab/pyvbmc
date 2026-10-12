@@ -39,13 +39,14 @@ and stack them:
    stacked.optimize()
 
    samples = stacked.sample(10000)          # (10000, D), original space
-   print(stacked.elbo)                       # headline stacked ELBO
+   print(stacked.elbo)                       # reported stacked ELBO
    print(stacked.elbo_sd)                    # uncertainty of the raw estimate
    print(stacked.elbo_details["raw"])
    print(stacked.elbo_details["shrunk_two_level"])
 
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
-walks through this on a bimodal target.
+walks through this on a target with four modes, where single runs typically
+find only some of them.
 
 .. The S-VBMC runtime tip noisy_elbo (pyvbmc/svbmc/_tip_catalog.py) links
    this label.
@@ -55,8 +56,11 @@ walks through this on a bimodal target.
 ELBO reporting
 --------------
 
-``stacked.elbo`` is the headline estimate of the stacked ELBO, chosen by the
-noise status of the stack:
+S-VBMC computes several estimates of the stacked ELBO at the selected
+weights; ``stacked.elbo_details`` (below) lists them, with a baseline at
+equal run weights and diagnostics. ``stacked.elbo`` reports one of them, the
+*headline* estimate, chosen by the noise status of the stack, and
+``stacked.elbo_details["headline_method"]`` names it:
 
 - For a stack treated as noiseless, it is ``raw``, the ELBO from the fresh
   final evaluation at the selected weights.

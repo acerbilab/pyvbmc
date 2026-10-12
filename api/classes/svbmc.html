@@ -530,19 +530,23 @@ and stack them:</p>
 <span class="n">stacked</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 
 <span class="n">samples</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>          <span class="c1"># (10000, D), original space</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">)</span>                       <span class="c1"># headline stacked ELBO</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo</span><span class="p">)</span>                       <span class="c1"># reported stacked ELBO</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_sd</span><span class="p">)</span>                    <span class="c1"># uncertainty of the raw estimate</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">stacked</span><span class="o">.</span><span class="n">elbo_details</span><span class="p">[</span><span class="s2">"shrunk_two_level"</span><span class="p">])</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../../_examples/pyvbmc_example_7_stacking.html#pyvbmc-example-7-stacking-the-posteriors-of-several-runs-s-vbmc"><span class="std std-ref">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</span></a>
-walks through this on a bimodal target.</p>
+walks through this on a target with four modes, where single runs typically
+find only some of them.</p>
 </section>
 <section id="elbo-reporting">
 <span id="svbmc-elbo-reporting"></span><h2>ELBO reporting<a class="headerlink" href="#elbo-reporting" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> is the headline estimate of the stacked ELBO, chosen by the
-noise status of the stack:</p>
+<p>S-VBMC computes several estimates of the stacked ELBO at the selected
+weights; <code class="docutils literal notranslate"><span class="pre">stacked.elbo_details</span></code> (below) lists them, with a baseline at
+equal run weights and diagnostics. <code class="docutils literal notranslate"><span class="pre">stacked.elbo</span></code> reports one of them, the
+<em>headline</em> estimate, chosen by the noise status of the stack, and
+<code class="docutils literal notranslate"><span class="pre">stacked.elbo_details[&quot;headline_method&quot;]</span></code> names it:</p>
 <ul class="simple">
 <li><p>For a stack treated as noiseless, it is <code class="docutils literal notranslate"><span class="pre">raw</span></code>, the ELBO from the fresh
 final evaluation at the selected weights.</p></li>
@@ -1316,14 +1320,6 @@ color cycle.</p>
   
   <div class="footer-item">
     
-<p class="component-author">
-By Author name not set
-</p>
-
-  </div>
-  
-  <div class="footer-item">
-    
 
   <p class="copyright">
     
@@ -1341,7 +1337,7 @@ By Author name not set
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>More <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Luigi Acerbi's group</a>.</p>
+  <p>PyVBMC is one of the open-source <a href="https://acerbilab.org/model-fitting/">model-fitting tools</a> from the <a href="https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence">Machine and Human Intelligence Group</a> at the University of Helsinki.</p>
 </div>
   </div>
   
