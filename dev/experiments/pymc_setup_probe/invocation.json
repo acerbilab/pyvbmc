@@ -1,0 +1,11 @@
+{
+  "part": "summarize",
+  "out": "dev\\experiments\\pymc_setup_probe",
+  "models": null,
+  "setup": "dev\\scripts\\runs\\pymc_setup_probe_20260916\\a_selected",
+  "references": "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references",
+  "results": "dev\\scripts\\runs\\pymc_setup_probe_20260916\\b_final",
+  "draws": 4000,
+  "tune": 2000,
+  "seeds": 5
+}

@@ -1,0 +1,71 @@
+{
+  "kind": "f2_stage2_timing_by_order",
+  "note": "Median paired treatment/baseline ratios of wall time and stage timers, split by which arm ran first and whether the pair's fits ran back to back (within 15 minutes) or were separated by the relaunch of the campaign.",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "9f4000477df7026d7a7aacba777d382df6896cff1153ba25cfc335013800fa35",
+  "rows": {
+    "logreg_D5_noise3_production|back_to_back|baseline_first": {
+      "act": 1.1844145914174897,
+      "gp": 1.4119642065189608,
+      "pairs": 10,
+      "vp": 1.2442444721924102,
+      "wall": 1.2047586720339751
+    },
+    "logreg_D5_noise3_production|back_to_back|treatment_first": {
+      "act": 1.1530336766134819,
+      "gp": 1.2974328693251076,
+      "pairs": 10,
+      "vp": 0.9617198840907556,
+      "wall": 1.1578104347286762
+    },
+    "rosenbrock_D2_noise1_production|separated|baseline_first": {
+      "act": 1.118441703327988,
+      "gp": 1.4591225457745942,
+      "pairs": 5,
+      "vp": 1.3415040077004243,
+      "wall": 1.1344747627032474
+    },
+    "rosenbrock_D2_noise1_production|separated|treatment_first": {
+      "act": 1.1940050388234467,
+      "gp": 1.4529088151661778,
+      "pairs": 5,
+      "vp": 1.21420425636437,
+      "wall": 1.2176108760257067
+    },
+    "rosenbrock_D2_noise3_production|back_to_back|baseline_first": {
+      "act": 1.1894218601373714,
+      "gp": 1.3703381739089937,
+      "pairs": 9,
+      "vp": 1.2010213277979256,
+      "wall": 1.1955583956561537
+    },
+    "rosenbrock_D2_noise3_production|back_to_back|treatment_first": {
+      "act": 0.9970121009463225,
+      "gp": 1.0732053241242379,
+      "pairs": 9,
+      "vp": 1.3070426501934271,
+      "wall": 1.0140047663111018
+    },
+    "rosenbrock_D2_noise3_production|separated|baseline_first": {
+      "act": 1.0277326374838511,
+      "gp": 1.3852043441820991,
+      "pairs": 1,
+      "vp": 0.6808898134070669,
+      "wall": 0.9933760062706839
+    },
+    "rosenbrock_D2_noise3_production|separated|treatment_first": {
+      "act": 1.0196148788542332,
+      "gp": 1.11911023937662,
+      "pairs": 1,
+      "vp": 0.9496259640315798,
+      "wall": 1.0370222856336313
+    },
+    "student_D8_noise3_production|back_to_back|baseline_first": {
+      "act": 0.7295994210668525,
+      "gp": 0.7049463561677054,
+      "pairs": 1,
+      "vp": 0.4772151907346471,
+      "wall": 0.6674283773334218
+    }
+  }
+}

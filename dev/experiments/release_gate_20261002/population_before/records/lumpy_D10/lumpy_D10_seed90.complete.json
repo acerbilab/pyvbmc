@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "lumpy_D10/lumpy_D10_seed90",
+  "case": "lumpy_D10/lumpy_D10_seed90 lumpy_D10 90",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "f91fdf00894653f63a0be6b06cceb59ee373c283",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$PYVBMC_SOURCE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$PYVBMC_SOURCE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          24,
+          88
+        ],
+        "physical_cores": [
+          "0:24"
+        ],
+        "core_threads": {
+          "0:24": [
+            24,
+            88
+          ]
+        },
+        "job_cpuset": [
+          24,
+          88
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2298508",
+        "array_job_id": "2296409",
+        "array_task_id": "991",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-02T12:04:10+0000",
+  "finished": "2026-10-02T12:11:15+0000",
+  "elapsed_seconds": 425.7822976112366,
+  "artifacts": {
+    "lumpy_D10/lumpy_D10_seed90.npz": {
+      "sha256": "dae287f8b28208d0e919ea921a4fe902aa1fbb37acdf30ad679523104ea487f0",
+      "bytes": 186026
+    },
+    "lumpy_D10/lumpy_D10_seed90.json": {
+      "sha256": "10bca6931489a0230e1d61a98d4613c060689f43a64fdfd8d8d9b47ffca64636",
+      "bytes": 7942
+    },
+    "lumpy_D10/lumpy_D10_seed90.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/lumpy_D10/lumpy_D10_seed90.boost.pkl": {
+      "sha256": "a18801555c4a326edbf83fa23f9a18e3ae26c0b423e52008b9654ded2ae74f75",
+      "bytes": 261706
+    },
+    "boost/lumpy_D10/lumpy_D10_seed90.boost.json": {
+      "sha256": "6d5ecf9041672495d747668ee045b8a51f88d4f76d6801cd06a8b03886a5f263",
+      "bytes": 18564
+    }
+  },
+  "harness": "population_run",
+  "label": "lumpy_D10",
+  "seed": 90,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

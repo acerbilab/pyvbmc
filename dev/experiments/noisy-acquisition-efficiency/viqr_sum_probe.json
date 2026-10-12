@@ -1,0 +1,75 @@
+{
+  "purpose": "Standard VIQR sum only; no complete optimized acquisition or run timing",
+  "fixture": "rosenbrock_D2_noise1_viqr",
+  "fixture_sha256": {
+    ".json": "ab37b059b2e06c3251b4e8b60698aaf82f0690257c0babd8a47b9381a6820288",
+    ".npz": "ff7d2d9350bec470c9dbcb688aa7530d155ee0d25948aa35a4f468dae7c38939"
+  },
+  "probe_sha256": "8c297427cae9376b3756c2221b706aa1512671dafdac290bc3441beafb898c97",
+  "seed": 20260913,
+  "shape": {
+    "D": 2,
+    "N": 25,
+    "Ns": 8,
+    "Nc": 8192,
+    "Na": 100
+  },
+  "argument_range": [
+    0.32131618587169614,
+    0.9272064866198669
+  ],
+  "max_abs_error_vs_original": {
+    "original": 0.0,
+    "direct": 1.7763568394002505e-15,
+    "scaled": 1.7763568394002505e-15
+  },
+  "milliseconds": {
+    "original": [
+      190.22690001293086,
+      337.5355000025593,
+      302.5478000054136,
+      302.0274000009522,
+      339.53589998418465,
+      328.1839000119362,
+      361.62129999138415,
+      358.25049999402836,
+      356.91649999353103
+    ],
+    "direct": [
+      55.98689999897033,
+      90.70390000124462,
+      90.62810000614263,
+      85.22969999467023,
+      87.86299999337643,
+      90.98849998554215,
+      93.06449998985045,
+      93.05889997631311,
+      95.96450001117773
+    ],
+    "scaled": [
+      265.9173000138253,
+      267.0161999994889,
+      209.86550001543947,
+      260.51140000345185,
+      296.6147999977693,
+      327.13740001781844,
+      247.18529998790473,
+      271.33379998849705,
+      259.87380000879057
+    ]
+  },
+  "median_milliseconds": {
+    "original": 337.5355000025593,
+    "direct": 90.70390000124462,
+    "scaled": 265.9173000138253
+  },
+  "environment": {
+    "python": "3.12.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "gpyreg_path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+    "blas_threads": 1
+  },
+  "limitations": "One early noisy D2 state; direct path needs an overflow guard; edge cases and public-call performance remain to be validated."
+}

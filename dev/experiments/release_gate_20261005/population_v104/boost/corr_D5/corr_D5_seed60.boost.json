@@ -1,0 +1,371 @@
+{
+  "attempted": true,
+  "accepted": true,
+  "tolerance": null,
+  "boost_options": {
+    "acq_hedge": false,
+    "acq_hedge_decay": 0.9,
+    "acq_hedge_iter_window": 4,
+    "active_importance_sampling_box_samples": 100,
+    "active_importance_sampling_fess_thresh": 0.9,
+    "active_importance_sampling_mcmc_samples": 100,
+    "active_importance_sampling_mcmc_thin": 1,
+    "active_importance_sampling_vp_samples": 100,
+    "active_sample_fess_thresh": 1,
+    "active_sample_full_update_past_warmup": 2,
+    "active_sample_full_update_threshold": 3,
+    "active_sample_gp_update": false,
+    "active_sample_vp_update": false,
+    "active_search_bound": 2,
+    "active_variational_samples": 0,
+    "adaptive_entropy_alpha": false,
+    "adaptive_k": 2,
+    "always_refit_vp": false,
+    "annealed_gp_mean": "<function <lambda>>",
+    "best_frac_back": 0.25,
+    "best_safe_sd": 5,
+    "bounded_transform": "probit",
+    "box_search_frac": 0.25,
+    "cache_frac": 0.5,
+    "cache_size": 500,
+    "constrained_gp_mean": false,
+    "cov_sample_thresh": 10,
+    "det_entropy_alpha": 0,
+    "det_entropy_min_d": 5,
+    "det_entropy_tol_opt": 0.001,
+    "diagnostics": false,
+    "display": "off",
+    "do_final_boost": true,
+    "double_gp": false,
+    "elbo_starts": 2,
+    "elcbo_impro_weight": 3,
+    "elcbo_midpoint": true,
+    "empirical_gp_prior": false,
+    "entropy_force_switch": 0.8,
+    "entropy_switch": false,
+    "f_vals": [],
+    "fitness_shaping": false,
+    "fun_eval_start": 10,
+    "fun_evals_per_iter": 5,
+    "gp_hyp_sampler": "slicesample",
+    "gp_int_mean_fun": 0,
+    "gp_length_prior_mean": 0.9128709291752769,
+    "gp_length_prior_std": 3.4538776394910684,
+    "gp_mean_fun": "negquad",
+    "gp_quadratic_mean_bound": true,
+    "gp_retrain_threshold": 1,
+    "gp_sample_thin": 5,
+    "gp_sample_widths": 5,
+    "gp_stochastic_step_size": false,
+    "gp_tol_opt": 1e-05,
+    "gp_tol_opt_active": 0.0001,
+    "gp_tol_opt_mcmc": 0.01,
+    "gp_tol_opt_mcmc_active": 0.01,
+    "gp_train_init_method": "rand",
+    "gp_train_n_init": 1024,
+    "gp_train_n_init_final": 64,
+    "heavy_tail_search_frac": 0.25,
+    "hpd_frac": 0.8,
+    "hpd_search_frac": 0,
+    "hyp_run_weight": 0.9,
+    "incremental_warp_delay": true,
+    "init_design": "plausible",
+    "integer_vars": [],
+    "integrate_gp_mean": false,
+    "k_fun_max": "<function <lambda>>",
+    "k_warmup": 2,
+    "kl_gauss": true,
+    "log_file_level": "iter",
+    "log_file_mode": "a",
+    "log_file_name": null,
+    "max_fun_evals": 350,
+    "max_iter": 350,
+    "max_iter_stochastic": Infinity,
+    "max_repeated_observations": 0,
+    "min_final_components": 50,
+    "min_fun_evals": 25,
+    "min_iter": 5,
+    "moments_run_weight": 0.9,
+    "mvn_search_frac": 0.25,
+    "noise_shaping": false,
+    "noise_shaping_factor": 0.05,
+    "noise_shaping_threshold": 50,
+    "noise_size": [],
+    "nonlinear_scaling": true,
+    "ns_elbo": "<function <lambda>>",
+    "ns_elbo_incr": 0.1,
+    "ns_ent": 2714.417616594906,
+    "ns_ent_active": "<function <lambda>>",
+    "ns_ent_boost": "<function <lambda>>",
+    "ns_ent_fast": 0,
+    "ns_ent_fast_active": 0,
+    "ns_ent_fast_boost": [],
+    "ns_ent_fine": 204800,
+    "ns_ent_fine_active": "<function <lambda>>",
+    "ns_ent_fine_boost": [],
+    "ns_gp_max": 80,
+    "ns_gp_max_main": Infinity,
+    "ns_gp_max_warmup": 8,
+    "ns_search": 8192,
+    "optimistic_variational_bound": 0,
+    "out_warp_thresh_base": 50,
+    "out_warp_thresh_mult": 1.25,
+    "out_warp_thresh_tol": 0.8,
+    "output_fcn": [],
+    "plot": false,
+    "print_iteration_header": false,
+    "proposal_fcn": null,
+    "pruning_threshold_multiplier": "<function <lambda>>",
+    "rank_criterion": true,
+    "recompute_lcb_max": true,
+    "sample_extra_vp_means": 0,
+    "scale_lower_bound": true,
+    "search_acq_fcn": [
+      "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object>"
+    ],
+    "search_cache_frac": 0,
+    "search_cmaes_best": false,
+    "search_cmaes_vp_init": true,
+    "search_max_fun_evals": 3500,
+    "search_optimizer": "cmaes",
+    "separate_search_gp": false,
+    "sgd_step_size": 0.005,
+    "skip_active_sampling_after_warmup": false,
+    "specify_target_noise": false,
+    "stable_gp_samples": 0,
+    "stable_gp_sampling": 250,
+    "stable_gp_vp_k": Infinity,
+    "stochastic_optimizer": "adam",
+    "stop_warmup_reliability": 100,
+    "stop_warmup_thresh": 0.2,
+    "temperature": 1,
+    "tol_bound_x": 1e-05,
+    "tol_con_loss": 0.01,
+    "tol_cov_weight": 0,
+    "tol_fun_stochastic": 0.001,
+    "tol_gp_noise": 0.0031622776601683794,
+    "tol_gp_var": 0.0001,
+    "tol_gp_var_mcmc": 0.0001,
+    "tol_improvement": 0.01,
+    "tol_length": 1e-06,
+    "tol_sd": 0.1,
+    "tol_skl": 0.022360679774997897,
+    "tol_stable_count": 60,
+    "tol_stable_entropy_iters": 6,
+    "tol_stable_excpt_frac": 0.2,
+    "tol_stable_warmup": 15,
+    "tol_weight": 0,
+    "true_cov": [],
+    "true_mean": [],
+    "uncertainty_handling": [],
+    "update_random_alpha": false,
+    "upper_gp_length_factor": 0,
+    "useroptions": [
+      "display",
+      "plot",
+      "print_iteration_header"
+    ],
+    "variable_means": true,
+    "variable_weights": true,
+    "variational_init_repo": false,
+    "variational_sampler": "malasample",
+    "warmup": true,
+    "warmup_check_max": true,
+    "warmup_keep_threshold": 50,
+    "warmup_keep_threshold_false_alarm": 700,
+    "warmup_no_impro_threshold": 45,
+    "warmup_options": [],
+    "warp_cov_reg": 0,
+    "warp_every_iters": 5,
+    "warp_min_k": 5,
+    "warp_roto_corr_thresh": 0.05,
+    "warp_rotoscaling": true,
+    "warp_tol_improvement": 0.1,
+    "warp_tol_reliability": 3,
+    "warp_tol_sd_base": 1,
+    "warp_tol_sd_multiplier": 2,
+    "warp_undo_check": true,
+    "weight_penalty": 0.1,
+    "weighted_hyp_cov": true
+  },
+  "boost_call": {
+    "n_fast_opts": 250,
+    "n_slow_opts": 1,
+    "K_new": 50
+  },
+  "scores": {
+    "pre": {
+      "elbo": -0.01732978185628209,
+      "elbo_sd": 0.0012221132738482962
+    },
+    "candidate": {
+      "elbo": -0.011147732533705934,
+      "elbo_sd": 0.0012705048169418364
+    },
+    "returned": {
+      "elbo": -0.011147732533705934,
+      "elbo_sd": 0.0012705048169418364
+    }
+  },
+  "metrics": {
+    "pre": {
+      "elbo_err": 0.01732978185628209,
+      "gskl": 0.002698461713008582,
+      "mmtv": 0.00906001916190147,
+      "rmse": 0.00220962333082665,
+      "moment_method": "affine",
+      "post_mean": [
+        [
+          -0.499918337896385,
+          -0.25353241560793355,
+          -0.0029024625698824227,
+          0.2493188537724103,
+          0.5017433583800813
+        ]
+      ],
+      "post_cov": [
+        [
+          0.39485601165231815,
+          0.27496473980713376,
+          0.20383923795667208,
+          -0.07233733128898909,
+          0.16979879245331786
+        ],
+        [
+          0.2749647398071338,
+          0.5709649278250667,
+          0.2652123894379759,
+          -0.010905471080864,
+          0.11363007616075195
+        ],
+        [
+          0.20383923795667208,
+          0.265212389437976,
+          0.2886640586580307,
+          -0.10399717421195115,
+          -0.08464301603529606
+        ],
+        [
+          -0.07233733128898909,
+          -0.010905471080863998,
+          -0.10399717421195115,
+          0.47561537550751715,
+          0.11924132366771742
+        ],
+        [
+          0.16979879245331786,
+          0.11363007616075199,
+          -0.08464301603529606,
+          0.11924132366771743,
+          0.4438465945469909
+        ]
+      ]
+    },
+    "candidate": {
+      "elbo_err": 0.011147732533705934,
+      "gskl": 0.003413208273737922,
+      "mmtv": 0.011075453510923906,
+      "rmse": 0.005515567825644298,
+      "moment_method": "affine",
+      "post_mean": [
+        [
+          -0.499584878872521,
+          -0.2456617487156565,
+          0.002950621308822649,
+          0.2390878573872956,
+          0.49769052604869685
+        ]
+      ],
+      "post_cov": [
+        [
+          0.39488275394736855,
+          0.2714160745322144,
+          0.20215234489141115,
+          -0.07947522806744084,
+          0.16869553998452386
+        ],
+        [
+          0.2714160745322145,
+          0.5698684038791454,
+          0.26229684092876476,
+          -0.014555199134857304,
+          0.11521433122725148
+        ],
+        [
+          0.2021523448914112,
+          0.26229684092876476,
+          0.2875890988806936,
+          -0.10903568215016464,
+          -0.08296254434921586
+        ],
+        [
+          -0.07947522806744088,
+          -0.01455519913485733,
+          -0.10903568215016465,
+          0.4880963109924811,
+          0.11856311959816257
+        ],
+        [
+          0.16869553998452388,
+          0.1152143312272515,
+          -0.08296254434921585,
+          0.11856311959816254,
+          0.4419099072963128
+        ]
+      ]
+    },
+    "returned": {
+      "elbo_err": 0.011147732533705934,
+      "gskl": 0.003413208273737922,
+      "mmtv": 0.011075453510923906,
+      "rmse": 0.005515567825644298,
+      "moment_method": "affine",
+      "post_mean": [
+        [
+          -0.499584878872521,
+          -0.2456617487156565,
+          0.002950621308822649,
+          0.2390878573872956,
+          0.49769052604869685
+        ]
+      ],
+      "post_cov": [
+        [
+          0.39488275394736855,
+          0.2714160745322144,
+          0.20215234489141115,
+          -0.07947522806744084,
+          0.16869553998452386
+        ],
+        [
+          0.2714160745322145,
+          0.5698684038791454,
+          0.26229684092876476,
+          -0.014555199134857304,
+          0.11521433122725148
+        ],
+        [
+          0.2021523448914112,
+          0.26229684092876476,
+          0.2875890988806936,
+          -0.10903568215016464,
+          -0.08296254434921586
+        ],
+        [
+          -0.07947522806744088,
+          -0.01455519913485733,
+          -0.10903568215016465,
+          0.4880963109924811,
+          0.11856311959816257
+        ],
+        [
+          0.16869553998452388,
+          0.1152143312272515,
+          -0.08296254434921585,
+          0.11856311959816254,
+          0.4419099072963128
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+state banana_D6_noise2.pkl: D=6 N=158 Ns=6 K=18
+  Na of the set used for the sieve and the refinement | gain of the refined point over the same set's sieve point, judged on an independent 6400-sample set: median [min, max] over 5 draws | sieve point as % of the best of the four points under the judge
+  Na =   100 | x1.21 [x0.96, x1.25] | worse than the sieve in 1/5 draws
+  Na =   400 | x1.20 [x0.97, x1.25] | worse than the sieve in 2/5 draws
+  Na =  1600 | x1.24 [x1.05, x1.34] | worse than the sieve in 0/5 draws

@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "cpu_model": "Intel Core Ultra 7 155H",
+  "physical_cores": 16,
+  "logical_processors": 22,
+  "pyvbmc_source_base": "bf43c20327f5684e6a22e801f4e6f3964a23cd98",
+  "gpyreg_actual_revision": "a2f8ddce867f502e29717959cf0ff3529f598618",
+  "note": "Float64 environment viability only. Torch CUDA first import includes first local load after installation. PyVBMC installed version metadata lags source checkout.",
+  "environments": {
+    "cuda": {
+      "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "device": "cuda",
+      "modules": {
+        "numpy": {
+          "version": "2.5.2",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy\\__init__.py",
+          "import_seconds": 0.057748000021092594
+        },
+        "scipy": {
+          "version": "1.18.1",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy\\__init__.py",
+          "import_seconds": 0.019783499999903142
+        },
+        "gpyreg": {
+          "version": "1.1.0",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+          "import_seconds": 0.5177591000101529
+        },
+        "pyvbmc": {
+          "version": "1.0.5.dev159+g4bff1a5b9",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\__init__.py",
+          "import_seconds": 0.4916042999830097
+        },
+        "torch": {
+          "version": "2.14.0+cu126",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\deps_cuda\\torch\\__init__.py",
+          "import_seconds": 10.73613320000004
+        }
+      },
+      "imports_seconds": 11.823039000038989,
+      "cuda_runtime": "12.6",
+      "cuda_available": true,
+      "torch_threads": [
+        1,
+        1
+      ],
+      "driver": "NVIDIA GeForce RTX 4060 Laptop GPU, 576.80, 8188 MiB",
+      "first_device_smoke_seconds": 0.1583105999743566,
+      "float64_smoke": {
+        "gradient_max_abs_error": 0.0,
+        "triangular_solve_max_abs_residual": 1.1102230246251565e-16,
+        "passed": true
+      },
+      "overlay_installed_bytes": 4350399261
+    },
+    "cpu": {
+      "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "device": "cpu",
+      "modules": {
+        "numpy": {
+          "version": "2.5.2",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy\\__init__.py",
+          "import_seconds": 0.06259500002488494
+        },
+        "scipy": {
+          "version": "1.18.1",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy\\__init__.py",
+          "import_seconds": 0.020542900019790977
+        },
+        "gpyreg": {
+          "version": "1.1.0",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+          "import_seconds": 0.5224246999714524
+        },
+        "pyvbmc": {
+          "version": "1.0.5.dev159+g4bff1a5b9",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\__init__.py",
+          "import_seconds": 0.4979793999809772
+        },
+        "torch": {
+          "version": "2.14.0+cu126",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\deps_cuda\\torch\\__init__.py",
+          "import_seconds": 1.581867200031411
+        }
+      },
+      "imports_seconds": 2.685418400040362,
+      "cuda_runtime": "12.6",
+      "cuda_available": true,
+      "torch_threads": [
+        1,
+        1
+      ],
+      "driver": "NVIDIA GeForce RTX 4060 Laptop GPU, 576.80, 8188 MiB",
+      "first_device_smoke_seconds": 0.0029075999627821147,
+      "float64_smoke": {
+        "gradient_max_abs_error": 0.0,
+        "triangular_solve_max_abs_residual": 1.1102230246251565e-16,
+        "passed": true
+      },
+      "overlay_installed_bytes": 4350399261
+    },
+    "cpu_only": {
+      "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "device": "cpu",
+      "modules": {
+        "numpy": {
+          "version": "2.5.2",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy\\__init__.py",
+          "import_seconds": 0.05761409999104217
+        },
+        "scipy": {
+          "version": "1.18.1",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy\\__init__.py",
+          "import_seconds": 0.019316699996124953
+        },
+        "gpyreg": {
+          "version": "1.1.0",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+          "import_seconds": 0.5343440000433475
+        },
+        "pyvbmc": {
+          "version": "1.0.5.dev159+g4bff1a5b9",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\__init__.py",
+          "import_seconds": 0.49045560002559796
+        },
+        "torch": {
+          "version": "2.14.0+cpu",
+          "file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
+          "import_seconds": 1.4462209999910556
+        }
+      },
+      "imports_seconds": 2.5479620000114664,
+      "cuda_runtime": null,
+      "cuda_available": false,
+      "torch_threads": [
+        1,
+        1
+      ],
+      "driver": "NVIDIA GeForce RTX 4060 Laptop GPU, 576.80, 8188 MiB",
+      "first_device_smoke_seconds": 0.0018822999554686248,
+      "float64_smoke": {
+        "gradient_max_abs_error": 0.0,
+        "triangular_solve_max_abs_residual": 1.1102230246251565e-16,
+        "passed": true
+      },
+      "overlay_installed_bytes": 634416193
+    }
+  }
+}

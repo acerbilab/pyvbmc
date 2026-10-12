@@ -3,6 +3,33 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+def _check_finite(arguments, note=""):
+    """Check that the arguments defining a prior are finite.
+
+    Every comparison with a NaN is false and an infinity satisfies a strict
+    order, so the order checks of the box priors pass such arguments while
+    the density they define is not a density.
+
+    Parameters
+    ----------
+    arguments : dict
+        The arguments by name, each a scalar or an array.
+    note : str, optional
+        A sentence appended to the error message, to say what the prior
+        needs. Default `""`.
+
+    Raises
+    ------
+    ValueError
+        If any element of any argument is NaN or infinite.
+    """
+    for name, value in arguments.items():
+        if not np.all(np.isfinite(value)):
+            raise ValueError(
+                f"All elements of {name}={value} should be finite." + note
+            )
+
+
 class Prior(ABC):
     """Abstract base class for PyVBMC prior distributions."""
 
@@ -13,10 +40,11 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `D` is the distribution dimension. The point(s) are read as
+            `float64`, whatever dtype the array carries.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
-            `(1, D)`, or discard them and return an array of shape `(D,)`.
+            `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
         Returns
         -------
@@ -25,6 +53,9 @@ class Prior(ABC):
             `(n, 1)` or `(n,)` (depending on ``keepdims``).
         """
         x_orig_shape = x.shape
+        # The densities accumulate in the dtype of the input, so an integer
+        # or a narrower float input would truncate or wrap the result.
+        x = x.astype(np.float64, copy=False)
         x = np.atleast_2d(x)
         n, D = x.shape
         if self.D == 1 and n == 1:
@@ -49,9 +80,9 @@ class Prior(ABC):
             `D` is the distribution dimension.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
-            `(1, D)`, or discard them and return an array of shape `(D,)`.
+            `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
-        returns
+        Returns
         -------
         pdf : np.ndarray
             The density of the prior at the input point(s), of dimension `(n,
@@ -60,11 +91,14 @@ class Prior(ABC):
         return np.exp(self.log_pdf(x, keepdims=keepdims))
 
     def support(self):
-        r"""Returns the support of the distribution.
+        r"""Returns the box that bounds the support of the distribution.
 
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        For priors that define ``_support``, this is the smallest
+        axis-aligned box containing the support, except that a ``Product``
+        reads each coordinate from its marginal, so a marginal that defines
+        no ``_support`` (a ``UserFunction``) spans the whole line. Otherwise,
+        the method reports the whole space. ``VBMC`` checks that the hard
+        bounds lie inside the reported box.
 
         Returns
         -------
@@ -93,7 +127,7 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `D` is the distribution dimension.
 
         Returns
         -------
@@ -104,13 +138,16 @@ class Prior(ABC):
         pass
 
     @abstractmethod
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state.
 
         Returns
         -------

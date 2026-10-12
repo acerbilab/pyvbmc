@@ -1,0 +1,839 @@
+"""Statistical reporting and runtime-guidance contracts for S-VBMC.
+
+The posteriors are deliberately synthetic.  These tests exercise the final
+evaluation and uncertainty algebra without adding another VBMC optimization
+run or depending on convergence of the S-VBMC weight optimizer.
+"""
+
+import copy
+import importlib
+import logging
+import random
+
+import numpy as np
+import pytest
+
+torch = pytest.importorskip("torch")
+
+from pyvbmc.svbmc import SVBMC  # noqa: E402
+from pyvbmc.svbmc import _runtime_tips  # noqa: E402
+from pyvbmc.svbmc._tip_catalog import TIPS  # noqa: E402
+from pyvbmc.testing.svbmc._fixtures import load_group, load_vp  # noqa: E402
+from pyvbmc.testing.svbmc.test_svbmc_filters import make_vp  # noqa: E402
+
+
+def _run(*, weights=(1.0,), I=None, J=None, Ns=1, seed=0):
+    """Return a one-dimensional fitted-looking posterior with exact stats."""
+    weights = np.asarray(weights, dtype=np.float64)
+    K = weights.size
+    vp = make_vp(D=1, K=K, Ns=Ns, seed=seed)
+    vp.w = (weights / weights.sum()).reshape(1, K)
+    vp.mu = np.linspace(-0.5, 0.5, K, dtype=np.float64).reshape(1, K)
+    vp.sigma = np.ones((1, K), dtype=np.float64)
+    vp.lambd = np.ones((1, 1), dtype=np.float64)
+    if I is None:
+        I = np.zeros((Ns, K), dtype=np.float64)
+    if J is None:
+        J = np.zeros((Ns, K, K), dtype=np.float64)
+    vp.stats["I_sk"] = np.asarray(I, dtype=np.float64)
+    vp.stats["J_sjk"] = np.asarray(J, dtype=np.float64)
+    vp.stats["elbo"] = float(np.mean(vp.stats["I_sk"]))
+    return vp
+
+
+@pytest.fixture(autouse=True)
+def isolate_logger_and_tip_scheduler():
+    """Keep this module independent of process-global logging and tip state."""
+    logger = logging.getLogger("SVBMC")
+    previous_level = logger.level
+    logger.setLevel(logging.WARNING)
+
+    saved = (
+        _runtime_tips._RNG.getstate(),
+        None if _runtime_tips._ORDER is None else list(_runtime_tips._ORDER),
+        set(_runtime_tips._SEEN),
+        _runtime_tips._ELIGIBLE_STARTS,
+    )
+    _runtime_tips._RNG.seed(1729)
+    _runtime_tips._ORDER = None
+    _runtime_tips._SEEN = set()
+    _runtime_tips._ELIGIBLE_STARTS = 0
+    yield
+    logger.setLevel(previous_level)
+    _runtime_tips._RNG.setstate(saved[0])
+    _runtime_tips._ORDER = saved[1]
+    _runtime_tips._SEEN = saved[2]
+    _runtime_tips._ELIGIBLE_STARTS = saved[3]
+
+
+def _fixed_final_evaluation(monkeypatch, stacked, selected, entropy=0.0):
+    """Replace optimization and sampling while retaining reporting logic."""
+    calls = []
+
+    def maximize(**kwargs):
+        return (
+            torch.as_tensor(selected, dtype=torch.float64),
+            torch.tensor(-999.0, dtype=torch.float64),
+            torch.tensor(-888.0, dtype=torch.float64),
+        )
+
+    def evaluate(w, n_samples, *, compute_variance=False):
+        calls.append(
+            (
+                np.asarray(w.detach().cpu(), dtype=np.float64).ravel().copy(),
+                n_samples,
+                compute_variance,
+            )
+        )
+        return (
+            torch.tensor(float(entropy), dtype=torch.float64),
+            stacked._jacobian_corrections.copy(),
+            0.09 if compute_variance else None,
+        )
+
+    monkeypatch.setattr(stacked, "maximize_ELBO", maximize)
+    monkeypatch.setattr(stacked, "_stacked_entropy", evaluate)
+    return calls
+
+
+def test_gp_uncertainty_is_total_blockwise_covariance():
+    """Within-run off-diagonals and hyperparameter spread both contribute."""
+    I_a = np.array([[1.0, 4.0], [3.0, 0.0], [2.0, 5.0]])
+    J_a = np.array(
+        [
+            [[0.40, 0.12], [0.12, 0.90]],
+            [[0.30, -0.08], [-0.08, 0.60]],
+            [[0.50, 0.20], [0.20, 0.70]],
+        ]
+    )
+    I_b = np.array([[7.0]])  # Ns=1: no between-hyperparameter term.
+    J_b = np.array([[[0.25]]])
+    stacked = SVBMC(
+        [
+            _run(weights=(0.4, 0.6), I=I_a, J=J_a, Ns=3, seed=1),
+            _run(I=I_b, J=J_b, Ns=1, seed=2),
+        ],
+        M_min=2,
+        noisy=False,
+        seed=3,
+    )
+
+    w = np.array([0.20, 0.30, 0.50])
+    wa, wb = w[:2], w[2:]
+    expected_a = np.mean([wa @ covariance @ wa for covariance in J_a])
+    expected_a += np.var(I_a @ wa, ddof=1)
+    expected_b = wb @ J_b[0] @ wb
+    expected = expected_a + expected_b
+
+    assert stacked._expected_log_joint_variance(w) == pytest.approx(expected)
+    # A run with zero global mass contributes exactly zero, including its
+    # diagonal numerical floor.
+    zero_a = stacked._expected_log_joint_variance([0.0, 0.0, 1.0])
+    assert zero_a == pytest.approx(J_b[0, 0, 0])
+    diagonal_only = np.mean(
+        [np.dot(wa**2, np.diag(covariance)) for covariance in J_a]
+    )
+    diagonal_only += np.var(I_a @ wa, ddof=1) + expected_b
+    assert expected != pytest.approx(diagonal_only)
+
+
+def test_entropy_variance_matches_fixed_stratified_draws():
+    """Check the estimator against normal log-density algebra."""
+    stacked = SVBMC(
+        [_run(weights=(0.25, 0.75), Ns=1)], M_min=1, noisy=False, seed=4
+    )
+    sigma = 1.7
+    stacked.vp_list[0].mu[:] = 0.3
+    stacked.vp_list[0].sigma[:] = sigma
+    z_by_component = (
+        np.array([[-2.0], [-0.5], [0.25], [1.0]]),
+        np.array([[-1.5], [0.0], [0.75], [2.5]]),
+    )
+
+    class FixedNormalDraws:
+        def __init__(self, draws):
+            self.draws = iter(draws)
+
+        def standard_normal(self, shape):
+            result = next(self.draws).copy()
+            assert result.shape == shape
+            return result
+
+    stacked.rng = FixedNormalDraws(z_by_component)
+    weights = np.array([0.25, 0.75])
+    H, _, variance = stacked._stacked_entropy(
+        torch.as_tensor(weights, dtype=torch.float64),
+        4,
+        compute_variance=True,
+    )
+
+    normalizer = 0.5 * np.log(2.0 * np.pi * sigma**2)
+    losses = [0.5 * np.ravel(z) ** 2 for z in z_by_component]
+    expected_H = normalizer + sum(
+        weight * np.mean(loss) for weight, loss in zip(weights, losses)
+    )
+    expected_variance = sum(
+        weight**2 * np.var(loss, ddof=1) / 4
+        for weight, loss in zip(weights, losses)
+    )
+    assert H.item() == pytest.approx(expected_H)
+    assert variance == pytest.approx(expected_variance)
+
+
+def test_final_report_uses_fresh_count_and_returned_weights(monkeypatch):
+    stacked = SVBMC(
+        [_run(I=[[2.0]], seed=1), _run(I=[[8.0]], seed=2)],
+        M_min=2,
+        noisy=False,
+        seed=5,
+    )
+    stacked.I_corrected = np.array([[2.0, 8.0]])
+    stacked.E_corrected = np.array([2.0, 8.0])
+    calls = _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.75, 0.25], entropy=1.5
+    )
+
+    stacked.optimize(n_samples=3, max_steps=1, n_samples_final=17)
+
+    np.testing.assert_array_equal(stacked.w, [[0.75, 0.25]])
+    np.testing.assert_array_equal(calls[0][0], [0.75, 0.25])
+    assert calls[0][1:] == (17, True)
+    np.testing.assert_array_equal(calls[1][0], stacked._naive_weights)
+    assert calls[1][1:] == (17, False)
+    assert stacked.entropy == 1.5
+    assert stacked.elbo_details["raw"] == pytest.approx(5.0)
+    assert stacked.elbo_details["entropy_sd"] == pytest.approx(0.3)
+    assert stacked.elbo_details["raw_sd"] == stacked.elbo_sd
+
+
+@pytest.mark.parametrize("noisy", [False, True])
+@pytest.mark.parametrize("version", ["all-weights", "posterior-only", "ns"])
+def test_shrinkage_for_every_mode_and_noise_status(
+    monkeypatch, noisy, version
+):
+    runs = [
+        _run(weights=(0.25, 0.75), I=[[0.0, 2.0]], J=[np.eye(2)]),
+        _run(
+            weights=(0.8, 0.2),
+            I=[[5.0, 9.0]],
+            J=[2.0 * np.eye(2)],
+            seed=2,
+        ),
+    ]
+    for vp in runs:
+        vp.stats.pop("elbo_sd", None)
+    input_stats = [copy.deepcopy(vp.stats) for vp in runs]
+    input_states = [copy.deepcopy(vp.rng.bit_generator.state) for vp in runs]
+    stacked = SVBMC(runs, M_min=2, noisy=noisy, seed=101)
+    state = copy.deepcopy(stacked.rng.bit_generator.state)
+    selected = (
+        stacked._naive_weights if version == "ns" else [0.1, 0.2, 0.3, 0.4]
+    )
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=selected, entropy=1.25
+    )
+
+    stacked.optimize(
+        version=version, n_samples=2, max_steps=1, n_samples_final=3
+    )
+
+    details = stacked.elbo_details
+    assert np.isfinite(details["shrunk_two_level"])
+    assert np.isfinite(details["shrinkage_noise_share"])
+    assert details["raw"] == pytest.approx(
+        np.dot(stacked.w.ravel(), stacked.I_corrected.ravel()) + 1.25
+    )
+    method = "shrunk_two_level" if noisy else "raw"
+    assert details["headline_method"] == method
+    assert stacked.elbo == details[method]
+    assert details["cap_amount"] == 0.0
+    assert stacked.rng.bit_generator.state == state
+    for vp, stats, input_state in zip(runs, input_stats, input_states):
+        assert vp.stats.keys() == stats.keys()
+        for key in ("I_sk", "J_sjk"):
+            np.testing.assert_array_equal(vp.stats[key], stats[key])
+        assert vp.rng.bit_generator.state == input_state
+        assert not hasattr(vp, "gp")
+        assert not hasattr(vp, "vbmc")
+
+
+@pytest.mark.parametrize("group", ["bounded_D2", "corr_D3", "upstream_GMM"])
+def test_shrinkage_receives_original_space_inputs_and_final_entropy(
+    monkeypatch, group
+):
+    import pyvbmc.svbmc.svbmc as module
+
+    runs = load_group(group, rng=0)[0]
+    stacked = SVBMC(runs, M_min=1, noisy=False, seed=102)
+    selected = stacked._naive_weights.copy()
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=selected, entropy=2.75
+    )
+    captured = {}
+
+    def shrink(I_sk, J_sjk, corrected, own, weights, entropy):
+        captured.update(
+            corrected=[np.array(x, copy=True) for x in corrected],
+            own=[np.array(x, copy=True) for x in own],
+            weights=np.array(weights, copy=True),
+            entropy=entropy,
+        )
+        return 123.0 + entropy, 0.5
+
+    monkeypatch.setattr(module, "_two_level_shrinkage", shrink)
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    offsets = np.concatenate([[0], np.cumsum(stacked.K)])
+    for m, vp in enumerate(stacked.vp_list):
+        np.testing.assert_array_equal(
+            captured["corrected"][m],
+            stacked.I_corrected[0, offsets[m] : offsets[m + 1]],
+        )
+        np.testing.assert_array_equal(
+            captured["own"][m], np.ravel(vp.w) / np.sum(vp.w)
+        )
+    np.testing.assert_array_equal(captured["weights"], stacked.w.ravel())
+    assert captured["entropy"] == 2.75
+    assert stacked.elbo_details["shrunk_two_level"] == 125.75
+    assert stacked.elbo_details["shrinkage_noise_share"] == 0.5
+
+
+def test_shrinkage_receives_only_runs_retained_by_both_filters(monkeypatch):
+    import pyvbmc.svbmc.svbmc as module
+
+    retained = [_run(I=[[1.0]], seed=1), _run(I=[[3.0]], seed=2)]
+    unstable = _run(I=[[1000.0]], seed=3)
+    unstable.stats["stable"] = False
+    imprecise = _run(I=[[2000.0]], J=[[[6.0]]], seed=4)
+    stacked = SVBMC(
+        [*retained, unstable, imprecise],
+        M_min=2,
+        noisy=False,
+        seed=105,
+    )
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.25, 0.75], entropy=0.0
+    )
+    captured = {}
+
+    def shrink(I_sk, J_sjk, corrected, own, weights, entropy):
+        captured["I_sk"] = [np.array(x, copy=True) for x in I_sk]
+        captured["corrected"] = [np.array(x, copy=True) for x in corrected]
+        return 2.0, None
+
+    monkeypatch.setattr(module, "_two_level_shrinkage", shrink)
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    assert stacked.vp_list == retained
+    assert len(captured["I_sk"]) == len(retained)
+    np.testing.assert_array_equal(captured["I_sk"][0], [[1.0]])
+    np.testing.assert_array_equal(captured["I_sk"][1], [[3.0]])
+    assert all(np.max(x) < 1000.0 for x in captured["corrected"])
+
+
+def test_repeated_optimization_reports_at_the_newly_selected_weights(
+    monkeypatch,
+):
+    """Each report is computed at the weights that call selected.
+
+    The starting point of the optimization belongs to the stack (see
+    ``test_svbmc.py``); what a second call reports is its own result.
+    """
+    stacked = SVBMC(
+        [
+            _run(weights=(0.5, 0.5), I=[[0.0, 2.0]], J=[np.eye(2)]),
+            _run(weights=(0.5, 0.5), I=[[6.0, 10.0]], J=[np.eye(2)], seed=2),
+        ],
+        M_min=2,
+        noisy=False,
+        seed=103,
+    )
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.7, 0.1, 0.1, 0.1], entropy=0.5
+    )
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+    first = stacked.elbo_details["shrunk_two_level"]
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.1, 0.1, 0.1, 0.7], entropy=0.5
+    )
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+    second = stacked.elbo_details["shrunk_two_level"]
+    assert first != second
+
+
+@pytest.mark.parametrize("noisy", [False, True])
+@pytest.mark.parametrize(
+    "I,J,warning",
+    [
+        (
+            [[0.0, 2.0]],
+            [[[0.0, -1.0], [-1.0, 0.0]]],
+            "singular within-run linear solve",
+        ),
+        (
+            [[0.0, 2.0]],
+            [[[-1.0, 0.0], [0.0, -1.0]]],
+            "negative run-level variance",
+        ),
+        (
+            [[1e308, -1e308], [-1e308, 1e308]],
+            np.zeros((2, 2, 2)),
+            "nonfinite component covariance",
+        ),
+    ],
+)
+def test_undefined_shrinkage_preserves_existing_report(
+    monkeypatch, caplog, I, J, warning, noisy
+):
+    run = _run(weights=(0.5, 0.5), I=I, J=J, Ns=len(I), seed=1)
+    original_I = run.stats["I_sk"].copy()
+    original_J = run.stats["J_sjk"].copy()
+    stacked = SVBMC([run], M_min=1, noisy=noisy, seed=104)
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.5, 0.5], entropy=1.0
+    )
+    caplog.set_level(logging.INFO, logger="SVBMC")
+
+    with pytest.warns(RuntimeWarning, match=warning):
+        stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    assert stacked.elbo_details["shrunk_two_level"] is None
+    assert stacked.elbo_details["shrinkage_noise_share"] is None
+    assert stacked.elbo_details["raw"] == pytest.approx(
+        np.dot(stacked.w.ravel(), stacked.I_corrected.ravel()) + 1.0
+    )
+    method = "capped_I_median" if noisy else "raw"
+    assert stacked.elbo_details["headline_method"] == method
+    assert stacked.elbo == stacked.elbo_details[method]
+    # The component median equals the selected mean, so the cap does not bind.
+    assert stacked.elbo_details["cap_amount"] == 0.0
+    warnings_logged = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "SVBMC" and record.levelno == logging.WARNING
+    ]
+    assert len(warnings_logged) == int(noisy)
+    assert all("is unavailable" in message for message in warnings_logged)
+    assert np.isfinite(stacked.elbo_sd)
+    np.testing.assert_array_equal(run.stats["I_sk"], original_I)
+    np.testing.assert_array_equal(run.stats["J_sjk"], original_J)
+
+
+def test_naive_mode_reuses_final_evaluation_and_original_weights(monkeypatch):
+    runs = [
+        _run(weights=(0.8, 0.2), Ns=1, seed=1),
+        _run(weights=(0.1, 0.9), Ns=1, seed=2),
+    ]
+    stacked = SVBMC(runs, M_min=2, noisy=False, seed=6)
+    expected = np.array([0.4, 0.1, 0.05, 0.45])
+    calls = []
+
+    def evaluate(w, n_samples, *, compute_variance=False):
+        calls.append((np.asarray(w).ravel().copy(), compute_variance))
+        value = float(len(calls))
+        return torch.tensor(value), stacked._jacobian_corrections.copy(), 0.0
+
+    monkeypatch.setattr(stacked, "_stacked_entropy", evaluate)
+    stacked.w = np.array([[0.0, 0.0, 1.0, 0.0]])
+    stacked.optimize(version="ns", n_samples=2, max_steps=1, n_samples_final=3)
+
+    np.testing.assert_array_equal(stacked.w.ravel(), expected)
+    assert [variance for _, variance in calls] == [False, True]
+    np.testing.assert_array_equal(calls[0][0], expected)
+    np.testing.assert_array_equal(calls[1][0], expected)
+    assert stacked.elbo_details["raw"] == stacked.elbo_details["naive"]
+
+    stacked.w = np.array([[1.0, 0.0, 0.0, 0.0]])
+    stacked.optimize(version="ns", n_samples=2, max_steps=1, n_samples_final=3)
+    np.testing.assert_array_equal(stacked.w.ravel(), expected)
+    assert stacked.elbo_details["raw"] == stacked.elbo_details["naive"]
+
+
+def _two_single_component_runs(monkeypatch, noisy, variance):
+    """Runs at 0 and 10, all weight on the second, entropy 1: raw is 11."""
+    stacked = SVBMC(
+        [
+            _run(I=[[0.0]], J=[[[variance]]], seed=1),
+            _run(I=[[10.0]], J=[[[variance]]], seed=2),
+        ],
+        M_min=2,
+        noisy=noisy,
+        show_tips=False,
+        seed=7,
+    )
+    stacked.I_corrected = np.array([[0.0, 10.0]])
+    stacked.E_corrected = np.array([0.0, 10.0])
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.0, 1.0], entropy=1.0
+    )
+    return stacked
+
+
+def _svbmc_messages(caplog):
+    return [r.getMessage() for r in caplog.records if r.name == "SVBMC"]
+
+
+@pytest.mark.parametrize(
+    "noisy, method, expected_elbo",
+    [(True, "shrunk_two_level", 10.6), (False, "raw", 11.0)],
+)
+def test_headline_is_shrinkage_for_noisy_stacks_and_raw_otherwise(
+    monkeypatch, caplog, noisy, method, expected_elbo
+):
+    stacked = _two_single_component_runs(monkeypatch, noisy, variance=4.0)
+    caplog.set_level(logging.INFO, logger="SVBMC")
+
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    details = stacked.elbo_details
+    assert stacked.elbo == pytest.approx(expected_elbo)
+    assert details["raw"] == pytest.approx(11.0)
+    # The run levels 0 and 10 have variance 4 and spread 50 about their
+    # mean of 5, so each moves toward it by 4 / 50 of its distance.
+    assert details["shrunk_two_level"] == pytest.approx(10.6)
+    assert details["capped_I_median"] == pytest.approx(6.0)
+    assert details["capped_E_median"] == pytest.approx(6.0)
+    assert details["headline_method"] == method
+    assert details["cap_amount"] == 0.0
+    assert details["noisy"] is noisy
+    assert details["gp_sd"] == pytest.approx(2.0)
+    assert stacked.elbo_sd == pytest.approx(
+        np.hypot(details["entropy_sd"], details["gp_sd"])
+    )
+    messages = _svbmc_messages(caplog)
+    assert not any("capped by" in message for message in messages)
+    assert (
+        "Two-level shrinkage moved the ELBO by -0.4 nats." in messages
+    ) is noisy
+    assert all(
+        record.levelno == logging.INFO
+        for record in caplog.records
+        if record.name == "SVBMC"
+    )
+
+
+@pytest.mark.parametrize(
+    "noisy, method, expected_elbo, expected_cap",
+    [
+        (True, "capped_I_median", 6.0, 5.0),
+        (False, "raw", 11.0, 0.0),
+    ],
+)
+def test_noisy_headline_is_capped_when_shrinkage_is_unavailable(
+    monkeypatch, caplog, noisy, method, expected_elbo, expected_cap
+):
+    import pyvbmc.svbmc.svbmc as module
+
+    stacked = _two_single_component_runs(monkeypatch, noisy, variance=0.0)
+    monkeypatch.setattr(
+        module, "_two_level_shrinkage", lambda *args: (None, None)
+    )
+    caplog.set_level(logging.INFO, logger="SVBMC")
+
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    details = stacked.elbo_details
+    assert stacked.elbo == pytest.approx(expected_elbo)
+    assert details["raw"] == pytest.approx(11.0)
+    assert details["shrunk_two_level"] is None
+    assert details["capped_I_median"] == pytest.approx(6.0)
+    assert details["headline_method"] == method
+    assert details["cap_amount"] == pytest.approx(expected_cap)
+    assert details["gp_sd"] == pytest.approx(np.sqrt(np.spacing(1)))
+    messages = _svbmc_messages(caplog)
+    assert ("Expected log-joint capped by 5 nats." in messages) is noisy
+    fallback = [
+        record
+        for record in caplog.records
+        if record.name == "SVBMC" and "is unavailable" in record.getMessage()
+    ]
+    assert bool(fallback) is noisy
+    assert all(record.levelno == logging.WARNING for record in fallback)
+
+
+def test_noise_metadata_precedes_proxy_and_only_retained_runs_count():
+    recorded_quiet = _run(seed=1)
+    recorded_quiet.stats.update(uncertainty_handling_level=0, elbo_sd=100.0)
+    inferred_noisy = _run(seed=2)
+    inferred_noisy.stats["elbo_sd"] = 0.10001
+    dropped = _run(seed=3)
+    dropped.stats["stable"] = False
+    dropped.stats.pop("elbo_sd")
+
+    stacked = SVBMC([recorded_quiet, inferred_noisy, dropped], M_min=2, seed=8)
+
+    assert stacked.noisy is True
+    assert stacked.noise_status_source == ("recorded", "inferred")
+    assert stacked.vp_list == [recorded_quiet, inferred_noisy]
+
+
+@pytest.mark.parametrize("override", [False, True])
+def test_noise_override_needs_no_proxy_and_records_provenance(override):
+    runs = [_run(seed=1), _run(seed=2)]
+    for vp in runs:
+        vp.stats.pop("elbo_sd")
+    stacked = SVBMC(runs, M_min=2, noisy=override, seed=9)
+    assert stacked.noisy is override
+    assert stacked.noise_status_source == ("override", "override")
+
+
+@pytest.mark.parametrize(
+    "level, proxy, expected_noisy",
+    [(0, 10.0, False), (1, 0.0, True), (2, 0.0, True)],
+)
+def test_recorded_noise_metadata_takes_precedence_over_proxy(
+    level, proxy, expected_noisy
+):
+    vp = _run(seed=1)
+    vp.stats["uncertainty_handling_level"] = level
+    vp.stats["elbo_sd"] = proxy
+    stacked = SVBMC([vp], M_min=1, seed=9)
+    assert stacked.noisy is expected_noisy
+    assert stacked.noise_status_source == ("recorded",)
+
+
+@pytest.mark.parametrize(
+    "fixture_name, expected_noisy",
+    [("upstream_GMM_00", False), ("upstream_GMM_noisy_00", True)],
+)
+def test_legacy_fixture_noise_classification_uses_elbo_sd(
+    fixture_name, expected_noisy
+):
+    vp, _ = load_vp(fixture_name, rng=0)
+    vp.stats.pop("uncertainty_handling_level", None)
+    stacked = SVBMC([vp], M_min=1, seed=10)
+    assert stacked.noisy is expected_noisy
+    assert stacked.noise_status_source == ("inferred",)
+
+
+@pytest.mark.parametrize("proxy", [None, np.nan, -0.01])
+def test_missing_or_invalid_legacy_noise_proxy_requires_override(proxy):
+    vp = _run(seed=1)
+    if proxy is None:
+        vp.stats.pop("elbo_sd")
+    else:
+        vp.stats["elbo_sd"] = proxy
+    with pytest.raises(ValueError, match="finite, nonnegative `elbo_sd`"):
+        SVBMC([vp], M_min=1, seed=11)
+
+
+def test_constructor_caches_corrections_without_rng_draws():
+    runs = [_run(weights=(0.3, 0.7), seed=1), _run(seed=2)]
+    input_states = [copy.deepcopy(vp.rng.bit_generator.state) for vp in runs]
+    stacked = SVBMC(runs, M_min=2, noisy=False, seed=123)
+
+    assert (
+        stacked.rng.bit_generator.state
+        == np.random.default_rng(123).bit_generator.state
+    )
+    for vp, state in zip(runs, input_states):
+        assert vp.rng.bit_generator.state == state
+
+    cached = stacked._jacobian_corrections.copy()
+    _, first = stacked.stacked_entropy(
+        torch.as_tensor(stacked.w.ravel()), n_samples=2
+    )
+    _, second = stacked.stacked_entropy(
+        torch.as_tensor(stacked.w.ravel()), n_samples=2
+    )
+    np.testing.assert_array_equal(first, cached)
+    np.testing.assert_array_equal(second, cached)
+    np.testing.assert_array_equal(stacked._jacobian_corrections, cached)
+
+
+@pytest.mark.parametrize("bad_count", [1, True, 2.5])
+def test_invalid_final_sample_count_fails_before_draws_or_optimization(
+    monkeypatch, bad_count
+):
+    stacked = SVBMC([_run(seed=1)], M_min=1, noisy=False, seed=12)
+    state = copy.deepcopy(stacked.rng.bit_generator.state)
+    monkeypatch.setattr(
+        stacked,
+        "maximize_ELBO",
+        lambda **kwargs: pytest.fail("optimization started"),
+    )
+    with pytest.raises(ValueError, match="integer >= 2"):
+        stacked.optimize(n_samples_final=bad_count)
+    assert stacked.rng.bit_generator.state == state
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"version": "invalid"}, {"max_steps": 0}, {"n_samples": 0}]
+)
+def test_invalid_optimization_does_not_consume_tip_or_rng(kwargs, capsys):
+    stacked = SVBMC([_run()], M_min=1, noisy=False, seed=12)
+    stacked.logger.setLevel(logging.INFO)
+    state = copy.deepcopy(stacked.rng.bit_generator.state)
+    with pytest.raises(ValueError):
+        stacked.optimize(**kwargs)
+    assert not _runtime_tips._SEEN
+    assert _runtime_tips._ELIGIBLE_STARTS == 0
+    assert stacked.rng.bit_generator.state == state
+    assert "Tip:" not in capsys.readouterr().out
+
+
+def _recording_emitter(output, urls_seen=None):
+    def emit(message, *, display, urls=()):
+        output.append((message, display))
+        if urls_seen is not None:
+            urls_seen.append(tuple(urls))
+        return bool(display)
+
+    return emit
+
+
+def test_tips_pass_their_links_to_the_emitter():
+    _runtime_tips._ORDER = list(TIPS)
+    output, urls_seen = [], []
+    emit = _recording_emitter(output, urls_seen)
+    for _ in range(3 * len(TIPS)):
+        _runtime_tips.consider_runtime_tip(
+            enabled=True, display=True, noisy=True, emitter=emit
+        )
+    # Noisy-only tips come first; the others keep the catalog's order.
+    expected = sorted(TIPS, key=lambda tip: not tip.noisy_only)
+    assert urls_seen == [tip.urls for tip in expected]
+    assert all(urls for urls in urls_seen)
+    assert all(tip.urls for tip in TIPS)
+
+
+def test_tip_cadence_noisy_priority_and_once_only():
+    _runtime_tips._ORDER = list(reversed(TIPS))
+    output = []
+    results = [
+        _runtime_tips.consider_runtime_tip(
+            enabled=True,
+            display=True,
+            noisy=True,
+            emitter=_recording_emitter(output),
+        )
+        for _ in range(3 * len(TIPS))
+    ]
+    emitted = [(index, tip) for index, tip in enumerate(results, 1) if tip]
+
+    assert [index for index, _ in emitted] == [
+        1 + 3 * k for k in range(len(TIPS))
+    ]
+    assert emitted[0][1].id == "noisy_elbo"
+    assert len({tip.id for _, tip in emitted}) == len(TIPS)
+    assert len(output) == len(TIPS)
+    assert all(message.startswith("Tip: ") for message, _ in output)
+    assert (
+        _runtime_tips.consider_runtime_tip(
+            enabled=True,
+            display=True,
+            noisy=True,
+            emitter=_recording_emitter(output),
+        )
+        is None
+    )
+
+
+def test_disabled_or_non_info_tips_do_not_consume_cadence():
+    output = []
+    emit = _recording_emitter(output)
+    assert (
+        _runtime_tips.consider_runtime_tip(
+            enabled=False, display=True, noisy=True, emitter=emit
+        )
+        is None
+    )
+    assert (
+        _runtime_tips.consider_runtime_tip(
+            enabled=True, display=False, noisy=True, emitter=emit
+        )
+        is None
+    )
+    assert _runtime_tips._ELIGIBLE_STARTS == 0
+    first = _runtime_tips.consider_runtime_tip(
+        enabled=True, display=True, noisy=True, emitter=emit
+    )
+    assert first is not None and first.id == "noisy_elbo"
+
+
+def test_noisy_only_tip_is_ineligible_for_noiseless_stack():
+    _runtime_tips._ORDER = list(TIPS)
+    emitted = _runtime_tips.consider_runtime_tip(
+        enabled=True,
+        display=True,
+        noisy=False,
+        emitter=lambda *args, **kwargs: True,
+    )
+    assert emitted is not None
+    assert emitted.noisy_only is False
+    assert "noisy_elbo" not in _runtime_tips._SEEN
+
+
+@pytest.mark.parametrize(
+    "show_tips, level, expected",
+    [
+        (True, logging.INFO, (True, True)),
+        (True, logging.WARNING, (True, False)),
+        (False, logging.INFO, (False, True)),
+    ],
+)
+def test_optimize_maps_show_tips_and_info_logging_to_scheduler(
+    monkeypatch, show_tips, level, expected
+):
+    module = importlib.import_module("pyvbmc.svbmc.svbmc")
+    calls = []
+    monkeypatch.setattr(
+        module, "consider_runtime_tip", lambda **kwargs: calls.append(kwargs)
+    )
+    stacked = SVBMC(
+        [_run(seed=1)],
+        M_min=1,
+        noisy=False,
+        show_tips=show_tips,
+        seed=13,
+    )
+    stacked.logger.setLevel(level)
+    _fixed_final_evaluation(monkeypatch, stacked, selected=[1.0])
+
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=2)
+
+    assert len(calls) == 1
+    assert (calls[0]["enabled"], calls[0]["display"]) == expected
+
+
+@pytest.mark.parametrize(
+    "version, expected",
+    [("all-weights", True), ("posterior-only", True), ("ns", False)],
+)
+def test_naive_stacking_gets_no_noisy_only_tip(monkeypatch, version, expected):
+    module = importlib.import_module("pyvbmc.svbmc.svbmc")
+    calls = []
+    monkeypatch.setattr(
+        module, "consider_runtime_tip", lambda **kwargs: calls.append(kwargs)
+    )
+    stacked = SVBMC([_run(seed=1)], M_min=1, noisy=True, seed=13)
+    _fixed_final_evaluation(monkeypatch, stacked, selected=[1.0])
+
+    stacked.optimize(
+        n_samples=2, max_steps=1, version=version, n_samples_final=2
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["noisy"] is expected
+
+
+def test_tip_scheduler_does_not_touch_numerical_or_module_rngs():
+    inference_rng = np.random.default_rng(91)
+    inference_state = copy.deepcopy(inference_rng.bit_generator.state)
+    numpy_state = np.random.get_state()
+    stdlib_state = random.getstate()
+
+    for _ in range(7):
+        _runtime_tips.consider_runtime_tip(
+            enabled=True,
+            display=True,
+            noisy=True,
+            emitter=lambda *args, **kwargs: True,
+        )
+
+    assert inference_rng.bit_generator.state == inference_state
+    after_numpy = np.random.get_state()
+    assert numpy_state[0] == after_numpy[0]
+    np.testing.assert_array_equal(numpy_state[1], after_numpy[1])
+    assert numpy_state[2:] == after_numpy[2:]
+    assert random.getstate() == stdlib_state

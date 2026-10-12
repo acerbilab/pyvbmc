@@ -1,0 +1,19 @@
+{
+  "authorization": "User decision of 2026-09-18 to run F2 Stage 1 (frozen-state evaluation on the 24 captured states) after the F2 amendment was approved; Stage 2 needs a separate decision.",
+  "created_utc": "2026-09-18T18:18:44.657157+00:00",
+  "expected_cells": {
+    "allocation": 48,
+    "judge_states": 12,
+    "selection": 288,
+    "timing": 24
+  },
+  "kind": "f2_development_launch_clearance",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_development_manifest.json",
+  "manifest_sha256": "111c0cf2d7be3bdd4d0beacbbaef7e8982a41896759d3eb50eb85bd32ce6b687",
+  "pilot_outcome": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_pilot_outcome.json",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "887433e1bea629e30854d01f0fd314202c061e3667be6d5557e53f01949a5155",
+  "review": "Two independent static reviews (node rule; harness) reported no blocking defect; their should-fix items are in the source commit.",
+  "schema_version": 1,
+  "source_commit": "9ffd8221ece474b1094069f37ade1254fce51f7f"
+}

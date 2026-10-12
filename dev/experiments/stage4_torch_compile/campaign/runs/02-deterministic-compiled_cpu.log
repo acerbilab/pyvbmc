@@ -1,0 +1,2 @@
+C:\Users\luigi\Documents\GitHub\pyvbmc\dev\scripts\runs\svbmc_compat_20260908\deps\setuptools\_distutils\_msvccompiler.py:12: UserWarning: _get_vc_env is private; find an alternative (pypa/distutils#340)
+  warnings.warn(

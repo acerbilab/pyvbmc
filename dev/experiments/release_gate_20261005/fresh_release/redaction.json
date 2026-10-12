@@ -1,0 +1,1565 @@
+{
+  "contract": 1,
+  "campaign": "fresh_release",
+  "generated": "2026-10-06T03:27:37+0300",
+  "node_family": "u8",
+  "rules": [
+    "a host that ran a Slurm job of the campaign is named by the node family, NODE_FEATURE; any other host, 'login'",
+    "a host part's lists of node features hold the node family alone, and its platform the operating system and machine type alone; the CPU model stays",
+    "a path starts with the name of the longest named directory that holds it: a path setting ($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), a --path directory, a source tree ($<TREE>_TREE) or the directory that holds the campaign ($CAMPAIGN_PARENT), under the operator's home or not, and any other path under the home with ~",
+    "a field that holds a partition is $PARTITION",
+    "the manifest keeps no site block, and its pip freeze lines that name a path keep their package's name alone",
+    "each file's source_sha256 is that of the campaign's own file, which the records and reports hash",
+    "allowed holds each string the operator judged benign where the check found it (redact --allow), with the hits it cleared in the copies"
+  ],
+  "replaced": {
+    "$CAMPAIGN_ENV": 309,
+    "$CAMPAIGN_PARENT": 2,
+    "$HARNESS_TREE": 1318,
+    "$PARTITION": 102,
+    "$PYVBMC_GPYREG_SOURCE": 506,
+    "features": 204,
+    "hosts": 307,
+    "platform": 103
+  },
+  "allowed": {},
+  "pip_freeze_paths": 2,
+  "cases_not_verified": {
+    "failed": [],
+    "interrupted": [],
+    "missing": []
+  },
+  "archive": {
+    "sha256_file": "fresh_release.tar.zst.sha256",
+    "parts": {
+      "fresh_release.tar.zst.000": "374b231a1330e485b58293db197448c6d67108ff0d208d1552bf4d28778a3c33"
+    }
+  },
+  "files": {
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100.boost.json": {
+      "source_sha256": "aa752b602afc886ea6a7501277c718c3aeb1193f8b1155ea367a256b19755ca7",
+      "sha256": "aa752b602afc886ea6a7501277c718c3aeb1193f8b1155ea367a256b19755ca7",
+      "bytes": 7986
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101.boost.json": {
+      "source_sha256": "c905bea6034f3ce59c124deb15ff91c44923befa3f1d6085bdd74d60d96247a3",
+      "sha256": "c905bea6034f3ce59c124deb15ff91c44923befa3f1d6085bdd74d60d96247a3",
+      "bytes": 7985
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102.boost.json": {
+      "source_sha256": "0e02439786f976ad8e9fa24b55ccd3da564ff42d87b92c2f70a84dc67e45bace",
+      "sha256": "0e02439786f976ad8e9fa24b55ccd3da564ff42d87b92c2f70a84dc67e45bace",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103.boost.json": {
+      "source_sha256": "b9578d65e098bc0c8bc7fa6bd6c5b91c6b46ee0190d526895049a7127d4ecc21",
+      "sha256": "b9578d65e098bc0c8bc7fa6bd6c5b91c6b46ee0190d526895049a7127d4ecc21",
+      "bytes": 7983
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104.boost.json": {
+      "source_sha256": "80b5b56b920179f30953fdbe50506718bedbe28110f59c377ebb5356d71506be",
+      "sha256": "80b5b56b920179f30953fdbe50506718bedbe28110f59c377ebb5356d71506be",
+      "bytes": 7988
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105.boost.json": {
+      "source_sha256": "89b33a47f5c0bb97a36929d64aa1ef5c2c56bde05ab9700bcece9e9b4e8c930e",
+      "sha256": "89b33a47f5c0bb97a36929d64aa1ef5c2c56bde05ab9700bcece9e9b4e8c930e",
+      "bytes": 7979
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106.boost.json": {
+      "source_sha256": "90dca605ec4fcbdc5bde601d82034f33c3740072f35df98125f0a297df9d63b0",
+      "sha256": "90dca605ec4fcbdc5bde601d82034f33c3740072f35df98125f0a297df9d63b0",
+      "bytes": 8005
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107.boost.json": {
+      "source_sha256": "f1e0284f3ed6f11fdc29f54cbd500d4664df421e65c037268ffa6500ef5c5d29",
+      "sha256": "f1e0284f3ed6f11fdc29f54cbd500d4664df421e65c037268ffa6500ef5c5d29",
+      "bytes": 7986
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108.boost.json": {
+      "source_sha256": "bd1afa3dc447587933545434e7a0495e887ddc905f4e4c63e7c9e705eb0943bd",
+      "sha256": "bd1afa3dc447587933545434e7a0495e887ddc905f4e4c63e7c9e705eb0943bd",
+      "bytes": 7980
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109.boost.json": {
+      "source_sha256": "def20abd641d2f2627fdf4ec9b131897f215b2ae5b08da46af473c6569a3e55d",
+      "sha256": "def20abd641d2f2627fdf4ec9b131897f215b2ae5b08da46af473c6569a3e55d",
+      "bytes": 7985
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110.boost.json": {
+      "source_sha256": "d5afda0c545e6f356ca321ba42f7b5f2128392f68a39ae012e9d76258104a0ba",
+      "sha256": "d5afda0c545e6f356ca321ba42f7b5f2128392f68a39ae012e9d76258104a0ba",
+      "bytes": 7983
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111.boost.json": {
+      "source_sha256": "83ea43dcb29a39334a9a0fadb2264bd2217348b9de5bd466488f28d6d0059562",
+      "sha256": "83ea43dcb29a39334a9a0fadb2264bd2217348b9de5bd466488f28d6d0059562",
+      "bytes": 7998
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112.boost.json": {
+      "source_sha256": "4b3603c25df915346fc332835bd41a5299aa014597c811b7e22f8f38a4633f8b",
+      "sha256": "4b3603c25df915346fc332835bd41a5299aa014597c811b7e22f8f38a4633f8b",
+      "bytes": 7978
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113.boost.json": {
+      "source_sha256": "a6e35a0b2a36b06c67ec9710e8e829fcf2f74f96352ca5ec7396c36c509fad48",
+      "sha256": "a6e35a0b2a36b06c67ec9710e8e829fcf2f74f96352ca5ec7396c36c509fad48",
+      "bytes": 7981
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114.boost.json": {
+      "source_sha256": "602fc6513bf45ad76be4cdcfb1a9493f649195f3e1dc534b79191a6b623c98f8",
+      "sha256": "602fc6513bf45ad76be4cdcfb1a9493f649195f3e1dc534b79191a6b623c98f8",
+      "bytes": 7986
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115.boost.json": {
+      "source_sha256": "3595a64b6510125894329d95abca6fe9fb6d664906fa4c2c69b7556e98958e72",
+      "sha256": "3595a64b6510125894329d95abca6fe9fb6d664906fa4c2c69b7556e98958e72",
+      "bytes": 7974
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116.boost.json": {
+      "source_sha256": "7ee1df0aea2346c57edf78184594a1abc895bb7c25fbbbe3e76d442c649b2aff",
+      "sha256": "7ee1df0aea2346c57edf78184594a1abc895bb7c25fbbbe3e76d442c649b2aff",
+      "bytes": 7977
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117.boost.json": {
+      "source_sha256": "b9c8102aa48df1b01cd7376fd0d92db459bbb5bf9e76bb827677ed30ba7d80f5",
+      "sha256": "b9c8102aa48df1b01cd7376fd0d92db459bbb5bf9e76bb827677ed30ba7d80f5",
+      "bytes": 7998
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118.boost.json": {
+      "source_sha256": "dc4312287950a27c83d9246fc1e0ae8c0cad842c8c5296442618d5c78c7ec718",
+      "sha256": "dc4312287950a27c83d9246fc1e0ae8c0cad842c8c5296442618d5c78c7ec718",
+      "bytes": 7984
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119.boost.json": {
+      "source_sha256": "c68ca0837050f9308dbd66a73ef359de0b4a8f601586845ab6df434ddc0a1ba5",
+      "sha256": "c68ca0837050f9308dbd66a73ef359de0b4a8f601586845ab6df434ddc0a1ba5",
+      "bytes": 7985
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120.boost.json": {
+      "source_sha256": "e8a0b52db79a057dd94a31a9d131e99e843f47ba45fc5c156b19cf68fff76f26",
+      "sha256": "e8a0b52db79a057dd94a31a9d131e99e843f47ba45fc5c156b19cf68fff76f26",
+      "bytes": 7985
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121.boost.json": {
+      "source_sha256": "62dd2ee73307c02e6f9a2d6027be180d5420ad2e48fdfea71918b680cb596b82",
+      "sha256": "62dd2ee73307c02e6f9a2d6027be180d5420ad2e48fdfea71918b680cb596b82",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122.boost.json": {
+      "source_sha256": "9b12f7bb72890bc4c3e0f486c7bb592bdda8bdeee5b512676e8eba45bec6c348",
+      "sha256": "9b12f7bb72890bc4c3e0f486c7bb592bdda8bdeee5b512676e8eba45bec6c348",
+      "bytes": 7984
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123.boost.json": {
+      "source_sha256": "6fa97736c0003caaaed48111edd35708677e6f22aa5c62be6d672849f8d902d0",
+      "sha256": "6fa97736c0003caaaed48111edd35708677e6f22aa5c62be6d672849f8d902d0",
+      "bytes": 7991
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124.boost.json": {
+      "source_sha256": "95bd020c828ac394a22bd89364f57bcb258709d4183c8ffb2e5202bc9c2be5e7",
+      "sha256": "95bd020c828ac394a22bd89364f57bcb258709d4183c8ffb2e5202bc9c2be5e7",
+      "bytes": 7996
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125.boost.json": {
+      "source_sha256": "5c307f402da990f4109f774b6efabc4268e5be840b90076b5f502317e945856d",
+      "sha256": "5c307f402da990f4109f774b6efabc4268e5be840b90076b5f502317e945856d",
+      "bytes": 7990
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126.boost.json": {
+      "source_sha256": "ae7ec8bea464be92579c9b07929fb73254e0d3e6951ce703366671bdef2b604c",
+      "sha256": "ae7ec8bea464be92579c9b07929fb73254e0d3e6951ce703366671bdef2b604c",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127.boost.json": {
+      "source_sha256": "fb349da4e5a3e406d4ea3dfacc86a4bc04ddf5d7217642bc01895d06a9495b42",
+      "sha256": "fb349da4e5a3e406d4ea3dfacc86a4bc04ddf5d7217642bc01895d06a9495b42",
+      "bytes": 8000
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128.boost.json": {
+      "source_sha256": "e73580e19359f2089a6bc05c46eb1eaad7ebc65ec2b20fc9aada7fdd711a63b0",
+      "sha256": "e73580e19359f2089a6bc05c46eb1eaad7ebc65ec2b20fc9aada7fdd711a63b0",
+      "bytes": 7992
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129.boost.json": {
+      "source_sha256": "2e9ceee62a3fbb662ea8c42957e8dce29ccab60b5001c856ed4d2a2eb0274048",
+      "sha256": "2e9ceee62a3fbb662ea8c42957e8dce29ccab60b5001c856ed4d2a2eb0274048",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130.boost.json": {
+      "source_sha256": "79c083772785796e92d010163867fcbb5b2a1c83d60f4d202ef620ef8810ce90",
+      "sha256": "79c083772785796e92d010163867fcbb5b2a1c83d60f4d202ef620ef8810ce90",
+      "bytes": 7983
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131.boost.json": {
+      "source_sha256": "0b850782f2b0b67ea19abee338fd2038ac81c415c11e88eee22a7043eb0c9322",
+      "sha256": "0b850782f2b0b67ea19abee338fd2038ac81c415c11e88eee22a7043eb0c9322",
+      "bytes": 7979
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132.boost.json": {
+      "source_sha256": "9b506974c2d47000dde36217e129556e6ba6dce06b1e3c5e63bf73f732eb16af",
+      "sha256": "9b506974c2d47000dde36217e129556e6ba6dce06b1e3c5e63bf73f732eb16af",
+      "bytes": 7975
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133.boost.json": {
+      "source_sha256": "b013ba8e845e4182a7ddbfb706b6bbb36f25c8e497ee67163d0061a653b79e8a",
+      "sha256": "b013ba8e845e4182a7ddbfb706b6bbb36f25c8e497ee67163d0061a653b79e8a",
+      "bytes": 7989
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134.boost.json": {
+      "source_sha256": "e68f1c3999e6674987eb156c8dccbe6256e5167fe9e710189ae84dbce71ccb71",
+      "sha256": "e68f1c3999e6674987eb156c8dccbe6256e5167fe9e710189ae84dbce71ccb71",
+      "bytes": 8002
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135.boost.json": {
+      "source_sha256": "5aac61e7ff67206942f5cddeddc9323e1260c64ba10e3eb6ccf920c4ba7efc49",
+      "sha256": "5aac61e7ff67206942f5cddeddc9323e1260c64ba10e3eb6ccf920c4ba7efc49",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136.boost.json": {
+      "source_sha256": "d238373966fee918335016110091b0e17bc90ef4ae68230cb36e23dbf439bf67",
+      "sha256": "d238373966fee918335016110091b0e17bc90ef4ae68230cb36e23dbf439bf67",
+      "bytes": 7992
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137.boost.json": {
+      "source_sha256": "be243f2b2e6a3acc7e7da6cd4cc88afd1d93c758f31e2e7e3337aac11b33ade6",
+      "sha256": "be243f2b2e6a3acc7e7da6cd4cc88afd1d93c758f31e2e7e3337aac11b33ade6",
+      "bytes": 7981
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138.boost.json": {
+      "source_sha256": "49021f9d0cc4806a9da38cdebcc39e16dbe64b245ca312a1227be7f5b1259427",
+      "sha256": "49021f9d0cc4806a9da38cdebcc39e16dbe64b245ca312a1227be7f5b1259427",
+      "bytes": 7988
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.boost.json": {
+      "source_sha256": "030873c2c83277c05521e20d3fbb12dbb00f1f582268200d6e9b6c58d6f8b0de",
+      "sha256": "030873c2c83277c05521e20d3fbb12dbb00f1f582268200d6e9b6c58d6f8b0de",
+      "bytes": 7982
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140.boost.json": {
+      "source_sha256": "08245446fde678c2ee613373e1103336afd69dc5b5811b4b7e52dedc7c28c820",
+      "sha256": "08245446fde678c2ee613373e1103336afd69dc5b5811b4b7e52dedc7c28c820",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141.boost.json": {
+      "source_sha256": "2b8fc56f1e70fee2cc89a9fae475737c8eb3370f600f302bc204131ffebeacb7",
+      "sha256": "2b8fc56f1e70fee2cc89a9fae475737c8eb3370f600f302bc204131ffebeacb7",
+      "bytes": 8002
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142.boost.json": {
+      "source_sha256": "536d65e73d1b2a2b59060f0b0267daba5dc12277fe8a5fc3b1891449bf93b9c6",
+      "sha256": "536d65e73d1b2a2b59060f0b0267daba5dc12277fe8a5fc3b1891449bf93b9c6",
+      "bytes": 7983
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143.boost.json": {
+      "source_sha256": "3dda9a1accc5c2bdf3d7faf7ab2e4ef87937e4d2f00b4d2eaba94909993e4aec",
+      "sha256": "3dda9a1accc5c2bdf3d7faf7ab2e4ef87937e4d2f00b4d2eaba94909993e4aec",
+      "bytes": 7998
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144.boost.json": {
+      "source_sha256": "1f01cebbeb1677e2d2b4b10504012e8ee466d0459fb78b58d5f6bc66cd4583d7",
+      "sha256": "1f01cebbeb1677e2d2b4b10504012e8ee466d0459fb78b58d5f6bc66cd4583d7",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145.boost.json": {
+      "source_sha256": "5f67bbff2f0b208821f879b0265c74d1b7eaece186528e3c74b8ed906b5d1ed7",
+      "sha256": "5f67bbff2f0b208821f879b0265c74d1b7eaece186528e3c74b8ed906b5d1ed7",
+      "bytes": 7991
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146.boost.json": {
+      "source_sha256": "2fb34fa4ce13a3fcab230c7a0e330155a5966fe64df01c98801678dd82619e7f",
+      "sha256": "2fb34fa4ce13a3fcab230c7a0e330155a5966fe64df01c98801678dd82619e7f",
+      "bytes": 7983
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147.boost.json": {
+      "source_sha256": "2045a347d0333c815536e6b9655197b5d0c035f87ee91b87df8a6b6b8eaa51b8",
+      "sha256": "2045a347d0333c815536e6b9655197b5d0c035f87ee91b87df8a6b6b8eaa51b8",
+      "bytes": 7991
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148.boost.json": {
+      "source_sha256": "2cc5ab9f88f5a08e1717fee575c446ef33539b819f448d5d471d11c09592b15b",
+      "sha256": "2cc5ab9f88f5a08e1717fee575c446ef33539b819f448d5d471d11c09592b15b",
+      "bytes": 7968
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149.boost.json": {
+      "source_sha256": "0c10132606664a49356226432cbf063bed147842b8d8fc9e263e95adac52d9df",
+      "sha256": "0c10132606664a49356226432cbf063bed147842b8d8fc9e263e95adac52d9df",
+      "bytes": 7996
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150.boost.json": {
+      "source_sha256": "d15db221c69847035ffad9a5575fe2ab4bfd253a49baa43a125b82414b4b238f",
+      "sha256": "d15db221c69847035ffad9a5575fe2ab4bfd253a49baa43a125b82414b4b238f",
+      "bytes": 7989
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151.boost.json": {
+      "source_sha256": "18912ffaee6f9f3aa1590e2d148ff5687b68c0b49fa296322b7f127a2d6bd5fb",
+      "sha256": "18912ffaee6f9f3aa1590e2d148ff5687b68c0b49fa296322b7f127a2d6bd5fb",
+      "bytes": 7988
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152.boost.json": {
+      "source_sha256": "a96c9389829f6e8c74c7fa295eb2839e496364e7c18cbb424388f976a864fc49",
+      "sha256": "a96c9389829f6e8c74c7fa295eb2839e496364e7c18cbb424388f976a864fc49",
+      "bytes": 7988
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153.boost.json": {
+      "source_sha256": "0a722de61bf2cf43ae373bb9181eee1a0caabc0849214d6f678cd950b3f3ff78",
+      "sha256": "0a722de61bf2cf43ae373bb9181eee1a0caabc0849214d6f678cd950b3f3ff78",
+      "bytes": 7985
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154.boost.json": {
+      "source_sha256": "cd73c3efa3e33d629acbc939f23ba17c5c2a06436a96ce687f31cdfe17e5a111",
+      "sha256": "cd73c3efa3e33d629acbc939f23ba17c5c2a06436a96ce687f31cdfe17e5a111",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155.boost.json": {
+      "source_sha256": "04dc5be9b66fb32af7ae9cfe51bd6d06fac514dfb28adbf80ab80b88f764db90",
+      "sha256": "04dc5be9b66fb32af7ae9cfe51bd6d06fac514dfb28adbf80ab80b88f764db90",
+      "bytes": 7988
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156.boost.json": {
+      "source_sha256": "710f5dfcddf4de216c79f45c4b07f377c146a3297a03848513dc1a79fc47ca9b",
+      "sha256": "710f5dfcddf4de216c79f45c4b07f377c146a3297a03848513dc1a79fc47ca9b",
+      "bytes": 7977
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157.boost.json": {
+      "source_sha256": "3e3e9238aed619479072dff83f43fc672082268bdc72a978d5cc451968f0d22c",
+      "sha256": "3e3e9238aed619479072dff83f43fc672082268bdc72a978d5cc451968f0d22c",
+      "bytes": 7975
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158.boost.json": {
+      "source_sha256": "6ca206f245a8e9ece37c4126a142017b1a3ffdff8f0dd5060adf3587e75f53db",
+      "sha256": "6ca206f245a8e9ece37c4126a142017b1a3ffdff8f0dd5060adf3587e75f53db",
+      "bytes": 7989
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159.boost.json": {
+      "source_sha256": "bc95df1539c7f436a852d8209d205fba2c2b78bda6df53c740be906ad540db8e",
+      "sha256": "bc95df1539c7f436a852d8209d205fba2c2b78bda6df53c740be906ad540db8e",
+      "bytes": 7989
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160.boost.json": {
+      "source_sha256": "19f9eabaabc913952ab34d8cbc6fa3b83de5ec9758d59cbdefd95c4448eb168a",
+      "sha256": "19f9eabaabc913952ab34d8cbc6fa3b83de5ec9758d59cbdefd95c4448eb168a",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161.boost.json": {
+      "source_sha256": "3b4b4a63c704a32963bae79a271c4ff33b03d9f936664a5f786862917ca9cb38",
+      "sha256": "3b4b4a63c704a32963bae79a271c4ff33b03d9f936664a5f786862917ca9cb38",
+      "bytes": 7986
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162.boost.json": {
+      "source_sha256": "9f29b5bd538b88099e0f1bb369e70583aa5edaf97bc194471d072fa5d566b018",
+      "sha256": "9f29b5bd538b88099e0f1bb369e70583aa5edaf97bc194471d072fa5d566b018",
+      "bytes": 7990
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163.boost.json": {
+      "source_sha256": "e79bc1dda03585a36b38e556d28faaf32cc4d7ca9d48c206fdc15d830c87c019",
+      "sha256": "e79bc1dda03585a36b38e556d28faaf32cc4d7ca9d48c206fdc15d830c87c019",
+      "bytes": 7991
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164.boost.json": {
+      "source_sha256": "4f6b073f943e54a33d76463381704e4b8de0e42515531fc67f8dc35721aee25d",
+      "sha256": "4f6b073f943e54a33d76463381704e4b8de0e42515531fc67f8dc35721aee25d",
+      "bytes": 7990
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165.boost.json": {
+      "source_sha256": "fe1b847e2702d9b6cfc35e29946e42e119d6dafd2533b192d69be8f692759ac2",
+      "sha256": "fe1b847e2702d9b6cfc35e29946e42e119d6dafd2533b192d69be8f692759ac2",
+      "bytes": 7989
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166.boost.json": {
+      "source_sha256": "bfbc09cf662c91ea4b23d38312f18284e969b78fcbd44a81399672080f56b9a6",
+      "sha256": "bfbc09cf662c91ea4b23d38312f18284e969b78fcbd44a81399672080f56b9a6",
+      "bytes": 8002
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167.boost.json": {
+      "source_sha256": "074877670c73853d3d9813b8f74492f403c53ce729b1599f1a0c11b7f49fb95a",
+      "sha256": "074877670c73853d3d9813b8f74492f403c53ce729b1599f1a0c11b7f49fb95a",
+      "bytes": 7992
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168.boost.json": {
+      "source_sha256": "85f6ea6b8423ec594a9569077b40ab6a49efe3016b6fa4e6857402e7b3f41380",
+      "sha256": "85f6ea6b8423ec594a9569077b40ab6a49efe3016b6fa4e6857402e7b3f41380",
+      "bytes": 8004
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169.boost.json": {
+      "source_sha256": "2284134cd639164f6a543d6ee414968f3cf65b1917238ffa734fc33d3dcb7e90",
+      "sha256": "2284134cd639164f6a543d6ee414968f3cf65b1917238ffa734fc33d3dcb7e90",
+      "bytes": 7980
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170.boost.json": {
+      "source_sha256": "6bbfe36b2f3e252ca4383189bc6f52e9163758155f80e84de3468b5f5384f091",
+      "sha256": "6bbfe36b2f3e252ca4383189bc6f52e9163758155f80e84de3468b5f5384f091",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171.boost.json": {
+      "source_sha256": "709bac79cac8831d0cdec3f8125f6123bcd729901b965610085b3e70e5facca4",
+      "sha256": "709bac79cac8831d0cdec3f8125f6123bcd729901b965610085b3e70e5facca4",
+      "bytes": 7976
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172.boost.json": {
+      "source_sha256": "9995199e6dc45df5c1f9b5c7f268f6d125ee87359aeeafcd270a0d916742a39b",
+      "sha256": "9995199e6dc45df5c1f9b5c7f268f6d125ee87359aeeafcd270a0d916742a39b",
+      "bytes": 7986
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173.boost.json": {
+      "source_sha256": "73c800dcc37478cdf035779fa7587cdbf4934f98d104cdeee776dee473e59c2c",
+      "sha256": "73c800dcc37478cdf035779fa7587cdbf4934f98d104cdeee776dee473e59c2c",
+      "bytes": 7980
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174.boost.json": {
+      "source_sha256": "8b18d5afcc646ef9184ebbe403f41f981cfdfef82d878563513671cbc845058b",
+      "sha256": "8b18d5afcc646ef9184ebbe403f41f981cfdfef82d878563513671cbc845058b",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175.boost.json": {
+      "source_sha256": "e500cc3be4b1bf94ecf3188e6195638158d0372937ccc7f4ad08c3d5243c3aeb",
+      "sha256": "e500cc3be4b1bf94ecf3188e6195638158d0372937ccc7f4ad08c3d5243c3aeb",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176.boost.json": {
+      "source_sha256": "75e4e15de5cba85c888a005f88d76c7de717e85bc70618caf3d4ae5532a2a491",
+      "sha256": "75e4e15de5cba85c888a005f88d76c7de717e85bc70618caf3d4ae5532a2a491",
+      "bytes": 7985
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177.boost.json": {
+      "source_sha256": "20c433b69224ec537a04bc5745791f6e79cab4d5a00abe18a25f323851e0efd6",
+      "sha256": "20c433b69224ec537a04bc5745791f6e79cab4d5a00abe18a25f323851e0efd6",
+      "bytes": 7977
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178.boost.json": {
+      "source_sha256": "3459b087be243a16f722602c7b88fadc6f2f86e9a45c57a008defe9975a13b40",
+      "sha256": "3459b087be243a16f722602c7b88fadc6f2f86e9a45c57a008defe9975a13b40",
+      "bytes": 7982
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179.boost.json": {
+      "source_sha256": "0d08df6dc5bcb2fdb739a70aa791405823e4731aab4db0716edea6a7a47f4442",
+      "sha256": "0d08df6dc5bcb2fdb739a70aa791405823e4731aab4db0716edea6a7a47f4442",
+      "bytes": 7978
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180.boost.json": {
+      "source_sha256": "02fadca7b7cf0a1e1a9b9d94c1df68f92c4db44a2056a379d8c5c71cb341f07b",
+      "sha256": "02fadca7b7cf0a1e1a9b9d94c1df68f92c4db44a2056a379d8c5c71cb341f07b",
+      "bytes": 7984
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181.boost.json": {
+      "source_sha256": "828c4d9e6be051df6f92b460ade4c1490c83d9aeca5d0e7f8b69fc7b4dbf5ddd",
+      "sha256": "828c4d9e6be051df6f92b460ade4c1490c83d9aeca5d0e7f8b69fc7b4dbf5ddd",
+      "bytes": 7975
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182.boost.json": {
+      "source_sha256": "36783f2b2859a5806f4c8da71caa1aac582c9717c8a6e8cedc5b50ffdf256e54",
+      "sha256": "36783f2b2859a5806f4c8da71caa1aac582c9717c8a6e8cedc5b50ffdf256e54",
+      "bytes": 7983
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183.boost.json": {
+      "source_sha256": "529a94209a7d7ab534f26f3b1a88b2829542da49bf88f9f1246f03c11a376b55",
+      "sha256": "529a94209a7d7ab534f26f3b1a88b2829542da49bf88f9f1246f03c11a376b55",
+      "bytes": 7998
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184.boost.json": {
+      "source_sha256": "35792d26ef985cad071218c6df5304926833aa0bc755190112f7fe2ac060e73b",
+      "sha256": "35792d26ef985cad071218c6df5304926833aa0bc755190112f7fe2ac060e73b",
+      "bytes": 7988
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185.boost.json": {
+      "source_sha256": "ff00a304c0690988e5fbd87c05230133fba03b51f05d937cecebe50c9690e0c2",
+      "sha256": "ff00a304c0690988e5fbd87c05230133fba03b51f05d937cecebe50c9690e0c2",
+      "bytes": 7987
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186.boost.json": {
+      "source_sha256": "2d55e77057198cf091b4628c83315f7008dc970719029772ffe5a3caf97aae81",
+      "sha256": "2d55e77057198cf091b4628c83315f7008dc970719029772ffe5a3caf97aae81",
+      "bytes": 7974
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187.boost.json": {
+      "source_sha256": "ff03765b09ead31a4e262c9ba0cb1a77f043fbb4bedc756f2fb10b186da2908c",
+      "sha256": "ff03765b09ead31a4e262c9ba0cb1a77f043fbb4bedc756f2fb10b186da2908c",
+      "bytes": 7970
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188.boost.json": {
+      "source_sha256": "3fecae290adf6e7a53e1f4fafee221d70470b54fbae16db54721ad3a69921919",
+      "sha256": "3fecae290adf6e7a53e1f4fafee221d70470b54fbae16db54721ad3a69921919",
+      "bytes": 7974
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189.boost.json": {
+      "source_sha256": "61975f3eccf0bd612a8c77d7cbc8481a567aeb568c88facca57b44569977a37b",
+      "sha256": "61975f3eccf0bd612a8c77d7cbc8481a567aeb568c88facca57b44569977a37b",
+      "bytes": 7998
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190.boost.json": {
+      "source_sha256": "d9c6d20f3cb1f1dbe479cbaf8565d1753aaef1596bb97a61272ee27582c0c360",
+      "sha256": "d9c6d20f3cb1f1dbe479cbaf8565d1753aaef1596bb97a61272ee27582c0c360",
+      "bytes": 7982
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191.boost.json": {
+      "source_sha256": "8707477f897770e3b0933204af82918d35f7a2a1cea765da8c89c51febf4292b",
+      "sha256": "8707477f897770e3b0933204af82918d35f7a2a1cea765da8c89c51febf4292b",
+      "bytes": 7995
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192.boost.json": {
+      "source_sha256": "8737313765b9517094ca20c9f9e97f278081b4eb875df95517fcc23960d520f8",
+      "sha256": "8737313765b9517094ca20c9f9e97f278081b4eb875df95517fcc23960d520f8",
+      "bytes": 7989
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193.boost.json": {
+      "source_sha256": "75504e534133f764e2942f10383c9fab3ace4e0f667c1dc66434f9776d744e2f",
+      "sha256": "75504e534133f764e2942f10383c9fab3ace4e0f667c1dc66434f9776d744e2f",
+      "bytes": 7982
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194.boost.json": {
+      "source_sha256": "3d8ec3e5f8df88bd5176d4089b6461dc94e8920e95ad06506e95233e8421c6cb",
+      "sha256": "3d8ec3e5f8df88bd5176d4089b6461dc94e8920e95ad06506e95233e8421c6cb",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195.boost.json": {
+      "source_sha256": "81a1232eb0aedf309f8671a986d227b3b0fdc2ff44f433ecd075ccd13a824ee4",
+      "sha256": "81a1232eb0aedf309f8671a986d227b3b0fdc2ff44f433ecd075ccd13a824ee4",
+      "bytes": 8001
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196.boost.json": {
+      "source_sha256": "ddd1428265a3c7e4a0e9110e050f8586c26fda00a0b83a3d2d68f6baabae87f0",
+      "sha256": "ddd1428265a3c7e4a0e9110e050f8586c26fda00a0b83a3d2d68f6baabae87f0",
+      "bytes": 7980
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197.boost.json": {
+      "source_sha256": "a2faea3aa5c685f7bc6fe5b829fa4a2afe7e5844b3f9e18bd090b4c84ecae755",
+      "sha256": "a2faea3aa5c685f7bc6fe5b829fa4a2afe7e5844b3f9e18bd090b4c84ecae755",
+      "bytes": 7993
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198.boost.json": {
+      "source_sha256": "df9d5a319891f6c8c91e8bd090f41a15d55f5791aab714290754edb899227b50",
+      "sha256": "df9d5a319891f6c8c91e8bd090f41a15d55f5791aab714290754edb899227b50",
+      "bytes": 7982
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199.boost.json": {
+      "source_sha256": "454e60f2da620022953f3947f0d38855e2858d792a1bdea365e6f159b085420c",
+      "sha256": "454e60f2da620022953f3947f0d38855e2858d792a1bdea365e6f159b085420c",
+      "bytes": 7979
+    },
+    "manifest.json": {
+      "source_sha256": "4958031f7f6548224b27f04256583e37ca69b7db96a1e0dd74da47d87f5fdc37",
+      "sha256": "0d575ef8c57f7290b50d2038675ac596cb69836ae2a46d01184d41f10d8a7823",
+      "bytes": 7190
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100.complete.json": {
+      "source_sha256": "fad6b1822ed9a4f8230e7bc2a05f04d932f4e721ccc27dac16e8f2395c232edc",
+      "sha256": "66fe0a91e04cce3ee6fa3567a81fa01320853621e9ec19855d79c80f11bf0047",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101.complete.json": {
+      "source_sha256": "a13f80bf9f3ef9d41cf80dbd58378a35d9056c176b9393cc3b4cdc258acf0247",
+      "sha256": "a9325cb40178aa8f28f47e655c58e7f1431a54cf2769b3ff14421e0f9a2c4413",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102.complete.json": {
+      "source_sha256": "1a1edeb8d3112cc29876aff9f972f10192e7e66ca5697f503089425417543c64",
+      "sha256": "8a3c8b04178f0e09da132dda752bfcf577a392d2d5507e62544c4d2aaaf54a4f",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103.complete.json": {
+      "source_sha256": "8f6b43c4734c1c96af26c094f6cf1b38ace88d33933ee021550294a2eeaa0bf2",
+      "sha256": "06a8ff765416ac0df117fbe7d273f4f38f8016a7b1b4613bc54f5b3d632394fc",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104.complete.json": {
+      "source_sha256": "59fffcded748795342ef6c2db1ff8fa6a094d0db6b06a2bc2eb694ded3d815a7",
+      "sha256": "1eba4035b88af05f9d330d2bdc28e3f9e7365440cfbf5faf4ae20e2e7ce96652",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105.complete.json": {
+      "source_sha256": "88316f75deaf5ed0f43fca2da21036bfe72f5c4d58b85e6d8523d3ad0928d46a",
+      "sha256": "8d336f2c9db6ba4eb04c177d8e3794d9db27d38d05a344e84dc5beda68dafd05",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106.complete.json": {
+      "source_sha256": "eaa68d22b57c6bf83d08ccde9e8754a25ec922b71f12c4389f0ef56f4f9bb77e",
+      "sha256": "6de4b1b4a1726630a12beee9c5c28ae93885434120bd10db5510298a5f345bb2",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107.complete.json": {
+      "source_sha256": "7957da6adaf835e85b79d81b7b70f56d6e5abda4b3fc1afc15d647166255f742",
+      "sha256": "af3902b5dd7e478b51076d9989e4bb4bcd97731d54f028698882d573054dbcc8",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108.complete.json": {
+      "source_sha256": "a252b0486b470fbdb1d2c412effb27006024d04d57a765bc356c727fd06db9e7",
+      "sha256": "dcf4b0603c5664140570024cf60726d09e10203037593f0cd7cb043139bdc8df",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109.complete.json": {
+      "source_sha256": "c919be2cc9e23c3cafeaec6a41888f1806d634e192191ca3b673e4bc4313c58d",
+      "sha256": "598259fd93cf3b0a242992874ddd3f365f7cfc5de172ac4fb6ca31c243ac2bd8",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110.complete.json": {
+      "source_sha256": "1f3c80abd0660022661b6247b9cca8c5f1dc8d869ea07218dc367fb83da06baa",
+      "sha256": "3789e1ae4a3fa314032db4a27e303d3be915162149108a379658d4674df54255",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111.complete.json": {
+      "source_sha256": "066329e2a7bdf1945d1eae9f18b6c1faad8e13fab9dd855ace76311a63cfba0c",
+      "sha256": "3de8640aa4648789b61d329dd7f8d15df4328bdd5716abc440dc2becd3c7c192",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112.complete.json": {
+      "source_sha256": "f7d59630d121bac78e7397d43de0259d88366ebd0742f4ea20d717858c1ba8eb",
+      "sha256": "e91386c3cd5939bb4d0e43c5a5905468d1733e919861a185e27798e36a23ada6",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113.complete.json": {
+      "source_sha256": "0a7143332dd1b5c3af861576a59d145870ddb1dc85afc644245bb553bc1da4bf",
+      "sha256": "fc7c67245f06fc544660d143c46ceb0a1ed382e91bf279667e0b0548b7eb6105",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114.complete.json": {
+      "source_sha256": "0240e797b988746deef16448f9f680b6a955de7e0228088ff28acb201343970d",
+      "sha256": "53c0a37fedd2fefd908f17f8b3c003effb1fc9d58b460464c18515afcb2c8255",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115.complete.json": {
+      "source_sha256": "1e8c646e6ce4f351bb0735561f69f93a69e42dafc9b15b3021453f46d1481de1",
+      "sha256": "595d47b463d89aaf3ee0e1d4db306bc57a4f8827237612871ecae5282373c458",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116.complete.json": {
+      "source_sha256": "d6123fb32d9d3e21753ae4adcb76e61c05a6a1336ffe70f8b882e74cb91e2002",
+      "sha256": "46a950c96d2bd80a53b3940ff1a867adc3e51c2498fcb7bab9b5d93633903a89",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117.complete.json": {
+      "source_sha256": "4d1a4128db71bacee40ec60f91d0de7e0cc24b8b6833122ca44f44f396e68f17",
+      "sha256": "e5391d00e75a512a47d32902e75d61b2426c3034fcc436f7043bf1f041526bcd",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118.complete.json": {
+      "source_sha256": "6a6e7348502ba6cb6e94a86c28d7a43e1db83f64f16480689325a693e489be48",
+      "sha256": "47be638fb8b3e8713c0b9a501cb08571c9511949c13d10f34d60834701536c35",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119.complete.json": {
+      "source_sha256": "ebba953102764ff0d120e1f75307f72b387d503e966640d84b51ea3f619e068c",
+      "sha256": "f6bc6f22888dd451e6a6a765e2aa8f3738f98c6c463e51da74d4c2593b454ea5",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120.complete.json": {
+      "source_sha256": "e420b218df1723da9c1b2a2acfd8c2118f7abf751b0b28810d868851338a9e4a",
+      "sha256": "bbe12296f92b5d222321ff209e23a317bf9c6cf938db1d41316335356d67f83f",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121.complete.json": {
+      "source_sha256": "a9b49cb8b8df89a98d3a800dcbbc5e28807f469c515d055aa2f5c8cea5a2121e",
+      "sha256": "6ecd22b24b90129e67be5861df0b61770423560e4aabba9e99d5bec2d7c3f046",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122.complete.json": {
+      "source_sha256": "a570c4eb688485e306bd074c5b64b577be9a2563c156cbb6954cd490b9ee2e5e",
+      "sha256": "abb43e5feda12a191e8af9947590ee6c6dca08eac98256a48a297264143774e8",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123.complete.json": {
+      "source_sha256": "b1ac0864dbbf1d0dbb783c6eccc482288dd87d8cf55e7162e7a64937629f5ef7",
+      "sha256": "2c8824dd0f4a715271063a31bca7137956b4d92073798b65dbe860f0c793d62a",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124.complete.json": {
+      "source_sha256": "2822f6453de63e64fc1603ffc5f88b00913310b552d0f3f96cffa7854d55c50c",
+      "sha256": "990200aa5e60ccbc9833e40be9933e78d1d14958eed98d23ab6037314eaa2dbf",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125.complete.json": {
+      "source_sha256": "e8a4a79f2824ea8a40b176b4663e13fd18b0e0ad5d004de72c05b75eeffe6dbd",
+      "sha256": "2cdee21e6cfab384411680a6d5d25499cad25907cd061136cb60ac8a2249f114",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126.complete.json": {
+      "source_sha256": "2da93b2583d4dc98bf9a8d9c4988765b86e4abce72783f7dd5fae30a0edeefbd",
+      "sha256": "102d4ac202e73bc0ff2d6c013df41979ba9548e407de2980a625e3a59c9a92e2",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127.complete.json": {
+      "source_sha256": "b93e6dc872b2f129af06e14c5d6dd6f1c4c6954aab1e0e37f2ed1e577be5232c",
+      "sha256": "28790122f85e7414a82b0b65a221456489d2f770d7e581319a167e8b80d55ed3",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128.complete.json": {
+      "source_sha256": "c147656b987154e2b16379ff77286dd10979a37e484af4904321934ebbf98183",
+      "sha256": "a217a9b1eadaec2b584367c94066cd3e8d35afbc78290d1915d663be6e1b7674",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129.complete.json": {
+      "source_sha256": "3481e294417dabe0964a63d9ababd98b61861c27dd5949dd6ac417b14b7eaa2f",
+      "sha256": "0c72b5788acbab59a4398b34f0c5db399bfec76a22fd2269de32f90fc4202707",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130.complete.json": {
+      "source_sha256": "a863193bc42de2f930ff83e5c178adb98f0b15fcfc5a278fab124ffec55714ad",
+      "sha256": "bf49a6b7d5c779d3b73bca0ddecd4277855b1a40907c01e307b35a1226f45cad",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131.complete.json": {
+      "source_sha256": "beecf6538b5ca7867b40c202e5199f8b4b326a500fcf44a2cda52a8303cb1ea4",
+      "sha256": "75c482f18e4291c64b3664710bb4a4b5a91f1ee13a22bc9c2d8feae47a2bb968",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132.complete.json": {
+      "source_sha256": "ebf0e2a7d8558ea064fba977f73d702cfb30e038459bf8cca02acc3607a83e0c",
+      "sha256": "29ae10e58b3b2da7b3203a2b004cf333eb607906b4fe47048473cc9b07189a00",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133.complete.json": {
+      "source_sha256": "af78f21e305efa3e4cef78411c38b2a771c53df3e779a47addab844cc201ce15",
+      "sha256": "25040bc84da6a221118930915d2ec4c3e9b540c75348a12c283c26de5ddadbe8",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134.complete.json": {
+      "source_sha256": "66df55771e785964547c3cbd1116e3323b6cd7b6365809a51b2f0b98f6f2b12a",
+      "sha256": "4c7d0972a06fd25469340f99c2827f015ced4fe7907c053d78a2494a246a294c",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135.complete.json": {
+      "source_sha256": "862492028026db52c33d55dedbb199aca5704bdf9cf03574c0de663446ffda68",
+      "sha256": "c25ca539f8e0bbe9d7375e0a4455dd01ad0a6c8c97e2ed3f98be5a38849ec266",
+      "bytes": 5372
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136.complete.json": {
+      "source_sha256": "ddec5a801c1e07c5d862a4d934524831944632ee58280f1d9441252ddd5be30d",
+      "sha256": "91b5414d6b4b443c317493c555f66ff56d054ae820ce75eb444375da35f2824c",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137.complete.json": {
+      "source_sha256": "cc7fc2bd3a7b99bd04ef05cbf4ede8d35873dc5f7dae0562d3b1a900b6b486ae",
+      "sha256": "0765c7610adfcaf5b3a813dc5b92b7768d7de1d2a80f2725a7fd1cd66fa1217a",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138.complete.json": {
+      "source_sha256": "6c60c7ecd72ff10c1c1cad43b9b0586e8888042f77d24a8f5eb7e90bd8b4cc23",
+      "sha256": "55121f5f60dedc0f35d895fe3138bbdb2c527d17cf68773375e0d4f9792b920e",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.complete.json": {
+      "source_sha256": "38bd1023691aeb77fee9866e12b69b1f5f659e9e9c914151d723141e6ba0f0ba",
+      "sha256": "b6372adf496687df3c22ae9e82044408c78b30a607ae5cf39d548feffa731e58",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140.complete.json": {
+      "source_sha256": "ba9ec85e791303e5a1fbdcf9f5bbe18d2b30a71cddf84939798a9eba651e309a",
+      "sha256": "46356f8ae6fb5c59f3d0e2999227ff02c865ce8765c0623c941f3278ea909b28",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141.complete.json": {
+      "source_sha256": "639e0a67e52930d5e8aa79f3a09d213c1e5c7185755b0ed71ce671048cb85be0",
+      "sha256": "99e8cf9d62bfb7f0c38d01d0cc757aa94a89af6e303f41b08976da7a8d64de40",
+      "bytes": 5375
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142.complete.json": {
+      "source_sha256": "28c80597c0ea58a2bcf556dae982240d415a266f67033b9ddb1ca319c210c292",
+      "sha256": "7aacb7eb5bc6cf219d503278070756bf62b6fa057ed54f8d3db8ebf72a92f961",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143.complete.json": {
+      "source_sha256": "26eb69a1cbec1fa6d5349bd249de6d108c0635c56153800c6bc2aed3dc7320c9",
+      "sha256": "00cccafa35d918db388190991582d7f3c20b9b4f5a957856349f877fb8583711",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144.complete.json": {
+      "source_sha256": "5fc7f39ea04d26a4421c9bd6422991944fad173a1fd2d81255da15b990786422",
+      "sha256": "ff1c8904b145ccae6f615a3ff139811f8e62a4e30fa5378ad701b26a17d3d260",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145.complete.json": {
+      "source_sha256": "2eaf4b63f07678b4086e13c02ac30f85db23d8b56b4adc596c8cabc47cc4c6c4",
+      "sha256": "099e96730447952d39e83546e683315e4110231d3375afa7103b08f2c465cdf4",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146.complete.json": {
+      "source_sha256": "14f7875d18c902aaa40e5364649037653fe79ad8f10c17ab33abbf699f3006d2",
+      "sha256": "c7dab70e8259e96244a47232ee44a248390848b071a7b908e29b6c4de3c68f0e",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147.complete.json": {
+      "source_sha256": "410a9aa0189ceff6a389a5fcb08ee7b27a96d73e47c06e5328781a971ec1911e",
+      "sha256": "e66b9794c810d6dbf652684e0cb64b4e2445ef90c24783e74196bf95d03b3287",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148.complete.json": {
+      "source_sha256": "1d7415c042e8271c52e131a8c672a7f5ed0f26a566aac5501031e12617083125",
+      "sha256": "51119be53e0c1f2ee59b502a46b67994fb4b2f9d6ab37c3748ebaf80b22de26b",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149.complete.json": {
+      "source_sha256": "b4db12f74ab34a9d12bbdda2791494cfa09e528fb849e25dc5ab9e2caa019f65",
+      "sha256": "9f5c435458526d8d0f2fe7c188c879ace10e7b52f12f796d1126d19ea10ed544",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150.complete.json": {
+      "source_sha256": "f25265311fcd2a45a4f7fce1dd829cea8d2711fcb3753d534014a9584fd1920d",
+      "sha256": "620f647896ccc7c117fcc45188db32095cb27ce8aec92d5e23784a7a3594141c",
+      "bytes": 5375
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151.complete.json": {
+      "source_sha256": "3c7fcc432c5e2a38f1c54c80073dc568042ba5b97e5e1e039b9eb671e8967239",
+      "sha256": "7e586ac670b06bda45d475a7f7bf8659e0a215bb46655bac07963d03519969ea",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152.complete.json": {
+      "source_sha256": "d3ebb93de15e24ba01daf0ea743f5bb63addb4acc157023f4142ffac825f9d06",
+      "sha256": "03f449385b3deed60b17f57079275d9b8a539cda5ef1f9fbd1eb8cdf2481705c",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153.complete.json": {
+      "source_sha256": "1f791cc966d30523c273e194338bb2dd42be649169bc7f91b3ea142702305679",
+      "sha256": "209b6891dfc32d851a8ed4b78d4c8036e53a53a409d16bd0c60dd22942dbd92d",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154.complete.json": {
+      "source_sha256": "d0a55ed6ce44df544d086fc875335ed2ec0b91cbebf099da28563f5790d0871a",
+      "sha256": "bdde4a65a42224459a74bfebac101ae17b199b443890d3b3ee6626ae3c1dcea0",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155.complete.json": {
+      "source_sha256": "68d98410b38d4eb9d4e67ba619453106d628afb9e5457a1cb4a48975da0d33eb",
+      "sha256": "03b50985bd341ece546a5776dffe3efa38becb1c66f23a2475adac948f0dcdd4",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156.complete.json": {
+      "source_sha256": "837b1a987894bf0bf4521a020c44964cce3edd05be380ec4a7e786d721f94186",
+      "sha256": "eedd2c952267cc9e8d65689e848ba882f94bd8b8dcca34c4705559e4d1cd7ccd",
+      "bytes": 5375
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157.complete.json": {
+      "source_sha256": "81843cade162df25f90c715ebc557d77049bbc47ab841778847059436ca68db2",
+      "sha256": "804badb5c564ed9e53c4dc639a2a336382c8e3af19af7653e92b0593c9910375",
+      "bytes": 5375
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158.complete.json": {
+      "source_sha256": "43e44cad6031972d95a9c5307635f69e349b4807b5d01d8d40efd75201c86907",
+      "sha256": "18c71eb1ea9a6732638a1767fc789dc1bff17d82c57d378c21b64383db5def8a",
+      "bytes": 5375
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159.complete.json": {
+      "source_sha256": "07059fd39078728fd4d478aa6cd52a6befe4d6f32d33aa996d0bc0f18445c79d",
+      "sha256": "a9ddc10408348937fcb3c2ba15e0a1067fa2e1dd27e268b7fbca8407684af895",
+      "bytes": 5374
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160.complete.json": {
+      "source_sha256": "06de8e76a67537d7fdae0dc321fcd84878b0a2f25b7307a3b58f94fae6120f02",
+      "sha256": "3ee5c90114b8498ebd2456a119e44813a69bf799289c7b154525e52da2645a57",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161.complete.json": {
+      "source_sha256": "e0149114fcd003e533a667a65c65b0ca39cf132f3e10430a6f32f032c33982b5",
+      "sha256": "55dce725f203ae77cf183da6dc39403c34ad8fdca36f1e695617912d789f2bb7",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162.complete.json": {
+      "source_sha256": "9d95719a77ae41e4601da6e5153405707ebb56ab0a43530db229cd63bf4f3371",
+      "sha256": "40c9f7050df2d75fd6527c5e310be6b2ffecf6df7262658faa47890fba0e0b65",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163.complete.json": {
+      "source_sha256": "415ccf742283e3254875c84ec25ace7d15aec5bcce0ae5c3fa7f70e34362c5ac",
+      "sha256": "d53ff67e6f18a9cf1135e16293377eccbff23ddf96d7d701924292e9dada2297",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164.complete.json": {
+      "source_sha256": "be48878c47b389e70e798c9fabfd6a22fa88bae13ceb13cd0d9fb3e2db261de5",
+      "sha256": "0ed1bb1f30d5dcaead9ced4823e5be83668711b566d26d34cf93c7cdb055aa05",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165.complete.json": {
+      "source_sha256": "e6c22a6e18b4018fdc874d81edd34a3b211d61919bd6016042e5c2a281492bc0",
+      "sha256": "3ad7887f63d0c77ee1ef5dca6054c693c04218ff73fabb7767697f09a1fbd0cf",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166.complete.json": {
+      "source_sha256": "2cb772d5bd8389a2c53a49813813e3b0c560179b3afe32a5e3b47a0e0c5cabce",
+      "sha256": "c22ee7dbbbf2ba6206e32cbfd6f7777efadc46c68b8cc20f397797921965a58d",
+      "bytes": 5378
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167.complete.json": {
+      "source_sha256": "027f6e383771c371000b0c5d4fd8fcda80de151d153cfcab48d0c0560e6745a4",
+      "sha256": "82192549e1d08e8d0bfd7fe4451f35038bf094430f09275571b41a205707c8af",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168.complete.json": {
+      "source_sha256": "9fff5f5c09551c025921009c8a43560d5f57d3efd300d6411359c300c0002183",
+      "sha256": "117da997201db8bf45403ed1d5c856bd6a5853fb4c976c677ffe2efbaceb11ae",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169.complete.json": {
+      "source_sha256": "090e4239aeb56b0b08d4cc5e1eb631fd24e6fae272f47765d7c1c44c0f1ff579",
+      "sha256": "2c4119d31e0e08d41b83b51cb76a9edc228e4c9e289e8807eaeb5042cf40a1e7",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170.complete.json": {
+      "source_sha256": "0016bd028b61cc139fec36fce5668c8042ca5a8ed1933dcf766781b74df02be4",
+      "sha256": "d5eb303556aa929d29c1bc5719b28fdb94443e4967560ea815dcaa9e2f51de76",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171.complete.json": {
+      "source_sha256": "7d5ea6f51bd5330b1e015005f3566aa23a26eecbffcbd5eebb78b55355a6ba3e",
+      "sha256": "3a56c28d04d99229e720dd7b3a6ac70d78d35b036585cb3b416102f8e9000c7b",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172.complete.json": {
+      "source_sha256": "b75ca2dad17aa0228b05bfc18335b6fd2dac5c96cad608548b9564c49c01f206",
+      "sha256": "de1ac6a71e3dd30ea3db8d69dad9c114b60e0791e1511363999ae28e9f683ed7",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173.complete.json": {
+      "source_sha256": "45009cd7666294d67d82887ebe07c7d69ab1bb4c937b7b52c855721564223dba",
+      "sha256": "eb03052c5834df7f3009863bd144b65446c37dfa9665ac402bb65dcd6312965d",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174.complete.json": {
+      "source_sha256": "204bc9633a13047bdccf3b7dcf484570c42eb424fef43a56f2bf3757ea278776",
+      "sha256": "7b9af47d2058ebfabeee4d6dc74b44ddff42288fb230e142d006603a802a8db7",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175.complete.json": {
+      "source_sha256": "f89eed5ef9236571fc7409d31ee8fe88ba2a132d04b07a5c994ba948910687a8",
+      "sha256": "5de20be591c2317bd4a621797334eacb7a032a691891f13d547d9cc574ad623a",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176.complete.json": {
+      "source_sha256": "3af1729aba167341760271080c64e9dc0ebb3aac1aa042c03960e2678e2faf0d",
+      "sha256": "c496bf6669e11e17c283bd9fb4dba7baf25711a3b0a816a420ea3d72f4c5b8d4",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177.complete.json": {
+      "source_sha256": "baf288455f5a7834cbe5ae7ac8bf1b1c118b648290700baa568454038e9237f5",
+      "sha256": "6022fe3dc2ba9f55d91fac092e841999af5f4b6808fadecb5550ec42dec6be7a",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178.complete.json": {
+      "source_sha256": "b9e5a610e7097e4c51803d7943190d3b66e4286fa38f1e9fd3b5398fbb51e5e6",
+      "sha256": "2a29385760f03167f71ff40b435213045bce65837130e86664378361eafaccbd",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179.complete.json": {
+      "source_sha256": "9afcd5a4feb9d2bced03673823ccc7045e897a5a9b8744c540e4cf59ab3d473a",
+      "sha256": "70069e16ab0a6c72c593f6d63d448f0ad7884fd37f2c2d07620fc4626be0a208",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180.complete.json": {
+      "source_sha256": "93a7f5560235ca3b57ab40acdd3688657d311a33914e83ccd8627f62a55e9a6c",
+      "sha256": "c7f7a1f72e391ecdb5695e7358767438866c3aa1a6255a5eb46f9395667fa54e",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181.complete.json": {
+      "source_sha256": "96ec475985caca26b9875846554baa82730f92a0da39997451577686b5c91d62",
+      "sha256": "ffbfad9c8a3f385be11a32726b7a9958967aa42bf0e61b91b89b15c7ed5f308a",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182.complete.json": {
+      "source_sha256": "e716e6b64c5ad9e87226a15f92501ef95050ee7565af77677d784e50b4f15263",
+      "sha256": "95311b472b527eb04601bb9c480ccfe741765556244af973db43c4657f1525b3",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183.complete.json": {
+      "source_sha256": "f1b6d3a3a3eaa5e061f5c5ae8323a105a050dbdecde88e7574798bb3a05012ad",
+      "sha256": "f4bcbaf594bb463e5354ca21ef0bac61f26dfa81715e685906189ec98abce226",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184.complete.json": {
+      "source_sha256": "afb6348b8d7206c98ae7c9881a5f899ee95ecb1e92e9e7dc4695cead52ee5ce2",
+      "sha256": "e3cc6bb0ea697a66ae1ed828f67685bb9b61c6116c99c139bd9b90d1c06ee50d",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185.complete.json": {
+      "source_sha256": "8a6d3fbed411dddfb50c1393356c0bafb15a62821b3f6bfb03959ca934fbd585",
+      "sha256": "d11d80ce6a0699bf3638cc6659608b923ed8887d6f7f7294c8523a94c250c0fc",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186.complete.json": {
+      "source_sha256": "7732b6bac1606f1ea0f4858ed5cc7ad2550913147a3a32d419371887b83400bb",
+      "sha256": "e4e17d965d3ae5273ed27a1fb40d63f3a79c4de0d3480f45b2e5f485d9432b3b",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187.complete.json": {
+      "source_sha256": "0765239946d52a7475e8368b41fdbfe24499b2b710e8db7c8e6d3c2cf4837f34",
+      "sha256": "80eecbce541776d103523f2efe2bca2628cad1f22055c622958cb467b48e9495",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188.complete.json": {
+      "source_sha256": "4e2f83544617d1fed01eae58b835c1e396fdb8c30c7fd24993a653daed3dbc8f",
+      "sha256": "45069f9a95bcb75fb932d0394ec172215191011c2ef3f33897795b4a54f0ef83",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189.complete.json": {
+      "source_sha256": "0e56e4ea6217306478135e4e58806d4ba3e27d56e66e98fc1c0fb9c09016b8b2",
+      "sha256": "30c8729404c259007f2937153bab9feadb2e69db51549ba5024a5e87a786d89b",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190.complete.json": {
+      "source_sha256": "cbff057a3e9b296e0941e65804b8a5bc770960746be3514d206d2554e2a19242",
+      "sha256": "21490004ae1ffe8699c0552306799197ecad60656132456120744033b4512745",
+      "bytes": 5370
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191.complete.json": {
+      "source_sha256": "aaaaa5e7529e46c1eee2d532260ce7eb391369978c68fb6de96d647862a13dec",
+      "sha256": "40e3dde02de2965725851a5353c3fac4b85f3faf8024f1590539735bbf268660",
+      "bytes": 5370
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192.complete.json": {
+      "source_sha256": "a0b6c1e8126077e10308fc82eec9d76c1a0fc5094fa1a150a4d3b906edb5ecf8",
+      "sha256": "e0144cdf13029b11a19c06a07708d9e92721528a892d5cc402590443bf126a01",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193.complete.json": {
+      "source_sha256": "35ec64baf083618e8c403097c4d73fd67b787a95aa4cc6abeaea0d4d2ae84146",
+      "sha256": "323fa6096ce44495c945d7ed20b157854de81ba2e6336d499bbbaba55b74ebca",
+      "bytes": 5379
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194.complete.json": {
+      "source_sha256": "17bc54be8f82a0c44aaf483d94e6b9e2f59e236d3ca23978abea7af2b36ed887",
+      "sha256": "1fd533f3871acc73084b74be3424aff459d0988c8e4c64b347cb913c365201ee",
+      "bytes": 5380
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195.complete.json": {
+      "source_sha256": "d85e4a06ba23f538f4b46c3385a9bcc4df2feafb47babe4aef24075ae919a427",
+      "sha256": "d47ee5fff66c7757a7d2915e0ca4ed42aba5936da47f8c9d532a760a3e7fbb4d",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196.complete.json": {
+      "source_sha256": "951da028babc205825c871c1fb6489cb9f5a08f8395819d429b31eea7e971215",
+      "sha256": "d5d89a855b392924709910e5644987ffe079f2a6a58230b6bd09df4c663eec53",
+      "bytes": 5377
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197.complete.json": {
+      "source_sha256": "fc3f29450930a983db187eb97eb633da7003055d1564acd5458ec73b9af589ba",
+      "sha256": "7f8f54cd4d4cc39193be575b9e794420554ad40c7bb749f83d055f38cd19f374",
+      "bytes": 5376
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198.complete.json": {
+      "source_sha256": "50ac57399a6c18af820657c921e0856be37f7c03bdd18ab254ab9692305b7878",
+      "sha256": "96bba8b64006c06c38f7e018fa2b30f3f34788fcc04028c4a9088181b44e3026",
+      "bytes": 5374
+    },
+    "records/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199.complete.json": {
+      "source_sha256": "03bde85e235a2acac3b215cdadfc5cc1e15ee46fc6dd47becfee88fab7eb1393",
+      "sha256": "4932e6ab3b9d61b985dd9c1e9c2c4610433128486efad9b3618927b5116445b9",
+      "bytes": 5372
+    },
+    "rescored/fresh_release.json": {
+      "source_sha256": "f889560aa968ef4520793e3cd329eaa4d7d1996f95593b49604b8a616796ac0e",
+      "sha256": "2401ae4c6ae67b651ad7305bd6d69d179cfad510c8611916f51c1d9b9689dc63",
+      "bytes": 117029
+    },
+    "rescoring.json": {
+      "source_sha256": "312c2b78c23f3c53092e9e257f578f3e256ae46d2bd397489f3306db4f88fe1b",
+      "sha256": "680cdfaca8f4118a7850ae336c72b3d8fe9c4542b642ac60f07e3603da2759b5",
+      "bytes": 4686
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100.json": {
+      "source_sha256": "2b18687c1e385b26edc6d3df15003c81ec600f874bc35f504d0ba136aa4e8966",
+      "sha256": "c194f4612c238634742144beb0009547eb336669db76cb87348f8b53961c2bca",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101.json": {
+      "source_sha256": "479af6012a291e59b3803daca9c16f89d88b690a7ba179a63c63d33e8c7a59e6",
+      "sha256": "4ed4743a13795eeba656eaf28f9316cd51d770d8c470da688dba85c5bc62f610",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102.json": {
+      "source_sha256": "27611b8ef1135a2aa5eb77054228d1c6f0cba36131a2dfb2903c94378d60784e",
+      "sha256": "4c6bb9cd37fd94acd25f83e9df6efcd62dd2ad1929bdd9334a2bafe05190a3ff",
+      "bytes": 4492
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103.json": {
+      "source_sha256": "d16e54681892952d8af37a9487cacdc01e212e997a88ca3f2f26929cd42f320a",
+      "sha256": "db121a4d4e32bcd3a3cadb78a08d6ca5394883cec1ff3c261869f90c315b883c",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104.json": {
+      "source_sha256": "06929ccb0bfafd01342e337c21d2a3f1fd36ef0ff6f434f32c1617166b5dcd64",
+      "sha256": "a9adf629122d68db819f7116fe9d7bee3b325725ce6472960cde9ef268f520ab",
+      "bytes": 4492
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105.json": {
+      "source_sha256": "2a173b0a1e13167086c50e7ec8f7a832a6d699d964bfd2fd3f93aeb46823b8b2",
+      "sha256": "6f16f872b32d4a2fb5cc8626c7695fe6383d3f5aa0f18c517fb36b0f2600fe9a",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106.json": {
+      "source_sha256": "4f3b72837aa9531b5bafd5faa89e59212e898011e6de0500973ebd2d83c51285",
+      "sha256": "968d3198ce5b630f06c5ad0b96f632ddb0d8c3a297fb285c2eaa914d2989630e",
+      "bytes": 4501
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107.json": {
+      "source_sha256": "5dc77c9925a262075c7f39c623c5d47ae937fe0ccfbdb73a032829db7badc99e",
+      "sha256": "868730e5123c8d6a41c879d5f439198a3863ce139419b5957ecfde6a0532e6dd",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108.json": {
+      "source_sha256": "12f6bcc3819c38409d2f89e94b7c128e4f2bd6200cfe5d0e65fabb86b20c3863",
+      "sha256": "f2875dcbfeb9850675b28d7ec93c1b74ac176a3db635c287375cd044b38eb1ff",
+      "bytes": 4491
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109.json": {
+      "source_sha256": "c87eb2477aa10892a5391d3a73092c49e8bff982872b0fa6c6435201d4ca36ba",
+      "sha256": "124ca1ea60fff737b5cfaab70de0b2e2edee723fbf3382d2be8756b585f5a032",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110.json": {
+      "source_sha256": "a922984ce0bb2c070d7a8a17ba3b3afe596b3dacf54b4ec3939db53f66d719e4",
+      "sha256": "3ab75ebe00fb7c18df293899faac34cd171372a181183a8b4be3268ad2aac0a8",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111.json": {
+      "source_sha256": "b64c2208aea5fb9e0647350f9413b4a10add8f144374ebaad88a3ea63f7dbaca",
+      "sha256": "5b005898531ab0a1a0679ea2cd56cab55d83f1e70248f7098c4640460cb31e13",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112.json": {
+      "source_sha256": "a97e07ed61c9354c0a2483cf3d6e1896ba4bc68322032d3d42389c57a77f3549",
+      "sha256": "0a2436211c6724a3ee776e949c3f79defdc1daa05a1c47be338a2c4751dbfa73",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113.json": {
+      "source_sha256": "e49dd7e4640285d08eac011b5c1ce9a0ce0de0452f04b56861c575c45cecf573",
+      "sha256": "ad9c34723dc89eba17556895614a35da0b6bd1abc905b0f7a8dee750a1b16271",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114.json": {
+      "source_sha256": "90fda855684e6de015a9e38b44fd14fadbd8e9e6dd058d2507c2895de4df0cad",
+      "sha256": "d7091ade383e884d4e98ade2c08a49a5027f6dba830422a563b14c95cb2aa32a",
+      "bytes": 4501
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115.json": {
+      "source_sha256": "18e349fcc98db4c9a0e26221ea8fa66b9387b7dd5e3deae48d6f2f81d9f020b9",
+      "sha256": "3052b3f4e4b985b65ff24a60070cc08665d2b11843cec609f0c3d1eee09f5ae3",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116.json": {
+      "source_sha256": "9759d1c9e3390df7af1598e733ad05a17f65ceae8f9d42c6481380e8d558f346",
+      "sha256": "b09f576df664f35b5ecd86f3d92e792ffe8f5dbfc4f12f15b5f4da142ddd9cfd",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117.json": {
+      "source_sha256": "9f19cddaca91dab2b9b4ca5ba2ece38a305a73e9793f6227c75175a254730d69",
+      "sha256": "39a9812bd597e3771653ab36e9e2765fac7fbb03e11eb87b2e54fdef217b05b2",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118.json": {
+      "source_sha256": "fcffa2dc9ac5274839d089d6416b3e2dcefc553924e510c7f6af870d2ff756b1",
+      "sha256": "ea60750ca7bede55dca3ae53ace8ae807f306a9a4bd3295cda7c1ddf558c9357",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119.json": {
+      "source_sha256": "f9f87fb2c6b8cb8fe5757e092e77c5ca0f17c3bdf7f1bf43681355baa5d39972",
+      "sha256": "283da2ba2a8dc75ade58b5cfdbe717d6121caed9a9528903d9dba693c444ff8c",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120.json": {
+      "source_sha256": "f53c827884e1041f0e4afc30b5dac0e1202d477b3921964159926b09d53e8cb8",
+      "sha256": "ffe2b8be3a95d62e4210588d2bc8f3d062c620cdc021045b2d934cd54dd823b1",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121.json": {
+      "source_sha256": "7ed50a5006464db178ec950c6c9df5ec8f83e7a66bef182dbe20631cebb5f8b8",
+      "sha256": "62b70bd0402e6e456dccc4c842b59accb0ea51030cadcbb8d9d9167096f843d0",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122.json": {
+      "source_sha256": "113034c75552b5f2c7dc2195a850f20429133394673cf269916dd7610b446a01",
+      "sha256": "57dffb34deab0b40b0647a5512cee528e715e4fe62635ef556470f6992c057e3",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123.json": {
+      "source_sha256": "698b44da2c70e9fcfd4f17258aae5f161d3c90460b168e1825fbb8c15e6621a1",
+      "sha256": "c6534561c24106fe4623d9a59cf57486aa3b4aca0f99dbac7fee55bb2ebaf44b",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124.json": {
+      "source_sha256": "316d717e67582206fe0ed5c522f2e70424070360489d4a24eb8734f06fcea2e3",
+      "sha256": "ad62678710f7294e43a5f1d52378dae8c417211a86ed2ba7a80ff08494c812c3",
+      "bytes": 4492
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125.json": {
+      "source_sha256": "08528807e331b2a71a3242ef1f31529cc13d74424d7878bea62b6ac03e159d29",
+      "sha256": "2644116053a92eb15a1d7a4203c87cef30dd702ef00f280ebe92bf2ae0d62d3a",
+      "bytes": 4500
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126.json": {
+      "source_sha256": "79e52bd34d2593200c5c46ed0324e708a25332f712b0ddd62e66a125f0ef885b",
+      "sha256": "40749156222afb1c23972f2e2947e6edec5f08026c891395284746f8e3ce9506",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127.json": {
+      "source_sha256": "42b1ce880d116c5e03b438c4949f8a00a7c63c7b78006e59c0d111bacf999695",
+      "sha256": "2f7d1e6ae8551a77e50b288b89aff3045edaa9dd03eb14cef4f3e06972cf30d2",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128.json": {
+      "source_sha256": "0d08b27cf62d9f5780f5342e2eb0e482cc4ef422b2abc44065f7de0652bf7764",
+      "sha256": "6038f19dba763daf17fbcc4067d9d00fc15b477150e7d14e3162a62cf2b29975",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129.json": {
+      "source_sha256": "15e530f4fe44b0a6220d5e5d96f6b9f5459938bac12d25e7435c25487553e56c",
+      "sha256": "a06b6a9fdd96694e5e14eff20806f3b72a0c61145ff8283caea3a7ee6a25ff43",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130.json": {
+      "source_sha256": "ff8bc8dacc999c96d5e564fae32b934d18b0ee7d3efac250d0946d48247aecdb",
+      "sha256": "86a0e46ca619c1a317558e925fb1d12a20861c97c4165e5350cefeb2fd477884",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131.json": {
+      "source_sha256": "f4272dfca75551f9363441bf1b10ace1cf698c4ac55174010c53df201948ce81",
+      "sha256": "3a9f3c2adcd57d6978b6d2e69c98bb142cfe807fb782d60522d1b65c3c31147a",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132.json": {
+      "source_sha256": "5d256c1e5d21304a06dade26e611dca6fc2a7e65f3b70e0e49eebb7df42d1dab",
+      "sha256": "8addb775feacf3d7d5aff1a00d3578264dd2de41345c4d2c8d5c6262f4964f73",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133.json": {
+      "source_sha256": "3d37020b8d3585f585dcd5435cc6d593e1dcc69f0a66fda3e165ca833c2753b6",
+      "sha256": "f4e0e338a51c15be5b1e06a9dba36ae4f38f93be150dc6671355d170e68aeee5",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134.json": {
+      "source_sha256": "6db1750538ebb720cb5c0507e379e1fb207cac12c0c6075091c146e4f51d5141",
+      "sha256": "63cb9021e12251333be3ce43ae378d4f24bc4837bb1990951692aad72110b23f",
+      "bytes": 4502
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135.json": {
+      "source_sha256": "687d2873b3dc9bed339522e45d80dea001b359318352ab02029f0a64b86a5386",
+      "sha256": "858d063bb75f4c2f501077ba5aeed47ca254393dfa6fd242783aa21d0a431b30",
+      "bytes": 4501
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136.json": {
+      "source_sha256": "de2f0281bde0af23314237808f13794f27421063047fe1aa627e66e6e9405604",
+      "sha256": "f376feff6cf926e3be16903efb4d89906612cbe2cf3eac179486c4896f53ec47",
+      "bytes": 4488
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137.json": {
+      "source_sha256": "d183e25ef9983601c0beca7dc3c6247aa7394561b126f3d79752205925d62e2a",
+      "sha256": "c9d2f6a8b895146fc62dfbf8573a939c38e632526f44c6b335cf638a93b6ca78",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138.json": {
+      "source_sha256": "0f2a27ba1b4aca0177505479d3da93b25d12b80548473abf384acf92d88e19e0",
+      "sha256": "e1e2249ca0859fe6c978d4044db64656a664903dff2d30f610f1ab21710c2f7b",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.json": {
+      "source_sha256": "d65f4bcb9352a4d88023bdbb1137302dffb382fe68856feb9357665edbc6b926",
+      "sha256": "1714cc4137ee01bdfe63613d20bd4a9bd313120e1ad120d08eea4d012ce670a3",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140.json": {
+      "source_sha256": "5aaa88de3822e720aa75cd7228b3b52155c126a8296110fbae8b1645577d79b8",
+      "sha256": "cb7685dc2742f8cbab92ac89cd02a0ddad376feed55ad7a5c0669330b48d3724",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141.json": {
+      "source_sha256": "b53f5be1a4897c5773c62432ab178a996c02d251c5051832fce312f382aefc13",
+      "sha256": "6e9c94f8c7f72efd2cf4cbec511285730d5fbaf911eba0b274bff5fd529c82ed",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142.json": {
+      "source_sha256": "b026c66f35ef97a45c23be4874aa48f10ced909b5a40f2f3e9d9587791be8028",
+      "sha256": "7198f04794c943a1f88ebc7b653961ce632e49ce3e18c83b1b0582196f572721",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143.json": {
+      "source_sha256": "02c6f8f26b36cee8d53cccb08ea037ca67387b8367a2f77513fbe5e2b84c19b9",
+      "sha256": "bed79d337b3d730e839ccb95e02711a105add9c22d0be0ca0090bdfebaccf33c",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144.json": {
+      "source_sha256": "8d59f34f8fd07d86ba765c165d5a40f6282f8761fe2c89147d1a49b6d81c832f",
+      "sha256": "e02bb5ab19bd3507b32f612c82dec835ffed2bbd5a52d8712618346c9d3ff97f",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145.json": {
+      "source_sha256": "3957d8bcd4e0401d8a6dddf6c6c9cd65eb988b6d65a963dc6df17eab7925b011",
+      "sha256": "895163c55475bea25f4c1f8be9dcb0bbf0465c64fe7cc45cf04f084431b6bc80",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146.json": {
+      "source_sha256": "10403d9de62311024b31c61940263ead88bf58f0be9aedaed2ba657665f44c62",
+      "sha256": "b9f95b7abcc3afde5ed76dd3883a9f243d4946e048d9752405b80fe0bcb1604f",
+      "bytes": 4491
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147.json": {
+      "source_sha256": "0fe9e5f75a9eec05bcfbf4431beefdf3c372ec615c646cf7c633240f743f1a15",
+      "sha256": "f69db433c9fcfe811b97c3ce0dc0f92da639d8b069fc3f2cfc668f2ba56f15d4",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148.json": {
+      "source_sha256": "015a948b7836781c47949fc0113a0eb2cbf4d0b21dcbfb34dc2ddb8edcb57c55",
+      "sha256": "4e89013233ae97550fa12e06431e52c39bbb5b5d7061faa9ad0e7e4235327524",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149.json": {
+      "source_sha256": "e87f409e6419e13118f9f01ba41cf054e3becdf5fddf510f919a9ae1f00bbcc2",
+      "sha256": "e009adb414b3bd3f80fa3a437f42aab55b8164dd83fffdd66b755e686fe4028e",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150.json": {
+      "source_sha256": "7ec275a0cf5ab773aae67b966e90f6a46c89b05bd1b8fcf2bd925d2f4ee3ca7f",
+      "sha256": "92b5cc81f1d26d37db82b5fc7e3f4c114ec02af40e620aa1aba72e58dd7caa52",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151.json": {
+      "source_sha256": "722b073ce9876cc337ecae676ccc76550d92f4bf6c076c807750054aa152b1f9",
+      "sha256": "4a04c71fb7437bde6bccab78752e9cf73f4124fdbe1d797574688cb7c0e91a79",
+      "bytes": 4500
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152.json": {
+      "source_sha256": "5bcf64f4f29a9d82d1c0a1c2ffca2f508a9d3d0b40676767e5b61acad4bda2c2",
+      "sha256": "633d9305623986ab88ad86f7850cf1878f11c67c6d15c8b65e5acfe46804161b",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153.json": {
+      "source_sha256": "f2c75270e622502ce9962efeae4465c4fb9528102161a07e9ed9f926767f19f7",
+      "sha256": "c5603db21d1b3be8cfd5281b94aab7e6503fabbc10ae93feaac23cfd41424738",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154.json": {
+      "source_sha256": "81928b8a1912baa413eb9adb2ab08e41ce4fd3f5d7817b88856302c0939ea588",
+      "sha256": "8702f874fb3950508f3b815c8e971e56932db3b9f4bdc8bf66bb73ec859769cd",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155.json": {
+      "source_sha256": "ae45814d44b783cc6df0cf033e57ae196748ffeb9c703fef69f4a7a9092b31f0",
+      "sha256": "4867f02f6145adada1604b63fd644a46ef7639908f895f04d61d68cfe9dbba53",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156.json": {
+      "source_sha256": "2ec193eaef6eb5cf894915e4a982e197700a378880a97ce28c5bd6c49aa03d43",
+      "sha256": "8bc91ae83e70be09fb7fb50d8e50d5d17425d0d7bd47ccd9f9a03a07e36e48c2",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157.json": {
+      "source_sha256": "5451d58db96499489570cbd4f266e059fb99b14789f087608e29aff289820dd1",
+      "sha256": "73b0157c2de30239daafffdf8733374ffd0938b1bbf324cf763c6af30e200338",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158.json": {
+      "source_sha256": "e4c519332721a149280fec9ac70c5fb862c5e9e1d3fe4e79500b6e6ef5072f96",
+      "sha256": "ea30dca80f067daae56e4853c439d9f307c6e33837d65f8048cfd2cbb108894f",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159.json": {
+      "source_sha256": "f9bf0b96de7837830841223c4eec706ca701c951ff9fd369adfdf0d2043ab639",
+      "sha256": "a0c371bfe2524c269db10851a41979da7f36cc5ea22395a0774c65b877a09a1b",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160.json": {
+      "source_sha256": "fce749f5f548120db23aa30b6eb8b6080e71eb98a2aac99e47a1cd572069d8a8",
+      "sha256": "6a923611801891a3b275c3585139cdda2217d8121e71b44342df836eecb40bd9",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161.json": {
+      "source_sha256": "647f87734256844e560ffc18aab4ae12f3abcbb89b6c444229d3337f53d7f828",
+      "sha256": "eb5a97ca25c7c5457296352b445a3d1883adb9dd55975c4a44be315b735ff19f",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162.json": {
+      "source_sha256": "2151b0d1bcd89ddb515c28b843eb187a3924a2029eb9259e640c45fd01599acd",
+      "sha256": "948c54f71bcd3007ed14a1021896858cdbdaee636a25b98cbc7cef48e431ba6e",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163.json": {
+      "source_sha256": "d5c6819f8205d501d88d78f808856428984622ec816ce3c3ddc7f9d1e2cf50db",
+      "sha256": "d930e3e74bfdc4d6b9741a8310a456bbb07a057ba159fa6c7669e15413e93907",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164.json": {
+      "source_sha256": "2a649e7bdecf3f4026c19e169deccded2d9119411264cbdb628d95c9a2bf131f",
+      "sha256": "acaf1b617819c89e4cc8a8e43379ba9fa2507f03c6b2490368d193e42818491d",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165.json": {
+      "source_sha256": "ed0256abb7ceca85859170a0fc34a317c3ff84bd12a195e798c3a484c6b15254",
+      "sha256": "67d64fe53dd09b6a07e5eaf03b4939493932cde8a6621edbf0d645ad395d2ec3",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166.json": {
+      "source_sha256": "d5d46d4c2ea956ab6bc673a703c0472751d8b3fa70b2f54a7cb39abcb305030c",
+      "sha256": "1a098d373b75ffa3b3e33fd5a38e1d1e9b831d7e0c0d3415f95ebe8a25337916",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167.json": {
+      "source_sha256": "46a345db1a46e0bc48e575501ba7426a22047f7ffb61a9ff3e1e4f850cfb0e85",
+      "sha256": "5b499294b79fe261db5f86e563a3c50b87d8a0caa90ae58d245a0fa8b49e1f60",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168.json": {
+      "source_sha256": "83729b16c9c75eec02af272a3845c739af40f8ae49fb5f95edc3ec6667be50f7",
+      "sha256": "e03164d6ff5bc6e85686f748e51eb83cf6524a975d94840f464986ffa3fe2011",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169.json": {
+      "source_sha256": "1160e34b9d2f4c005eb56c5c52c7db2819f60525dffb89059b0645838be9f6fb",
+      "sha256": "8f894866633696ee715b829a5c344d04d7940185d23a75bfad1d379d4e996cbc",
+      "bytes": 4491
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170.json": {
+      "source_sha256": "f1ecac244384aa70cf2718bd330a0880fa59ede3ee4b912dea62c37df76d39bc",
+      "sha256": "dc005024f401edb2de062c50b92374a004978df0b83e9345b9ca6fcd0ac42980",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171.json": {
+      "source_sha256": "835d661077ea4cd181b3511f33acc71b41300afb772b8effd99bcaae34625e7b",
+      "sha256": "d62f9d6624f91ea419187bfe0f3890d4b00ed7ff1f62cd28ed6b76715487d534",
+      "bytes": 4488
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172.json": {
+      "source_sha256": "f161f3f2fc3a3fb2e56a3869d2997abe9c6f6788812e8eb984c13319369ed22d",
+      "sha256": "519fd278bcb04e9dc5e74e4bf146f52a5ba58d55900bf45102c5f46e523ede27",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173.json": {
+      "source_sha256": "4405d73ed1433a6d403ac023b65de1f84ab3717365a46ebf41fa33e4396a2429",
+      "sha256": "8b82f77680c45d92590c81867e5b1b7e3340a87e3eec9192dcc4cd401e4e30c3",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174.json": {
+      "source_sha256": "fe0a1c378048a0d6bfe82de56b97a34fafa703964cc89c489797b7e0920e8910",
+      "sha256": "35468871b761d1c99e34736fd421e565951a143b908d9815011fe802fd82be86",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175.json": {
+      "source_sha256": "d7ca4264760763efc6ba838a856d168af2f7c1f723e6e5e94faa16223d357662",
+      "sha256": "4bb2e04d4a556d5e46425a99bb0f4affdbe5a57410445fedd7d9d1068cba3399",
+      "bytes": 4500
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176.json": {
+      "source_sha256": "fad17d68077e4991893b3c59062cbe475867ef9ac46f9513b0908b2ce3ea4d18",
+      "sha256": "fa79b46f780c98faf986dd9554905258c4933075dadea2ee7cab1ba25b9c7177",
+      "bytes": 4490
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177.json": {
+      "source_sha256": "59893d3ba67c988ee93e065d0a5f5aae2b37610a3ca4a19495b4b7d58c34855a",
+      "sha256": "10b8a2ccc91d60171d681d240c5dd67c778bdfeb0e2d5220d71a61dee812e570",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178.json": {
+      "source_sha256": "09c5aca434d4ddac45ae564fbf93feacc0d328fd2ea4f3d83d79631ba12338c0",
+      "sha256": "0801f013d4f5697cb6df1a23e92616376c288e5ffb931c53f4cee0db4925025a",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179.json": {
+      "source_sha256": "2f04a7f8df35fdf56fff2ecd29ecf5aa27b73ef4ac9ee19f22784d42880c28df",
+      "sha256": "2720b9f4e8295b2bf2121f0241d611f86b2f3bd909e3ba75958937dc05e2c27b",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180.json": {
+      "source_sha256": "07fae320c6a6119927279dce1439f6f1b6de65acc9cc086fede86798f37f96c2",
+      "sha256": "8bd9775228e296bdb1d06344faa41ba6796d9194888163286667e055fedb5bda",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181.json": {
+      "source_sha256": "d2f3332c19a10f68daf84b6d00f45fb71e3240711ab44983e71328799210750f",
+      "sha256": "9bf7284e7d4d6deb33d06dec25ba3726298f55d5ce20ac04a7fd0dc8ba03b02f",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182.json": {
+      "source_sha256": "b0cca173d14acfc96955ccd7b3a0923f7637d3cefe9deff3524d89b202bb4c86",
+      "sha256": "cd8701113eb7f81caf10c7ae8c6dcb6dc7570a24451a4d4b1f2fbb2e8c7656ee",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183.json": {
+      "source_sha256": "8b6dbfa9c5fec5fbd13308a7816f1ab64df93a87a94bde29a208e905b3cc65d6",
+      "sha256": "54fec449d8a4af68a4bd66ab19fc70bb161612b17a9c22bfde20d30d06256784",
+      "bytes": 4497
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184.json": {
+      "source_sha256": "fb1259e98240e688e3b99ea9cb1ae698e39edfe33e7fd20af1bf91e46cf5e3a2",
+      "sha256": "067b94fe54866620236b9faf07038a5ceb798632fd902eb504ccc601ed6aaf2d",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185.json": {
+      "source_sha256": "848cff75d73ff60c6988500aa435be54b6c58781aa8151eb274c80fde2378ab7",
+      "sha256": "5e2b9f6d71c045c3d9c8ce5e1dac0b54391c0d25f02d58d9f975acdd96c72f3d",
+      "bytes": 4492
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186.json": {
+      "source_sha256": "5fa8a9d17192db198942c9b8a231603474bb672e142e84146a3340f703cdac0a",
+      "sha256": "12212d794efe5466962bebb4c3a110e749718b003894ff674951e7557880eaf0",
+      "bytes": 4489
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187.json": {
+      "source_sha256": "9382db5d683dc45ca8070940bba046da9d964c28671a2f9acd9d2cf2781e1ea1",
+      "sha256": "168de436350be7629971aa5ec0c2bf2e2146a87ee878ce50a1c94f35f111be0c",
+      "bytes": 4493
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188.json": {
+      "source_sha256": "4e4d5205ba198ff2a814bbc315c9a81cc3a9aa8451847382ad169f8843e63c21",
+      "sha256": "d35a37ae0d99ce8e7534801aad341abaecf4a6c283922cbf4e946c0743dc8cf9",
+      "bytes": 4494
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189.json": {
+      "source_sha256": "31d0402a30fe00d345b966840517f9a64f644237514ba6deddbccb37ac15d34f",
+      "sha256": "4db7cc2a34ee1c463dd11485ceea26565ece6a1006e6379ffc34dcb849587c5e",
+      "bytes": 4492
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190.json": {
+      "source_sha256": "513f20d6573f769ecdb96e1ddf65b0eee8023e7bd542e188341c7e3cf0dbde4d",
+      "sha256": "8231e31a194b7705b5cecc2e93396e2acfa961f8007e722d273c2061a34029c0",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191.json": {
+      "source_sha256": "d70fdd453e0ec9295ddaa4086066fc3d4a540514c6d8ba353b5a73f57d1265dd",
+      "sha256": "fe706b2d3cd58ddcf47b4caab314fe8f84529719c92836b656a7e7db478c5475",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192.json": {
+      "source_sha256": "34e9057a2f2b18ced48b2c22e83fd906a33603ea1f85e680c51d7b6ab5430faf",
+      "sha256": "6b1e44e7be9db3ff2649022a768bd4c71d46d4e35ddd123734f6ac715b553060",
+      "bytes": 4495
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193.json": {
+      "source_sha256": "db06d646a2b886b7fa80bcbc0673b15dc8eec709106b3232a09c3caf96678284",
+      "sha256": "cd83dd36c17af671c1e0433f44fa322354c690ad8e2121b8a506d77278db0dff",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194.json": {
+      "source_sha256": "e79c95a6d9dfe30ebf4babbaa74d95a6c42392420869b7e4463d14d0249e5287",
+      "sha256": "690a6e429f75f7531d5a3b3def0b1bd71d268bf601b40fe16ceef78ae7cbb042",
+      "bytes": 4499
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195.json": {
+      "source_sha256": "98b77df39205ff25f9290d40ea6138f5c55dd005a2dd37e65fa2462dc720f742",
+      "sha256": "d3efdb0f1ee17645669f99f4cbb043a8d7e79c19090849fe23b5b7bab80dd8eb",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196.json": {
+      "source_sha256": "c5a0f35cd6b93da8853f20a2dc7f8f50a31db597d7b71a1985ce666c216a6b66",
+      "sha256": "0edff168c658ab522f22e0368425057078c041f3ebbd30c545619c8b1795a43f",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197.json": {
+      "source_sha256": "5e9d24dac3994e930b4ccc17253257d22bb75482dd47dadf735d216e188c3495",
+      "sha256": "c81b9fb72bea4b4e1df75a9bb61e3edef8b5e1085acaab6cfb3d56b1130a5d1d",
+      "bytes": 4496
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198.json": {
+      "source_sha256": "174660cc700d69c6d936b4cd5975ddc49c19a4cfb659ee6e3a40a2fdaf45f8b0",
+      "sha256": "938f540f84b0f6f561ae34e4ba301cbb2347738d7e1b545934e784bfaff0b08a",
+      "bytes": 4498
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199.json": {
+      "source_sha256": "8909e779b0503028b35c0cfc4ef0381514851404f2d34ce509c44472669bf6d7",
+      "sha256": "f574a77d85fc5589282ca22749540141b556abdae26fbe46b9e506e4dae0a16b",
+      "bytes": 4493
+    },
+    "summary.md": {
+      "source_sha256": "4f28a5a8d7f52a56d0c96526306d1c2cf6c6752ec74edb0d26c72141ef88930c",
+      "sha256": "4f28a5a8d7f52a56d0c96526306d1c2cf6c6752ec74edb0d26c72141ef88930c",
+      "bytes": 507
+    },
+    "verification.json": {
+      "source_sha256": "5d4a64c4589a24b77574788ac7a535699472c12706d814a1e65850c6a58775fa",
+      "sha256": "5d4a64c4589a24b77574788ac7a535699472c12706d814a1e65850c6a58775fa",
+      "bytes": 48972
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "counts": {
+    "failed": 0,
+    "missing": 0,
+    "new_reps1_to_7": 336,
+    "reused_rep0": 48,
+    "scheduled": 384,
+    "succeeded": 384
+  },
+  "created_utc": "2026-09-17T12:24:45.035301+00:00",
+  "fallback_counts_by_arm": {
+    "S0": {
+      "none": 96
+    },
+    "S1": {
+      "none": 96
+    },
+    "S2": {
+      "candidate_row_budget": 9,
+      "none": 87
+    },
+    "S3": {
+      "candidate_row_budget": 23,
+      "none": 73
+    }
+  },
+  "kind": "noisy_acq_search_selection_outcome",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "operational_checks": {
+    "cell_seed_state_identity_matches_frozen_manifest": true,
+    "completed_solver_callback_count": 338,
+    "completed_solver_callbacks_equal_reported_nit": true,
+    "local_run_status_counts": {
+      "candidate_row_budget": 32,
+      "evaluated": 338
+    },
+    "max_accurate_candidate_rows": 999,
+    "max_cumulative_local_iterations_per_selection": 50,
+    "max_production_candidate_rows": 9697,
+    "solver_callback_mismatch_count": 0,
+    "target_called_false_count": 384
+  },
+  "outer_wall_seconds_including_imports": {
+    "combined": 868.1413659000336,
+    "new_reps1_to_7": 763.6310971000403,
+    "reused_rep0": 104.51026879999336
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "d27ce5089864ab46b38fc33fbcd1f7d94573c18cbd9bb0be529c45c5162342e5",
+  "raw_bindings": {
+    "remaining_allocation_sha256": "5265dd3ff673bf42e2499240eb7990705635b9272f108b19e24209c9d89a282c",
+    "remaining_costs_sha256": "5ddd0a4f88778ba3351cce476ff8b143cf11b00dc39fa4a73b2722b1e7148dbb",
+    "rep0_outcome_sha256": "b087afbe33d5fa06352c2674a71818dc489ea3ee504b4378bc3e21b5fa695ac7",
+    "selection_wrapper_closure_sha256": "6b751e0472202a0e79fe09b44109590491630ee3e051f276ab7e6d0a6ebe8255"
+  },
+  "schema_version": 1,
+  "selection_snapshot_sha256": "e7d132a3f1902b4ee2e75eaf2769fd769b48b14c4dab4a9009f1705b75ae9b13"
+}

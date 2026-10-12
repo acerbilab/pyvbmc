@@ -1,0 +1,30 @@
+{
+  "seed": 1000,
+  "call": 80,
+  "dps": 50,
+  "method": "SE kernel rebuilt from exact float64 coordinates and hyperparameters; training noise and candidate noise held at float64 values; fresh arbitrary-precision Cholesky and posterior covariance; same importance points",
+  "candidate_names": [
+    "selected",
+    "sieve",
+    "best_central_sieve"
+  ],
+  "score_float64": [
+    4.843184471438023,
+    4.843207262605021,
+    4.847797124264913
+  ],
+  "score_mp": [
+    4.843184471622195,
+    4.843207262788919,
+    4.847797124432491
+  ],
+  "score_max_abs_error": 1.8417178893059827e-10,
+  "fraction_iqr_reduction_mp": [
+    0.02013029163989377,
+    0.020107959011509427,
+    0.0156000526985347
+  ],
+  "importance_variance_max_abs_error": 4.970213796084977e-09,
+  "clipped_variances_mp": 0,
+  "wall_s": 7.279872499988414
+}

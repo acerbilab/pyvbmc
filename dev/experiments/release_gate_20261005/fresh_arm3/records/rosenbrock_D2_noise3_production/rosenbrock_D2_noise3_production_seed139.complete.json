@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139",
+  "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139 rosenbrock_D2_noise3_production 139",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          38,
+          102
+        ],
+        "physical_cores": [
+          "1:6"
+        ],
+        "core_threads": {
+          "1:6": [
+            38,
+            102
+          ]
+        },
+        "job_cpuset": [
+          38,
+          102
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2355865",
+        "array_job_id": "2355787",
+        "array_task_id": "40",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-05T16:23:17+0000",
+  "finished": "2026-10-05T16:27:15+0000",
+  "elapsed_seconds": 238.01887559890747,
+  "artifacts": {
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.npz": {
+      "sha256": "eb7ca9790a4a5ffaa93befae1234c5bf3586346efa581118860188d116cb7781",
+      "bytes": 134684
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.json": {
+      "sha256": "ee846587a6b688f35ade5e29eb93d5867d0d57285027d42bbe1c2dfdffde51f2",
+      "bytes": 4801
+    },
+    "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.vp.npz": {
+      "sha256": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+      "bytes": 812
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.boost.pkl": {
+      "sha256": "23808209cedaf2c31eb8b108f21f8aefcf06ba40cb3041184276471d7afc825a",
+      "bytes": 298694
+    },
+    "boost/rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.boost.json": {
+      "sha256": "d11868d6e2c5dd881d79e6cdbda60b4c03097445e81569c511f46627b47ee282",
+      "bytes": 7976
+    }
+  },
+  "harness": "population_run",
+  "label": "rosenbrock_D2_noise3_production",
+  "seed": 139,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

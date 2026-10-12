@@ -1,0 +1,3100 @@
+{
+  "harness": "population_run",
+  "contract": 1,
+  "campaign": {
+    "name": "fresh_arm3",
+    "path": "$CAMPAIGN_PARENT/fresh_arm3",
+    "arm": "arm3",
+    "manifest_sha256": "b3d4c2733c0898eb6706f5d1a5d4bf722841a6793b9c42eadc29b3df8afb721d",
+    "verification_sha256": "805c35919b5c70f225f8fe698b03c6222b8124ca72384d2e168d5d89c40071bb",
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    }
+  },
+  "method": "benchmark_targets.metrics of this process's package on the returned posterior rebuilt from its plain arrays (population_run.returned_posterior); the evidence error from the run's own ELBO; the random draws from the generators of fixed seeds that benchmark_targets.metrics gives the posterior",
+  "rescoring": {
+    "identity": {
+      "contract": 1,
+      "source": {
+        "trees": {
+          "harness": {
+            "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+            "clean": true
+          },
+          "pyvbmc": {
+            "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+            "clean": true
+          },
+          "gpyreg": {
+            "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+            "clean": true
+          }
+        },
+        "files": {
+          "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+          "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+          "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+          "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+          "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+          "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+        },
+        "versions": {
+          "python": "3.12.14",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "cma": "4.4.4",
+          "torch": null
+        }
+      },
+      "imports": {
+        "trees": {
+          "harness": {
+            "path": "$HARNESS_TREE",
+            "dirty": []
+          },
+          "pyvbmc": {
+            "path": "$HARNESS_TREE",
+            "dirty": []
+          },
+          "gpyreg": {
+            "path": "$PYVBMC_GPYREG_SOURCE",
+            "dirty": []
+          }
+        },
+        "modules": {
+          "pyvbmc": "$HARNESS_TREE/pyvbmc",
+          "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+        },
+        "installed_metadata_versions": {
+          "pyvbmc": null,
+          "gpyreg": null
+        },
+        "harness_modules": {
+          "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+          "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+          "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+        }
+      },
+      "host": {
+        "hostname": "u8",
+        "platform": "Linux x86_64",
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "node_features": {
+          "node": "u8",
+          "available": [
+            "u8"
+          ],
+          "active": [
+            "u8"
+          ]
+        },
+        "blas": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "prefix": "libscipy_openblas",
+            "version": "0.3.34.0.0",
+            "num_threads": 1,
+            "threading_layer": "pthreads",
+            "architecture": "Haswell",
+            "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "prefix": "libscipy_openblas",
+            "version": "0.3.31.dev",
+            "num_threads": 1,
+            "threading_layer": "pthreads",
+            "architecture": "Haswell",
+            "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+          }
+        ],
+        "cpu_affinity": {
+          "cpus": [
+            51,
+            115
+          ],
+          "physical_cores": [
+            "1:19"
+          ],
+          "core_threads": {
+            "1:19": [
+              51,
+              115
+            ]
+          },
+          "job_cpuset": [
+            51,
+            115
+          ]
+        },
+        "threads": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        },
+        "slurm": {
+          "job_id": "2356005",
+          "array_job_id": null,
+          "array_task_id": null,
+          "restart_count": null,
+          "node": "u8",
+          "partition": "$PARTITION",
+          "cpus_per_task": "1"
+        }
+      }
+    },
+    "started": "2026-10-05T16:34:14+0000",
+    "finished": "2026-10-05T16:34:51+0000",
+    "elapsed_seconds": 37.25731587409973
+  },
+  "counts": {
+    "rescored": 100,
+    "reused": 1,
+    "not_verified": 0,
+    "equal_to_in_run": {
+      "elbo_err": 100,
+      "gskl": 100,
+      "mmtv": 100,
+      "rmse": 100
+    },
+    "nonfinite": {
+      "elbo_err": 0,
+      "gskl": 0,
+      "mmtv": 0,
+      "rmse": 0
+    }
+  },
+  "cases": {
+    "rosenbrock_D2_noise3_production_seed100": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 100,
+      "metrics": {
+        "elbo_err": 0.4845492371091318,
+        "gskl": 0.42456554610269015,
+        "mmtv": 0.16066728353452414,
+        "rmse": 0.472445430803167
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100.npz": "4f4bb069af72cc1862def7a00806b2d7ab0efb636f9e935b834e4f9056a9a9d7",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100.json": "1afd0adffcc65f76a8b503dca700a266b0c8764379309197c17a39290f8b435b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed101": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 101,
+      "metrics": {
+        "elbo_err": 0.225930208434594,
+        "gskl": 0.06215640636582598,
+        "mmtv": 0.06764075376457697,
+        "rmse": 0.19699628829844812
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101.npz": "e6c29d036ed4a866e55e25162e3c375a6da7375bb10b47b7ca837675e122d592",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101.json": "b58e8f34771ca4ae81844e36b329f7fd95639c0d06002c07b223771470b3a1cc"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed102": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 102,
+      "metrics": {
+        "elbo_err": 0.123864247311118,
+        "gskl": 0.1805066962527866,
+        "mmtv": 0.07371221779145351,
+        "rmse": 0.2678429671845798
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102.npz": "2fa7d8e6aec5c131f5823b969099d898b30f21994f456218bf78d1a7d5af5a76",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102.json": "54ad5738ac90be2625ff3094826040aa08f92b5267ab3519bc2fe93eef89b5a4"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed103": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 103,
+      "metrics": {
+        "elbo_err": 0.2692623760948756,
+        "gskl": 0.23556063064941257,
+        "mmtv": 0.14385538282270555,
+        "rmse": 0.21320229685253858
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103.npz": "3c491c708d6ea243870839c75390618d41230458e44415627c1499154910fe33",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103.json": "5b7c71127db12975518a35b76185ac67e05aed565b3fbb1995f0bcb6a91f0cfb"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed104": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 104,
+      "metrics": {
+        "elbo_err": 0.4835927947515115,
+        "gskl": 0.9049690533386745,
+        "mmtv": 0.20637271418369102,
+        "rmse": 0.5414299057682341
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104.npz": "b58378eb0c67024f0880a34b600890bf9d0e0a0367ac66dc2149bdc4250e0fd5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104.json": "7512ce036921ac26f6071cbdc3d0efa8c14cba3adf19ebf59156762e64fc24b1"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed105": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 105,
+      "metrics": {
+        "elbo_err": 0.18098650951644535,
+        "gskl": 0.25268157627531507,
+        "mmtv": 0.10800356442800868,
+        "rmse": 0.3034724946477807
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105.npz": "cd8a7b6efef5f308f8bf3210d16e05aed959f408eb7bba5c4b2a63771c575dad",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105.json": "39f5678b8ae7b2cbb831c68f7a43931f43fbc64069fc84a0e4fcf90d57976ce1"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed106": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 106,
+      "metrics": {
+        "elbo_err": 0.06105567023471581,
+        "gskl": 0.08882202007725243,
+        "mmtv": 0.07447823099207251,
+        "rmse": 0.25257248396388177
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106.npz": "a13fa24b8296f32000409bc1f279c9357b3c91601d89b62088efa0f5b0421a7b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106.json": "9750bcfa98084ea486df11feb0a056dad235a81fbe7bae1f4107d36ba173433c"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed107": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 107,
+      "metrics": {
+        "elbo_err": 0.11583936970392683,
+        "gskl": 0.006532812174438629,
+        "mmtv": 0.03181029227000728,
+        "rmse": 0.0898534729136247
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107.npz": "9c02964823a32e096366ac9003eea7c21ed3a36ab29734da76f6fa5690eeb68f",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107.json": "9a24b6a69fdf62214d5673964de811663d2c610326b096325e6a42ad5ec717d3"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed108": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 108,
+      "metrics": {
+        "elbo_err": 0.13488440932937795,
+        "gskl": 0.16394230068231797,
+        "mmtv": 0.08618703135755372,
+        "rmse": 0.2898427420690449
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108.npz": "b232bd23428c366b67f00a3c7afc5e7793e99ef34e3cdbb73d4b4632f80381e8",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108.json": "ed02ebd19c5d6750ede8252d34220deccaa40530a69cc92a70a2e2e11fe4bc09"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed109": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 109,
+      "metrics": {
+        "elbo_err": 0.08466927232622501,
+        "gskl": 0.4012144803309087,
+        "mmtv": 0.1251053334962415,
+        "rmse": 0.3673960572039878
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109.npz": "f0211618e3dfc5f0578e84ff5c9b709bfbf399e38cd92063b45056041fa44592",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109.json": "1c308aac48996b7d3693220a422ee40cd231ebc04bae1882dbf49fee65af42d7"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed110": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 110,
+      "metrics": {
+        "elbo_err": 0.17169807194669984,
+        "gskl": 0.005313741456419996,
+        "mmtv": 0.025602578172524357,
+        "rmse": 0.01792244692994179
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110.npz": "dabf0423b333b3e6e4d664933916915169938aa85a50829dc193a9e486b3afff",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110.json": "fbeb6cf7526b7139b77f516a6685367d1a5b35ca88fefd7043c4ad71d8a1fe2e"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed111": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 111,
+      "metrics": {
+        "elbo_err": 0.1751613105497669,
+        "gskl": 0.5935559847900473,
+        "mmtv": 0.14383208286343985,
+        "rmse": 0.3489299703400911
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111.npz": "6a5d26160da4293acdca81a48d162047a0fdd12d0189ee0f73f2945a68b7b2a3",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111.json": "531b4ee438d098bcbed5ba41e8a7b3e3df9e301166364b41a4456e39863e7849"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed112": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 112,
+      "metrics": {
+        "elbo_err": 0.03140009022430279,
+        "gskl": 0.17522685082464973,
+        "mmtv": 0.11298491123710466,
+        "rmse": 0.34155144770167717
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112.npz": "28eed7f8301cc4f3d99af76e192964cb5db22f201dec52c49a7285aa28f6077b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112.json": "6c95faf00f80865a4d6ef20dd37571c61380cd7756902f00787c239008cf6242"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed113": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 113,
+      "metrics": {
+        "elbo_err": 0.4357191844636108,
+        "gskl": 0.48918623134873096,
+        "mmtv": 0.14887206158181732,
+        "rmse": 0.40465602668966666
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113.npz": "c2fd687c3cbd240743c18406a38c9fe80661944d34cb224b257eec882a8be568",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113.json": "e41cfd956724c8326d305c870d7d8a931d65a7abe63cb9539063a40c24037ea1"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed114": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 114,
+      "metrics": {
+        "elbo_err": 0.04220284447285483,
+        "gskl": 0.051322020885140596,
+        "mmtv": 0.052116276360173325,
+        "rmse": 0.16653439064942066
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114.npz": "34fe331c420669f2798883b7324e52b6ed34c38122410c74db0731f25dc44699",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114.json": "b9584be786f4f69378aafcc5c738a2af510d8d40588ad393016558c4e7d144de"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed115": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 115,
+      "metrics": {
+        "elbo_err": 0.11945292485756731,
+        "gskl": 0.05020516370192857,
+        "mmtv": 0.08610341539151489,
+        "rmse": 0.23417447200757233
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115.npz": "59b5c59b407db1d194cfb5def302f7bcdf496bad1a44b2ff18a834f2930d83e2",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115.json": "e9bf64b9121e4d976250d9dbc5fa3574f0ae69c7d97feceaf3c5d979e8298c67"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed116": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 116,
+      "metrics": {
+        "elbo_err": 0.17896707746350682,
+        "gskl": 0.5681843686276421,
+        "mmtv": 0.13314087267118335,
+        "rmse": 0.4214434781334854
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116.npz": "b6504ab5056a1bd55fa6449dad36669073c762b76460c7ee9da2dea64f234a5c",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116.json": "f5bf6437130f488560ad59ee48b30302d0d54f2b4be8321e503bb76c7d36466c"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed117": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 117,
+      "metrics": {
+        "elbo_err": 0.16943286683408587,
+        "gskl": 0.4103444726148501,
+        "mmtv": 0.14001357709806708,
+        "rmse": 0.336594345637035
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117.npz": "c61cd04a0f7f929ad1baed516f7d781cd83ce97d4369730ef78a85c7f619e3c5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117.json": "263a20a9669ee2013ccc106ff093331cb82bfefa7ec936b09f897fa1c1e972e5"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed118": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 118,
+      "metrics": {
+        "elbo_err": 0.04946836414229416,
+        "gskl": 0.3293616920743007,
+        "mmtv": 0.1645270661893523,
+        "rmse": 0.40253156710061866
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118.npz": "872bddff9aa4e4bc3c36f6ce5dc1a280558af77d92565a0e6efa6215e9490048",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118.json": "3bdef579e7a089141ddc1b224b9949a5468509d68613278b1ed6b20b65e0e6b0"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed119": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 119,
+      "metrics": {
+        "elbo_err": 0.07157890049008842,
+        "gskl": 0.02368967950505757,
+        "mmtv": 0.07087595618874311,
+        "rmse": 0.18735331901558822
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119.npz": "43c05e966b5f35a0048f831c5821d4ae5f1c1ab41f6a33d78c9e671c11252e3d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119.json": "8a8c9367602e5d110bbcc619d0eba9a9549f5c287b54ab6b981ebdface49d55c"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed120": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 120,
+      "metrics": {
+        "elbo_err": 0.4875769319497034,
+        "gskl": 0.1768316205927074,
+        "mmtv": 0.0732265408570375,
+        "rmse": 0.23222280760191863
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120.npz": "ebf3d397f2cc3eb9b425b1b77086c97037f31f16b792f3e1eeb21b2f2c6985d2",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120.json": "c5ad91e1b860366bdd86c359a6484264159c2bace9670927f09a76b4905f93e7"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed121": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 121,
+      "metrics": {
+        "elbo_err": 0.02604749270092155,
+        "gskl": 0.04210470565724039,
+        "mmtv": 0.04319737171141311,
+        "rmse": 0.14652421526017922
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121.npz": "1ae340b20c376e6e1c754881ae50eebd38390a1eddd58a88048aa48cb3af57b9",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121.json": "2a2496543a91d6bf567d17f7aa26ca452d6056e177be761c0f5927bc1eeea24b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed122": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 122,
+      "metrics": {
+        "elbo_err": 0.33731260105783245,
+        "gskl": 0.018466231623549267,
+        "mmtv": 0.05896332223389425,
+        "rmse": 0.10002072013197794
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122.npz": "60f9e2e98dd7301a6eb8a3cfb255f8b22e8c0534484db06f0ee9f9dfbe1a7d0e",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122.json": "93417a01740f548b12e18252fc0bcbfb0204170aa2c59b2b2f4f39002ba59f6f"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed123": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 123,
+      "metrics": {
+        "elbo_err": 0.4599678300388397,
+        "gskl": 0.1286309544063362,
+        "mmtv": 0.09420966839981018,
+        "rmse": 0.2752231177214487
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123.npz": "d3e8d22796f240e4b9cc3d911273d02325782f9ec7857e0f047f0b9cefd5dfb8",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123.json": "cc941ca0c6da07e11c95fd225c98bb3d16c83b6a22db2b548296820461821f97"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed124": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 124,
+      "metrics": {
+        "elbo_err": 0.006562400149662029,
+        "gskl": 0.05094348985449931,
+        "mmtv": 0.05720187744238038,
+        "rmse": 0.17192812448211073
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124.npz": "c27dd7460de5af7e5867c8662b6da208a88c7963786e8c7061222fa64d280c6c",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124.json": "be3328aa4bb725aec267a94c24ba2d5c8bfb350f450ec6030b39ddca55c30c0b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed125": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 125,
+      "metrics": {
+        "elbo_err": 0.019834757468431885,
+        "gskl": 0.009565433444441218,
+        "mmtv": 0.037009190826261876,
+        "rmse": 0.0732113011571577
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125.npz": "19fc45782f325b5b336a685029f5213be416e5acefba05aba236ecd4d7a598df",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125.json": "bf817a92281e1bef4d69e6b285a868fe64fab4729ba29e70cd902621919393aa"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed126": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 126,
+      "metrics": {
+        "elbo_err": 0.028173833013973137,
+        "gskl": 0.008546316431053746,
+        "mmtv": 0.025056448947181332,
+        "rmse": 0.06594778459452379
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126.npz": "405f32fb74f2006b721dca1970598643dbc2ddb23f24eb86e24728cde6952aa5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126.json": "6bcfca3fcc31bb9d2b774d3927f00256242df2dfcca730427c6be2523758a54e"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed127": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 127,
+      "metrics": {
+        "elbo_err": 0.0011108512059654352,
+        "gskl": 0.034556770281376825,
+        "mmtv": 0.08309909756282075,
+        "rmse": 0.20859102574061317
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127.npz": "300337406b176ca96e07c50a35cb1bb8af962e216074f9245b47d798ea4d05dc",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127.json": "ac140b961d0c8732d86a3e47e77d5f8d9b8149b3a061affc02d6523f34dc1c63"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed128": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 128,
+      "metrics": {
+        "elbo_err": 0.1845888674976055,
+        "gskl": 0.0520137316114877,
+        "mmtv": 0.07661145475544391,
+        "rmse": 0.21091616435092117
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128.npz": "ef1200117ceabb83fa43598958738ec0c765581530903392a112295a0768f72a",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128.json": "62bf94c3a78e98c1fcfd5ca14c7b1f2465e9f341713d991911ab56f3fe12937c"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed129": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 129,
+      "metrics": {
+        "elbo_err": 0.12120010562876882,
+        "gskl": 0.1293174357651785,
+        "mmtv": 0.053947249247895304,
+        "rmse": 0.21070230547691993
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129.npz": "2e494c1a0634a76fd69bc4c09078d6aa6da103d96b90114f11122c76f54d6327",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129.json": "683ef9dc3072106d815de11a106b38e5ea7f66cfd43f0d84c9fb41b9dcee744d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed130": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 130,
+      "metrics": {
+        "elbo_err": 0.26359334867012807,
+        "gskl": 0.04460109666187695,
+        "mmtv": 0.17684594069212056,
+        "rmse": 0.18089894043010518
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130.npz": "f45d0248190421d0d37e862b05a048f88be55a50e08b99931e9067507c0ed356",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130.json": "0917aacd3677b7e5dbb588c4046aadabdae9692e2d5453d55d4ba83aa303d33d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed131": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 131,
+      "metrics": {
+        "elbo_err": 0.17378938919860465,
+        "gskl": 4.681127228141934,
+        "mmtv": 0.3343385174276433,
+        "rmse": 0.8978472588318577
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131.npz": "d94c0a1829d1e7c23cac9fb31f7a4d70d210bb0db6d3c49143896bbec670878b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131.json": "4a54ca3364d073460efb8366900f86358e1241065d2878014560547ae3aad70c"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed132": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 132,
+      "metrics": {
+        "elbo_err": 0.09919275965192842,
+        "gskl": 0.38674785763862723,
+        "mmtv": 0.13368099469829664,
+        "rmse": 0.36379739622143575
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132.npz": "f000f723919ba00f3d8302d7ccd9e64761bde1dcef6058f5219eb8cb5ddad44f",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132.json": "8b7533f2e533697d56972b3cd6c85e650f17d7038633af43eafab8e01bf4c583"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed133": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 133,
+      "metrics": {
+        "elbo_err": 0.3703542281348313,
+        "gskl": 4.168535768471193,
+        "mmtv": 0.2776896052421933,
+        "rmse": 0.6910359048895655
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133.npz": "959cdf6083124f6b83f5e6d963f2f441c37ac6d5f51b61ec926bd03f6872ecf5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133.json": "cd3fc61f3011a901d1c8dd3f06ddc965e0d62278a19db7eebd25d0f22caff118"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed134": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 134,
+      "metrics": {
+        "elbo_err": 0.2514950294710818,
+        "gskl": 0.08484283562564365,
+        "mmtv": 0.08670415147505547,
+        "rmse": 0.25465088903532246
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134.npz": "6c7f9504cd17d9e280d27359ab9f09a5da40e1520a5a49af4f5cc35b9a5e0b80",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134.json": "671e6b054507584b354104c70698349a9a09c480a1176abacbef9056d7cc22c5"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed135": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 135,
+      "metrics": {
+        "elbo_err": 0.25550686431697267,
+        "gskl": 0.04062362868896946,
+        "mmtv": 0.07230401236519174,
+        "rmse": 0.203301404564955
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135.npz": "8a9552de1983dae44d202422da95ef2c33155d0df6ba7a9a9c1a8d7abfca9ced",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135.json": "a4e6e3ac790c7641bf1f085bfe91a305f0bb28b65fbf905402b5a010cc4d2685"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed136": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 136,
+      "metrics": {
+        "elbo_err": 0.29122062207154853,
+        "gskl": 0.009365748312382183,
+        "mmtv": 0.02083481521442647,
+        "rmse": 0.0773256596812908
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136.npz": "75b97a719ac6b025547f5e08bd6184cd90272a06bb8eafb6e73f65d2fd108d91",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136.json": "d9b755604897772d235ecd76985d27a855a7c9cb3a47255c9d06b0ffe0f1cf28"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed137": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 137,
+      "metrics": {
+        "elbo_err": 0.362028067636472,
+        "gskl": 0.019386081227409535,
+        "mmtv": 0.03139338076692968,
+        "rmse": 0.09708308007708888
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137.npz": "0d3fe7f8214748079f2cc10c5ae72c55c84307bfac25d8104df645eb2f8e1f2e",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137.json": "bb5a6e582aed7001d5d6bb3556a2d490d4b992687f5ce03f8ac733cf88168b06"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed138": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 138,
+      "metrics": {
+        "elbo_err": 0.044827439841591765,
+        "gskl": 0.020885664101640167,
+        "mmtv": 0.03344509793427838,
+        "rmse": 0.11443224841302319
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138.npz": "30153afbfe6a82e35f30a450cddd281bca6edcdfb1d7cd703a99899d832425e6",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138.json": "35c125a66486ff7c2c82a813d7eb9e3015231b495709e7d801c045475c5d8904"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed139": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 139,
+      "metrics": {
+        "elbo_err": 0.04016256526691864,
+        "gskl": 0.10628871024860043,
+        "mmtv": 0.11768962865703575,
+        "rmse": 0.34114503760277765
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.npz": "eb7ca9790a4a5ffaa93befae1234c5bf3586346efa581118860188d116cb7781",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139.json": "ee846587a6b688f35ade5e29eb93d5867d0d57285027d42bbe1c2dfdffde51f2"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed140": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 140,
+      "metrics": {
+        "elbo_err": 0.0849490973835354,
+        "gskl": 0.05303860215249967,
+        "mmtv": 0.04101494239730014,
+        "rmse": 0.13537934004568164
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140.npz": "a78b2c833ae61470c1f74b5e6cc8b967f9fc34e9d49512019688870ced7eb367",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140.json": "895fbffb95a852bd7f91ef06563743ffaaa893efe706dbf02b6127742686d458"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed141": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 141,
+      "metrics": {
+        "elbo_err": 0.5630157881144391,
+        "gskl": 0.7412566739046207,
+        "mmtv": 0.21278090360768526,
+        "rmse": 0.4871699193569031
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141.npz": "8e4cd56bc68cac3e4097caa2649c54a03f9f93c68f97af2ed504cd0b47d81742",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141.json": "af4687c35f4433e02964ed6316020ec681c0210c08bb3cc76478795b609f83ed"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed142": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 142,
+      "metrics": {
+        "elbo_err": 0.25719787911958525,
+        "gskl": 0.030790144899568883,
+        "mmtv": 0.03128885900245026,
+        "rmse": 0.10329295916495042
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142.npz": "c55c111b2d2d946a86e3b1be5932f2275a93030e5ce8acfa21e65c505bbe0955",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142.json": "f803a860faf62beb718da8688d5f80608ff7f803345173f7b86418ff38777278"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed143": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 143,
+      "metrics": {
+        "elbo_err": 0.09113081881946483,
+        "gskl": 0.2127957431024512,
+        "mmtv": 0.15078176829383388,
+        "rmse": 0.4317977754966744
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143.npz": "f96069da974849254ec56e087097a77a59b03479795ec9e006afb1c9b74231da",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143.json": "9cc5b60f935a210bc653034881a76d29e0b3602ecb56267f7ab5cb4f610c5425"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed144": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 144,
+      "metrics": {
+        "elbo_err": 0.29510586619135637,
+        "gskl": 0.03623519097546535,
+        "mmtv": 0.06161854536486096,
+        "rmse": 0.14030849241507318
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144.npz": "8907480162cf079dc8f10e0aad52e849b1dd9ae1aa26c2ef90e5b93fd1f866a4",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144.json": "58a6b0cde633fa7a8b3b52ff2b16a79002370ea45a38aff08ac59a28ccfb2e17"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed145": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 145,
+      "metrics": {
+        "elbo_err": 0.02119764253720824,
+        "gskl": 0.041859967103650864,
+        "mmtv": 0.06731841975883321,
+        "rmse": 0.1226589450780038
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145.npz": "7a1479312ff125735172e9b4973fb34f3d0fe49b445c7000fcd7f764a70f7834",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145.json": "8157bd77d23df4d1176e9c25037f96e3976ab81ec8dd162c34505537dda4307a"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed146": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 146,
+      "metrics": {
+        "elbo_err": 0.19369813702098115,
+        "gskl": 2.5230093368366435,
+        "mmtv": 0.28778333274729606,
+        "rmse": 0.6077128215690404
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146.npz": "d71ad0105c8c756f4a968b9ada419514d6b47569069b6a4ff02eeab1695c9e53",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146.json": "2e8719b2c2fbbd8098db2165f74249670eaefcadffc94042cb382c4a638d594b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed147": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 147,
+      "metrics": {
+        "elbo_err": 0.05082017711620557,
+        "gskl": 0.06683535709086036,
+        "mmtv": 0.07055382029828619,
+        "rmse": 0.21347783864692224
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147.npz": "fcd2dd9707a5952c3f008171d9f9a63cf86b91e3633894bf238266377338fc8f",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147.json": "f8274b0ed0c9f11f9b66b4d8d099a1d8c1e5815e98d8147b680aa2cde3e85a49"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed148": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 148,
+      "metrics": {
+        "elbo_err": 0.3606822297957857,
+        "gskl": 0.11165005714841153,
+        "mmtv": 0.130587113816046,
+        "rmse": 0.37266270357699394
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148.npz": "9f266051fb479de3156e62053efb371a9f47425b436df412e3f0fec7fa36cd86",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148.json": "d9f1277b51a7b449b4e5aa55df38f69086c7034212de67aaee5ebf033d69abb6"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed149": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 149,
+      "metrics": {
+        "elbo_err": 0.33913794873026637,
+        "gskl": 0.005449393681710102,
+        "mmtv": 0.02336704446420689,
+        "rmse": 0.04067612950605329
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149.npz": "c00abbbd89ddafd7d9c7e5c06387171fcb9b4293a682ab7936d3260474c95f98",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149.json": "6169e6ceaf709319e188613a1e104a52b75ecac29031f930e2f718825c15067d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed150": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 150,
+      "metrics": {
+        "elbo_err": 3.287131713781407,
+        "gskl": 0.5976479410856275,
+        "mmtv": 0.1671842160249708,
+        "rmse": 0.37069460823839656
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150.npz": "4718f6313e5567325ed0035bdac0ca185c60f7ac1ce942129ee6384f97d672bc",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150.json": "fd503ce1abc4422f7656cbea7353ad70157daa6bd2a02d02b4227e4c17f3dccd"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed151": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 151,
+      "metrics": {
+        "elbo_err": 0.1672046081741363,
+        "gskl": 0.15138313402999043,
+        "mmtv": 0.08371894766276952,
+        "rmse": 0.23504041694490765
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151.npz": "6fbd99ef954de5b6c903208e241184c871c1170b6f8d376dccf42d3a2ec16c43",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151.json": "feb31ec169da435ddc8bc6d25d2acb8776ed5afb395d3c646a28f7fbfecd2292"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed152": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 152,
+      "metrics": {
+        "elbo_err": 0.05159921452055238,
+        "gskl": 1.0502559996439724,
+        "mmtv": 0.22100866600003738,
+        "rmse": 0.44836782661969277
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152.npz": "57f4ede1cbb76321409d912332aea3adb929e9936a6cef43f427b2eb8aed5462",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152.json": "ad5de8823478c0804b91177fee74715c2ccb2e387da4edc2f59599679a3451d9"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed153": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 153,
+      "metrics": {
+        "elbo_err": 0.19152112170174052,
+        "gskl": 0.011890349490452201,
+        "mmtv": 0.04477372182668985,
+        "rmse": 0.09533116059235415
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153.npz": "beb8e942912dfbb6ddbd97c14b86fa60eb7766d5c2562c4cdc80726adad248ad",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153.json": "cdb16573cbea402863e5219720b0bd4240eda1ec5b916ddea64132d65847b0fb"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed154": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 154,
+      "metrics": {
+        "elbo_err": 0.8549103388918642,
+        "gskl": 0.21463028757098346,
+        "mmtv": 0.08824458162360238,
+        "rmse": 0.2837622372417114
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154.npz": "484fdce979daa695415304c05248816601d8866b7eccefbe6d66d1d24040ac32",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154.json": "78d7dbb4e6b0df22424a3ff11e4ece8681951ef4bc9f906562c200128c1c4cd5"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed155": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 155,
+      "metrics": {
+        "elbo_err": 0.16538164286147472,
+        "gskl": 0.016365360851720134,
+        "mmtv": 0.07047114156890924,
+        "rmse": 0.09634455946451635
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155.npz": "95d19077d8e81cb51bf181ead643720bc279f29c9f7a7540592174621a70f918",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155.json": "2a55ece12e1966756b848cf99dacea989a297450ed8bf0af7b8d5d2497714cc2"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed156": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 156,
+      "metrics": {
+        "elbo_err": 0.05835069424565775,
+        "gskl": 0.18184537012114915,
+        "mmtv": 0.1494229692497296,
+        "rmse": 0.11104852871819092
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156.npz": "50f198046823f335eba6b188fd57bc7a53f39ab2447fdeb9b1cb801c5c7b5fd6",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156.json": "d596fe7c086a30a7f5c327bf576d66f548618395acf3e5f7a54d2768d08d7cec"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed157": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 157,
+      "metrics": {
+        "elbo_err": 0.1247767797089443,
+        "gskl": 1.1424986083400555,
+        "mmtv": 0.17716123774747472,
+        "rmse": 0.4242910318748207
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157.npz": "491e993d175162518e725322aeb50ed2c6812ca1a31007bb4ac0cc1b4d6f476e",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157.json": "810d0886f576647a5672ef1d8099de9e1ff9b23d613e50d4b41b9d9d22e53840"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed158": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 158,
+      "metrics": {
+        "elbo_err": 0.27257986789806443,
+        "gskl": 0.17812285997419375,
+        "mmtv": 0.10538166578047291,
+        "rmse": 0.32737657805544984
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158.npz": "65a415591601f3a6fda801b1fc8961a7659f020d09ac2d99aa193f4c79267e7b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158.json": "0d9f5014d5ad5dc1018e987ab60da0c5f2fe49669b8222f5645f52033c46f1b5"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed159": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 159,
+      "metrics": {
+        "elbo_err": 0.09309532625798367,
+        "gskl": 0.030338281718780113,
+        "mmtv": 0.08167749239060429,
+        "rmse": 0.1943653991011634
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159.npz": "c1c6293583643375020d0ac6d1370c5d9197fbe63fbb8f82cd918721399f07fa",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159.json": "0e5add31c1ed087e3c01b68561ff4d99610e290fb65d65cc0ac44a27e958c711"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed160": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 160,
+      "metrics": {
+        "elbo_err": 0.3402983958943877,
+        "gskl": 0.11403332345460748,
+        "mmtv": 0.08219368785249073,
+        "rmse": 0.2395371540348038
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160.npz": "bda62837d116f3febec366bf91eaa8954e7a140867cc514b270221374fd58745",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160.json": "3a1b504ee8af90a20d0d4b5d2426b63b7613e9dcdb02e88071f9bfff0719a53d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed161": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 161,
+      "metrics": {
+        "elbo_err": 0.4896397457320032,
+        "gskl": 0.20719248411304558,
+        "mmtv": 0.12449585308126906,
+        "rmse": 0.35180973389877784
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161.npz": "7df1ff6aba75ffe3b1ab7b859f088dfb7147f710e8a06adadd7c6cc5fd7c6fca",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161.json": "68d1034a0baa7744d4d9ef42e92a8648ac8ee866193cf8b3d99b4d1e90e0e789"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed162": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 162,
+      "metrics": {
+        "elbo_err": 0.07019160081740194,
+        "gskl": 0.01894415314950154,
+        "mmtv": 0.047183461321273275,
+        "rmse": 0.1150907066049976
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162.npz": "b82205ce098287368f45d27aa9f9a5d2e6fe679093949c5c004c9a1b06d04875",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162.json": "93447053985a70c21d1f36683cd8aa514a7c592a443c1cec01eeb881c08e6bb0"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed163": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 163,
+      "metrics": {
+        "elbo_err": 0.025593950120691655,
+        "gskl": 0.11937504979800162,
+        "mmtv": 0.07368518818789326,
+        "rmse": 0.24626568914188712
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163.npz": "664256cde0bcba005745d90ad83aeb3b95e2473fbf9a2a990b58e4f28acc7ae7",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163.json": "771ec77d15c4e153a75af04af314d86b87ae5dd26de379b3b79db3ecbed9a18a"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed164": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 164,
+      "metrics": {
+        "elbo_err": 0.21030376002808504,
+        "gskl": 0.13222693001733293,
+        "mmtv": 0.23046845210169103,
+        "rmse": 0.23219963649974404
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164.npz": "e07302b836005aa990bafffe7c7b6b13f56f40d7b0159a799ce602eed7a126ed",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164.json": "7998094608dc894642f3b526be567ba9ae699d6d64be4cceb9d2878cc76f07a4"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed165": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 165,
+      "metrics": {
+        "elbo_err": 0.12676277443377115,
+        "gskl": 0.11942791712319384,
+        "mmtv": 0.10183355231372132,
+        "rmse": 0.2777889742589039
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165.npz": "bfc7baf42b1fe9960087799baec4b2f3cb6638ea1cd2ee857427c9f4ff5e67d5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165.json": "b6ae484c3b6b676fe459a20a242002d6ee1c325a6b8748de4a06b79fc950b30d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed166": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 166,
+      "metrics": {
+        "elbo_err": 0.3115499552738661,
+        "gskl": 0.007414735917825321,
+        "mmtv": 0.02628738777058265,
+        "rmse": 0.06659934952378739
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166.npz": "0bb25201cf872fa5f5e22f198f31358e1de7bccf70e212594143778bb9deb46b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166.json": "9f159ade032967f97bce0393b7cb5dbdb9a2d484181a6d3bf1976e1382c2344b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed167": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 167,
+      "metrics": {
+        "elbo_err": 0.3239548353372419,
+        "gskl": 0.05092463906878497,
+        "mmtv": 0.07009398573406656,
+        "rmse": 0.17752190745918864
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167.npz": "0b03d6e68bb80c2e622ce632a68a822cd3890a5eec9a1a8ab7618435de4e550f",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167.json": "1d88c542df0026dbec3447c04fba1d70dc70df66eaaccd5332327e9e0348ab42"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed168": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 168,
+      "metrics": {
+        "elbo_err": 0.04016742979191745,
+        "gskl": 0.897849585922909,
+        "mmtv": 0.2778490604275919,
+        "rmse": 0.700089638588084
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168.npz": "7f2465fa3acae0f22ca6b524df1e7cb1deec85753eff800b565621b6db994c75",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168.json": "1720d9880ae6efb1988ce15250f7fc83c669807af04ebb1a107e2601c5c36f5d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed169": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 169,
+      "metrics": {
+        "elbo_err": 0.2658530308525382,
+        "gskl": 0.059325971077022255,
+        "mmtv": 0.06080600625581851,
+        "rmse": 0.18207218727912022
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169.npz": "439f9d984a692dd07af4971da72f596367e1448ec69b8c630a272afb3ca2e253",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169.json": "8be55dc57e24835c672afb5dae909e49c880d5e2616684a1de8dc50401a0c050"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed170": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 170,
+      "metrics": {
+        "elbo_err": 0.38213052469090325,
+        "gskl": 0.48315240657076336,
+        "mmtv": 0.1959923374371711,
+        "rmse": 0.45155369688188646
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170.npz": "5d6452bf2c2fe90c86c539df303ed3058cd33eb807552e49ab1335fce5f0e8f8",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170.json": "20eaf4cc84261fb62d349a576541f83d710d29b64336710f488e3e31cbe470c8"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed171": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 171,
+      "metrics": {
+        "elbo_err": 0.3412339651223748,
+        "gskl": 0.374459819889875,
+        "mmtv": 0.12461077833617122,
+        "rmse": 0.3276052020371088
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171.npz": "7d4879f338b52edb497ced819c82cd45fed4c458ea650172cc0ab3804b7617eb",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171.json": "4cff9b91303deeae7643e59bddc824794f7fecb873321f721c28bce6df97ef4a"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed172": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 172,
+      "metrics": {
+        "elbo_err": 1.7228913349825992,
+        "gskl": 0.03639753109223248,
+        "mmtv": 0.0727672614677065,
+        "rmse": 0.13579700703208905
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172.npz": "28e37abedd9b3764e707270664e055192ce0a0c1bfd3647459d4549b6ca1f0c5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172.json": "ea5986e0491076fce58874f03551007192460921e3dec3303011d936f75e043b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed173": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 173,
+      "metrics": {
+        "elbo_err": 0.21302956081692948,
+        "gskl": 3.245607118742896,
+        "mmtv": 0.3493501788339217,
+        "rmse": 0.4935657213800398
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173.npz": "58879eaff5a4ba4a6252bd1fb41d899f47c15b25002246777c39723aa8100230",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173.json": "78b3ae53f208f3e46b118f136f5fbf59f2633e6f90e666e21dda9bd0c6d688de"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed174": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 174,
+      "metrics": {
+        "elbo_err": 0.4472089495495144,
+        "gskl": 0.2915988042187094,
+        "mmtv": 0.15209714951676112,
+        "rmse": 0.3641167776079516
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174.npz": "8ba4817556b6f78b001dee3070bbca685b0f6512d31907b3c1c205d78f363a1b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174.json": "ce3e8164f70a9c575aa433f0c66e9aac43e24f639e6fb9593f4486ace665e4a2"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed175": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 175,
+      "metrics": {
+        "elbo_err": 0.025760473356910563,
+        "gskl": 0.005057449942175163,
+        "mmtv": 0.01693219316250034,
+        "rmse": 0.023194818508809844
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175.npz": "6d71d96f6d0ad1837e29880a5c43d4b752780a964f3f6a138f6f2bb1e020b7d6",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175.json": "6891954531fa773dbaca0e694607149836bcc0f3994b1dc072277e5f7bffe4ce"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed176": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 176,
+      "metrics": {
+        "elbo_err": 0.03198034301669672,
+        "gskl": 0.4211082670862295,
+        "mmtv": 0.1473635578329405,
+        "rmse": 0.4371307092244137
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176.npz": "5da645d4af956a69296c8187f4fc7354069d394a18e5446930c23aa83bcd6393",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176.json": "aee9138c709409128bccafe3f8c60ed806a6e4694e44a4f520eac257d69db9c8"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed177": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 177,
+      "metrics": {
+        "elbo_err": 0.04295643538302363,
+        "gskl": 0.09484628804984019,
+        "mmtv": 0.11206151101604007,
+        "rmse": 0.3035233909616312
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177.npz": "8252394f148a21472559aa2a1f8d0e4005fa39fc68b8a76fefbcebc88dd8a829",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177.json": "4c293a485c1f168ae4ba393a60253eac7844eadd09baef5b8f02df73c7a4cca1"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed178": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 178,
+      "metrics": {
+        "elbo_err": 0.23557116416803092,
+        "gskl": 0.16803540619774626,
+        "mmtv": 0.11775649185686776,
+        "rmse": 0.35351772559988837
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178.npz": "ce4adff2864ab52d6857b0e17f68123e35e9fdd9c7aa80f9ad05aa9b78b975e5",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178.json": "6ffa82f44fe782c576629a971ab4735c77fb4f0445ccaacb37d4b187f5d2a508"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed179": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 179,
+      "metrics": {
+        "elbo_err": 0.10582404756437036,
+        "gskl": 0.19014303265779797,
+        "mmtv": 0.08274587024251598,
+        "rmse": 0.25978728770009185
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179.npz": "827fed2fcd494a8b1af45b31f51c84a5fbfdb669b74189025aa9fb3ec89498b7",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179.json": "56c4215a52875eb209dea949b68f04e097e9c63cc37f593f79271bbceb66c10b"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed180": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 180,
+      "metrics": {
+        "elbo_err": 0.0025350906239336446,
+        "gskl": 0.1465290941839329,
+        "mmtv": 0.1139280480349191,
+        "rmse": 0.31150105344373247
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180.npz": "1d600a5221f77c849c65dbbc87db125edb7b3ede57c002a6682570fd04649263",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180.json": "0c0fbec6f8fe2f9092bddc75de15d724746a6d3f43ed351343f8daf91e3f6830"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed181": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 181,
+      "metrics": {
+        "elbo_err": 0.4626835075481761,
+        "gskl": 0.027413982616091792,
+        "mmtv": 0.04772765256713709,
+        "rmse": 0.13856329426010264
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181.npz": "2795330469aa876a633bc31a82d23af0a93d60e50fd8bc0e3884fff83dacb7f6",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181.json": "09ef70161d67d767923f4a1d12007e3620f62e466873f19980d3d29d551b56f5"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed182": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 182,
+      "metrics": {
+        "elbo_err": 0.14890311103798748,
+        "gskl": 0.3319899839230891,
+        "mmtv": 0.11943614001391366,
+        "rmse": 0.29216828152805124
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182.npz": "301636f91a22ef8d51a28f6e8f8359ce714d6b64a8fbf014934ee956ca954445",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182.json": "fecec91e4e6c2b08c8fbbc839a32cea3199b87a1f2aa94d06bc4aab303f87df0"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed183": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 183,
+      "metrics": {
+        "elbo_err": 0.1291463207018082,
+        "gskl": 0.3917333146931904,
+        "mmtv": 0.12786292515514042,
+        "rmse": 0.3847756886770823
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183.npz": "b2aad489a489d3d8254c2589bccd94372f050a311f75e892034f82402b870b50",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183.json": "57bf13421a0a592b3e6b1caaed46dca91f3d57b65b3a25f75bc8d6a72959c84e"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed184": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 184,
+      "metrics": {
+        "elbo_err": 0.3840806722246306,
+        "gskl": 0.3256746939776545,
+        "mmtv": 0.13079540548188429,
+        "rmse": 0.3811051554363076
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184.npz": "f854c2c1c673fa90ff0fe753677e6b6d67e6035183b92bb4712ede893ad534b1",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184.json": "060a1eeb403e5e37e0b9e43932324cea7f1d2654b455977bc0f282cfe3aa5a73"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed185": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 185,
+      "metrics": {
+        "elbo_err": 0.11917107141282868,
+        "gskl": 0.23220257989616905,
+        "mmtv": 0.07375184486615909,
+        "rmse": 0.25616777698896825
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185.npz": "004bc07f37bca7aee7bfecf7dc27d6a6707ca842a10db0f6b9cc6d1d24d93bdc",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185.json": "509b97b664237964ac08a224aab228289ea78143957421ce022ad3c60b6d0828"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed186": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 186,
+      "metrics": {
+        "elbo_err": 0.24571070248213323,
+        "gskl": 0.6780047934884861,
+        "mmtv": 0.2839751544745883,
+        "rmse": 0.2949718415178007
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186.npz": "70620782f39d6df9d119d31b007a213d36402a942faab97dd5992c0f489239c0",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186.json": "4470dbcfaab34c66fdb7cd06d315eacd37f34fd32f7adbaaabbe63e54893faf9"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed187": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 187,
+      "metrics": {
+        "elbo_err": 0.2923606495597859,
+        "gskl": 0.1495497749117164,
+        "mmtv": 0.11369269707724888,
+        "rmse": 0.3418777826844138
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187.npz": "6db0cfff64ff17e3cfd68d868386a98dfd4a91eedbcb36de385331595abaf181",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187.json": "4b7293a37955e26eea659095abec02f5ee2c4a94e2b926fe295588e5eac81e50"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed188": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 188,
+      "metrics": {
+        "elbo_err": 0.24932789024689628,
+        "gskl": 0.3425360447778818,
+        "mmtv": 0.13278834799079153,
+        "rmse": 0.38589969101710214
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188.npz": "7fb9605037531b9e3ebb88179b7dbc8c32d784035d9727e5f65866f3abf89fcb",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188.json": "e2ce15663ae3f5fe93755b86e9c43cc731823edd36f63924ca04568cc1b5860d"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed189": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 189,
+      "metrics": {
+        "elbo_err": 0.1319035302374072,
+        "gskl": 0.2200976236716775,
+        "mmtv": 0.14818839364636557,
+        "rmse": 0.44298527259305615
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189.npz": "a8750159a56661088893c707b81fdd6bb1a113ebf615f0aa4ad824e73483f8f9",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189.json": "8528547231fe72d741ea27e26a09ea8272528499d6b5a3910c6157a576aab4fc"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed190": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 190,
+      "metrics": {
+        "elbo_err": 0.06447046950176683,
+        "gskl": 1.0804102420350274,
+        "mmtv": 0.26640516480688503,
+        "rmse": 0.6123948483587204
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190.npz": "cf2a5531516d257e1a7f05c12495bd470a8a2f1b9f54a41001b75992e7721ec1",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190.json": "5f71eded2ce05f43fceceb126355cf384b140f3e24cbe578279019ddcef507a2"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed191": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 191,
+      "metrics": {
+        "elbo_err": 0.13531223289603878,
+        "gskl": 0.22025405821315847,
+        "mmtv": 0.1025402346907009,
+        "rmse": 0.3002683885792877
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191.npz": "ac3570450ae182ebc301a32b0c06ea83ca89d3da1d020658d954433f693a03d9",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191.json": "fc7a6f72a0834b42bd922aadb570dc988ac5cd5c1c6a0d884d0b81ce51d79bdd"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed192": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 192,
+      "metrics": {
+        "elbo_err": 0.05439669525174429,
+        "gskl": 0.03418730832079453,
+        "mmtv": 0.055498028279567346,
+        "rmse": 0.11822715443557133
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192.npz": "2e57e7efc478ab7fffed80922cfda6af6ebac389e502681e95389696d584949b",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192.json": "71ecadddc7fc3a1dc82c8f56f77f406af0622561eddbee5e184af6415de15282"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed193": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 193,
+      "metrics": {
+        "elbo_err": 0.11392850437802116,
+        "gskl": 0.07278901014140088,
+        "mmtv": 0.06303464263498845,
+        "rmse": 0.2017121418943136
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193.npz": "e41fcfca99fc5b12aeedf98397f22407188b127e49c426bf9b3fa955b8c0f08d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193.json": "85e539caddee8db97a4a496d7190facd82610b4a1da445dba53cd1e9990e57fd"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed194": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 194,
+      "metrics": {
+        "elbo_err": 0.04769543550913724,
+        "gskl": 0.14993743179585345,
+        "mmtv": 0.0860165758104491,
+        "rmse": 0.2636175491017884
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194.npz": "537785d6c2fcc934f04bd8e6ad9d5b0237dd06a3e6410054ccedcaa33305eebb",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194.json": "2f76900770f5c7ce6d4813d122e759e1ad39fb1d206029a619af63bdede04fe8"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed195": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 195,
+      "metrics": {
+        "elbo_err": 0.005118730065566179,
+        "gskl": 0.42223786266851226,
+        "mmtv": 0.11791331443181548,
+        "rmse": 0.31170296225314287
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195.npz": "1a52923bba1894b2382558fb2eef9669ec03cb9624acf3c407098be2eeb4c2c1",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195.json": "7ca3ae9d7d178fe124cb72eaee0eb39412d9ed643890efdbf5d05603177c4ede"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed196": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 196,
+      "metrics": {
+        "elbo_err": 0.1517923708922897,
+        "gskl": 0.06478551275967137,
+        "mmtv": 0.06857748644491549,
+        "rmse": 0.2028033829188336
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196.npz": "91bc21441e781ecc925fd0a2ab8bca1722ae65de1bbb4aa0d1841afde5a9272c",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196.json": "a39aef89af35a91029cfc681860ffdcd8b56224417ae22e27769b6b65b4f18d8"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed197": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 197,
+      "metrics": {
+        "elbo_err": 0.11612533218533594,
+        "gskl": 0.09502925742711943,
+        "mmtv": 0.08506339324275741,
+        "rmse": 0.2649368423197588
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197.npz": "3ba8261f9b2d44099e02ac8111a481bc79a8c5a2422fdc2974e9a6ac5544a0f7",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197.json": "32d3a01f1b05b18edebe8655dcda4a1181e8393160b9065ba2347365a12979c3"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed198": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 198,
+      "metrics": {
+        "elbo_err": 0.2075781967572996,
+        "gskl": 1.162727379851848,
+        "mmtv": 0.3533864933616199,
+        "rmse": 0.6910375402475188
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198.npz": "931d494027a52382835cbd8b94b592ecb76257090062c86fcf7030cf7d03f19c",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198.vp.npz": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198.json": "7177f18f618452a6a9df6d6856f3265ed9e3e08d568929fc1f284fca2d2fc872"
+      }
+    },
+    "rosenbrock_D2_noise3_production_seed199": {
+      "status": "rescored",
+      "label": "rosenbrock_D2_noise3_production",
+      "seed": 199,
+      "metrics": {
+        "elbo_err": 0.2655516460872538,
+        "gskl": 4.84986273944137,
+        "mmtv": 0.2956151621162214,
+        "rmse": 0.6302623535559153
+      },
+      "moment_method": "affine",
+      "equal_to_in_run": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "finite": {
+        "elbo_err": true,
+        "gskl": true,
+        "mmtv": true,
+        "rmse": true
+      },
+      "artifacts": {
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199.npz": "2c186b479de0c86dd3e6e57b0f94933a5c55545dab7976f1fe01509d4a10bdd1",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199.vp.npz": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+        "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199.json": "a13547ddf91d35999b229d37e0ab8df5c583e6fb73ddb017e29e8161eb2c75fb"
+      }
+    }
+  }
+}

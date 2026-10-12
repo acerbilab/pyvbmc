@@ -112,9 +112,18 @@ class IterationHistory(MutableMapping, dict):
     def _expand_array(self, key: str, resize_amount: int):
         """
         A private method to expand the array for a given key by a resize_amount.
+
+        The longer array holds the same objects as the old one and is stored
+        without going through ``__setitem__``: the stored values were
+        deep-copied when they were recorded, and copying them again on every
+        expansion made each ``record`` cost as much as all the iterations
+        before it (and briefly held two copies of everything stored under
+        the key).
         """
-        self[key] = np.append(
-            self[key], np.full([resize_amount], None), axis=0
+        dict.__setitem__(
+            self,
+            key,
+            np.append(self[key], np.full([resize_amount], None), axis=0),
         )
 
     def record_iteration(
@@ -128,7 +137,7 @@ class IterationHistory(MutableMapping, dict):
         Parameters
         ----------
         key_value : dict
-            The keys and values that should be recorded. They keys must have
+            The keys and values that should be recorded. The keys must have
             been specified on initialization of the object.
         iteration : int
             The iteration for which the value should be stored, must be >= 0.
@@ -153,6 +162,21 @@ class IterationHistory(MutableMapping, dict):
             else:
                 self.record(key, value, iteration)
 
+    def _iteration_count(self):
+        """The number of iterations recorded: the length of the longest
+        entry.
+
+        ``record`` stores the values of a key in an array indexed by
+        iteration, so an entry is as long as the last iteration it holds,
+        plus one. A key that holds no array counts no iteration.
+        """
+        lengths = [
+            len(value)
+            for value in dict.values(self)
+            if isinstance(value, np.ndarray) and value.ndim > 0
+        ]
+        return max(lengths, default=0)
+
     def __str__(self):
         """Construct a string summary.
 
@@ -162,7 +186,7 @@ class IterationHistory(MutableMapping, dict):
             The string summarizing the IterationHistory object.
         """
         return "IterationHistory:\n" + indent(
-            f"num. iterations = {len(self)}\nkeys = \n"
+            f"num. iterations = {self._iteration_count()}\nkeys = \n"
             + indent(",\n".join(key for key in self.keys()), "    "),
             "    ",
         )
@@ -189,7 +213,7 @@ class IterationHistory(MutableMapping, dict):
         """
         if full:  # Output every class attribute (for debugging)
             return "IterationHistory:\n" + indent(
-                "self.check_keys: {self.check_keys},\ndict: "
+                f"self.check_keys: {self.check_keys},\ndict: "
                 + format_dict(self, arr_size_thresh=arr_size_thresh),
                 "    ",
             )

@@ -4,6 +4,8 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.priors.prior import _check_finite
+from pyvbmc.rng import get_rng
 
 
 class SmoothBox(Prior):
@@ -19,11 +21,11 @@ class SmoothBox(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower pivot(s), shape `(1, D)`.
+        The lower pivot(s), shape `(D,)`.
     b : np.ndarray
-        The upper pivot(s), shape `(1, D)`.
+        The upper pivot(s), shape `(D,)`.
     scale : np.ndarray
-        The standard deviation of the Gaussian tails, shape `(1, D)`.
+        The standard deviation of the Gaussian tails, shape `(D,)`.
     """
 
     def __init__(self, a, b, scale=1, D=None):
@@ -37,16 +39,22 @@ class SmoothBox(Prior):
         b : np.ndarray | float
             The upper pivot(s), shape `(D,)` where `D` is the dimension
             (parameters of type ``float`` will be tiled to this shape).
-        scale : np.ndarray
+        scale : np.ndarray | float, optional
             The standard deviation of the Gaussian tails, shape `(D,)` where
             `D` is the dimension (parameters of type ``float`` will be tiled to
-            this shape).
+            this shape). Default `1`.
+        D : int, optional
+            The distribution dimension. If given, will convert scalar `a`, `b`,
+            and `scale` to this dimension.
 
         Raises
         ------
         ValueError
-            If ``scale[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
+            If any pivot or scale is not finite, if an array argument does not
+            agree in shape with the other arguments or with `D`, if
+            ``scale[i] <= 0``, or if ``a[i] >= b[i]``, for any `i`.
         """
+        _check_finite({"a": a, "b": b, "scale": scale})
         self.a, self.b, self.scale = tile_inputs(
             a, b, scale, size=D, squeeze=True
         )
@@ -98,19 +106,23 @@ class SmoothBox(Prior):
 
         return np.sum(log_pdf, axis=1, keepdims=True)
 
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the smooth-box distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state.
 
         Returns
         -------
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
+        rng = get_rng(rng)
         rvs = np.zeros((n, self.D))
         norm_factor = 1 + 1 / np.sqrt(2 * np.pi) * (
             (self.b - self.a) / self.scale
@@ -118,28 +130,24 @@ class SmoothBox(Prior):
 
         for d in range(self.D):
             # Draw component (left/right tails or plateau)
-            u = np.random.uniform(0.0, norm_factor[d], size=n)
+            u = rng.uniform(0.0, norm_factor[d], size=n)
 
             # Left Gaussian tails
             mask = u < 0.5
             if np.any(mask):
-                z1 = np.abs(
-                    np.random.normal(0.0, self.scale[d], size=np.sum(mask))
-                )
+                z1 = np.abs(rng.normal(0.0, self.scale[d], size=np.sum(mask)))
                 rvs[mask, d] = self.a[d] - z1
 
             # Right Gaussian tails
             mask = (u >= 0.5) & (u < 1.0)
             if np.any(mask):
-                z1 = np.abs(
-                    np.random.normal(0.0, self.scale[d], size=np.sum(mask))
-                )
+                z1 = np.abs(rng.normal(0.0, self.scale[d], size=np.sum(mask)))
                 rvs[mask, d] = self.b[d] + z1
 
             # Plateau
             mask = u >= 1.0
             if np.any(mask):
-                rvs[mask, d] = np.random.uniform(
+                rvs[mask, d] = rng.uniform(
                     self.a[d], self.b[d], size=np.sum(mask)
                 )
 
@@ -155,11 +163,7 @@ class SmoothBox(Prior):
         )
 
     def _support(self):
-        """Returns the support of the distribution.
-
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        """The box of the support, as ``support()`` returns it.
 
         Returns
         -------

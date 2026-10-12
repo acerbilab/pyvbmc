@@ -1,0 +1,75 @@
+{
+  "allocation_sha256": "91ca935a747e2a7b8dd146cc8e0bdcecbca8749feb1743ca22bc247d3de46765",
+  "cells": [
+    {
+      "finished_utc": "2026-09-17T12:12:58.666210+00:00",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outer_wall_seconds_including_imports": 10.456405499997345,
+      "payload_sha256": "b9fb35a433c06882bb53aafc91c91fb58c2396a3d0ed20b7e7cdc54e725790ee",
+      "pilot": {
+        "cell": {
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "timing_seed": 15108013424671789913,
+          "treatment_tag": "S3"
+        },
+        "command": "cell",
+        "tag": "logreg_D5_noise3_seed0_late__S3__timing"
+      },
+      "returncode": 0,
+      "started_utc": "2026-09-17T12:12:48.209764+00:00",
+      "status": "succeeded",
+      "terminal_sha256": "b5da27d0a9efebff0110e9cfff2c4ff4473d168a444faaae63b7683df9cc83b5",
+      "timed_out": false,
+      "timeout_seconds": 120.0
+    },
+    {
+      "finished_utc": "2026-09-17T12:13:01.445417+00:00",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outer_wall_seconds_including_imports": 2.767089999997552,
+      "payload_sha256": "0b4348611fc2c245c0831bfb893ee8620797a0407cdd4871ee25d543da94935c",
+      "pilot": {
+        "cell": {
+          "allocation_seed": 6504860464358627166,
+          "role": "baseline",
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "timing_seed": 15108013424671789913,
+          "treatment_tag": "S3"
+        },
+        "command": "allocation-cell",
+        "tag": "logreg_D5_noise3_seed0_late__S3__allocation_baseline"
+      },
+      "returncode": 0,
+      "started_utc": "2026-09-17T12:12:58.678212+00:00",
+      "status": "succeeded",
+      "terminal_sha256": "c0124988bbf4327b43904f100b77da40aaff5a8f6d963ed7e9e656fd745de7a5",
+      "timed_out": false,
+      "timeout_seconds": 120.0
+    },
+    {
+      "finished_utc": "2026-09-17T12:13:04.383038+00:00",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outer_wall_seconds_including_imports": 2.9253855000024487,
+      "payload_sha256": "7d444f5112aa125899ccbf9115a50cb892ee664b82492a728a0a6332b38404c6",
+      "pilot": {
+        "cell": {
+          "allocation_seed": 7519280767524878221,
+          "role": "treatment",
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "timing_seed": 15108013424671789913,
+          "treatment_tag": "S3"
+        },
+        "command": "allocation-cell",
+        "tag": "logreg_D5_noise3_seed0_late__S3__allocation_treatment"
+      },
+      "returncode": 0,
+      "started_utc": "2026-09-17T12:13:01.457418+00:00",
+      "status": "succeeded",
+      "terminal_sha256": "ffc2b4cb49b43b9eb9f07923a36d603972a1d65bf238c67516a304cfe44f6334",
+      "timed_out": false,
+      "timeout_seconds": 120.0
+    }
+  ],
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "7e23a535adcc04197070ec50a258b4d876517c79d74441698529b5069994dd06",
+  "schema_version": 1
+}

@@ -1,0 +1,35 @@
+{
+  "note": "Worker walls include imports and diagnostics. A conservative 1200 s reserve is charged independently to every arm for other preflight, validation, report/figure, coordinator and repair work; it is an allowance, not a measured runtime. No primary fit was retried. Counts:72 original+24 controls=96; auxiliary fixed-update replays are not production-policy fits.",
+  "arms": {
+    "numpy_cpu": {
+      "original_workers_s": 261.8669359998894,
+      "clean_workers_s": 29.369650499895215,
+      "corrected_kernel_workers_s": 0.0,
+      "auxiliary_recovery_workers_s": 3.5327238000463694,
+      "preflight_validation_reporting_reserve_s": 1200.0,
+      "conservative_charged_s": 1494.769310299831,
+      "cap_s": 2700,
+      "remaining_s": 1205.230689700169
+    },
+    "torch_cpu": {
+      "original_workers_s": 438.13953330006916,
+      "clean_workers_s": 74.6917445998406,
+      "corrected_kernel_workers_s": 51.764257100294344,
+      "auxiliary_recovery_workers_s": 10.32272259995807,
+      "preflight_validation_reporting_reserve_s": 1200.0,
+      "conservative_charged_s": 1774.9182576001622,
+      "cap_s": 2700,
+      "remaining_s": 925.0817423998378
+    },
+    "torch_cuda": {
+      "original_workers_s": 599.2991993002361,
+      "clean_workers_s": 106.86167989997193,
+      "corrected_kernel_workers_s": 61.11833389964886,
+      "auxiliary_recovery_workers_s": 16.250431000022218,
+      "preflight_validation_reporting_reserve_s": 1200.0,
+      "conservative_charged_s": 1983.529644099879,
+      "cap_s": 2700,
+      "remaining_s": 716.4703559001209
+    }
+  }
+}

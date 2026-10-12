@@ -1,12 +1,14 @@
 import numpy as np
 
+from ._rounding import round_half_away_from_zero
+
 
 def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     """
     Get high-posterior density dataset.
 
     Parameters
-    ==========
+    ----------
     X : ndarray, shape (N, D)
         The training points.
     y : ndarray, shape (N, 1)
@@ -15,7 +17,7 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
         The portion of the training set to consider, by default 0.8.
 
     Returns
-    =======
+    -------
     hpd_X : ndarray
         High-posterior density training points.
     hpd_y : ndarray
@@ -30,9 +32,13 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     N, D = X.shape
 
     # Subsample high posterior density dataset.
-    # Sort by descending order, not ascending.
-    order = np.argsort(y, axis=None)[::-1]
-    hpd_N = round(hpd_frac * N)
+    # Sort by descending order, not ascending, keeping points of equal
+    # target value in the order they were given. The values are negated
+    # as floating-point numbers: the negation of an unsigned integer, or
+    # of the smallest value of a signed type, wraps around.
+    order = np.argsort(-np.asarray(y, dtype=float), axis=None, kind="stable")
+    # `misc/gethpd_vbmc.m:10` sizes the subset with MATLAB's `round`.
+    hpd_N = round_half_away_from_zero(hpd_frac * N)
     indices = order[0:hpd_N]
     hpd_X = X[indices]
     hpd_y = y[indices]

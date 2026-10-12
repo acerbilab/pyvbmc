@@ -1,0 +1,17 @@
+{
+  "source": "dev\\scripts\\runs\\pymc_setup_probe_20260916\\coverage",
+  "source_sha256": "58c5dd0a3207168e3a0dbf92656d3c382eda00bd1ebdbf441cf47b4b22d95f49",
+  "reason": "The two masks retain exactly the same rows in the same order for schools; single x0 and uniform-count settings unchanged.",
+  "cases": [
+    "schools_noncentered_0_filtered_full",
+    "schools_noncentered_0_filtered_short",
+    "schools_noncentered_1_filtered_short",
+    "schools_noncentered_1_filtered_full",
+    "schools_noncentered_2_filtered_full",
+    "schools_noncentered_2_filtered_short",
+    "schools_noncentered_3_filtered_short",
+    "schools_noncentered_3_filtered_full",
+    "schools_noncentered_4_filtered_full",
+    "schools_noncentered_4_filtered_short"
+  ]
+}

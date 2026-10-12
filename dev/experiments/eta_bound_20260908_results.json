@@ -1,0 +1,3013 @@
+{
+  "schema": "pyvbmc-eta-bound-results-v1",
+  "manifest": "dev/experiments/eta_bound_20260908.json",
+  "raw_artifacts": "dev/scripts/runs/latent_fixes/eta_bound_20260908/comparison",
+  "config_sha256": "dab62f52b8420914fc6411ab7739ef989fdadcf9d257376f32a5fe8c950d8b33",
+  "measured_git_head": "03650a226634525dfeb3d293f1540582094603ef",
+  "completed_pairs": 24,
+  "completed_local_fits": 72,
+  "invocation_seconds_excluding_startup": 22.122053,
+  "score_uncertainty_note": "elbo_sd is GP uncertainty only; entropy Monte Carlo error is not estimated. Replicates are optimizer RNG replicates, not independent benchmark runs.",
+  "pairs": [
+    {
+      "state": "cigar_D4_largeK",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 14,
+          "elbo": -3.522237796365687,
+          "elbo_sd": 0.0008701407764195642,
+          "elcbo_beta5": -3.526588500247785
+        },
+        "B": {
+          "K": 14,
+          "elbo": -3.522237796365687,
+          "elbo_sd": 0.0008701407764195642,
+          "elcbo_beta5": -3.526588500247785
+        },
+        "C": {
+          "K": 14,
+          "elbo": -3.522237796269673,
+          "elbo_sd": 0.0008701391477430553,
+          "elcbo_beta5": -3.526588492008388
+        },
+        "pre": {
+          "K": 14,
+          "elbo": -3.5228594351024034,
+          "elbo_sd": 0.000876512014735584,
+          "elcbo_beta5": -3.527241995176081
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": -9.601386352642294e-11,
+          "elbo_sd": 1.6286765088706703e-09,
+          "elcbo_beta5": -8.239396720455261e-09
+        },
+        "A_minus_pre": {
+          "elbo": 0.0006216387367166121,
+          "elbo_sd": -6.371238316019829e-06,
+          "elcbo_beta5": 0.0006534949282963609
+        },
+        "B_minus_C": {
+          "elbo": -9.601386352642294e-11,
+          "elbo_sd": 1.6286765088706703e-09,
+          "elcbo_beta5": -8.239396720455261e-09
+        },
+        "B_minus_pre": {
+          "elbo": 0.0006216387367166121,
+          "elbo_sd": -6.371238316019829e-06,
+          "elcbo_beta5": 0.0006534949282963609
+        },
+        "C_minus_pre": {
+          "elbo": 0.0006216388327304756,
+          "elbo_sd": -6.3728669925286995e-06,
+          "elcbo_beta5": 0.0006535031676930814
+        }
+      },
+      "timing": {
+        "A": 0.11199919995851815,
+        "B": 0.109802299994044,
+        "C": 0.10589870001422241
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 14,
+          "B": 14,
+          "C": 14,
+          "pre": 14
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "cigar_D4_largeK",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 14,
+          "elbo": -3.503663374920902,
+          "elbo_sd": 0.0008726495988427242,
+          "elcbo_beta5": -3.5080266229151156
+        },
+        "B": {
+          "K": 14,
+          "elbo": -3.503663374920902,
+          "elbo_sd": 0.0008726495988427242,
+          "elcbo_beta5": -3.5080266229151156
+        },
+        "C": {
+          "K": 14,
+          "elbo": -3.5036633747323727,
+          "elbo_sd": 0.000872647145354223,
+          "elcbo_beta5": -3.5080266104591438
+        },
+        "pre": {
+          "K": 14,
+          "elbo": -3.5049994693699817,
+          "elbo_sd": 0.000876512014735584,
+          "elcbo_beta5": -3.5093820294436595
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": -1.8852919225764708e-10,
+          "elbo_sd": 2.4534885012311367e-09,
+          "elcbo_beta5": -1.2455971809544053e-08
+        },
+        "A_minus_pre": {
+          "elbo": 0.0013360944490798943,
+          "elbo_sd": -3.862415892859849e-06,
+          "elcbo_beta5": 0.0013554065285439343
+        },
+        "B_minus_C": {
+          "elbo": -1.8852919225764708e-10,
+          "elbo_sd": 2.4534885012311367e-09,
+          "elcbo_beta5": -1.2455971809544053e-08
+        },
+        "B_minus_pre": {
+          "elbo": 0.0013360944490798943,
+          "elbo_sd": -3.862415892859849e-06,
+          "elcbo_beta5": 0.0013554065285439343
+        },
+        "C_minus_pre": {
+          "elbo": 0.0013360946376090865,
+          "elbo_sd": -3.86486938136108e-06,
+          "elcbo_beta5": 0.0013554189845157438
+        }
+      },
+      "timing": {
+        "A": 0.11763779999455437,
+        "B": 0.10957530001178384,
+        "C": 0.1100076999864541
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 14,
+          "B": 14,
+          "C": 14,
+          "pre": 14
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "cigar_D4_largeK",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 14,
+          "elbo": -3.5172857177132304,
+          "elbo_sd": 0.0009071782238976357,
+          "elcbo_beta5": -3.5218216088327186
+        },
+        "B": {
+          "K": 14,
+          "elbo": -3.5172857177132304,
+          "elbo_sd": 0.0009071782238976357,
+          "elcbo_beta5": -3.5218216088327186
+        },
+        "C": {
+          "K": 14,
+          "elbo": -3.5172857174028005,
+          "elbo_sd": 0.0009071779451920311,
+          "elcbo_beta5": -3.5218216071287607
+        },
+        "pre": {
+          "K": 14,
+          "elbo": -3.5179050033661996,
+          "elbo_sd": 0.000876512014735584,
+          "elcbo_beta5": -3.5222875634398774
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": -3.1042990400464987e-10,
+          "elbo_sd": 2.787056046019143e-10,
+          "elcbo_beta5": -1.7039578636968145e-09
+        },
+        "A_minus_pre": {
+          "elbo": 0.0006192856529692037,
+          "elbo_sd": 3.066620916205166e-05,
+          "elcbo_beta5": 0.00046595460715881387
+        },
+        "B_minus_C": {
+          "elbo": -3.1042990400464987e-10,
+          "elbo_sd": 2.787056046019143e-10,
+          "elcbo_beta5": -1.7039578636968145e-09
+        },
+        "B_minus_pre": {
+          "elbo": 0.0006192856529692037,
+          "elbo_sd": 3.066620916205166e-05,
+          "elcbo_beta5": 0.00046595460715881387
+        },
+        "C_minus_pre": {
+          "elbo": 0.0006192859633991077,
+          "elbo_sd": 3.066593045644706e-05,
+          "elcbo_beta5": 0.00046595631111667757
+        }
+      },
+      "timing": {
+        "A": 0.09018229995854199,
+        "B": 0.08991609996883199,
+        "C": 0.09093549998942763
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 14,
+          "B": 14,
+          "C": 14,
+          "pre": 14
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "corr_D5_warped",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 17,
+          "elbo": -0.03158781209364925,
+          "elbo_sd": 0.0010691711110084555,
+          "elcbo_beta5": -0.03693366764869153
+        },
+        "B": {
+          "K": 17,
+          "elbo": -0.03156542001229745,
+          "elbo_sd": 0.0010691296521575008,
+          "elcbo_beta5": -0.036911068273084956
+        },
+        "C": {
+          "K": 17,
+          "elbo": -0.03158781230754126,
+          "elbo_sd": 0.0010691808277711152,
+          "elcbo_beta5": -0.03693371644639684
+        },
+        "pre": {
+          "K": 17,
+          "elbo": -0.03979331188419355,
+          "elbo_sd": 0.0010753915884307557,
+          "elcbo_beta5": -0.04517026982634733
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -2.2392081351796378e-05,
+          "elbo_sd": 4.145885095473145e-08,
+          "elcbo_beta5": -2.259937560657177e-05
+        },
+        "A_minus_C": {
+          "elbo": 2.1389201521060386e-10,
+          "elbo_sd": -9.716762659674888e-09,
+          "elcbo_beta5": 4.8797705314018724e-08
+        },
+        "A_minus_pre": {
+          "elbo": 0.008205499790544302,
+          "elbo_sd": -6.220477422300185e-06,
+          "elcbo_beta5": 0.008236602177655802
+        },
+        "B_minus_C": {
+          "elbo": 2.239229524381159e-05,
+          "elbo_sd": -5.117561361440634e-08,
+          "elcbo_beta5": 2.264817331188579e-05
+        },
+        "B_minus_pre": {
+          "elbo": 0.008227891871896098,
+          "elbo_sd": -6.261936273254916e-06,
+          "elcbo_beta5": 0.008259201553262374
+        },
+        "C_minus_pre": {
+          "elbo": 0.008205499576652286,
+          "elbo_sd": -6.21076065964051e-06,
+          "elcbo_beta5": 0.008236553379950488
+        }
+      },
+      "timing": {
+        "A": 0.27885919995605946,
+        "B": 0.27868729998590425,
+        "C": 0.28558339999290183
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            100
+          ],
+          "optimizer_calls": 100,
+          "lower": 54,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.048671945441665976,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            100
+          ],
+          "optimizer_calls": 100,
+          "lower": 1,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0006896976459218607,
+          "calls_with_active_eta_penalty": 1,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            100
+          ],
+          "optimizer_calls": 100,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 100,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 17,
+          "B": 17,
+          "C": 17,
+          "pre": 17
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "corr_D5_warped",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 17,
+          "elbo": -0.014960114515928602,
+          "elbo_sd": 0.0011014252373121732,
+          "elcbo_beta5": -0.020467240702489467
+        },
+        "B": {
+          "K": 17,
+          "elbo": -0.014960114515928602,
+          "elbo_sd": 0.0011014252373121732,
+          "elcbo_beta5": -0.020467240702489467
+        },
+        "C": {
+          "K": 17,
+          "elbo": -0.014960112689276883,
+          "elbo_sd": 0.0011014489004693808,
+          "elcbo_beta5": -0.02046735719162379
+        },
+        "pre": {
+          "K": 17,
+          "elbo": -0.019378308180534987,
+          "elbo_sd": 0.0010753915884307557,
+          "elcbo_beta5": -0.024755266122688767
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": -1.8266517187726095e-09,
+          "elbo_sd": -2.3663157207570035e-08,
+          "elcbo_beta5": 1.1648913432124597e-07
+        },
+        "A_minus_pre": {
+          "elbo": 0.004418193664606385,
+          "elbo_sd": 2.6033648881417524e-05,
+          "elcbo_beta5": 0.0042880254201993
+        },
+        "B_minus_C": {
+          "elbo": -1.8266517187726095e-09,
+          "elbo_sd": -2.3663157207570035e-08,
+          "elcbo_beta5": 1.1648913432124597e-07
+        },
+        "B_minus_pre": {
+          "elbo": 0.004418193664606385,
+          "elbo_sd": 2.6033648881417524e-05,
+          "elcbo_beta5": 0.0042880254201993
+        },
+        "C_minus_pre": {
+          "elbo": 0.004418195491258103,
+          "elbo_sd": 2.6057312038625094e-05,
+          "elcbo_beta5": 0.004287908931064979
+        }
+      },
+      "timing": {
+        "A": 0.20408220001263544,
+        "B": 0.20411509997211397,
+        "C": 0.20844670000951737
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 17,
+          "B": 17,
+          "C": 17,
+          "pre": 17
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "corr_D5_warped",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 15,
+          "elbo": -0.013136479891191044,
+          "elbo_sd": 0.0010437960061515257,
+          "elcbo_beta5": -0.018355459921948675
+        },
+        "B": {
+          "K": 15,
+          "elbo": -0.013136479891191044,
+          "elbo_sd": 0.0010437960061515257,
+          "elcbo_beta5": -0.018355459921948675
+        },
+        "C": {
+          "K": 15,
+          "elbo": -0.013136480999984101,
+          "elbo_sd": 0.0010438118838394196,
+          "elcbo_beta5": -0.0183555404191812
+        },
+        "pre": {
+          "K": 17,
+          "elbo": -0.015245724310038788,
+          "elbo_sd": 0.0010753915884307557,
+          "elcbo_beta5": -0.02062268225219257
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 1.1087930573694393e-09,
+          "elbo_sd": -1.5877687893845263e-08,
+          "elcbo_beta5": 8.049723252551155e-08
+        },
+        "A_minus_pre": {
+          "elbo": 0.0021092444188477444,
+          "elbo_sd": -3.159558227922997e-05,
+          "elcbo_beta5": 0.002267222330243894
+        },
+        "B_minus_C": {
+          "elbo": 1.1087930573694393e-09,
+          "elbo_sd": -1.5877687893845263e-08,
+          "elcbo_beta5": 8.049723252551155e-08
+        },
+        "B_minus_pre": {
+          "elbo": 0.0021092444188477444,
+          "elbo_sd": -3.159558227922997e-05,
+          "elcbo_beta5": 0.002267222330243894
+        },
+        "C_minus_pre": {
+          "elbo": 0.002109243310054687,
+          "elbo_sd": -3.1579704591336126e-05,
+          "elcbo_beta5": 0.0022671418330113685
+        }
+      },
+      "timing": {
+        "A": 0.20369300001766533,
+        "B": 0.1927183999796398,
+        "C": 0.20016960002249107
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 15,
+          "B": 15,
+          "C": 15,
+          "pre": 17
+        },
+        "identical_draw_shapes": false,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "halfnormal_D2_bounded",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 9,
+          "elbo": -1.3902440331333614,
+          "elbo_sd": 0.0007524544117858665,
+          "elcbo_beta5": -1.3940063051922909
+        },
+        "B": {
+          "K": 9,
+          "elbo": -1.3902440331333614,
+          "elbo_sd": 0.0007524544117858665,
+          "elcbo_beta5": -1.3940063051922909
+        },
+        "C": {
+          "K": 9,
+          "elbo": -1.3902440336219535,
+          "elbo_sd": 0.0007524551613787444,
+          "elcbo_beta5": -1.3940063094288473
+        },
+        "pre": {
+          "K": 9,
+          "elbo": -1.3920125734022464,
+          "elbo_sd": 0.0006909032804801524,
+          "elcbo_beta5": -1.395467089804647
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 4.885920557029522e-10,
+          "elbo_sd": -7.495928778947572e-10,
+          "elcbo_beta5": 4.236556438996786e-09
+        },
+        "A_minus_pre": {
+          "elbo": 0.001768540268884955,
+          "elbo_sd": 6.15511313057141e-05,
+          "elcbo_beta5": 0.001460784612356214
+        },
+        "B_minus_C": {
+          "elbo": 4.885920557029522e-10,
+          "elbo_sd": -7.495928778947572e-10,
+          "elcbo_beta5": 4.236556438996786e-09
+        },
+        "B_minus_pre": {
+          "elbo": 0.001768540268884955,
+          "elbo_sd": 6.15511313057141e-05,
+          "elcbo_beta5": 0.001460784612356214
+        },
+        "C_minus_pre": {
+          "elbo": 0.0017685397802928993,
+          "elbo_sd": 6.155188089859199e-05,
+          "elcbo_beta5": 0.001460780375799775
+        }
+      },
+      "timing": {
+        "A": 0.0498102999990806,
+        "B": 0.052582900039851665,
+        "C": 0.050926299998536706
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 9,
+          "B": 9,
+          "C": 9,
+          "pre": 9
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "halfnormal_D2_bounded",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 9,
+          "elbo": -1.388335831267605,
+          "elbo_sd": 0.0007089167901201163,
+          "elcbo_beta5": -1.3918804152182056
+        },
+        "B": {
+          "K": 9,
+          "elbo": -1.388335831267605,
+          "elbo_sd": 0.0007089167901201163,
+          "elcbo_beta5": -1.3918804152182056
+        },
+        "C": {
+          "K": 9,
+          "elbo": -1.3883358312839624,
+          "elbo_sd": 0.0007089159064034139,
+          "elcbo_beta5": -1.3918804108159795
+        },
+        "pre": {
+          "K": 9,
+          "elbo": -1.3893270998889855,
+          "elbo_sd": 0.0006909032804801524,
+          "elcbo_beta5": -1.3927816162913862
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 1.635735991101228e-11,
+          "elbo_sd": 8.837167024631359e-10,
+          "elcbo_beta5": -4.402226139177401e-09
+        },
+        "A_minus_pre": {
+          "elbo": 0.0009912686213804367,
+          "elbo_sd": 1.8013509639963903e-05,
+          "elcbo_beta5": 0.0009012010731805908
+        },
+        "B_minus_C": {
+          "elbo": 1.635735991101228e-11,
+          "elbo_sd": 8.837167024631359e-10,
+          "elcbo_beta5": -4.402226139177401e-09
+        },
+        "B_minus_pre": {
+          "elbo": 0.0009912686213804367,
+          "elbo_sd": 1.8013509639963903e-05,
+          "elcbo_beta5": 0.0009012010731805908
+        },
+        "C_minus_pre": {
+          "elbo": 0.0009912686050230768,
+          "elbo_sd": 1.801262592326144e-05,
+          "elcbo_beta5": 0.00090120547540673
+        }
+      },
+      "timing": {
+        "A": 0.050849599996581674,
+        "B": 0.05103640002198517,
+        "C": 0.05543870001565665
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 9,
+          "B": 9,
+          "C": 9,
+          "pre": 9
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "halfnormal_D2_bounded",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 9,
+          "elbo": -1.3904055703025553,
+          "elbo_sd": 0.0007043463589617321,
+          "elcbo_beta5": -1.393927302097364
+        },
+        "B": {
+          "K": 9,
+          "elbo": -1.3904055703025553,
+          "elbo_sd": 0.0007043463589617321,
+          "elcbo_beta5": -1.393927302097364
+        },
+        "C": {
+          "K": 9,
+          "elbo": -1.3904055715278378,
+          "elbo_sd": 0.0007043453987089352,
+          "elcbo_beta5": -1.3939272985213824
+        },
+        "pre": {
+          "K": 9,
+          "elbo": -1.3915717419273763,
+          "elbo_sd": 0.0006909032804801524,
+          "elcbo_beta5": -1.395026258329777
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 1.2252825420944191e-09,
+          "elbo_sd": 9.602527968740823e-10,
+          "elcbo_beta5": -3.57598151090599e-09
+        },
+        "A_minus_pre": {
+          "elbo": 0.0011661716248210219,
+          "elbo_sd": 1.344307848157966e-05,
+          "elcbo_beta5": 0.001098956232413073
+        },
+        "B_minus_C": {
+          "elbo": 1.2252825420944191e-09,
+          "elbo_sd": 9.602527968740823e-10,
+          "elcbo_beta5": -3.57598151090599e-09
+        },
+        "B_minus_pre": {
+          "elbo": 0.0011661716248210219,
+          "elbo_sd": 1.344307848157966e-05,
+          "elcbo_beta5": 0.001098956232413073
+        },
+        "C_minus_pre": {
+          "elbo": 0.0011661703995384798,
+          "elbo_sd": 1.3442118228782786e-05,
+          "elcbo_beta5": 0.001098959808394584
+        }
+      },
+      "timing": {
+        "A": 0.054486599983647466,
+        "B": 0.05131499998969957,
+        "C": 0.05119569995440543
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 9,
+          "B": 9,
+          "C": 9,
+          "pre": 9
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "normal_D2_singlesample",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 5,
+          "elbo": 0.0025230413215097114,
+          "elbo_sd": 0.00018473408371419078,
+          "elcbo_beta5": 0.0015993709029387575
+        },
+        "B": {
+          "K": 5,
+          "elbo": 0.0025230413215097114,
+          "elbo_sd": 0.00018473408371419078,
+          "elcbo_beta5": 0.0015993709029387575
+        },
+        "C": {
+          "K": 5,
+          "elbo": 0.0025230413215094893,
+          "elbo_sd": 0.00018473408371419078,
+          "elcbo_beta5": 0.0015993709029385355
+        },
+        "pre": {
+          "K": 5,
+          "elbo": 0.0028992690144470368,
+          "elbo_sd": 0.00018493407322099642,
+          "elcbo_beta5": 0.0019745986483420547
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 2.220446049250313e-16,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 2.220446049250313e-16
+        },
+        "A_minus_pre": {
+          "elbo": -0.0003762276929373254,
+          "elbo_sd": -1.9998950680563806e-07,
+          "elcbo_beta5": -0.00037522774540329714
+        },
+        "B_minus_C": {
+          "elbo": 2.220446049250313e-16,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 2.220446049250313e-16
+        },
+        "B_minus_pre": {
+          "elbo": -0.0003762276929373254,
+          "elbo_sd": -1.9998950680563806e-07,
+          "elcbo_beta5": -0.00037522774540329714
+        },
+        "C_minus_pre": {
+          "elbo": -0.00037622769293754743,
+          "elbo_sd": -1.9998950680563806e-07,
+          "elcbo_beta5": -0.0003752277454035192
+        }
+      },
+      "timing": {
+        "A": 0.02914320002309978,
+        "B": 0.028591299953404814,
+        "C": 0.030499199987389147
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 5,
+          "B": 5,
+          "C": 5,
+          "pre": 5
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "normal_D2_singlesample",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 5,
+          "elbo": 0.0029820186949245375,
+          "elbo_sd": 0.00018492247737297534,
+          "elcbo_beta5": 0.0020574063080596606
+        },
+        "B": {
+          "K": 5,
+          "elbo": 0.0029820186949245375,
+          "elbo_sd": 0.00018492247737297534,
+          "elcbo_beta5": 0.0020574063080596606
+        },
+        "C": {
+          "K": 5,
+          "elbo": 0.0029820186949244265,
+          "elbo_sd": 0.0001849224773729753,
+          "elcbo_beta5": 0.00205740630805955
+        },
+        "pre": {
+          "K": 5,
+          "elbo": 0.002918173267900559,
+          "elbo_sd": 0.00018493407322099642,
+          "elcbo_beta5": 0.001993502901795577
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 1.1102230246251565e-16,
+          "elbo_sd": 2.710505431213761e-20,
+          "elcbo_beta5": 1.1058862159352145e-16
+        },
+        "A_minus_pre": {
+          "elbo": 6.384542702397855e-05,
+          "elbo_sd": -1.1595848021080319e-08,
+          "elcbo_beta5": 6.390340626408371e-05
+        },
+        "B_minus_C": {
+          "elbo": 1.1102230246251565e-16,
+          "elbo_sd": 2.710505431213761e-20,
+          "elcbo_beta5": 1.1058862159352145e-16
+        },
+        "B_minus_pre": {
+          "elbo": 6.384542702397855e-05,
+          "elbo_sd": -1.1595848021080319e-08,
+          "elcbo_beta5": 6.390340626408371e-05
+        },
+        "C_minus_pre": {
+          "elbo": 6.384542702386753e-05,
+          "elbo_sd": -1.1595848021107424e-08,
+          "elcbo_beta5": 6.390340626397312e-05
+        }
+      },
+      "timing": {
+        "A": 0.03971879999153316,
+        "B": 0.03907900000922382,
+        "C": 0.038790399965364486
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 60,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 5,
+          "B": 5,
+          "C": 5,
+          "pre": 5
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "normal_D2_singlesample",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 5,
+          "elbo": 0.002846296161474249,
+          "elbo_sd": 0.00018502477882014417,
+          "elcbo_beta5": 0.001921172267373528
+        },
+        "B": {
+          "K": 5,
+          "elbo": 0.002846296161474249,
+          "elbo_sd": 0.00018502477882014417,
+          "elcbo_beta5": 0.001921172267373528
+        },
+        "C": {
+          "K": 5,
+          "elbo": 0.0028462961614741378,
+          "elbo_sd": 0.0001850247788201442,
+          "elcbo_beta5": 0.0019211722673734169
+        },
+        "pre": {
+          "K": 5,
+          "elbo": 0.004732511087098157,
+          "elbo_sd": 0.00018493407322099642,
+          "elcbo_beta5": 0.0038078407209931747
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 1.1102230246251565e-16,
+          "elbo_sd": -2.710505431213761e-20,
+          "elcbo_beta5": 1.1102230246251565e-16
+        },
+        "A_minus_pre": {
+          "elbo": -0.001886214925623908,
+          "elbo_sd": 9.07055991477483e-08,
+          "elcbo_beta5": -0.0018866684536196468
+        },
+        "B_minus_C": {
+          "elbo": 1.1102230246251565e-16,
+          "elbo_sd": -2.710505431213761e-20,
+          "elcbo_beta5": 1.1102230246251565e-16
+        },
+        "B_minus_pre": {
+          "elbo": -0.001886214925623908,
+          "elbo_sd": 9.07055991477483e-08,
+          "elcbo_beta5": -0.0018866684536196468
+        },
+        "C_minus_pre": {
+          "elbo": -0.001886214925624019,
+          "elbo_sd": 9.07055991477754e-08,
+          "elcbo_beta5": -0.0018866684536197578
+        }
+      },
+      "timing": {
+        "A": 0.029659299994818866,
+        "B": 0.028854999982286245,
+        "C": 0.02820810000412166
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 5,
+          "B": 5,
+          "C": 5,
+          "pre": 5
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "normal_D2_warmup",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 2,
+          "elbo": -0.0030642668339864176,
+          "elbo_sd": 0.0006782225688377962,
+          "elcbo_beta5": -0.0064553796781753985
+        },
+        "B": {
+          "K": 2,
+          "elbo": -0.0030642668339864176,
+          "elbo_sd": 0.0006782225688377962,
+          "elcbo_beta5": -0.0064553796781753985
+        },
+        "C": {
+          "K": 2,
+          "elbo": -0.0030642668339864176,
+          "elbo_sd": 0.0006782225688377962,
+          "elcbo_beta5": -0.0064553796781753985
+        },
+        "pre": {
+          "K": 2,
+          "elbo": -0.00552993294571269,
+          "elbo_sd": 0.0006399424074290137,
+          "elcbo_beta5": -0.008729644982857759
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_pre": {
+          "elbo": 0.0024656661117262724,
+          "elbo_sd": 3.828016140878252e-05,
+          "elcbo_beta5": 0.00227426530468236
+        },
+        "B_minus_C": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "B_minus_pre": {
+          "elbo": 0.0024656661117262724,
+          "elbo_sd": 3.828016140878252e-05,
+          "elcbo_beta5": 0.00227426530468236
+        },
+        "C_minus_pre": {
+          "elbo": 0.0024656661117262724,
+          "elbo_sd": 3.828016140878252e-05,
+          "elcbo_beta5": 0.00227426530468236
+        }
+      },
+      "timing": {
+        "A": 0.020201199979055673,
+        "B": 0.018888499995227903,
+        "C": 0.017996600014157593
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 2,
+          "B": 2,
+          "C": 2,
+          "pre": 2
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "normal_D2_warmup",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 2,
+          "elbo": -0.0021736893835675453,
+          "elbo_sd": 0.0006708738292772177,
+          "elcbo_beta5": -0.005528058529953634
+        },
+        "B": {
+          "K": 2,
+          "elbo": -0.0021736893835675453,
+          "elbo_sd": 0.0006708738292772177,
+          "elcbo_beta5": -0.005528058529953634
+        },
+        "C": {
+          "K": 2,
+          "elbo": -0.0021736893835675453,
+          "elbo_sd": 0.0006708738292772177,
+          "elcbo_beta5": -0.005528058529953634
+        },
+        "pre": {
+          "K": 2,
+          "elbo": -0.0014254208735826612,
+          "elbo_sd": 0.0006399424074290137,
+          "elcbo_beta5": -0.00462513291072773
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_pre": {
+          "elbo": -0.000748268509984884,
+          "elbo_sd": 3.093142184820404e-05,
+          "elcbo_beta5": -0.0009029256192259038
+        },
+        "B_minus_C": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "B_minus_pre": {
+          "elbo": -0.000748268509984884,
+          "elbo_sd": 3.093142184820404e-05,
+          "elcbo_beta5": -0.0009029256192259038
+        },
+        "C_minus_pre": {
+          "elbo": -0.000748268509984884,
+          "elbo_sd": 3.093142184820404e-05,
+          "elcbo_beta5": -0.0009029256192259038
+        }
+      },
+      "timing": {
+        "A": 0.01924759999383241,
+        "B": 0.019729399995412678,
+        "C": 0.017876800033263862
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 2,
+          "B": 2,
+          "C": 2,
+          "pre": 2
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "normal_D2_warmup",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 2,
+          "elbo": 0.005389539972895929,
+          "elbo_sd": 0.0007013146035217553,
+          "elcbo_beta5": 0.0018829669552871526
+        },
+        "B": {
+          "K": 2,
+          "elbo": 0.005389539972895929,
+          "elbo_sd": 0.0007013146035217553,
+          "elcbo_beta5": 0.0018829669552871526
+        },
+        "C": {
+          "K": 2,
+          "elbo": 0.005389539972895929,
+          "elbo_sd": 0.0007013146035217553,
+          "elcbo_beta5": 0.0018829669552871526
+        },
+        "pre": {
+          "K": 2,
+          "elbo": 0.005261364459054563,
+          "elbo_sd": 0.0006399424074290137,
+          "elcbo_beta5": 0.002061652421909494
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_pre": {
+          "elbo": 0.0001281755138413665,
+          "elbo_sd": 6.137219609274162e-05,
+          "elcbo_beta5": -0.0001786854666223415
+        },
+        "B_minus_C": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "B_minus_pre": {
+          "elbo": 0.0001281755138413665,
+          "elbo_sd": 6.137219609274162e-05,
+          "elcbo_beta5": -0.0001786854666223415
+        },
+        "C_minus_pre": {
+          "elbo": 0.0001281755138413665,
+          "elbo_sd": 6.137219609274162e-05,
+          "elcbo_beta5": -0.0001786854666223415
+        }
+      },
+      "timing": {
+        "A": 0.034916099975816905,
+        "B": 0.03425440000137314,
+        "C": 0.03482340002665296
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            80
+          ],
+          "optimizer_calls": 80,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            80
+          ],
+          "optimizer_calls": 80,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            80
+          ],
+          "optimizer_calls": 80,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 2,
+          "B": 2,
+          "C": 2,
+          "pre": 2
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise1_seed0_pre",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 18,
+          "elbo": -2.3627366000772163,
+          "elbo_sd": 0.1206951223642848,
+          "elcbo_beta5": -2.9662122118986405
+        },
+        "B": {
+          "K": 17,
+          "elbo": -2.348986688596832,
+          "elbo_sd": 0.12136539837592221,
+          "elcbo_beta5": -2.955813680476443
+        },
+        "C": {
+          "K": 18,
+          "elbo": -2.3619598583818275,
+          "elbo_sd": 0.12165289701008766,
+          "elcbo_beta5": -2.9702243434322657
+        },
+        "pre": {
+          "K": 19,
+          "elbo": -2.367992715969279,
+          "elbo_sd": 0.12107932894633082,
+          "elcbo_beta5": -2.973389360700933
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -0.013749911480384291,
+          "elbo_sd": -0.0006702760116374107,
+          "elcbo_beta5": -0.010398531422197266
+        },
+        "A_minus_C": {
+          "elbo": -0.0007767416953887718,
+          "elbo_sd": -0.0009577746458028641,
+          "elcbo_beta5": 0.0040121315336252295
+        },
+        "A_minus_pre": {
+          "elbo": 0.005256115892062763,
+          "elbo_sd": -0.00038420658204602054,
+          "elcbo_beta5": 0.007177148802292699
+        },
+        "B_minus_C": {
+          "elbo": 0.01297316978499552,
+          "elbo_sd": -0.0002874986341654534,
+          "elcbo_beta5": 0.014410662955822495
+        },
+        "B_minus_pre": {
+          "elbo": 0.019006027372447054,
+          "elbo_sd": 0.00028606942959139015,
+          "elcbo_beta5": 0.017575680224489965
+        },
+        "C_minus_pre": {
+          "elbo": 0.0060328575874515344,
+          "elbo_sd": 0.0005735680637568435,
+          "elcbo_beta5": 0.0031650172686674694
+        }
+      },
+      "timing": {
+        "A": 0.26405900000827387,
+        "B": 0.39022870000917464,
+        "C": 0.26023329998133704
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 1,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 40,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.3393297467977865,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 2,
+          "iterations": [
+            160
+          ],
+          "optimizer_calls": 160,
+          "lower": 160,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.3180821737217725,
+          "calls_with_active_eta_penalty": 160,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 1,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 18,
+          "B": 17,
+          "C": 18,
+          "pre": 19
+        },
+        "identical_draw_shapes": false,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise1_seed0_pre",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 19,
+          "elbo": -2.3662477388604555,
+          "elbo_sd": 0.12171918900777028,
+          "elcbo_beta5": -2.974843683899307
+        },
+        "B": {
+          "K": 17,
+          "elbo": -2.3463179975678368,
+          "elbo_sd": 0.12218164856549961,
+          "elcbo_beta5": -2.9572262403953347
+        },
+        "C": {
+          "K": 19,
+          "elbo": -2.365401649512126,
+          "elbo_sd": 0.12039943997403049,
+          "elcbo_beta5": -2.9673988493822785
+        },
+        "pre": {
+          "K": 19,
+          "elbo": -2.3722641604763446,
+          "elbo_sd": 0.12107932894633082,
+          "elcbo_beta5": -2.9776608052079987
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -0.019929741292618708,
+          "elbo_sd": -0.00046245955772933334,
+          "elcbo_beta5": -0.017617443503972208
+        },
+        "A_minus_C": {
+          "elbo": -0.0008460893483293042,
+          "elbo_sd": 0.0013197490337397838,
+          "elcbo_beta5": -0.007444834517028376
+        },
+        "A_minus_pre": {
+          "elbo": 0.0060164216158891115,
+          "elbo_sd": 0.0006398600614394567,
+          "elcbo_beta5": 0.002817121308691828
+        },
+        "B_minus_C": {
+          "elbo": 0.019083651944289404,
+          "elbo_sd": 0.0017822085914691171,
+          "elcbo_beta5": 0.010172608986943832
+        },
+        "B_minus_pre": {
+          "elbo": 0.02594616290850782,
+          "elbo_sd": 0.00110231961916879,
+          "elcbo_beta5": 0.020434564812664036
+        },
+        "C_minus_pre": {
+          "elbo": 0.006862510964218416,
+          "elbo_sd": -0.0006798889723003271,
+          "elcbo_beta5": 0.010261955825720204
+        }
+      },
+      "timing": {
+        "A": 0.2826610999763943,
+        "B": 0.4218006000155583,
+        "C": 0.2748799999826588
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 40,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.34703304476165897,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 2,
+          "iterations": [
+            180
+          ],
+          "optimizer_calls": 180,
+          "lower": 180,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.3180821737217725,
+          "calls_with_active_eta_penalty": 180,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 19,
+          "B": 17,
+          "C": 19,
+          "pre": 19
+        },
+        "identical_draw_shapes": false,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise1_seed0_pre",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 17,
+          "elbo": -2.358336012999131,
+          "elbo_sd": 0.12148205501248471,
+          "elcbo_beta5": -2.9657462880615544
+        },
+        "B": {
+          "K": 19,
+          "elbo": -2.3399637720642414,
+          "elbo_sd": 0.12133461975147469,
+          "elcbo_beta5": -2.9466368708216146
+        },
+        "C": {
+          "K": 17,
+          "elbo": -2.3575733434803237,
+          "elbo_sd": 0.12237217317879397,
+          "elcbo_beta5": -2.9694342093742936
+        },
+        "pre": {
+          "K": 19,
+          "elbo": -2.369026111621757,
+          "elbo_sd": 0.12107932894633082,
+          "elcbo_beta5": -2.974422756353411
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -0.01837224093488965,
+          "elbo_sd": 0.00014743526101002047,
+          "elcbo_beta5": -0.019109417239939752
+        },
+        "A_minus_C": {
+          "elbo": -0.000762669518807435,
+          "elbo_sd": -0.0008901181663092533,
+          "elcbo_beta5": 0.0036879213127392063
+        },
+        "A_minus_pre": {
+          "elbo": 0.010690098622625932,
+          "elbo_sd": 0.00040272606615389395,
+          "elcbo_beta5": 0.008676468291856754
+        },
+        "B_minus_C": {
+          "elbo": 0.017609571416082215,
+          "elbo_sd": -0.0010375534273192738,
+          "elcbo_beta5": 0.02279733855267896
+        },
+        "B_minus_pre": {
+          "elbo": 0.029062339557515582,
+          "elbo_sd": 0.0002552908051438735,
+          "elcbo_beta5": 0.027785885531796506
+        },
+        "C_minus_pre": {
+          "elbo": 0.011452768141433367,
+          "elbo_sd": 0.0012928442324631473,
+          "elcbo_beta5": 0.004988546979117547
+        }
+      },
+      "timing": {
+        "A": 0.26968020002823323,
+        "B": 0.4630690999911167,
+        "C": 0.25464040000224486
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 40,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.3319348124854171,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            180
+          ],
+          "optimizer_calls": 180,
+          "lower": 180,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.3180821737217725,
+          "calls_with_active_eta_penalty": 180,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 17,
+          "B": 19,
+          "C": 17,
+          "pre": 19
+        },
+        "identical_draw_shapes": false,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise3_seed17_pre",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 12,
+          "elbo": -2.5747604930165084,
+          "elbo_sd": 0.30231101822621714,
+          "elcbo_beta5": -4.086315584147594
+        },
+        "B": {
+          "K": 14,
+          "elbo": -2.4712816848866703,
+          "elbo_sd": 0.3053567414210611,
+          "elcbo_beta5": -3.998065391991976
+        },
+        "C": {
+          "K": 12,
+          "elbo": -2.5747604949275447,
+          "elbo_sd": 0.30231102502755475,
+          "elcbo_beta5": -4.086315620065318
+        },
+        "pre": {
+          "K": 14,
+          "elbo": -2.574551902308128,
+          "elbo_sd": 0.30069575008102595,
+          "elcbo_beta5": -4.078030652713258
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -0.10347880812983812,
+          "elbo_sd": -0.0030457231948439745,
+          "elcbo_beta5": -0.08825019215561802
+        },
+        "A_minus_C": {
+          "elbo": 1.911036218160689e-09,
+          "elbo_sd": -6.801337604223079e-09,
+          "elcbo_beta5": 3.5917723906209176e-08
+        },
+        "A_minus_pre": {
+          "elbo": -0.00020859070838064042,
+          "elbo_sd": 0.0016152681451911954,
+          "elcbo_beta5": -0.008284931434336507
+        },
+        "B_minus_C": {
+          "elbo": 0.10347881004087434,
+          "elbo_sd": 0.0030457163935063702,
+          "elcbo_beta5": 0.08825022807334193
+        },
+        "B_minus_pre": {
+          "elbo": 0.10327021742145748,
+          "elbo_sd": 0.00466099134003517,
+          "elcbo_beta5": 0.07996526072128152
+        },
+        "C_minus_pre": {
+          "elbo": -0.00020859261941685858,
+          "elbo_sd": 0.0016152749465287997,
+          "elcbo_beta5": -0.008284967352060413
+        }
+      },
+      "timing": {
+        "A": 0.13421769998967648,
+        "B": 0.5107458999846131,
+        "C": 0.1411021000239998
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 40,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.7573920506748797,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            400
+          ],
+          "optimizer_calls": 400,
+          "lower": 400,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.7573920506748797,
+          "calls_with_active_eta_penalty": 400,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 2,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 12,
+          "B": 14,
+          "C": 12,
+          "pre": 14
+        },
+        "identical_draw_shapes": false,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise3_seed17_pre",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 14,
+          "elbo": -2.5691227698868415,
+          "elbo_sd": 0.2981100022198336,
+          "elcbo_beta5": -4.059672780986009
+        },
+        "B": {
+          "K": 13,
+          "elbo": -2.490241228104062,
+          "elbo_sd": 0.30352290301400037,
+          "elcbo_beta5": -4.007855743174064
+        },
+        "C": {
+          "K": 14,
+          "elbo": -2.5691227690835623,
+          "elbo_sd": 0.29811000300417256,
+          "elcbo_beta5": -4.059672784104425
+        },
+        "pre": {
+          "K": 14,
+          "elbo": -2.583469035158854,
+          "elbo_sd": 0.30069575008102595,
+          "elcbo_beta5": -4.086947785563984
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -0.07888154178277951,
+          "elbo_sd": -0.005412900794166786,
+          "elcbo_beta5": -0.051817037811945355
+        },
+        "A_minus_C": {
+          "elbo": -8.032792209178297e-10,
+          "elbo_sd": -7.843389826511782e-10,
+          "elcbo_beta5": 3.1184157478492125e-09
+        },
+        "A_minus_pre": {
+          "elbo": 0.014346265272012548,
+          "elbo_sd": -0.0025857478611923668,
+          "elcbo_beta5": 0.027275004577974826
+        },
+        "B_minus_C": {
+          "elbo": 0.07888154097950029,
+          "elbo_sd": 0.0054129000098278035,
+          "elcbo_beta5": 0.0518170409303611
+        },
+        "B_minus_pre": {
+          "elbo": 0.09322780705479206,
+          "elbo_sd": 0.0028271529329744194,
+          "elcbo_beta5": 0.07909204238992018
+        },
+        "C_minus_pre": {
+          "elbo": 0.01434626607529177,
+          "elbo_sd": -0.002585747076853384,
+          "elcbo_beta5": 0.02727500145955908
+        }
+      },
+      "timing": {
+        "A": 0.18177580001065508,
+        "B": 0.5224603000096977,
+        "C": 0.16801200003828853
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 60,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.7573920506748797,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 1,
+          "iterations": [
+            400
+          ],
+          "optimizer_calls": 400,
+          "lower": 400,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.7573920506748797,
+          "calls_with_active_eta_penalty": 400,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 60,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 14,
+          "B": 13,
+          "C": 14,
+          "pre": 14
+        },
+        "identical_draw_shapes": false,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise3_seed17_pre",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 14,
+          "elbo": -2.553973147021873,
+          "elbo_sd": 0.29678316215155554,
+          "elcbo_beta5": -4.037888957779651
+        },
+        "B": {
+          "K": 14,
+          "elbo": -2.4808051890620257,
+          "elbo_sd": 0.3024803063693364,
+          "elcbo_beta5": -3.9932067209087077
+        },
+        "C": {
+          "K": 14,
+          "elbo": -2.553973148515461,
+          "elbo_sd": 0.2967831660738449,
+          "elcbo_beta5": -4.037888978884686
+        },
+        "pre": {
+          "K": 14,
+          "elbo": -2.577061640537259,
+          "elbo_sd": 0.30069575008102595,
+          "elcbo_beta5": -4.080540390942389
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": -0.07316795795984721,
+          "elbo_sd": -0.005697144217780892,
+          "elcbo_beta5": -0.04468223687094319
+        },
+        "A_minus_C": {
+          "elbo": 1.4935879200095314e-09,
+          "elbo_sd": -3.9222893821744265e-09,
+          "elcbo_beta5": 2.110503505292627e-08
+        },
+        "A_minus_pre": {
+          "elbo": 0.02308849351538589,
+          "elbo_sd": -0.0039125879294704125,
+          "elcbo_beta5": 0.042651433162737895
+        },
+        "B_minus_C": {
+          "elbo": 0.07316795945343513,
+          "elbo_sd": 0.00569714029549151,
+          "elcbo_beta5": 0.044682257975978246
+        },
+        "B_minus_pre": {
+          "elbo": 0.0962564514752331,
+          "elbo_sd": 0.0017845562883104793,
+          "elcbo_beta5": 0.08733367003368109
+        },
+        "C_minus_pre": {
+          "elbo": 0.02308849202179797,
+          "elbo_sd": -0.00391258400718103,
+          "elcbo_beta5": 0.04265141205770284
+        }
+      },
+      "timing": {
+        "A": 0.20302290003746748,
+        "B": 0.5300606000237167,
+        "C": 0.21237020002445206
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            100
+          ],
+          "optimizer_calls": 100,
+          "lower": 100,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.7623720116194184,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            400
+          ],
+          "optimizer_calls": 400,
+          "lower": 400,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.7573920506748797,
+          "calls_with_active_eta_penalty": 400,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            100
+          ],
+          "optimizer_calls": 100,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 100,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 14,
+          "B": 14,
+          "C": 14,
+          "pre": 14
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise3_seed7_pre",
+      "replicate": 0,
+      "scores": {
+        "A": {
+          "K": 21,
+          "elbo": -2.392908809358477,
+          "elbo_sd": 0.6327174766657883,
+          "elcbo_beta5": -5.556496192687418
+        },
+        "B": {
+          "K": 21,
+          "elbo": -2.392908809358477,
+          "elbo_sd": 0.6327174766657883,
+          "elcbo_beta5": -5.556496192687418
+        },
+        "C": {
+          "K": 21,
+          "elbo": -2.582237363586367,
+          "elbo_sd": 0.5438745980621408,
+          "elcbo_beta5": -5.301610353897071
+        },
+        "pre": {
+          "K": 21,
+          "elbo": -2.3966983979374596,
+          "elbo_sd": 0.2978649190174053,
+          "elcbo_beta5": -3.8860229930244863
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 0.18932855422788997,
+          "elbo_sd": 0.08884287860364748,
+          "elcbo_beta5": -0.2548858387903472
+        },
+        "A_minus_pre": {
+          "elbo": 0.0037895885789827055,
+          "elbo_sd": 0.33485255764838295,
+          "elcbo_beta5": -1.6704731996629318
+        },
+        "B_minus_C": {
+          "elbo": 0.18932855422788997,
+          "elbo_sd": 0.08884287860364748,
+          "elcbo_beta5": -0.2548858387903472
+        },
+        "B_minus_pre": {
+          "elbo": 0.0037895885789827055,
+          "elbo_sd": 0.33485255764838295,
+          "elcbo_beta5": -1.6704731996629318
+        },
+        "C_minus_pre": {
+          "elbo": -0.18553896564890726,
+          "elbo_sd": 0.24600967904473547,
+          "elcbo_beta5": -1.4155873608725846
+        }
+      },
+      "timing": {
+        "A": 0.14494130003731698,
+        "B": 0.13770419999491423,
+        "C": 0.1965158999664709
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            80
+          ],
+          "optimizer_calls": 80,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 80,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 21,
+          "B": 21,
+          "C": 21,
+          "pre": 21
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise3_seed7_pre",
+      "replicate": 1,
+      "scores": {
+        "A": {
+          "K": 21,
+          "elbo": -2.346770737081485,
+          "elbo_sd": 0.45632652159612236,
+          "elcbo_beta5": -4.628403345062097
+        },
+        "B": {
+          "K": 21,
+          "elbo": -2.346770737081485,
+          "elbo_sd": 0.45632652159612236,
+          "elcbo_beta5": -4.628403345062097
+        },
+        "C": {
+          "K": 21,
+          "elbo": -2.434950668476671,
+          "elbo_sd": 0.26775083827413837,
+          "elcbo_beta5": -3.773704859847363
+        },
+        "pre": {
+          "K": 21,
+          "elbo": -2.4015669040005907,
+          "elbo_sd": 0.2978649190174053,
+          "elcbo_beta5": -3.8908914990876173
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 0.0881799313951861,
+          "elbo_sd": 0.188575683321984,
+          "elcbo_beta5": -0.8546984852147337
+        },
+        "A_minus_pre": {
+          "elbo": 0.054796166919105715,
+          "elbo_sd": 0.15846160257871705,
+          "elcbo_beta5": -0.7375118459744794
+        },
+        "B_minus_C": {
+          "elbo": 0.0881799313951861,
+          "elbo_sd": 0.188575683321984,
+          "elcbo_beta5": -0.8546984852147337
+        },
+        "B_minus_pre": {
+          "elbo": 0.054796166919105715,
+          "elbo_sd": 0.15846160257871705,
+          "elcbo_beta5": -0.7375118459744794
+        },
+        "C_minus_pre": {
+          "elbo": -0.03338376447608038,
+          "elbo_sd": -0.030114080743266936,
+          "elcbo_beta5": 0.1171866392402543
+        }
+      },
+      "timing": {
+        "A": 0.16270099999383092,
+        "B": 0.1638340000063181,
+        "C": 0.1292216000147164
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 40,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 21,
+          "B": 21,
+          "C": 21,
+          "pre": 21
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    },
+    {
+      "state": "rosenbrock_D2_noise3_seed7_pre",
+      "replicate": 2,
+      "scores": {
+        "A": {
+          "K": 21,
+          "elbo": -2.2446068755376194,
+          "elbo_sd": 0.40282975519801034,
+          "elcbo_beta5": -4.258755651527672
+        },
+        "B": {
+          "K": 21,
+          "elbo": -2.2446068755376194,
+          "elbo_sd": 0.40282975519801034,
+          "elcbo_beta5": -4.258755651527672
+        },
+        "C": {
+          "K": 21,
+          "elbo": -2.62600959947765,
+          "elbo_sd": 0.5707173065550137,
+          "elcbo_beta5": -5.479596132252718
+        },
+        "pre": {
+          "K": 21,
+          "elbo": -2.3967425537467912,
+          "elbo_sd": 0.2978649190174053,
+          "elcbo_beta5": -3.886067148833818
+        }
+      },
+      "differences": {
+        "A_minus_B": {
+          "elbo": 0.0,
+          "elbo_sd": 0.0,
+          "elcbo_beta5": 0.0
+        },
+        "A_minus_C": {
+          "elbo": 0.3814027239400306,
+          "elbo_sd": -0.1678875513570034,
+          "elcbo_beta5": 1.2208404807250464
+        },
+        "A_minus_pre": {
+          "elbo": 0.15213567820917184,
+          "elbo_sd": 0.10496483618060504,
+          "elcbo_beta5": -0.3726885026938538
+        },
+        "B_minus_C": {
+          "elbo": 0.3814027239400306,
+          "elbo_sd": -0.1678875513570034,
+          "elcbo_beta5": 1.2208404807250464
+        },
+        "B_minus_pre": {
+          "elbo": 0.15213567820917184,
+          "elbo_sd": 0.10496483618060504,
+          "elcbo_beta5": -0.3726885026938538
+        },
+        "C_minus_pre": {
+          "elbo": -0.22926704573085877,
+          "elbo_sd": 0.27285238753760843,
+          "elcbo_beta5": -1.5935289834189001
+        }
+      },
+      "timing": {
+        "A": 0.1500645999913104,
+        "B": 0.1285805000225082,
+        "C": 0.17497970000840724
+      },
+      "diagnostics": {
+        "A": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "B": {
+          "pruned": 0,
+          "iterations": [
+            40
+          ],
+          "optimizer_calls": 40,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 0,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        },
+        "C": {
+          "pruned": 0,
+          "iterations": [
+            60
+          ],
+          "optimizer_calls": 60,
+          "lower": 0,
+          "upper": 0,
+          "mutations": 60,
+          "max_low": 0.0,
+          "calls_with_active_eta_penalty": 0,
+          "violation_semantics": "A reports counterfactual raw-eta distances although its eta penalty is disabled; B distances are raw eta; C distances are max-relative eta. Active incidence is calls_with_active_eta_penalty.",
+          "max_upper": 0.0,
+          "max_gradient_inconsistency_norm": 0.0
+        }
+      },
+      "draw_alignment": {
+        "K_by_posterior": {
+          "A": 21,
+          "B": 21,
+          "C": 21,
+          "pre": 21
+        },
+        "identical_draw_shapes": true,
+        "note": "Resetting the generator gives common entropy draws only where K (and therefore the draw shape) agrees; pruning can make cross-posterior draws only prefix-coupled.",
+        "same_initial_generator_state": true
+      }
+    }
+  ]
+}

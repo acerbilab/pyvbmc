@@ -1,0 +1,76 @@
+{
+  "version": "1",
+  "pip_version": "26.2.1",
+  "install": [
+    {
+      "download_info": {
+        "url": "https://files.pythonhosted.org/packages/61/e9/2eab61f500e118d83249b09b10722957f71e551c2b6502135bcfcb32512a/triton_windows-3.8.0.post28-cp312-cp312-win_amd64.whl",
+        "archive_info": {
+          "hashes": {
+            "sha256": "06435b922ebabbfcb3fb0f4b4b2257a2676dd39cc263a562be356bd58c15c9b8"
+          },
+          "hash": "sha256=06435b922ebabbfcb3fb0f4b4b2257a2676dd39cc263a562be356bd58c15c9b8"
+        }
+      },
+      "is_direct": false,
+      "is_yanked": false,
+      "requested": true,
+      "metadata": {
+        "metadata_version": "2.4",
+        "name": "triton-windows",
+        "version": "3.8.0.post28",
+        "dynamic": [
+          "author",
+          "author-email",
+          "classifier",
+          "home-page",
+          "keywords",
+          "license",
+          "license-file",
+          "requires-dist",
+          "requires-python",
+          "summary"
+        ],
+        "summary": "A language and compiler for custom Deep Learning operations",
+        "keywords": [
+          "Compiler",
+          "Deep Learning"
+        ],
+        "home_page": "https://github.com/triton-lang/triton-windows",
+        "author": "Philippe Tillet, Dian Wu",
+        "author_email": "phil@openai.com, woctordho@outlook.com",
+        "license": "MIT",
+        "license_file": [
+          "LICENSE"
+        ],
+        "classifier": [
+          "Development Status :: 4 - Beta",
+          "Intended Audience :: Developers",
+          "Topic :: Software Development :: Build Tools",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14"
+        ],
+        "requires_dist": [
+          "importlib-metadata; python_version < \"3.10\""
+        ],
+        "requires_python": ">=3.10,<3.15"
+      }
+    }
+  ],
+  "environment": {
+    "implementation_name": "cpython",
+    "implementation_version": "3.12.6",
+    "os_name": "nt",
+    "platform_machine": "AMD64",
+    "platform_release": "11",
+    "platform_system": "Windows",
+    "platform_version": "10.0.26200",
+    "python_full_version": "3.12.6",
+    "platform_python_implementation": "CPython",
+    "python_version": "3.12",
+    "sys_platform": "win32"
+  }
+}

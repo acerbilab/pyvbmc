@@ -1,0 +1,14 @@
+{
+  "measured_source_archive": "dev\\scripts\\runs\\stage4_torch\\campaign\\measured_source.zip",
+  "archive_sha256": "e42de23140a2aba371b1ae3989caad6dc0514d7e6f30a3baa90f83b3c6967beb",
+  "files": {
+    "dev/scripts/torch_vi_core.py": "9b6bb0ed347e8b92d96d6bd9de92eaa039d83e5c07fe11f4fd3a0a4994df8f9b",
+    "dev/scripts/torch_vi_step.py": "4416ee2f4732a237d64179cd25ded2920df990e8002c666939d522d188a88c2b",
+    "dev/scripts/torch_vi_fixtures.py": "3d2294da45b3720aa8ff0b44d0fea78f2e081dd37a57fffaa7b8c55c9c1e1cc5",
+    "dev/scripts/torch_vi_benchmark.py": "1aa1d16ad3c81396a3892f6ec7d4a844c10a6720cb569caa56366ef0dbbdbb3d",
+    "dev/scripts/test_torch_vi_core.py": "134a14cdadd460f4c7e90b1a535a9a36b0a71decaa934a44d5d27f0c4c18c53a",
+    "dev/scripts/test_torch_vi_step.py": "f5dbde240aa7b1ea342b729c7beacbbe6e54204cd36d72350b6bab27b55c2185",
+    "dev/scripts/test_torch_vi_fixtures.py": "d1423aa2a2ed45b97b48ec57bde015e572dc19cd5f76a36531da86969431102b"
+  },
+  "note": "Frozen instrumented campaign source; later controls remove diagnostic tracing. Source archive is retained with ignored raw artifacts."
+}

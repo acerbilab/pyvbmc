@@ -1,0 +1,1043 @@
+{
+  "meta": {
+    "problem": "rosenbrock",
+    "D": 2,
+    "config": "rosenbrock_D2_noise1",
+    "noise_sd": 1.0,
+    "seed": 0,
+    "requested_options": {
+      "max_fun_evals": 200,
+      "display": "off"
+    },
+    "cprofile": true,
+    "python": "3.11.15",
+    "platform": "Linux-6.18.44-fc-v24-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "cpu_count": 4,
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "git": {
+      "sha": "bf43c20",
+      "dirty": true
+    },
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "pyvbmc": "0.1.dev50+gbf43c2032",
+    "gpyreg": "1.1.0",
+    "cma": "4.4.4",
+    "plb": [
+      -3.0,
+      -3.0
+    ],
+    "pub": [
+      3.0,
+      3.0
+    ]
+  },
+  "effective_options": {
+    "max_fun_evals": 200,
+    "max_iter": 200,
+    "tol_stable_count": 90,
+    "tol_stable_excpt_frac": 0.2,
+    "specify_target_noise": true,
+    "search_acq_fcn": [
+      "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x7f584ded5d50>"
+    ],
+    "active_sample_gp_update": true,
+    "active_sample_vp_update": true,
+    "min_final_components": 50,
+    "do_final_boost": true,
+    "display": "off"
+  },
+  "result": {
+    "wall_s": 517.93692798,
+    "untimed_s": -234.12610345501287,
+    "target_eval_s": 0.06555724143981934,
+    "iterations": 39,
+    "recorded_iterations": 40,
+    "func_count": 200,
+    "final_N": 200,
+    "final_K": 13,
+    "min_Ns_gp": 6,
+    "elbo": -1.0463659140427684,
+    "elbo_sd": 0.23628132708487262,
+    "ln_Z": -2.2598471241723845,
+    "elbo_err": 1.2134812101296162,
+    "gskl": 0.2573715989500199,
+    "mmtv": 0.18418707347040636,
+    "posterior_mean_rmse": 0.40981415914245234,
+    "moment_method": "affine",
+    "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals."
+  },
+  "stage_totals_s": {
+    "active_sampling": 388.3820276260376,
+    "finalize": 1.6959264278411865,
+    "fun_time": 0.13207268714904785,
+    "gp_train": 337.7518332004547,
+    "variational_fit": 24.02769947052002,
+    "warping": 0.0734720230102539
+  },
+  "per_iteration": [
+    {
+      "iter": 0,
+      "active_sampling": 0.005717277526855469,
+      "finalize": 0.0457916259765625,
+      "fun_time": 0.0,
+      "gp_train": 0.8722772598266602,
+      "variational_fit": 0.2851529121398926,
+      "warping": 0.0,
+      "K": 2,
+      "N": 10,
+      "n_eff": 10,
+      "Ns_gp": 8,
+      "func_count": 10,
+      "elbo": -1.9713737027461682,
+      "elbo_sd": 5.501843346362217,
+      "warmup": true
+    },
+    {
+      "iter": 1,
+      "active_sampling": 6.11518120765686,
+      "finalize": 0.039182424545288086,
+      "fun_time": 0.0032804012298583984,
+      "gp_train": 3.4674277305603027,
+      "variational_fit": 0.31426167488098145,
+      "warping": 0.0,
+      "K": 2,
+      "N": 15,
+      "n_eff": 15,
+      "Ns_gp": 8,
+      "func_count": 15,
+      "elbo": -2.233435931353673,
+      "elbo_sd": 0.49824001647829075,
+      "warmup": true
+    },
+    {
+      "iter": 2,
+      "active_sampling": 5.2521443367004395,
+      "finalize": 0.03516387939453125,
+      "fun_time": 0.0032241344451904297,
+      "gp_train": 3.3825736045837402,
+      "variational_fit": 0.29824161529541016,
+      "warping": 0.0,
+      "K": 2,
+      "N": 20,
+      "n_eff": 20,
+      "Ns_gp": 8,
+      "func_count": 20,
+      "elbo": -2.640776369837295,
+      "elbo_sd": 0.3645250104846553,
+      "warmup": true
+    },
+    {
+      "iter": 3,
+      "active_sampling": 4.92844557762146,
+      "finalize": 0.035218238830566406,
+      "fun_time": 0.003165006637573242,
+      "gp_train": 3.303856611251831,
+      "variational_fit": 0.3059203624725342,
+      "warping": 0.0,
+      "K": 2,
+      "N": 25,
+      "n_eff": 25,
+      "Ns_gp": 8,
+      "func_count": 25,
+      "elbo": -2.576852879912688,
+      "elbo_sd": 0.27656450827502893,
+      "warmup": true
+    },
+    {
+      "iter": 4,
+      "active_sampling": 4.871535301208496,
+      "finalize": 0.04029583930969238,
+      "fun_time": 0.003304719924926758,
+      "gp_train": 3.1708312034606934,
+      "variational_fit": 0.3104126453399658,
+      "warping": 0.0,
+      "K": 2,
+      "N": 30,
+      "n_eff": 30,
+      "Ns_gp": 8,
+      "func_count": 30,
+      "elbo": -2.477267160535221,
+      "elbo_sd": 0.24601248301781892,
+      "warmup": true
+    },
+    {
+      "iter": 5,
+      "active_sampling": 5.928248405456543,
+      "finalize": 0.03645968437194824,
+      "fun_time": 0.003125429153442383,
+      "gp_train": 3.3732569217681885,
+      "variational_fit": 0.35607385635375977,
+      "warping": 0.0,
+      "K": 2,
+      "N": 35,
+      "n_eff": 35,
+      "Ns_gp": 8,
+      "func_count": 35,
+      "elbo": -2.5153004560208005,
+      "elbo_sd": 0.22563615830486972,
+      "warmup": true
+    },
+    {
+      "iter": 6,
+      "active_sampling": 5.564103841781616,
+      "finalize": 0.036704301834106445,
+      "fun_time": 0.0032682418823242188,
+      "gp_train": 3.3319928646087646,
+      "variational_fit": 0.3413820266723633,
+      "warping": 0.0,
+      "K": 2,
+      "N": 40,
+      "n_eff": 40,
+      "Ns_gp": 8,
+      "func_count": 40,
+      "elbo": -2.5821071209652695,
+      "elbo_sd": 0.21930942528964667,
+      "warmup": true
+    },
+    {
+      "iter": 7,
+      "active_sampling": 5.321650505065918,
+      "finalize": 0.040059804916381836,
+      "fun_time": 0.0036313533782958984,
+      "gp_train": 3.284911870956421,
+      "variational_fit": 0.319718599319458,
+      "warping": 0.0,
+      "K": 2,
+      "N": 45,
+      "n_eff": 45,
+      "Ns_gp": 8,
+      "func_count": 45,
+      "elbo": -2.6082461226422797,
+      "elbo_sd": 0.19747599026121973,
+      "warmup": false
+    },
+    {
+      "iter": 8,
+      "active_sampling": 8.953022956848145,
+      "finalize": 0.04138541221618652,
+      "fun_time": 0.003977298736572266,
+      "gp_train": 6.2441933155059814,
+      "variational_fit": 0.6922657489776611,
+      "warping": 0.0,
+      "K": 2,
+      "N": 50,
+      "n_eff": 41,
+      "Ns_gp": 11,
+      "func_count": 50,
+      "elbo": -2.5517226510699245,
+      "elbo_sd": 0.20030288725263315,
+      "warmup": false
+    },
+    {
+      "iter": 9,
+      "active_sampling": 5.7373363971710205,
+      "finalize": 0.04197573661804199,
+      "fun_time": 0.003859996795654297,
+      "gp_train": 2.7182223796844482,
+      "variational_fit": 0.4393291473388672,
+      "warping": 0.0,
+      "K": 2,
+      "N": 55,
+      "n_eff": 46,
+      "Ns_gp": 11,
+      "func_count": 55,
+      "elbo": -2.3856019136146065,
+      "elbo_sd": 0.1877200094449246,
+      "warmup": false
+    },
+    {
+      "iter": 10,
+      "active_sampling": 3.5471434593200684,
+      "finalize": 0.04077553749084473,
+      "fun_time": 0.003629922866821289,
+      "gp_train": 0.5603671073913574,
+      "variational_fit": 0.10307693481445312,
+      "warping": 0.0,
+      "K": 5,
+      "N": 60,
+      "n_eff": 51,
+      "Ns_gp": 10,
+      "func_count": 60,
+      "elbo": -2.164345979698112,
+      "elbo_sd": 0.17824140468599234,
+      "warmup": false
+    },
+    {
+      "iter": 11,
+      "active_sampling": 7.195768117904663,
+      "finalize": 0.04618263244628906,
+      "fun_time": 0.0037758350372314453,
+      "gp_train": 3.9961183071136475,
+      "variational_fit": 0.5519442558288574,
+      "warping": 0.0,
+      "K": 6,
+      "N": 65,
+      "n_eff": 56,
+      "Ns_gp": 10,
+      "func_count": 65,
+      "elbo": -2.1649657839714926,
+      "elbo_sd": 0.16048537051205009,
+      "warmup": false
+    },
+    {
+      "iter": 12,
+      "active_sampling": 3.651118516921997,
+      "finalize": 0.038030147552490234,
+      "fun_time": 0.0037288665771484375,
+      "gp_train": 1.9347760677337646,
+      "variational_fit": 0.6979162693023682,
+      "warping": 0.028404712677001953,
+      "K": 7,
+      "N": 70,
+      "n_eff": 61,
+      "Ns_gp": 10,
+      "func_count": 70,
+      "elbo": -2.189474634658821,
+      "elbo_sd": 0.15209301916404225,
+      "warmup": false
+    },
+    {
+      "iter": 13,
+      "active_sampling": 3.4233932495117188,
+      "finalize": 0.03916788101196289,
+      "fun_time": 0.0037603378295898438,
+      "gp_train": 0.5132057666778564,
+      "variational_fit": 0.2503993511199951,
+      "warping": 0.0,
+      "K": 10,
+      "N": 75,
+      "n_eff": 66,
+      "Ns_gp": 9,
+      "func_count": 75,
+      "elbo": -2.2419424192586654,
+      "elbo_sd": 0.14617095243733377,
+      "warmup": false
+    },
+    {
+      "iter": 14,
+      "active_sampling": 3.398704767227173,
+      "finalize": 0.0401611328125,
+      "fun_time": 0.0037016868591308594,
+      "gp_train": 0.541266679763794,
+      "variational_fit": 0.17442917823791504,
+      "warping": 0.0,
+      "K": 10,
+      "N": 80,
+      "n_eff": 71,
+      "Ns_gp": 9,
+      "func_count": 80,
+      "elbo": -2.2990790410865634,
+      "elbo_sd": 0.1420088027465691,
+      "warmup": false
+    },
+    {
+      "iter": 15,
+      "active_sampling": 3.394158124923706,
+      "finalize": 0.038675785064697266,
+      "fun_time": 0.0034449100494384766,
+      "gp_train": 0.5352401733398438,
+      "variational_fit": 0.24735736846923828,
+      "warping": 0.0,
+      "K": 10,
+      "N": 85,
+      "n_eff": 76,
+      "Ns_gp": 9,
+      "func_count": 85,
+      "elbo": -2.2824883263389584,
+      "elbo_sd": 0.13657483281125504,
+      "warmup": false
+    },
+    {
+      "iter": 16,
+      "active_sampling": 3.417888641357422,
+      "finalize": 0.03518819808959961,
+      "fun_time": 0.0033152103424072266,
+      "gp_train": 0.5509495735168457,
+      "variational_fit": 0.17028522491455078,
+      "warping": 0.0,
+      "K": 10,
+      "N": 90,
+      "n_eff": 81,
+      "Ns_gp": 8,
+      "func_count": 90,
+      "elbo": -2.269294487063532,
+      "elbo_sd": 0.13482462041072898,
+      "warmup": false
+    },
+    {
+      "iter": 17,
+      "active_sampling": 3.1033730506896973,
+      "finalize": 0.03390240669250488,
+      "fun_time": 0.0034284591674804688,
+      "gp_train": 0.45772314071655273,
+      "variational_fit": 0.15857195854187012,
+      "warping": 0.0,
+      "K": 10,
+      "N": 95,
+      "n_eff": 86,
+      "Ns_gp": 8,
+      "func_count": 95,
+      "elbo": -2.2758625235527,
+      "elbo_sd": 0.1317325835085615,
+      "warmup": false
+    },
+    {
+      "iter": 18,
+      "active_sampling": 3.045189380645752,
+      "finalize": 0.041150569915771484,
+      "fun_time": 0.0031037330627441406,
+      "gp_train": 0.56809401512146,
+      "variational_fit": 0.17180585861206055,
+      "warping": 0.0,
+      "K": 10,
+      "N": 100,
+      "n_eff": 91,
+      "Ns_gp": 8,
+      "func_count": 100,
+      "elbo": -2.264603717899056,
+      "elbo_sd": 0.12995790899309576,
+      "warmup": false
+    },
+    {
+      "iter": 19,
+      "active_sampling": 3.122718572616577,
+      "finalize": 0.038333892822265625,
+      "fun_time": 0.0030639171600341797,
+      "gp_train": 0.5529940128326416,
+      "variational_fit": 0.16495060920715332,
+      "warping": 0.0,
+      "K": 10,
+      "N": 105,
+      "n_eff": 96,
+      "Ns_gp": 8,
+      "func_count": 105,
+      "elbo": -2.245552159110747,
+      "elbo_sd": 0.126285841049832,
+      "warmup": false
+    },
+    {
+      "iter": 20,
+      "active_sampling": 3.5083837509155273,
+      "finalize": 0.037908077239990234,
+      "fun_time": 0.0031409263610839844,
+      "gp_train": 0.6041765213012695,
+      "variational_fit": 0.29413700103759766,
+      "warping": 0.0,
+      "K": 12,
+      "N": 110,
+      "n_eff": 101,
+      "Ns_gp": 8,
+      "func_count": 110,
+      "elbo": -2.24672919634932,
+      "elbo_sd": 0.12181901991575876,
+      "warmup": false
+    },
+    {
+      "iter": 21,
+      "active_sampling": 3.745419502258301,
+      "finalize": 0.03351736068725586,
+      "fun_time": 0.0032875537872314453,
+      "gp_train": 0.5183990001678467,
+      "variational_fit": 0.39798498153686523,
+      "warping": 0.0,
+      "K": 12,
+      "N": 115,
+      "n_eff": 106,
+      "Ns_gp": 7,
+      "func_count": 115,
+      "elbo": -2.2176262072054334,
+      "elbo_sd": 0.1210353274464589,
+      "warmup": false
+    },
+    {
+      "iter": 22,
+      "active_sampling": 3.240082025527954,
+      "finalize": 0.03769946098327637,
+      "fun_time": 0.0033147335052490234,
+      "gp_train": 0.4837992191314697,
+      "variational_fit": 0.2546389102935791,
+      "warping": 0.0,
+      "K": 12,
+      "N": 120,
+      "n_eff": 111,
+      "Ns_gp": 7,
+      "func_count": 120,
+      "elbo": -2.2439647392017488,
+      "elbo_sd": 0.11957095482728963,
+      "warmup": false
+    },
+    {
+      "iter": 23,
+      "active_sampling": 0.00010228157043457031,
+      "finalize": 0.03736686706542969,
+      "fun_time": 0.0,
+      "gp_train": 1.6556637287139893,
+      "variational_fit": 2.32578444480896,
+      "warping": 0.020506858825683594,
+      "K": 12,
+      "N": 120,
+      "n_eff": 111,
+      "Ns_gp": 7,
+      "func_count": 120,
+      "elbo": -2.100978681136018,
+      "elbo_sd": 0.14090232849508705,
+      "warmup": false
+    },
+    {
+      "iter": 24,
+      "active_sampling": 3.7698516845703125,
+      "finalize": 0.042253971099853516,
+      "fun_time": 0.0032901763916015625,
+      "gp_train": 0.6306695938110352,
+      "variational_fit": 0.29836320877075195,
+      "warping": 0.0,
+      "K": 13,
+      "N": 125,
+      "n_eff": 116,
+      "Ns_gp": 7,
+      "func_count": 125,
+      "elbo": -2.082955647089568,
+      "elbo_sd": 0.1417717633229311,
+      "warmup": false
+    },
+    {
+      "iter": 25,
+      "active_sampling": 3.655337333679199,
+      "finalize": 0.04173994064331055,
+      "fun_time": 0.0033826828002929688,
+      "gp_train": 0.5809588432312012,
+      "variational_fit": 0.32514190673828125,
+      "warping": 0.0,
+      "K": 13,
+      "N": 130,
+      "n_eff": 121,
+      "Ns_gp": 7,
+      "func_count": 130,
+      "elbo": -2.0399665398377818,
+      "elbo_sd": 0.16394603449446177,
+      "warmup": false
+    },
+    {
+      "iter": 26,
+      "active_sampling": 3.466794490814209,
+      "finalize": 0.04212617874145508,
+      "fun_time": 0.00333404541015625,
+      "gp_train": 3.9559130668640137,
+      "variational_fit": 0.3479187488555908,
+      "warping": 0.0,
+      "K": 13,
+      "N": 135,
+      "n_eff": 126,
+      "Ns_gp": 7,
+      "func_count": 135,
+      "elbo": -2.1368863595282606,
+      "elbo_sd": 1.4708165752856985,
+      "warmup": false
+    },
+    {
+      "iter": 27,
+      "active_sampling": 7.744755029678345,
+      "finalize": 0.05667567253112793,
+      "fun_time": 0.003403186798095703,
+      "gp_train": 6.745265483856201,
+      "variational_fit": 0.29556727409362793,
+      "warping": 0.0,
+      "K": 13,
+      "N": 140,
+      "n_eff": 131,
+      "Ns_gp": 7,
+      "func_count": 140,
+      "elbo": -2.046893502349925,
+      "elbo_sd": 1.4297865254332847,
+      "warmup": false
+    },
+    {
+      "iter": 28,
+      "active_sampling": 4.619320869445801,
+      "finalize": 0.04595446586608887,
+      "fun_time": 0.0035407543182373047,
+      "gp_train": 5.09732460975647,
+      "variational_fit": 0.2841024398803711,
+      "warping": 0.0,
+      "K": 13,
+      "N": 145,
+      "n_eff": 136,
+      "Ns_gp": 7,
+      "func_count": 145,
+      "elbo": -2.9996297853550664,
+      "elbo_sd": 0.14204321061611974,
+      "warmup": false
+    },
+    {
+      "iter": 29,
+      "active_sampling": 4.4657368659973145,
+      "finalize": 0.04565787315368652,
+      "fun_time": 0.003362417221069336,
+      "gp_train": 5.485261917114258,
+      "variational_fit": 0.3953580856323242,
+      "warping": 0.0,
+      "K": 13,
+      "N": 150,
+      "n_eff": 141,
+      "Ns_gp": 7,
+      "func_count": 150,
+      "elbo": -1.1884786345229377,
+      "elbo_sd": 1.3916109489724184,
+      "warmup": false
+    },
+    {
+      "iter": 30,
+      "active_sampling": 31.927350759506226,
+      "finalize": 0.045639991760253906,
+      "fun_time": 0.0036020278930664062,
+      "gp_train": 31.75965428352356,
+      "variational_fit": 1.1578342914581299,
+      "warping": 0.0,
+      "K": 13,
+      "N": 155,
+      "n_eff": 146,
+      "Ns_gp": 6,
+      "func_count": 155,
+      "elbo": -1.4537821327406801,
+      "elbo_sd": 2.576952536752101,
+      "warmup": false
+    },
+    {
+      "iter": 31,
+      "active_sampling": 37.19267511367798,
+      "finalize": 0.04187583923339844,
+      "fun_time": 0.003301858901977539,
+      "gp_train": 34.99604940414429,
+      "variational_fit": 1.1047132015228271,
+      "warping": 0.0,
+      "K": 13,
+      "N": 160,
+      "n_eff": 151,
+      "Ns_gp": 6,
+      "func_count": 160,
+      "elbo": -1.0463659140427684,
+      "elbo_sd": 0.23628132708487262,
+      "warmup": false
+    },
+    {
+      "iter": 32,
+      "active_sampling": 37.1136679649353,
+      "finalize": 0.05203676223754883,
+      "fun_time": 0.003470897674560547,
+      "gp_train": 41.02201271057129,
+      "variational_fit": 1.3249597549438477,
+      "warping": 0.0,
+      "K": 14,
+      "N": 165,
+      "n_eff": 156,
+      "Ns_gp": 6,
+      "func_count": 165,
+      "elbo": 2.3733536087431055,
+      "elbo_sd": 2.6564947355344026,
+      "warmup": false
+    },
+    {
+      "iter": 33,
+      "active_sampling": 34.153735637664795,
+      "finalize": 0.047684431076049805,
+      "fun_time": 0.0038199424743652344,
+      "gp_train": 31.489670753479004,
+      "variational_fit": 1.217757225036621,
+      "warping": 0.0,
+      "K": 14,
+      "N": 170,
+      "n_eff": 161,
+      "Ns_gp": 6,
+      "func_count": 170,
+      "elbo": -2.3772388589128655,
+      "elbo_sd": 1.9190703554409285,
+      "warmup": false
+    },
+    {
+      "iter": 34,
+      "active_sampling": 25.155240774154663,
+      "finalize": 0.04886651039123535,
+      "fun_time": 0.003418445587158203,
+      "gp_train": 22.660481214523315,
+      "variational_fit": 1.1538960933685303,
+      "warping": 0.0,
+      "K": 14,
+      "N": 175,
+      "n_eff": 166,
+      "Ns_gp": 6,
+      "func_count": 175,
+      "elbo": -2.774484148752148,
+      "elbo_sd": 1.0409982365124584,
+      "warmup": false
+    },
+    {
+      "iter": 35,
+      "active_sampling": 26.932504653930664,
+      "finalize": 0.04586052894592285,
+      "fun_time": 0.00410771369934082,
+      "gp_train": 27.47931694984436,
+      "variational_fit": 1.3402307033538818,
+      "warping": 0.0,
+      "K": 14,
+      "N": 180,
+      "n_eff": 171,
+      "Ns_gp": 6,
+      "func_count": 180,
+      "elbo": -2.4835530276357276,
+      "elbo_sd": 1.2946500342246987,
+      "warmup": false
+    },
+    {
+      "iter": 36,
+      "active_sampling": 30.128660202026367,
+      "finalize": 0.04716682434082031,
+      "fun_time": 0.0036346912384033203,
+      "gp_train": 29.303489446640015,
+      "variational_fit": 1.4275338649749756,
+      "warping": 0.0,
+      "K": 14,
+      "N": 185,
+      "n_eff": 176,
+      "Ns_gp": 6,
+      "func_count": 185,
+      "elbo": -1.667684416570073,
+      "elbo_sd": 2.0684625397563585,
+      "warmup": false
+    },
+    {
+      "iter": 37,
+      "active_sampling": 27.232935667037964,
+      "finalize": 0.05284428596496582,
+      "fun_time": 0.003368854522705078,
+      "gp_train": 25.270650148391724,
+      "variational_fit": 1.273080587387085,
+      "warping": 0.0,
+      "K": 14,
+      "N": 190,
+      "n_eff": 181,
+      "Ns_gp": 6,
+      "func_count": 190,
+      "elbo": -2.6951289026497127,
+      "elbo_sd": 1.6344325236719632,
+      "warmup": false
+    },
+    {
+      "iter": 38,
+      "active_sampling": 5.148159503936768,
+      "finalize": 0.05623269081115723,
+      "fun_time": 0.0036237239837646484,
+      "gp_train": 4.296098232269287,
+      "variational_fit": 0.4281167984008789,
+      "warping": 0.0,
+      "K": 14,
+      "N": 195,
+      "n_eff": 186,
+      "Ns_gp": 6,
+      "func_count": 195,
+      "elbo": -1.0305489318713819,
+      "elbo_sd": 0.6205445550994604,
+      "warmup": false
+    },
+    {
+      "iter": 39,
+      "active_sampling": 5.204471826553345,
+      "finalize": 0.05301356315612793,
+      "fun_time": 0.0038785934448242188,
+      "gp_train": 20.356699466705322,
+      "variational_fit": 2.0270843505859375,
+      "warping": 0.02456045150756836,
+      "K": 14,
+      "N": 200,
+      "n_eff": 191,
+      "Ns_gp": 6,
+      "func_count": 200,
+      "elbo": -0.15079830371151148,
+      "elbo_sd": 1.5499289558161744,
+      "warmup": false
+    }
+  ],
+  "attribution": [
+    {
+      "label": "VBMC.optimize",
+      "cumtime": 517.9366715340001,
+      "ncalls": 1,
+      "where": [
+        "vbmc.py:900"
+      ]
+    },
+    {
+      "label": "active_sample",
+      "cumtime": 388.37628554900004,
+      "ncalls": 39,
+      "where": [
+        "active_sample.py:27"
+      ]
+    },
+    {
+      "label": "cma.fmin",
+      "cumtime": 14.017289261,
+      "ncalls": 190,
+      "where": [
+        "evolution_strategy.py:4749"
+      ]
+    },
+    {
+      "label": "acquisition __call__",
+      "cumtime": 143.046609278,
+      "ncalls": 3352,
+      "where": [
+        "abstract_acq_fcn.py:35"
+      ]
+    },
+    {
+      "label": "GP.predict",
+      "cumtime": 52.127430481000005,
+      "ncalls": 3582,
+      "where": [
+        "gaussian_process.py:1780"
+      ]
+    },
+    {
+      "label": "GP.predict_full",
+      "cumtime": 0.0,
+      "ncalls": 0,
+      "where": []
+    },
+    {
+      "label": "GP.update (rank-1)",
+      "cumtime": 0.7503221990000001,
+      "ncalls": 237,
+      "where": [
+        "gaussian_process.py:728"
+      ]
+    },
+    {
+      "label": "vp.pdf",
+      "cumtime": 0.0,
+      "ncalls": 0,
+      "where": []
+    },
+    {
+      "label": "active_importance_sampling",
+      "cumtime": 1.7516934400000002,
+      "ncalls": 190,
+      "where": [
+        "active_importance_sampling.py:10"
+      ]
+    },
+    {
+      "label": "train_gp",
+      "cumtime": 337.41960436600004,
+      "ncalls": 115,
+      "where": [
+        "gaussian_process_train.py:15"
+      ]
+    },
+    {
+      "label": "GP.fit",
+      "cumtime": 336.93347218,
+      "ncalls": 115,
+      "where": [
+        "gaussian_process.py:947"
+      ]
+    },
+    {
+      "label": "SliceSampler.sample",
+      "cumtime": 315.326674035,
+      "ncalls": 115,
+      "where": [
+        "slice_sample.py:243"
+      ]
+    },
+    {
+      "label": "GP.__core_computation",
+      "cumtime": 269.410825335,
+      "ncalls": 417901,
+      "where": [
+        "gaussian_process.py:2510"
+      ]
+    },
+    {
+      "label": "f_min_fill",
+      "cumtime": 17.865387849,
+      "ncalls": 97,
+      "where": [
+        "f_min_fill.py:13"
+      ]
+    },
+    {
+      "label": "scipy.optimize.minimize",
+      "cumtime": 2.83530323,
+      "ncalls": 97,
+      "where": [
+        "_minimize.py:54"
+      ]
+    },
+    {
+      "label": "scipy cholesky",
+      "cumtime": 92.299962729,
+      "ncalls": 400343,
+      "where": [
+        "_decomp_cholesky.py:50"
+      ]
+    },
+    {
+      "label": "solve_triangular",
+      "cumtime": 1.739254483,
+      "ncalls": 9348,
+      "where": [
+        "_basic.py:650"
+      ]
+    },
+    {
+      "label": "optimize_vp",
+      "cumtime": 26.668528067,
+      "ncalls": 116,
+      "where": [
+        "variational_optimization.py:90"
+      ]
+    },
+    {
+      "label": "update_K",
+      "cumtime": 0.004871383,
+      "ncalls": 40,
+      "where": [
+        "variational_optimization.py:19"
+      ]
+    },
+    {
+      "label": "_sieve",
+      "cumtime": 9.002839588,
+      "ncalls": 116,
+      "where": [
+        "variational_optimization.py:687"
+      ]
+    },
+    {
+      "label": "_vb_init",
+      "cumtime": 1.206736102,
+      "ncalls": 128,
+      "where": [
+        "variational_optimization.py:840"
+      ]
+    },
+    {
+      "label": "minimize_adam",
+      "cumtime": 12.901116634000001,
+      "ncalls": 122,
+      "where": [
+        "minimize_adam.py:8"
+      ]
+    },
+    {
+      "label": "_neg_elcbo",
+      "cumtime": 24.427994082,
+      "ncalls": 13902,
+      "where": [
+        "variational_optimization.py:1078"
+      ]
+    },
+    {
+      "label": "_gp_log_joint",
+      "cumtime": 12.707854482,
+      "ncalls": 13902,
+      "where": [
+        "variational_optimization.py:1325"
+      ]
+    },
+    {
+      "label": "_eval_full_elcbo",
+      "cumtime": 4.5842925150000005,
+      "ncalls": 294,
+      "where": [
+        "variational_optimization.py:439"
+      ]
+    },
+    {
+      "label": "entmc_vbmc",
+      "cumtime": 7.463629745,
+      "ncalls": 6892,
+      "where": [
+        "entmc_vbmc.py:18"
+      ]
+    },
+    {
+      "label": "entlb_vbmc",
+      "cumtime": 0.747440066,
+      "ncalls": 7010,
+      "where": [
+        "entlb_vbmc.py:6"
+      ]
+    },
+    {
+      "label": "record_iteration",
+      "cumtime": 0.08578804400000001,
+      "ncalls": 80,
+      "where": [
+        "iteration_history.py:129"
+      ]
+    },
+    {
+      "label": "copy.deepcopy",
+      "cumtime": 0.302752526,
+      "ncalls": 101134,
+      "where": [
+        "copy.py:128"
+      ]
+    },
+    {
+      "label": "_check_termination_conditions",
+      "cumtime": 0.017823528,
+      "ncalls": 40,
+      "where": [
+        "vbmc.py:1808"
+      ]
+    },
+    {
+      "label": "determine_best_vp (incl. in-loop warping calls)",
+      "cumtime": 0.0005020080000000001,
+      "ncalls": 4,
+      "where": [
+        "vbmc.py:2323"
+      ]
+    },
+    {
+      "label": "final_boost",
+      "cumtime": 2.6822749690000003,
+      "ncalls": 1,
+      "where": [
+        "vbmc.py:2122"
+      ]
+    },
+    {
+      "label": "vp.kl_div",
+      "cumtime": 1.512188797,
+      "ncalls": 40,
+      "where": [
+        "variational_posterior.py:1233"
+      ]
+    },
+    {
+      "label": "vp.sample",
+      "cumtime": 1.30310181,
+      "ncalls": 650,
+      "where": [
+        "variational_posterior.py:430"
+      ]
+    },
+    {
+      "label": "vp.moments",
+      "cumtime": 1.5556184100000001,
+      "ncalls": 503,
+      "where": [
+        "variational_posterior.py:962"
+      ]
+    }
+  ]
+}

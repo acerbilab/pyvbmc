@@ -1,0 +1,16 @@
+{
+  "endpoints_verified": 100,
+  "max_gskl_absolute_error": 3.1086244689504383e-15,
+  "counts": {
+    "old": {
+      "usable": 46,
+      "transformed": 7,
+      "bad_untransformed": 0
+    },
+    "new": {
+      "usable": 43,
+      "transformed": 9,
+      "bad_untransformed": 0
+    }
+  }
+}

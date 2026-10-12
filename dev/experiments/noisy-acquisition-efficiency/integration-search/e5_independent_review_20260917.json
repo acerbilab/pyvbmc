@@ -1,0 +1,63 @@
+{
+  "S2_diagnostics": {
+    "cache_hits": 0,
+    "candidate_row_budget_fallback": 25,
+    "finite_difference_instability_fallback": 138,
+    "generated": 194,
+    "invalid_local_score_fallback": 28,
+    "no_fallback": 2589,
+    "refined": 2586,
+    "repeats": 0
+  },
+  "additional_review_fits_launched": 0,
+  "artifact_sha256": {
+    "campaign/validation_replay/validation_replay.json": "429532cab094b5089c764e8c2b5d79ee3459e84635f3aa37efd20cfd8c062536",
+    "closure.log": "a2004b39aa30b5f77474bf3c5f7ba81c99225a5c07b0db04923800ca660b31a6",
+    "completion.json": "c760d2e34e7584f818b73eb12c8a8ae2811bed4c19fd5800b689dbe3605111d6",
+    "launch_clearance.json": "2af906dd443fc5f1c5fb4cf365d97b0ec75cd340cb347561a6613290bedca520",
+    "manifest.json": "048fffad6a85113aae568525e5263f534dbfaa61821971262827206fce5797c3",
+    "summary.json": "471088e38580de45609a7b5d183598c45b6e0ac379ff6103ceccbd73a50efb51"
+  },
+  "compiled_by": "Astra orchestrator from independent review messages",
+  "confidence": "high",
+  "continuation_authorized": false,
+  "continuation_fits_allocated": 0,
+  "corrected_reporting_findings": [
+    "Redact all Windows user-directory names, including dependency build paths",
+    "Permit interrupted publication to reuse only identical verified artifacts",
+    "State operational continuation criteria separately from descriptive scientific results"
+  ],
+  "created_utc": "2026-09-17T17:47:20.064364+00:00",
+  "manifest_semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134",
+  "noninferiority_established": false,
+  "operational_continuation_criteria_satisfied": true,
+  "remaining_findings": [],
+  "residual_limits": [
+    "Two seeds per configuration; descriptive evidence only",
+    "Per-target timing intervals have one degree of freedom",
+    "Laptop-specific timing and extrapolated future cost",
+    "Three S2 convergence-flag losses",
+    "Additional target evaluations on Student-t and timing seed 2001",
+    "Multisensory quality and low-noise Rosenbrock MMTV concerns"
+  ],
+  "reviewer": "Independent Sol e5_review",
+  "schema_version": 1,
+  "scientific_adoption_approved": false,
+  "source_checkpoint": "d8eb7af547e92d639e402edc9d8c62db2239668f",
+  "verdict": "pass",
+  "verified": {
+    "S2_MC1600_top8_sieve1024_and_50_iteration_1000_row_caps": true,
+    "all_summary_ratios_differences_transitions_envelopes": true,
+    "bound_payload_hashes": 72,
+    "continuation_fits_absent": 96,
+    "declared_fits": 120,
+    "exact_initial_design_pairs": 12,
+    "exact_replay_excluded": true,
+    "executable_fits": 24,
+    "gpyreg_source_hashes": 23,
+    "primary_fits_present": 24,
+    "primary_terminal_digests": 24,
+    "selection_records": 5365,
+    "unique_independently_derived_S2_seeds": 2780
+  }
+}

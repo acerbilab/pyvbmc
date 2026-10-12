@@ -1,0 +1,19 @@
+{
+  "device": "cuda",
+  "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "cuda_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\deps_compiler\\triton\\backends\\nvidia",
+  "msvc": {
+    "VCToolsVersion": "14.44.35207",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "cl": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.EXE",
+  "torch_import_seconds": 2.250857000006363,
+  "torch": "2.14.0+cu126",
+  "torch_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\deps_cuda\\torch\\__init__.py",
+  "cold_forward_backward_seconds": 7.025078500038944,
+  "backward_type": "CompiledFunctionBackward",
+  "value_error": 0.0,
+  "gradient_max_error": 4.85722573273506e-17,
+  "status": "passed",
+  "child_wall_seconds": 11.595804100041278
+}

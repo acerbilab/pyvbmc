@@ -1,0 +1,1220 @@
+{
+  "harness": "population_run",
+  "manifest_sha256": "b3d4c2733c0898eb6706f5d1a5d4bf722841a6793b9c42eadc29b3df8afb721d",
+  "contract": 1,
+  "generated": "2026-10-05T16:33:17+0000",
+  "counts": {
+    "verified": 100,
+    "verify_failed": 0,
+    "failed": 0,
+    "in_flight": 0,
+    "interrupted": 0,
+    "partial": 0,
+    "missing": 0,
+    "stray": 0
+  },
+  "cases": [
+    {
+      "index": 1,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed100 rosenbrock_D2_noise3_production 100",
+      "elapsed_seconds": 170.03668212890625,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1de803590f3981ac378f7b449442a9aa209750dbd09966a2339f03f0d3dee0c9",
+      "status": "verified"
+    },
+    {
+      "index": 2,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed101 rosenbrock_D2_noise3_production 101",
+      "elapsed_seconds": 230.2353904247284,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "5c0d2b2b3b11ca3e0e356fb3a922bb994719db52d5d950e2ad466e9e980e2996",
+      "status": "verified"
+    },
+    {
+      "index": 3,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed102 rosenbrock_D2_noise3_production 102",
+      "elapsed_seconds": 210.44820261001587,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "2e07f9b321a55850362022c546eb70a1d984ea474f4a0d0283d8ad69df5f4613",
+      "status": "verified"
+    },
+    {
+      "index": 4,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed103 rosenbrock_D2_noise3_production 103",
+      "elapsed_seconds": 198.20583605766296,
+      "boost": {
+        "attempted": true,
+        "accepted": false
+      },
+      "record_sha256": "aa376bc821dcab6b021baaea3f2e477c760d8b60603b7976e536837ae82f1689",
+      "status": "verified"
+    },
+    {
+      "index": 5,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed104 rosenbrock_D2_noise3_production 104",
+      "elapsed_seconds": 196.6264841556549,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "73c6c932792ca538bce1505282ec2ae1e64be57388604eeba97dd203e3dfa402",
+      "status": "verified"
+    },
+    {
+      "index": 6,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed105 rosenbrock_D2_noise3_production 105",
+      "elapsed_seconds": 185.68270707130432,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "2b3ec49b11666420a9cef175650ff862ea3e8e2751278e71ed3802b7d74d36e4",
+      "status": "verified"
+    },
+    {
+      "index": 7,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed106 rosenbrock_D2_noise3_production 106",
+      "elapsed_seconds": 191.81530833244324,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "33789508d4c684801187fa2bae2f514ca97bb2c11612ec1e8fc379ede31ceb65",
+      "status": "verified"
+    },
+    {
+      "index": 8,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed107 rosenbrock_D2_noise3_production 107",
+      "elapsed_seconds": 244.0475263595581,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "33821acc1f2b45bf424f0ee35b154a6f94d26cb89db74e8873bef0376c21fac4",
+      "status": "verified"
+    },
+    {
+      "index": 9,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed108 rosenbrock_D2_noise3_production 108",
+      "elapsed_seconds": 189.04180335998535,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "b5b7b15000bbfc9e6adc6f81a0d723f677f7eb939ac09f2b0287598a1f764cf4",
+      "status": "verified"
+    },
+    {
+      "index": 10,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed109 rosenbrock_D2_noise3_production 109",
+      "elapsed_seconds": 188.80839610099792,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "de01f0a7f2183ec461e883e61038d58b3eb6c3e3b55fde6f152a1389d3b69a40",
+      "status": "verified"
+    },
+    {
+      "index": 11,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed110 rosenbrock_D2_noise3_production 110",
+      "elapsed_seconds": 203.90418815612793,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "10778e401c986621898a3370001763a7a08d5801c9aef05d624674e9cb3d2ffb",
+      "status": "verified"
+    },
+    {
+      "index": 12,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed111 rosenbrock_D2_noise3_production 111",
+      "elapsed_seconds": 198.9585485458374,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "31cdead02d7a1bf4140e5cf4abef8ec6db48898589f10f6de0ba09b88e8ce7fb",
+      "status": "verified"
+    },
+    {
+      "index": 13,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed112 rosenbrock_D2_noise3_production 112",
+      "elapsed_seconds": 165.71498465538025,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "48b8e8d1900a28efa5bfbf37b2643c662eb2d0ea9ed0aecba953091876c4a54e",
+      "status": "verified"
+    },
+    {
+      "index": 14,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed113 rosenbrock_D2_noise3_production 113",
+      "elapsed_seconds": 165.00233554840088,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "7c7cec15aa27e93325c09aa6653e967b8c90ed8204b8218d3224a5699f52640a",
+      "status": "verified"
+    },
+    {
+      "index": 15,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed114 rosenbrock_D2_noise3_production 114",
+      "elapsed_seconds": 196.60157179832458,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "118cecb46f7c03c79789079380a3b683b800328314c78b58e3003f5567f1e6de",
+      "status": "verified"
+    },
+    {
+      "index": 16,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed115 rosenbrock_D2_noise3_production 115",
+      "elapsed_seconds": 218.78831028938293,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "f6e9e450637cfb8f4c459c4c97846909e36f674e9c6e0e303e32229007863d06",
+      "status": "verified"
+    },
+    {
+      "index": 17,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed116 rosenbrock_D2_noise3_production 116",
+      "elapsed_seconds": 168.39073371887207,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "32417b34ef4fbea3342ecbea52e93cb3cdd100684c6b00538288005fb830436d",
+      "status": "verified"
+    },
+    {
+      "index": 18,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed117 rosenbrock_D2_noise3_production 117",
+      "elapsed_seconds": 217.2924370765686,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "ea2d4285eb20be204aa6619ecf3fb21d1fc73bd917c57250348ae34d4508c0be",
+      "status": "verified"
+    },
+    {
+      "index": 19,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed118 rosenbrock_D2_noise3_production 118",
+      "elapsed_seconds": 255.07953214645386,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "8f4bb280bc3ef4adca484fbef86dd2f4c966a0748618ed5ecef82946217c980e",
+      "status": "verified"
+    },
+    {
+      "index": 20,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed119 rosenbrock_D2_noise3_production 119",
+      "elapsed_seconds": 252.64956045150757,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "bd3089a4955a3b80dc758648edd636604a7545360b5552806ec1570e739f92a9",
+      "status": "verified"
+    },
+    {
+      "index": 21,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed120 rosenbrock_D2_noise3_production 120",
+      "elapsed_seconds": 275.7251446247101,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "a4e32da1b87b260de320f64f4767908d3b921bf49559885fa5b358ff9a511b1e",
+      "status": "verified"
+    },
+    {
+      "index": 22,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed121 rosenbrock_D2_noise3_production 121",
+      "elapsed_seconds": 239.88413619995117,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "6a80b3f2ce065c2abb1950ba19e0aa179a5d9e12613e8de2b95909be1fad38dc",
+      "status": "verified"
+    },
+    {
+      "index": 23,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed122 rosenbrock_D2_noise3_production 122",
+      "elapsed_seconds": 215.36170959472656,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "240d8cf2c6a05357f31f6aba3fa704579a32f012e6acfb92a89985130f010e3f",
+      "status": "verified"
+    },
+    {
+      "index": 24,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed123 rosenbrock_D2_noise3_production 123",
+      "elapsed_seconds": 234.79051899909973,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "adacbc0d4e33b0ee1e2170c7904c82d76224f6385fdbe4985c3b51fb5c35bf09",
+      "status": "verified"
+    },
+    {
+      "index": 25,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed124 rosenbrock_D2_noise3_production 124",
+      "elapsed_seconds": 210.14992260932922,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "6de31d7d2d80507d6f5b17d923a8326687d1d8a6e8273ef62ef0b5086e7bc075",
+      "status": "verified"
+    },
+    {
+      "index": 26,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed125 rosenbrock_D2_noise3_production 125",
+      "elapsed_seconds": 236.94220995903015,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "6e68100a09ae6c9032867da25fe7e74128696857b3c5c5a9914b553bfb9878a3",
+      "status": "verified"
+    },
+    {
+      "index": 27,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed126 rosenbrock_D2_noise3_production 126",
+      "elapsed_seconds": 236.656409740448,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "7a972c3c92a1a05c9994988f3b1b00b4790f6621f93b8651c5292abda51e7cc0",
+      "status": "verified"
+    },
+    {
+      "index": 28,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed127 rosenbrock_D2_noise3_production 127",
+      "elapsed_seconds": 204.88153910636902,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "7eb52b506024fa22ffddcad0c2210e06804e20ed7c33f206e98184b28e71f55d",
+      "status": "verified"
+    },
+    {
+      "index": 29,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed128 rosenbrock_D2_noise3_production 128",
+      "elapsed_seconds": 175.9372501373291,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "4c103c3466fc9047170ef8f550ad3e1a8793e50db066a2fbf89b97c4f320606b",
+      "status": "verified"
+    },
+    {
+      "index": 30,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed129 rosenbrock_D2_noise3_production 129",
+      "elapsed_seconds": 172.24736738204956,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "34eaec3081aa1e6294f8e4d873d5b04ab2792c56e551befdf6a583ba49c0e1a9",
+      "status": "verified"
+    },
+    {
+      "index": 31,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed130 rosenbrock_D2_noise3_production 130",
+      "elapsed_seconds": 189.48184037208557,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "410012647ca9079fbd88e898ee3f63d5fbbe359c1339368bad38c8e157c01b56",
+      "status": "verified"
+    },
+    {
+      "index": 32,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed131 rosenbrock_D2_noise3_production 131",
+      "elapsed_seconds": 183.10771131515503,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "924cccdf7a48db1887416925e2c54a5cd2412d202a0d2e4d0cd2b63e455a1914",
+      "status": "verified"
+    },
+    {
+      "index": 33,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed132 rosenbrock_D2_noise3_production 132",
+      "elapsed_seconds": 221.00773310661316,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "2ecee2bd380466c0636782ff694833560c70415e0ddd582e7ddc4d5d7ca7b866",
+      "status": "verified"
+    },
+    {
+      "index": 34,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed133 rosenbrock_D2_noise3_production 133",
+      "elapsed_seconds": 170.41184973716736,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "629b0a47a79358c5a9278fd32cccf55637b2b889f8a38109adf7fd9671a6a3e5",
+      "status": "verified"
+    },
+    {
+      "index": 35,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed134 rosenbrock_D2_noise3_production 134",
+      "elapsed_seconds": 247.58946585655212,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "86d3b5db03fe7a95f3ed387c2cb321675e2f02cb21b56a51a0cc7b690f621197",
+      "status": "verified"
+    },
+    {
+      "index": 36,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed135 rosenbrock_D2_noise3_production 135",
+      "elapsed_seconds": 249.4203507900238,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "0dc8dad9383df1b257b3d15504a49ffd5376350ad0faceb6fac4aa495b8c5ef4",
+      "status": "verified"
+    },
+    {
+      "index": 37,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed136 rosenbrock_D2_noise3_production 136",
+      "elapsed_seconds": 255.01683282852173,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "d91e6f7532d384a33965d2509d4e02ac53b2fd677577fdc4f4bd8d150e1f80cb",
+      "status": "verified"
+    },
+    {
+      "index": 38,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed137 rosenbrock_D2_noise3_production 137",
+      "elapsed_seconds": 201.4487886428833,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1ce0df85dd89407860e2585228cfc7e29e18615e06977442bc9b74946108f2f8",
+      "status": "verified"
+    },
+    {
+      "index": 39,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed138 rosenbrock_D2_noise3_production 138",
+      "elapsed_seconds": 277.95705103874207,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "f8bf30e667ce5f68295045f41536dc4c1f82203b2d2cfb159c607b57a4cd8163",
+      "status": "verified"
+    },
+    {
+      "index": 40,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed139 rosenbrock_D2_noise3_production 139",
+      "elapsed_seconds": 238.01887559890747,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "c7fb8a878c35bb651f01e7f69ff943101df461972302811f39e83bbcb57ed79d",
+      "status": "verified"
+    },
+    {
+      "index": 41,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed140 rosenbrock_D2_noise3_production 140",
+      "elapsed_seconds": 223.4302167892456,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "bb9f09ccd8dbd07bb0119570466624c863e359e8c8feb4db3f8f1b729edf6b7e",
+      "status": "verified"
+    },
+    {
+      "index": 42,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed141 rosenbrock_D2_noise3_production 141",
+      "elapsed_seconds": 131.9880015850067,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "749c3a2b31f3214d888cc7e9ed7142ad419b061b1d66625f1e307457beb6c6ba",
+      "status": "verified"
+    },
+    {
+      "index": 43,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed142 rosenbrock_D2_noise3_production 142",
+      "elapsed_seconds": 274.947523355484,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "7b321f43e310c057cd8f365d2cd86f3b96428233639323c10731d7cb64725308",
+      "status": "verified"
+    },
+    {
+      "index": 44,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed143 rosenbrock_D2_noise3_production 143",
+      "elapsed_seconds": 189.2645399570465,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "3371249431bbe1d656e12b71879ccaff46fcf31d24d864017748a1c691407a85",
+      "status": "verified"
+    },
+    {
+      "index": 45,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed144 rosenbrock_D2_noise3_production 144",
+      "elapsed_seconds": 214.08407163619995,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "c91df3c979f37e56c2e1510e0342a1aa59091ff41d6af9f324861a620ceb1604",
+      "status": "verified"
+    },
+    {
+      "index": 46,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed145 rosenbrock_D2_noise3_production 145",
+      "elapsed_seconds": 189.33474898338318,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "04e188eefd292699cc7e75865d50b5f8a3ddf48ff959107501a798b8d043274a",
+      "status": "verified"
+    },
+    {
+      "index": 47,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed146 rosenbrock_D2_noise3_production 146",
+      "elapsed_seconds": 188.88531374931335,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "d1b829f4986e1b2600368562d0255f65f3a3e842b999812f41118e38b4b168c9",
+      "status": "verified"
+    },
+    {
+      "index": 48,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed147 rosenbrock_D2_noise3_production 147",
+      "elapsed_seconds": 268.7606177330017,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "d114bc6694794724a4e9c7e1eb0e0e2cb2e7541d67af3d39f3bbd1c9e02eb9e5",
+      "status": "verified"
+    },
+    {
+      "index": 49,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed148 rosenbrock_D2_noise3_production 148",
+      "elapsed_seconds": 225.58093357086182,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "f29ba3e8511053c3168ba588abe3aa698dd1c8dbe95f1cab02efd2788a90ad52",
+      "status": "verified"
+    },
+    {
+      "index": 50,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed149 rosenbrock_D2_noise3_production 149",
+      "elapsed_seconds": 226.9890365600586,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "b1cc5e90156015d8150ecb771f34d0b367614413c483edc574a3b939fee4d56f",
+      "status": "verified"
+    },
+    {
+      "index": 51,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed150 rosenbrock_D2_noise3_production 150",
+      "elapsed_seconds": 343.49174189567566,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "e460899720b8bba572bd7793699a8c6e8eab804bff88ac4dfcf949a6b624b0a6",
+      "status": "verified"
+    },
+    {
+      "index": 52,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed151 rosenbrock_D2_noise3_production 151",
+      "elapsed_seconds": 137.41283345222473,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "776accd95a4b99af5beee23fbfc25003cf6fde8f9ab1e8f09b82d68a227ee93f",
+      "status": "verified"
+    },
+    {
+      "index": 53,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed152 rosenbrock_D2_noise3_production 152",
+      "elapsed_seconds": 171.5321135520935,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "b698c9a7c3b3298ab30cecd3f617fa5c8fc005035c17d9a425d50f71813759ee",
+      "status": "verified"
+    },
+    {
+      "index": 54,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed153 rosenbrock_D2_noise3_production 153",
+      "elapsed_seconds": 198.81688928604126,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "ddf22a6497d0804e9d01009c7d88d17b64f7a427b2bcdc2338b726a3cea3f364",
+      "status": "verified"
+    },
+    {
+      "index": 55,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed154 rosenbrock_D2_noise3_production 154",
+      "elapsed_seconds": 213.5820972919464,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "9baeb0c999fdcd2c16e1f8fd6b69e27446622c1cb2f97e2f6cf8486b6b8bd4a3",
+      "status": "verified"
+    },
+    {
+      "index": 56,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed155 rosenbrock_D2_noise3_production 155",
+      "elapsed_seconds": 188.9606602191925,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "051951efa6d5a9cb60c20161d9bd1957d6539869a6a3cce2b1d5704d825a0059",
+      "status": "verified"
+    },
+    {
+      "index": 57,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed156 rosenbrock_D2_noise3_production 156",
+      "elapsed_seconds": 162.88728165626526,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "5443ee130dd99e3ebd99eed09a8d2aa44ea656bad588cd03c9d087232737e2b3",
+      "status": "verified"
+    },
+    {
+      "index": 58,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed157 rosenbrock_D2_noise3_production 157",
+      "elapsed_seconds": 234.81697344779968,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "6162f312e17bda00a42a9e2c35bd51fb484af507f08d6f0d319b3f87557c3120",
+      "status": "verified"
+    },
+    {
+      "index": 59,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed158 rosenbrock_D2_noise3_production 158",
+      "elapsed_seconds": 218.09408354759216,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "72edfca8cd17f1e5a85764d992a887b5de3b34685007a1f80407784e68116425",
+      "status": "verified"
+    },
+    {
+      "index": 60,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed159 rosenbrock_D2_noise3_production 159",
+      "elapsed_seconds": 188.33791875839233,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "f15aca4e84002d06c0091aa583a458b3982cefbd2635955fbfe61f5bb9daacea",
+      "status": "verified"
+    },
+    {
+      "index": 61,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed160 rosenbrock_D2_noise3_production 160",
+      "elapsed_seconds": 213.1276044845581,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "112498ab8ded7f527a2bab596b322e2f638e06688568145cc91c9958322affdf",
+      "status": "verified"
+    },
+    {
+      "index": 62,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed161 rosenbrock_D2_noise3_production 161",
+      "elapsed_seconds": 159.0064296722412,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "179e6caaede221575bcca15a81a5052fdc25dc273161755e698514ce9d1343a5",
+      "status": "verified"
+    },
+    {
+      "index": 63,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed162 rosenbrock_D2_noise3_production 162",
+      "elapsed_seconds": 230.80305743217468,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "0c3883b1c2a48d8bdc585ceca530419b84ec6b7d9059af275a57c486106e7719",
+      "status": "verified"
+    },
+    {
+      "index": 64,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed163 rosenbrock_D2_noise3_production 163",
+      "elapsed_seconds": 194.12516975402832,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "5a1134739a484a960361d7381394bcfc2e6358273c74a4af46e759c1ca39d39c",
+      "status": "verified"
+    },
+    {
+      "index": 65,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed164 rosenbrock_D2_noise3_production 164",
+      "elapsed_seconds": 184.07893991470337,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "97e2334689fb82f651e6154c16947a256aa5ee26ca7e75f91b6e38391a61985d",
+      "status": "verified"
+    },
+    {
+      "index": 66,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed165 rosenbrock_D2_noise3_production 165",
+      "elapsed_seconds": 201.91877579689026,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "aa6e4fab663b0a643db71faa32abedb139d2c7220454b765fd36acdc724c87a4",
+      "status": "verified"
+    },
+    {
+      "index": 67,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed166 rosenbrock_D2_noise3_production 166",
+      "elapsed_seconds": 249.37511539459229,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "e86bd786d24059743bd700ade4a61a06152cae18846d69ca7f52d1383800a30c",
+      "status": "verified"
+    },
+    {
+      "index": 68,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed167 rosenbrock_D2_noise3_production 167",
+      "elapsed_seconds": 250.62273931503296,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "440ccf83597683434600d27a3e8b0d019d3cf7ca49e4363e2f19f74abfee95d7",
+      "status": "verified"
+    },
+    {
+      "index": 69,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed168 rosenbrock_D2_noise3_production 168",
+      "elapsed_seconds": 186.34148526191711,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "01319764a3c66d5074cff28dcf6a92d1dfa797e1aec156fe5d094874720ac370",
+      "status": "verified"
+    },
+    {
+      "index": 70,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed169 rosenbrock_D2_noise3_production 169",
+      "elapsed_seconds": 226.52759051322937,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "3424c72b78dc080fba914d4bbbfcaaeab64eb8c4be3d5e5ac11248bd402dde64",
+      "status": "verified"
+    },
+    {
+      "index": 71,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed170 rosenbrock_D2_noise3_production 170",
+      "elapsed_seconds": 164.57003450393677,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "2e2b483efa0c09294388d193279c1974b20f7062d4e337cefaf996cad9eedf2f",
+      "status": "verified"
+    },
+    {
+      "index": 72,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed171 rosenbrock_D2_noise3_production 171",
+      "elapsed_seconds": 305.0661931037903,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "292046eb877fac5ac70ced15c5029bfd977be92b699a84b15bfaeb11d08b0e1d",
+      "status": "verified"
+    },
+    {
+      "index": 73,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed172 rosenbrock_D2_noise3_production 172",
+      "elapsed_seconds": 304.38839626312256,
+      "boost": {
+        "attempted": true,
+        "accepted": false
+      },
+      "record_sha256": "bd5839715ccde45279ecc239806796b3cdef8872b836b2b2a8c9b6895301ec2a",
+      "status": "verified"
+    },
+    {
+      "index": 74,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed173 rosenbrock_D2_noise3_production 173",
+      "elapsed_seconds": 135.12922024726868,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "e4a39b97cf811d89bc1d888ce4743c5ed58df08c7d19731741e272e2fc63b05e",
+      "status": "verified"
+    },
+    {
+      "index": 75,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed174 rosenbrock_D2_noise3_production 174",
+      "elapsed_seconds": 296.25648760795593,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "0209925a240fcb007989e5db50725b6c7e307511a46d1ffc96976c68556d75e2",
+      "status": "verified"
+    },
+    {
+      "index": 76,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed175 rosenbrock_D2_noise3_production 175",
+      "elapsed_seconds": 204.68519949913025,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "7a83c3bb26da7000f0227c144e8bbf4e21a2f8ee431878f9c77524870b8f12e2",
+      "status": "verified"
+    },
+    {
+      "index": 77,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed176 rosenbrock_D2_noise3_production 176",
+      "elapsed_seconds": 196.55830454826355,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1685342b31ce44aac84eb3e630d8dd1516bcfeeaaa0807568a4273dab7d0e0f7",
+      "status": "verified"
+    },
+    {
+      "index": 78,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed177 rosenbrock_D2_noise3_production 177",
+      "elapsed_seconds": 210.9290578365326,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "39c454891126d39010a88a2a5685d4662368a31eb6e46860514f8852cf7db7a2",
+      "status": "verified"
+    },
+    {
+      "index": 79,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed178 rosenbrock_D2_noise3_production 178",
+      "elapsed_seconds": 255.0410737991333,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "9b797679dbf43f32feb2fedb3b5fe1c59d2ee955f628c3f9cd11786d326d7c04",
+      "status": "verified"
+    },
+    {
+      "index": 80,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed179 rosenbrock_D2_noise3_production 179",
+      "elapsed_seconds": 198.64842915534973,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "a728d8d31ceada172a993c927f3a30cfe82fc70623eaa5bc24a571480a449760",
+      "status": "verified"
+    },
+    {
+      "index": 81,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed180 rosenbrock_D2_noise3_production 180",
+      "elapsed_seconds": 195.93215823173523,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "dd4e0a7d86d1571c422028fa879ae8d772e829494489a97e41e93870cc69b229",
+      "status": "verified"
+    },
+    {
+      "index": 82,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed181 rosenbrock_D2_noise3_production 181",
+      "elapsed_seconds": 231.25737857818604,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "fc847e375becb9c450673164122a347dd3987953ab99b12fd188f3602dade132",
+      "status": "verified"
+    },
+    {
+      "index": 83,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed182 rosenbrock_D2_noise3_production 182",
+      "elapsed_seconds": 203.470947265625,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1308bd7f3fdbc9c18fa01e9b7a70e2ebdde0b5292e0aa0319cf955bd0be88732",
+      "status": "verified"
+    },
+    {
+      "index": 84,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed183 rosenbrock_D2_noise3_production 183",
+      "elapsed_seconds": 174.03147864341736,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "8979997289ca9bcd4a69aedfeabbb513c1f14ec9aa5d7a49bbd9aa0d69e777c6",
+      "status": "verified"
+    },
+    {
+      "index": 85,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed184 rosenbrock_D2_noise3_production 184",
+      "elapsed_seconds": 233.9116714000702,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "8c24856dfa07eb837beaf23b2bde6368cf88ab0333153d057b188315fea27cc7",
+      "status": "verified"
+    },
+    {
+      "index": 86,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed185 rosenbrock_D2_noise3_production 185",
+      "elapsed_seconds": 261.84059596061707,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "bd055bcdefff2f967a0249065c117515947d73874744e7356ece8fa47cb9c754",
+      "status": "verified"
+    },
+    {
+      "index": 87,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed186 rosenbrock_D2_noise3_production 186",
+      "elapsed_seconds": 200.55963134765625,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "419f0491e7a075c66492cbc17b200156a97aaf6b0a0b52bb2e1854cd1ac830d1",
+      "status": "verified"
+    },
+    {
+      "index": 88,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed187 rosenbrock_D2_noise3_production 187",
+      "elapsed_seconds": 254.61425065994263,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "5c36e5f28ba4bf89448a4b6f2645b3d1aa42bef18c24fcc1429f9aea63c01f92",
+      "status": "verified"
+    },
+    {
+      "index": 89,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed188 rosenbrock_D2_noise3_production 188",
+      "elapsed_seconds": 157.6817009449005,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "4ca74bf2c5858df90b24dd89a20a4f44a61a63bdbd0c8b086e9f78605262113c",
+      "status": "verified"
+    },
+    {
+      "index": 90,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed189 rosenbrock_D2_noise3_production 189",
+      "elapsed_seconds": 184.9621114730835,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1d1aa33074ac6c646930ee64ac40248769a60fc1d50b4747060d2d92aa59e788",
+      "status": "verified"
+    },
+    {
+      "index": 91,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed190 rosenbrock_D2_noise3_production 190",
+      "elapsed_seconds": 157.1117401123047,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "2e33dbbf48685e922be6fbc95935b3d43eb68ee1880f47b4a3450a0584348c43",
+      "status": "verified"
+    },
+    {
+      "index": 92,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed191 rosenbrock_D2_noise3_production 191",
+      "elapsed_seconds": 207.67193341255188,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "8af80f26f0cc9fc24f55b79a4918d667853dd58d80eaf6c9ee4f6c9adfc1bf8d",
+      "status": "verified"
+    },
+    {
+      "index": 93,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed192 rosenbrock_D2_noise3_production 192",
+      "elapsed_seconds": 186.2610194683075,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "803d683918925adde27314325d841c61f507e8246ffb82fea24a9a6fe83fec61",
+      "status": "verified"
+    },
+    {
+      "index": 94,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed193 rosenbrock_D2_noise3_production 193",
+      "elapsed_seconds": 157.90317368507385,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "91da3af6f9e21bc622df79d79b3a9e52becec03d6a753b4b0f957591522d219a",
+      "status": "verified"
+    },
+    {
+      "index": 95,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed194 rosenbrock_D2_noise3_production 194",
+      "elapsed_seconds": 221.05987763404846,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1a0b62b8fb9731b70cc42a8d7402969220f593867c3b5620fbced815d73ae973",
+      "status": "verified"
+    },
+    {
+      "index": 96,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed195 rosenbrock_D2_noise3_production 195",
+      "elapsed_seconds": 228.7742691040039,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "976294cf1e542d5b01477eb0297217601dac81e4a6050b77a1fa1168276c599b",
+      "status": "verified"
+    },
+    {
+      "index": 97,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed196 rosenbrock_D2_noise3_production 196",
+      "elapsed_seconds": 198.68972873687744,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "4ded8968697f03aca4eadbc0f8b64adfcb54b61a2aa5f9101cb8b0d7bcf8a20d",
+      "status": "verified"
+    },
+    {
+      "index": 98,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed197 rosenbrock_D2_noise3_production 197",
+      "elapsed_seconds": 230.43483543395996,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "e82788a59413160a1feb39faf2bbe3e1ef3ff36fa6a70a92893ef51def626fc2",
+      "status": "verified"
+    },
+    {
+      "index": 99,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed198 rosenbrock_D2_noise3_production 198",
+      "elapsed_seconds": 163.6004433631897,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "e6dd74e72e4799e510c059c7771e94935ad1e9bf737ae98968b08b32b4bba2e6",
+      "status": "verified"
+    },
+    {
+      "index": 100,
+      "tag": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199",
+      "case": "rosenbrock_D2_noise3_production/rosenbrock_D2_noise3_production_seed199 rosenbrock_D2_noise3_production 199",
+      "elapsed_seconds": 178.0059108734131,
+      "boost": {
+        "attempted": true,
+        "accepted": true
+      },
+      "record_sha256": "1ad35f07c590ed60bf7221dcff5176909f91c9e85f0a9038674be67ce7d765c9",
+      "status": "verified"
+    }
+  ],
+  "stray": [],
+  "exit_code": 0
+}

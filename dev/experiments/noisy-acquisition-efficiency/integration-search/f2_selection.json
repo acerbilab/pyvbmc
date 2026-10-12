@@ -1,0 +1,33 @@
+{
+  "accurate_rule": {
+    "budget": 1600,
+    "method": "mc",
+    "provenance": "Unused: every F2 arm is the production search. The field satisfies the record schema shared with E3."
+  },
+  "created_utc": "2026-09-18T17:57:25.814471+00:00",
+  "frozen": true,
+  "kind": "noisy_acq_search_selection",
+  "node_rule": {
+    "kind": "scrambled_sobol_mixture",
+    "order_attribute": "pyvbmc.vbmc.active_importance_sampling._QMC_COMPONENT_ORDER",
+    "orders": [
+      "axis",
+      "index"
+    ],
+    "samples": 96,
+    "samples_option": "active_importance_sampling_qmc_samples",
+    "switch_option": "active_importance_sampling_qmc"
+  },
+  "plan": {
+    "document": "dev\\plans\\noisy-acquisition-efficiency.md",
+    "document_sha256": "39a89410ae2677317b36defb4fe6cbf53a1da696855274aac6d356d0d5e44509",
+    "section": "Approved F2 amendment: matched-cost RQMC nodes (2026-09-18)",
+    "source_commit": "b614645c2cbac9d233420aff5594586a8ea500d8"
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Freeze the F2 Stage 1 development allocation: the production VIQR selection with its 100 Monte Carlo importance nodes (S0) against the same selection with the package's 96-node scrambled-Sobol' mixture rule in sorted (S0_qmc_sorted) and unsorted (S0_qmc_unsorted) component order, on the twelve development states.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "55a63ee111635ba8feff83ab81ef0f15fb074ea7a40e5a8c2e00e129c98ba953",
+  "schema_version": 1,
+  "stage": "f2_development"
+}

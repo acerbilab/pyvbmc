@@ -8,6 +8,151 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.timer import Timer
 
 
+def _validate_vectorized_output(
+    value,
+    n_rows: int,
+    name: str,
+    *,
+    positive: bool = False,
+    allow_nan: bool = False,
+):
+    """Validate and flatten one output of a vectorized target."""
+    array = np.asarray(value)
+    if array.shape == (n_rows, 1):
+        array = array[:, 0]
+    elif array.shape != (n_rows,):
+        raise ValueError(
+            f"{name} must have shape ({n_rows},) or ({n_rows}, 1), "
+            f"but has shape {array.shape}."
+        )
+
+    if not np.isrealobj(array):
+        rows = np.flatnonzero(~np.isreal(array)).tolist()
+        raise ValueError(
+            f"{name} must contain real values; invalid rows: {rows}."
+        )
+    try:
+        finite = np.isfinite(array)
+        nan = np.isnan(array)
+    except TypeError as err:
+        raise ValueError(f"{name} must contain numeric values.") from err
+    if allow_nan:
+        invalid = ~(finite | nan)
+    else:
+        invalid = ~finite
+    if np.any(invalid):
+        rows = np.flatnonzero(invalid).tolist()
+        raise ValueError(
+            f"{name} must contain finite real values"
+            + (" or NaN markers" if allow_nan else "")
+            + f"; invalid rows: {rows}."
+        )
+    if positive and np.any(array <= 0):
+        rows = np.flatnonzero(array <= 0).tolist()
+        raise ValueError(
+            f"{name} must contain positive values; invalid rows: {rows}."
+        )
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        converted = np.asarray(array, dtype=float)
+    converted_finite = np.isfinite(converted)
+    if allow_nan:
+        converted_invalid = ~(converted_finite | np.isnan(converted))
+    else:
+        converted_invalid = ~converted_finite
+    if np.any(converted_invalid):
+        rows = np.flatnonzero(converted_invalid).tolist()
+        raise ValueError(
+            f"{name} must remain finite when converted to float64; "
+            f"invalid rows: {rows}."
+        )
+    if positive and np.any(converted <= 0):
+        rows = np.flatnonzero(converted <= 0).tolist()
+        raise ValueError(
+            f"{name} must remain positive when converted to float64; "
+            f"invalid rows: {rows}."
+        )
+    return converted
+
+
+def _validate_batch_coordinates(value, n_rows: int, D: int, name: str):
+    """Validate and convert a complete batch of coordinates."""
+    array = np.asarray(value)
+    if array.shape != (n_rows, D):
+        raise ValueError(
+            f"{name} must have shape ({n_rows}, {D}), "
+            f"but has shape {array.shape}."
+        )
+    if not np.isrealobj(array):
+        real_rows = np.all(np.isreal(array), axis=1)
+        rows = np.flatnonzero(~real_rows).tolist()
+        raise ValueError(
+            f"{name} must contain real coordinates; invalid rows: {rows}."
+        )
+    try:
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            converted = np.asarray(array, dtype=float)
+    except (OverflowError, TypeError, ValueError) as err:
+        invalid_rows = []
+        for row in range(n_rows):
+            try:
+                np.asarray(array[row], dtype=float)
+            except (OverflowError, TypeError, ValueError):
+                invalid_rows.append(row)
+        raise ValueError(
+            f"{name} must contain numeric coordinates; "
+            f"invalid rows: {invalid_rows}."
+        ) from err
+    finite_rows = np.all(np.isfinite(converted), axis=1)
+    if not np.all(finite_rows):
+        rows = np.flatnonzero(~finite_rows).tolist()
+        raise ValueError(
+            f"{name} must contain finite float64 coordinates; "
+            f"invalid rows: {rows}."
+        )
+    return converted
+
+
+def _validate_vectorized_target_output(
+    output, n_rows: int, uncertainty_handling_level: int
+):
+    """Normalize the value and optional SD arrays returned by a target."""
+    if uncertainty_handling_level == 2:
+        if isinstance(output, np.ndarray):
+            if output.shape == (n_rows, 2):
+                raise ValueError(
+                    "A vectorized noisy target must return a pair "
+                    "(values, SDs), not an (N, 2) ndarray."
+                )
+            raise ValueError(
+                "A vectorized noisy target must return a pair "
+                "(values, SDs)."
+            )
+        if not isinstance(output, (tuple, list)) or len(output) != 2:
+            raise ValueError(
+                "A vectorized noisy target must return a pair "
+                "(values, SDs)."
+            )
+        values = _validate_vectorized_output(
+            output[0], n_rows, "Vectorized target values"
+        )
+        sds = _validate_vectorized_output(
+            output[1],
+            n_rows,
+            "Vectorized target SDs",
+            positive=True,
+        )
+    else:
+        values = _validate_vectorized_output(
+            output, n_rows, "Vectorized target values"
+        )
+        sds = (
+            np.ones(n_rows, dtype=float)
+            if uncertainty_handling_level == 1
+            else None
+        )
+    return values, sds
+
+
 class FunctionLogger:
     """
     Class that evaluates a function and caches its values.
@@ -18,11 +163,16 @@ class FunctionLogger:
         The function to be logged.
         `fun` must take a vector input and return a scalar value and,
         optionally, the (estimated) SD of the returned value (if the
-        function fun is stochastic).
+        function fun is stochastic); an array of one element stands for its
+        element, for the value and the SD alike. If ``vectorized_target`` is
+        true, ``fun`` instead takes an ``(N, D)`` array and returns an
+        ``(N,)`` or ``(N, 1)`` array, or a pair of those arrays for
+        user-provided noise.
     D : int
         The number of dimensions that the function takes as input.
     noise_flag : bool
-        Whether the function fun is stochastic or not.
+        Whether the function fun is stochastic or not. It is `True`
+        exactly when ``uncertainty_handling_level`` is above 0.
     uncertainty_handling_level : {0, 1, 2}
         The uncertainty handling level which can be one of
         (0: none; 1: unknown noise level; 2: user-provided noise).
@@ -31,6 +181,9 @@ class FunctionLogger:
     parameter_transformer : ParameterTransformer, optional
         A ParameterTransformer is required to transform the parameters
         between constrained and unconstrained space, by default None.
+    vectorized_target : bool, optional
+        Whether ``fun`` accepts a two-dimensional batch and returns one value
+        per row. Default ``False``.
     """
 
     def __init__(
@@ -41,13 +194,23 @@ class FunctionLogger:
         uncertainty_handling_level: int,
         cache_size: int = 500,
         parameter_transformer: ParameterTransformer = None,
+        vectorized_target: bool = False,
     ):
+        if not isinstance(vectorized_target, (bool, np.bool_)):
+            raise ValueError("vectorized_target must be a boolean.")
+        if bool(noise_flag) != (uncertainty_handling_level > 0):
+            raise ValueError(
+                "noise_flag must be True exactly when "
+                "uncertainty_handling_level is above 0, but they are "
+                f"{bool(noise_flag)} and {uncertainty_handling_level}."
+            )
         self.fun = fun
         self.D: int = D
         self.noise_flag: bool = noise_flag
         self.uncertainty_handling_level: int = uncertainty_handling_level
         self.transform_parameters = parameter_transformer is not None
         self.parameter_transformer = parameter_transformer
+        self.vectorized_target = bool(vectorized_target)
 
         self.func_count: int = 0
         self.cache_count: int = 0
@@ -75,15 +238,22 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function will be evaluated. The shape of x
-            should be (1, D) or (D,).
+            The point, in the transformed space, at which the function will
+            be evaluated; the function is called with the point mapped to
+            the original space. The shape of x should be (1, D) or (D,).
 
         Returns
         -------
         f_val : float
-            The result of the evaluation.
-        SD : float
-            The (estimated) SD of the returned value.
+            The value that the logger holds for the point in the transformed
+            space: the observation in the original space, pooled with the
+            earlier observations at the same point, plus
+            ``log_abs_det_jacobian`` of the parameter transformer at `x`
+            where the logger has a transformer.
+        SD : float or None
+            The SD of this observation: the one the function returned at
+            uncertainty handling level 2, 1 at level 1, and ``None`` at
+            level 0.
         idx : int
             The index of the last updated entry.
 
@@ -97,6 +267,21 @@ class FunctionLogger:
             Raise if the (estimated) SD (second function output)
             is not a finite, positive real-valued scalar.
         """
+
+        if getattr(self, "vectorized_target", False):
+            x_shape_orig = x.shape
+            if x.ndim > 1:
+                x = x.squeeze()
+            if x.ndim == 0:
+                x = np.atleast_1d(x)
+            if x.size != x.shape[0]:
+                raise ValueError(
+                    "Input should be one-dimensional but has shape "
+                    f"{x_shape_orig}."
+                )
+            values, sds, indices = self.batch_call(x.reshape(1, -1))
+            sd = None if sds is None else sds[0]
+            return values[0], sd, indices[0]
 
         timer = Timer()
         x_shape_orig = x.shape
@@ -143,6 +328,10 @@ class FunctionLogger:
         # if f_val is an array with only one element, extract that element
         if not np.isscalar(f_val_orig) and np.size(f_val_orig) == 1:
             f_val_orig = np.array(f_val_orig).flat[0]
+        # and likewise for the SD, which a target written for a batch of
+        # points returns as an array of one element for a single point
+        if self.noise_flag and not np.isscalar(f_sd) and np.size(f_sd) == 1:
+            f_sd = np.asarray(f_sd).item()
 
         # Check function value
         if (
@@ -174,10 +363,141 @@ class FunctionLogger:
         self.func_count += 1
         f_val, idx = self._record(x_orig, x, f_val_orig, f_sd, funtime)
 
-        # optimstate.N = self.Xn
-        # optimstate.N_eff = np.sum(self.n_evals[self.X_flag])
-        # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
+        # The logger holds no optimization state: the counts of the
+        # training set that the algorithm reads, ``optim_state["N"]`` and
+        # ``optim_state["n_eff"]``, are refreshed by ``active_sample`` after
+        # each evaluation it logs.
         return f_val, f_sd, idx
+
+    def batch_call(self, x: np.ndarray, f_vals=None):
+        """Evaluate and cache a batch of points in input order.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            A nonempty array with shape ``(N, D)`` in transformed
+            coordinates.
+        f_vals : array-like, optional
+            Values of the logged function at the corresponding rows of
+            ``x``, before any parameter-transform Jacobian is added. It must
+            have length ``N``; NaN rows are evaluated by the target. At
+            uncertainty handling level 2 every row has to be NaN: a supplied
+            value comes without the SD that an observation needs at that
+            level.
+
+        Returns
+        -------
+        values : np.ndarray
+            The recorded values in transformed coordinates, with shape
+            ``(N,)``.
+        SDs : np.ndarray or None
+            The target SD for each row when noise handling is enabled,
+            otherwise ``None``.
+        indices : np.ndarray
+            Cache indices corresponding to the input rows.
+
+        Raises
+        ------
+        RuntimeError
+            If this logger was not created with ``vectorized_target=True``.
+        ValueError
+            If the input or any supplied or returned value has an invalid
+            shape or value, or if ``f_vals`` supplies a value at uncertainty
+            handling level 2. The supplied values are validated before the
+            target is called, and its outputs before any row is recorded.
+        """
+        if not getattr(self, "vectorized_target", False):
+            raise RuntimeError(
+                "batch_call requires FunctionLogger(vectorized_target=True)."
+            )
+
+        x = np.asarray(x)
+        if x.ndim != 2 or x.shape[0] == 0 or x.shape[1] != self.D:
+            raise ValueError(
+                f"Batch input must have nonempty shape (N, {self.D}), "
+                f"but has shape {x.shape}."
+            )
+        n_rows = x.shape[0]
+        x = _validate_batch_coordinates(x, n_rows, self.D, "Batch input")
+        if f_vals is None:
+            cached_values = np.full(n_rows, np.nan)
+        else:
+            cached_values = _validate_vectorized_output(
+                f_vals,
+                n_rows,
+                "Cached function values",
+                allow_nan=True,
+            )
+            if self.uncertainty_handling_level == 2 and not np.all(
+                np.isnan(cached_values)
+            ):
+                raise ValueError(
+                    "Cached function values come without their SD, which an "
+                    "observation needs at uncertainty handling level 2; add "
+                    "such a value with its SD through FunctionLogger.add."
+                )
+
+        if self.transform_parameters:
+            x_orig = self.parameter_transformer.inverse(x)
+        else:
+            x_orig = x
+        x_orig = _validate_batch_coordinates(
+            x_orig, n_rows, self.D, "Inverse-transformed batch input"
+        )
+
+        missing = np.isnan(cached_values)
+        n_missing = int(np.sum(missing))
+        measured_values = np.empty(n_missing, dtype=float)
+        measured_sds = (
+            np.empty(n_missing, dtype=float) if self.noise_flag else None
+        )
+        time_per_row = np.nan
+        if n_missing:
+            timer = Timer()
+            timer.start_timer("fun_time")
+            target_x = x_orig[missing]
+            try:
+                output = self.fun(target_x)
+            except Exception as err:
+                err.args += (
+                    "FunctionLogger:FuncError Error in executing the logged "
+                    f"function for {n_missing} batch rows with input shape "
+                    f"{target_x.shape}: {target_x}",
+                )
+                raise
+            timer.stop_timer("fun_time")
+            measured_values, measured_sds = _validate_vectorized_target_output(
+                output, n_missing, self.uncertainty_handling_level
+            )
+            time_per_row = timer.get_duration("fun_time") / n_missing
+
+        values = np.empty(n_rows, dtype=float)
+        sds = np.empty(n_rows, dtype=float) if self.noise_flag else None
+        indices = np.empty(n_rows, dtype=int)
+        measured_idx = 0
+        for row in range(n_rows):
+            if missing[row]:
+                f_sd = (
+                    None
+                    if measured_sds is None
+                    else measured_sds[measured_idx]
+                )
+                self.func_count += 1
+                f_val, idx = self._record(
+                    x_orig[row],
+                    x[row],
+                    measured_values[measured_idx],
+                    f_sd,
+                    time_per_row,
+                )
+                measured_idx += 1
+            else:
+                f_val, f_sd, idx = self.add(x[row], cached_values[row])
+            values[row] = np.asarray(f_val).item()
+            if sds is not None:
+                sds[row] = f_sd
+            indices[row] = idx
+        return values, sds, indices
 
     def add(
         self,
@@ -192,13 +512,17 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function has been evaluated. The shape of x
+            The point, in the transformed space, at whose image in the
+            original space the function has been evaluated. The shape of x
             should be (1, D) or (D,).
         f_val_orig : float
-            The result of the evaluation of the function.
+            The result of the evaluation of the function, in the original
+            space.
         f_sd : float, optional
-            The (estimated) SD of the returned value (if heteroskedastic noise
-            handling is on) of the evaluation of the function, by default None.
+            The (estimated) SD of the added value. At uncertainty handling
+            level 2 it is required, the noise of an observation being the
+            caller's to provide; at level 1 it defaults to 1 and at level 0
+            it is ignored. By default None.
         fun_eval_time : float
             The duration of the time it took to evaluate the function,
             by default np.nan.
@@ -206,9 +530,13 @@ class FunctionLogger:
         Returns
         -------
         f_val : float
-            The result of the evaluation.
-        SD : float
-            The (estimated) SD of the returned value.
+            The value that the logger holds for the point in the transformed
+            space: `f_val_orig`, pooled with the earlier observations at the
+            same point, plus ``log_abs_det_jacobian`` of the parameter
+            transformer at `x` where the logger has a transformer.
+        SD : float or None
+            The SD of this observation: `f_sd` at uncertainty handling
+            level 2, `f_sd` or 1 at level 1, and ``None`` at level 0.
         idx : int
             The index of the last updated entry.
 
@@ -218,6 +546,8 @@ class FunctionLogger:
             If the input cannot be coerced to 1-D.
         ValueError
             Raise if the function value is not a finite real-valued scalar.
+        ValueError
+            Raise if ``f_sd`` is missing at uncertainty handling level 2.
         ValueError
             Raise if the (estimated) SD (second function output)
             is not a finite, positive real-valued scalar.
@@ -241,6 +571,12 @@ class FunctionLogger:
 
         if self.noise_flag:
             if f_sd is None:
+                if self.uncertainty_handling_level == 2:
+                    raise ValueError(
+                        "f_sd is required at uncertainty handling level 2, "
+                        "where the SD of an observation is the caller's to "
+                        "provide."
+                    )
                 f_sd = 1
         else:
             f_sd = None
@@ -288,6 +624,7 @@ class FunctionLogger:
             self.S = self.S[: self.Xn + 1]
         self.X_flag = self.X_flag[: self.Xn + 1]
         self.fun_eval_time = self.fun_eval_time[: self.Xn + 1]
+        self.n_evals = self.n_evals[: self.Xn + 1]
 
     def _expand_arrays(self, resize_amount: int = None):
         """
@@ -374,26 +711,78 @@ class FunctionLogger:
             idx = np.argwhere(duplicate_flag)[0, 0]
             N = self.n_evals[idx]
             if f_sd is not None:
-                tau_n = 1 / self.S[idx] ** 2
-                tau_1 = 1 / f_sd**2
-                self.y_orig[idx] = (
-                    tau_n * self.y_orig[idx] + tau_1 * f_val_orig
-                ) / (tau_n + tau_1)
-                self.S[idx] = 1 / np.sqrt(tau_n + tau_1)
+                f_sd_value = np.float64(f_sd)
+                with np.errstate(
+                    divide="ignore",
+                    over="ignore",
+                    under="ignore",
+                    invalid="ignore",
+                ):
+                    tau_n = 1 / self.S[idx] ** 2
+                    tau_1 = 1 / f_sd_value**2
+                    tau_sum = tau_n + tau_1
+                    pooled_y = (
+                        tau_n * self.y_orig[idx] + tau_1 * f_val_orig
+                    ) / tau_sum
+                    pooled_sd = 1 / np.sqrt(tau_sum)
+                if (
+                    np.all(np.isfinite(tau_n))
+                    and np.isfinite(tau_1)
+                    and np.all(tau_n > 0)
+                    and tau_1 > 0
+                    and np.all(np.isfinite(tau_sum))
+                    and np.all(tau_sum > 0)
+                    and np.all(np.isfinite(pooled_y))
+                    and np.all(np.isfinite(pooled_sd))
+                    and np.all(pooled_sd > 0)
+                ):
+                    self.y_orig[idx] = pooled_y
+                    self.S[idx] = pooled_sd
+                else:
+                    # Scale both precisions by the smaller SD. Their relative
+                    # weights are then in [0, 1], avoiding overflow and
+                    # underflow for finite positive extreme SDs. This fallback
+                    # leaves the historical arithmetic untouched whenever its
+                    # intermediates are representable.
+                    old_sd = float(self.S[idx, 0])
+                    scale = min(old_sd, float(f_sd_value))
+                    relative_n = (scale / old_sd) ** 2
+                    relative_1 = (scale / float(f_sd_value)) ** 2
+                    relative_sum = relative_n + relative_1
+                    weight_n = relative_n / relative_sum
+                    weight_1 = relative_1 / relative_sum
+                    self.y_orig[idx] = (
+                        weight_n * self.y_orig[idx] + weight_1 * f_val_orig
+                    )
+                    self.S[idx] = scale / np.sqrt(relative_sum)
             else:
                 self.y_orig[idx] = (N * self.y_orig[idx] + f_val_orig) / (
                     N + 1
                 )
 
-            f_val = self.y_orig[idx]
+            # Read the pooled value out of its row: adding the transform
+            # Jacobian to the row itself would corrupt the original-space
+            # observation on every repeat.
+            f_val = self.y_orig[idx, 0]
             if self.transform_parameters:
-                f_val += self.parameter_transformer.log_abs_det_jacobian(x)
+                f_val = (
+                    f_val + self.parameter_transformer.log_abs_det_jacobian(x)
+                )
             self.y[idx] = f_val
-            self.fun_eval_time[idx] = (
-                N * self.fun_eval_time[idx] + fun_eval_time
-            ) / (N + 1)
+            # An unknown evaluation time leaves the stored average alone,
+            # and a known one takes the place of an average that is unknown.
+            if not np.isnan(fun_eval_time):
+                if np.isnan(self.fun_eval_time[idx, 0]):
+                    self.fun_eval_time[idx] = fun_eval_time
+                else:
+                    self.fun_eval_time[idx] = (
+                        N * self.fun_eval_time[idx] + fun_eval_time
+                    ) / (N + 1)
+                self.total_fun_eval_time += fun_eval_time
             self.n_evals[idx] += 1
-            return f_val, idx
+            # The pooled value can move the maximum either way.
+            self.y_max = np.nanmax(self.y[self.X_flag])
+            return float(f_val), idx
         else:
             self.Xn += 1
             if self.Xn > self.X_orig.shape[0] - 1:
@@ -418,7 +807,7 @@ class FunctionLogger:
             self.X_flag[self.Xn] = True
             self.n_evals[self.Xn] += 1
             self.y_max = np.nanmax(self.y[self.X_flag])
-            return f_val, self.Xn
+            return float(f_val), self.Xn
 
     def __deepcopy__(self, memo):
         cls = self.__class__

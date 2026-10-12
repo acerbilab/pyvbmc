@@ -1,8 +1,14 @@
+import sys
+
+if "google.colab" in sys.modules:  # Colab lacks PyVBMC: install it
+    get_ipython().run_line_magic("pip", "install --upgrade pyvbmc")
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as scs
 
-from pyvbmc import VBMC, VariationalPosterior
+from pyvbmc import VBMC
 
 D = 2  # We'll use a 2-D problem, again for speed
 prior_mu = np.zeros(D)
@@ -20,19 +26,20 @@ def log_prior(theta):
 
 
 # log-likelihood (Rosenbrock)
-def log_likelihood(theta):
+def noise_free_log_likelihood(theta):
     """D-dimensional Rosenbrock's banana function."""
     theta = np.atleast_2d(theta)
-    n, D = theta.shape
-
-    # Standard deviation of synthetic noise:
-    noise_sd = np.sqrt(1.0 + 0.5 * np.linalg.norm(theta) ** 2)
-
-    # Rosenbrock likelihood:
     x, y = theta[:, :-1], theta[:, 1:]
-    base_density = -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
-    noisy_estimate = base_density + noise_sd * np.random.normal(size=(n, 1))
+
+def log_likelihood(theta):
+    """Rosenbrock log-likelihood with synthetic noise."""
+    theta = np.atleast_2d(theta)
+    noise_sd = np.sqrt(1.0 + 0.5 * np.linalg.norm(theta, axis=1) ** 2)
+    noisy_estimate = noise_free_log_likelihood(
+        theta
+    ) + noise_sd * np.random.normal(size=theta.shape[0])
     return noisy_estimate, noise_sd
 
 
@@ -48,6 +55,7 @@ def log_joint(theta, data=np.ones(D)):
 x0 = np.zeros((1, D))  # Initial point
 
 
+np.random.seed(42)
 options = {"specify_target_noise": True}
 vbmc = VBMC(
     log_joint,
@@ -60,13 +68,27 @@ vbmc = VBMC(
 )
 
 
-np.random.seed(42)
 vp, results = vbmc.optimize()
 
 
-noise_free_vp = VariationalPosterior.load("noise_free_vp.pkl")
+def noise_free_log_joint(theta):
+    return log_prior(theta) + noise_free_log_likelihood(theta)
+
+
+noise_free_vbmc = VBMC(
+    noise_free_log_joint,
+    x0,
+    LB,
+    UB,
+    PLB,
+    PUB,
+    seed=42,
+    options={"display": "off"},
+)
+noise_free_vp, noise_free_results = noise_free_vbmc.optimize()
+
 # KL divergence between this VP and the noise-free VP:
-print(vbmc.vp.kl_div(vp2=noise_free_vp))
+print(vp.kl_div(vp2=noise_free_vp))
 
 
 vp.plot(title="Noisy VP")

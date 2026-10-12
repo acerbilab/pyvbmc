@@ -1,5 +1,5 @@
 [run]
-omit = tests/*
+omit = pyvbmc/testing/*
 
 [html]
 extra_css = .coveragerc-html.css

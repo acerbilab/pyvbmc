@@ -1,0 +1,15 @@
+{
+  "device": "cuda",
+  "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "msvc": {
+    "VCToolsVersion": "14.44.35207",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "cl": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.EXE",
+  "torch_import_seconds": 1.767820700071752,
+  "torch": "2.14.0+cu126",
+  "torch_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\deps_cuda\\torch\\__init__.py",
+  "status": "failed",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\torch_compile_toolchain.py\", line 84, in main\n    actual = compiled(x)\n             ^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\deps_cuda\\torch\\_dynamo\\eval_frame.py\", line 1278, in compile_wrapper\n    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\deps_cuda\\torch\\_inductor\\scheduler.py\", line 9312, in create_backend\n    raise TritonMissing(inspect.currentframe())\ntorch._inductor.exc.TritonMissing: Cannot find a working triton installation. Either the package is not installed or it is too old. More information on installing Triton can be found at: https://github.com/triton-lang/triton\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n\n",
+  "child_wall_seconds": 31.795273400028236
+}

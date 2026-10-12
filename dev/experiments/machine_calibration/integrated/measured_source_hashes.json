@@ -1,0 +1,12 @@
+{
+  "pyvbmc/calibration/__init__.py": "1d2eb50f66cf8cc7373ced446db2b7b230033c73542522cd0cb4472917bca5e5",
+  "pyvbmc/calibration/_api.py": "25230960bcbaf8e744abf66c8dca45c6f6eedc7f3bfe10ba9c5fe1a2246d422f",
+  "pyvbmc/calibration/_cache.py": "f72b1e7a9b7927c8015ddd9dc9ae800c2b035e88971c4f2fc05923c46a7d713b",
+  "pyvbmc/calibration/_campaign.py": "a421ebd926286b1a91eef859b48f110f5f434336afef67db5c73133ba91b7744",
+  "pyvbmc/calibration/profile.py": "13dbaa5e67aa1741afd0f4eff4bad2cc56c98f8b145e675675c7bc2582397288",
+  "pyvbmc/entropy/entmc_vbmc.py": "a221bec072902f340be04006938f6c913ad992ec60c69528d111f7d3672dc7a8",
+  "pyvbmc/variational_posterior/variational_posterior.py": "b3e378e3cc43f2290effd06654e244ef2acd59240abe8e93c6e7c50b787644d1",
+  "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini": "c66727043625c557d4bf4dbd26a136c80cb7acde7f7c0150c2ae68009b70d19b",
+  "pyvbmc/vbmc/variational_optimization.py": "8a6329ebe393ced1dc4495cd5efd87711ee33f829febd76e149f6fd817222647",
+  "pyvbmc/vbmc/vbmc.py": "90d2e85b9931d6b5c07503e1eb349eac680c791bceb5239b5212074dacb69313"
+}

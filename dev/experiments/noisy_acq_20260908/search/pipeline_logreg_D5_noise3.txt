@@ -1,0 +1,9 @@
+state logreg_D5_noise3.pkl: D=5 N=139 Ns=7 K=11
+  importance-set set-up (ms): Na=100: 8, Na=400: 32, Na=1600: 201
+  pipeline                                                                       | judged gain over A: median [min, max] | ms per new point: set-up + sieve + refine = total
+  A  today: sieve 8192 on Na=100, no refinement                                  | x1.00 [x1.00, x1.00] |     9 +   592 +     0 =   601
+  B  sieve 1024 on Na=100; top 8 re-scored on Na=1600; L-BFGS-B on Na=1600       | x1.42 [x1.31, x2.41] |   137 +    70 +   164 =   365
+  C  one set Na=400: sieve 1024, L-BFGS-B                                        | x1.39 [x1.00, x2.40] |    29 +   230 +    90 =   349
+  D  one set Na=1600: sieve 1024, L-BFGS-B                                       | x1.41 [x1.30, x1.88] |   118 +   666 +   151 =   930
+  E  sieve 8192 on Na=400, no refinement                                         | x1.31 [x1.00, x1.95] |    29 +  1792 +     0 =  1822
+  F  one set Na=400: sieve 2048, L-BFGS-B from top 4                             | x1.39 [x1.00, x2.40] |    29 +   312 +   350 =   694

@@ -1,0 +1,54 @@
+{
+  "population": "item7_20260906",
+  "frozen_sha": "7314a6afe158c5673775ca79601b88b3913ae383",
+  "gpyreg_sha": "a2f8ddce867f502e29717959cf0ff3529f598618",
+  "python": "3.12.6",
+  "versions": {
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "gpyreg": "1.1.0",
+    "cma": "4.4.4"
+  },
+  "started": "2026-09-06 20:01:12+0300",
+  "finished": "2026-09-07 08:55:36+0300",
+  "complete_pairs": 810,
+  "historical_pairs_hash_verified": 280,
+  "new_pairs": 530,
+  "error_files": 0,
+  "published_files": 811,
+  "completed_steps": [
+    "preflight_replay",
+    "batch1_run",
+    "batch1_summary",
+    "batch1_even_vs_odd",
+    "batch1_old_vs_new",
+    "batch1_published",
+    "batch2_d8_run",
+    "batch2_exhaust_run",
+    "batch2_summary",
+    "batch2_even_vs_odd",
+    "batch2_published",
+    "final_replay"
+  ],
+  "provenance": [
+    {
+      "sha": "18a236c",
+      "dirty": false,
+      "count": 280
+    },
+    {
+      "sha": "7314a6a",
+      "dirty": false,
+      "count": 420
+    },
+    {
+      "sha": "7314a6a",
+      "dirty": true,
+      "count": 110
+    }
+  ],
+  "converged": 800,
+  "budget_exhausted": 10,
+  "preflight_identical": 5,
+  "final_identical": 5
+}

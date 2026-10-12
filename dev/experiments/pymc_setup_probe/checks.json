@@ -1,0 +1,172 @@
+{
+  "sources": {
+    "python": "3.12.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "versions": {
+      "pymc": "6.3.2",
+      "pytensor": "3.3.1",
+      "arviz": "1.3.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "gpyreg": "1.2.1"
+    },
+    "pyvbmc_commit": "741d635bd11431d800e70a50f56cfe5dafa31119",
+    "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+    "gpyreg_dirty": "",
+    "linker": "NumbaLinker",
+    "floatX": "float64",
+    "blas_thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "sha256": {
+      "dev\\scripts\\pymc_setup_probe.py": "206e40d683660a8ddc790925ace71e82f3fdc119fb0a39ce4e406d6ce3d36b92",
+      "dev\\scripts\\pymc_feasibility.py": "a7f0f12520b4bde78a72ca35ae226416faf19f2f216c53fdc8023cf63fca3bb2",
+      "pyvbmc\\vbmc\\vbmc.py": "7c9b9715c1a307a8533123103c8c57905acc32108ab105fd2e1c737f9a03e6bc",
+      "pyvbmc\\vbmc\\active_sample.py": "1175ffe230b3e634c69e2837a2e3c217bf6d23223cf0d67dc4572810ba29416b",
+      "pyvbmc\\function_logger\\function_logger.py": "5ef869c2d877307c296fe0829d115e6c0e831f00ba8e1c47ba4540dea3c9ec18"
+    }
+  },
+  "models": [
+    {
+      "name": "scalar",
+      "gradient_relative_error": 1.0538600917791765e-16,
+      "hessian_relative_error": 1.0519979948892594e-13,
+      "cached_value_max_absolute_error": 7.105427357601002e-15,
+      "cached_value_max_scaled_error": 1.7965587969775822e-16,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.07034910004585981,
+      "python_hessian_first_call_seconds": 0.0001718999119475484,
+      "python_hessian_relative_difference": 0.0
+    },
+    {
+      "name": "positive",
+      "gradient_relative_error": 1.0089333812857149e-09,
+      "hessian_relative_error": 6.273484625223422e-11,
+      "cached_value_max_absolute_error": 7.105427357601002e-15,
+      "cached_value_max_scaled_error": 3.7012830189158567e-16,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.11641839996445924,
+      "python_hessian_first_call_seconds": 0.00044159998651593924,
+      "python_hessian_relative_difference": 3.716064359353765e-16
+    },
+    {
+      "name": "vector",
+      "gradient_relative_error": 1.3923120434898052e-09,
+      "hessian_relative_error": 5.127600813844447e-11,
+      "cached_value_max_absolute_error": 7.275957614183426e-12,
+      "cached_value_max_scaled_error": 5.742405580522133e-16,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.2964755999855697,
+      "python_hessian_first_call_seconds": 0.0030104999896138906,
+      "python_hessian_relative_difference": 1.7696821067498358e-16
+    },
+    {
+      "name": "bounded",
+      "gradient_relative_error": 2.966449308247534e-11,
+      "hessian_relative_error": 1.6352146303405181e-10,
+      "cached_value_max_absolute_error": 0.0,
+      "cached_value_max_scaled_error": 0.0,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.19732729997485876,
+      "python_hessian_first_call_seconds": 0.0012999000027775764,
+      "python_hessian_relative_difference": 1.7763568393694579e-16
+    },
+    {
+      "name": "one_sided",
+      "gradient_relative_error": 1.2147944039586633e-09,
+      "hessian_relative_error": 1.064092175843872e-10,
+      "cached_value_max_absolute_error": 3.552713678800501e-15,
+      "cached_value_max_scaled_error": 1.4476368946383467e-16,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.480991099961102,
+      "python_hessian_first_call_seconds": 0.0011057000374421477,
+      "python_hessian_relative_difference": 1.415100871520067e-16
+    },
+    {
+      "name": "schools_noncentered",
+      "gradient_relative_error": 2.712198794545262e-09,
+      "hessian_relative_error": 5.706061960765389e-10,
+      "cached_value_max_absolute_error": 7.105427357601002e-15,
+      "cached_value_max_scaled_error": 1.7289967979904949e-16,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.4648001999594271,
+      "python_hessian_first_call_seconds": 0.011994199943728745,
+      "python_hessian_relative_difference": 1.5622658470012924e-16
+    },
+    {
+      "name": "ill_conditioned",
+      "gradient_relative_error": 6.564384990442873e-10,
+      "hessian_relative_error": 2.5479141429703118e-14,
+      "cached_value_max_absolute_error": 0.0,
+      "cached_value_max_scaled_error": 0.0,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.11088439996819943,
+      "python_hessian_first_call_seconds": 0.0004978999495506287,
+      "python_hessian_relative_difference": 0.0
+    },
+    {
+      "name": "logistic20",
+      "gradient_relative_error": 4.868756856013512e-09,
+      "hessian_relative_error": 1.0587334702821478e-11,
+      "cached_value_max_absolute_error": 0.0,
+      "cached_value_max_scaled_error": 0.0,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.15618959988933057,
+      "python_hessian_first_call_seconds": 0.06362800009083003,
+      "python_hessian_relative_difference": 2.8725827744960803e-16
+    },
+    {
+      "name": "varying20",
+      "gradient_relative_error": 2.592132786194412e-09,
+      "hessian_relative_error": 3.8984501030591534e-11,
+      "cached_value_max_absolute_error": 2.2737367544323206e-13,
+      "cached_value_max_scaled_error": 6.245358605761455e-16,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.8429749000351876,
+      "python_hessian_first_call_seconds": 0.06849749991670251,
+      "python_hessian_relative_difference": 3.9465826247506124e-17
+    },
+    {
+      "name": "schools_centered",
+      "gradient_relative_error": 5.987964291076509e-10,
+      "hessian_relative_error": 1.0033918140806009e-10,
+      "cached_value_max_absolute_error": 1024.0,
+      "cached_value_max_scaled_error": 3.552713678800501e-15,
+      "bounds_unchanged": true,
+      "python_hessian_compile_seconds": 0.5348406999837607,
+      "python_hessian_first_call_seconds": 0.014272899948991835,
+      "python_hessian_relative_difference": 2.710505431213761e-20
+    }
+  ],
+  "location_counterexample": {
+    "model": "x ~ Normal(0,1); observed 10 ~ Normal(x,0.1)",
+    "analytic_mode": 9.900990099009901,
+    "analytic_sd": 0.09950371902099892,
+    "search_mode": [
+      9.900990099009901
+    ],
+    "search_calls": 3,
+    "precision_positive_definite": true,
+    "prior_location_interval": [
+      [
+        -2.455814419362406
+      ],
+      [
+        2.529387670548686
+      ]
+    ],
+    "unconditional_x0": [
+      0.029898314470441778
+    ],
+    "unconditional_plb": [
+      -1.629425520192414
+    ],
+    "unconditional_pub": [
+      1.6892221491332977
+    ],
+    "curvature_guard_would_relocate": false
+  },
+  "historical_prototype_unchanged": true
+}

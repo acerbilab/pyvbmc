@@ -1,0 +1,1347 @@
+"""Generate (or check) the stage-level oracle fixtures.
+
+Runs a handful of short, seeded VBMC runs on the benchmark targets with
+regime-forcing options, snapshots the algorithm state at chosen iterations
+as plain arrays (``pyvbmc/testing/oracles/_state.py``), computes every
+applicable oracle (``_oracles.py``) on the *rebuilt* state and stores the
+outputs as the reference next to the state. Fixtures land in
+``pyvbmc/testing/oracles/fixtures/`` and are read by ``test_oracles.py``.
+
+    python dev/scripts/make_oracle_fixtures.py --list
+    python dev/scripts/make_oracle_fixtures.py            # regenerate all
+    python dev/scripts/make_oracle_fixtures.py --only cigar_D4_largeK
+    python dev/scripts/make_oracle_fixtures.py --check    # recompute, compare
+    python dev/scripts/make_oracle_fixtures.py --check --exact   # bit for bit
+    python dev/scripts/make_oracle_fixtures.py --rebaseline active_sample_step \
+        --reason "..."                     # one oracle, from the stored state
+    python dev/scripts/make_oracle_fixtures.py --add-oracle gp_fit \
+        --reason "..."                     # a new oracle, from the stored state
+    python dev/scripts/make_oracle_fixtures.py --dump-outputs DIR   # current outputs
+    python dev/scripts/make_oracle_fixtures.py --check --exact --against DIR
+    python dev/scripts/make_oracle_fixtures.py --capture-gp-fit-history
+    python dev/scripts/make_oracle_fixtures.py --check-gp-fit-history --exact
+    python dev/scripts/make_oracle_fixtures.py --rebaseline-gp-fit-history \
+        noisy_nonuniform_weights --reason "..."   # one capture's fit outputs
+
+Regenerating **replaces the references**: do it only when the current code
+is the one the references should pin (a fresh baseline), never to make a
+failing oracle pass. One process, single BLAS thread, about six minutes.
+``--rebaseline`` replaces a single oracle's references without rerunning
+the source run (whose trajectory would move and take every other reference
+with it); it is for the one oracle that is *expected* to change under an
+arithmetic-preserving refactor, the CMA-ES search of ``active_sample_step``,
+after the ``acq_*`` oracles have confirmed the acquisition itself.
+``--add-oracle`` computes a newly registered oracle from the stored state
+and adds its references, leaving every existing array bit-identical (the
+recipes are not rerun, so the snapshots keep pinning what they pin).
+``--check --exact`` compares bit for bit instead of at the tolerances. The
+committed references equal the current numerics on the generating platform,
+so ``--check --exact`` against them is the gate for a change that must move
+nothing; ``--dump-outputs DIR`` before a change and ``--check --exact
+--against DIR`` after it serve a change made while the references are known
+to lag. Off the generating platform ``--check`` skips the platform-bound
+oracles, as the tests do (``PYVBMC_ORACLES_ALL=1`` forces them); a dump is
+compared in full. Plan and worklog:
+``dev/plans/fixture-generator-and-oracles.md``.
+
+The authentic GP-history capture mode runs only until it has observed an
+early sampled fit, a later fit whose stored sample counts differ, and a noisy
+fit with unequal history weights. It writes a separate additive subdirectory,
+refuses to replace an existing capture, and hash-checks the legacy fixtures.
+When a deliberate change of the fit moves a capture,
+``--rebaseline-gp-fit-history`` replays it on its stored inputs and replaces
+the platform-bound references of that capture alone (the outputs of the fit
+and the sampler widths); the captured inputs and the portable references stay
+bit-identical.
+"""
+
+import argparse
+import copy
+import hashlib
+import importlib
+import inspect
+import json
+import os
+import platform
+import sys
+import time
+from pathlib import Path
+
+for _k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_k, "1")
+os.environ.setdefault("MPLBACKEND", "Agg")
+
+import gpyreg as gpr  # noqa: E402
+import numpy as np  # noqa: E402
+
+HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parents[1]
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(REPO_ROOT))
+
+from benchmark_targets import find_config  # noqa: E402
+from profile_run import git_info, pkg_version  # noqa: E402
+
+from pyvbmc import VBMC  # noqa: E402
+from pyvbmc.testing.oracles._gp_fit_history import (
+    capture_inputs,
+    fit_outputs,
+    history_block_summary,
+    portable_outputs,
+)
+from pyvbmc.testing.oracles._gp_fit_history import (  # noqa: E402
+    replay as replay_gp_fit_history,
+)
+from pyvbmc.testing.oracles._gp_fit_history import run_observed, same_platform
+from pyvbmc.testing.oracles._oracles import (  # noqa: E402
+    DEFAULT_SEED,
+    ORACLES,
+    PLATFORM_BOUND,
+    applicable,
+    compare,
+    format_rows,
+    oracle_error_scale,
+)
+from pyvbmc.testing.oracles._state import (  # noqa: E402
+    _files,
+    build_state,
+    decode,
+    encode,
+    load_snapshot,
+    save_snapshot,
+    snapshot_from_objects,
+    snapshot_names,
+)
+from pyvbmc.variational_posterior import VariationalPosterior  # noqa: E402
+from pyvbmc.vbmc.active_sample import _get_search_points  # noqa: E402
+from pyvbmc.vbmc.gaussian_process_train import (  # noqa: E402
+    _cov_identifier_to_covariance_function,
+)
+
+FIXTURES = REPO_ROOT / "pyvbmc" / "testing" / "oracles" / "fixtures"
+GP_HISTORY_FIXTURES = FIXTURES / "gp_fit_history"
+PROBLEM_SEED = 0
+N_CAND = 512
+SIEVE = 2**13
+
+
+# --------------------------------------------------------------------------
+# recipes
+# --------------------------------------------------------------------------
+
+
+class Recipe:
+    def __init__(
+        self,
+        name,
+        config,
+        options,
+        pick,
+        note,
+        check=None,
+        train_candidates=False,
+    ):
+        self.name = name
+        self.config = config
+        self.options = dict(options)
+        # int | "last" | "last_warped" | "first_repeat" | "final_vp" | "k1"
+        self.pick = pick
+        self.note = note
+        # callable(decoded snapshot tree) -> None (asserts)
+        self.check = check
+        # Whether the live training inputs lead the candidate set.
+        self.train_candidates = train_candidates
+
+
+def _check_singlesample(tree):
+    assert tree["gp"]["Ns"] == 1, f"expected Ns == 1, got {tree['gp']['Ns']}"
+
+
+def _check_warped(tree):
+    assert tree["pt"]["R_mat"] is not None, "expected a rotoscale warp"
+
+
+def _check_noisy(tree):
+    assert tree["logger"]["noise_flag"] and tree["gp"]["s2"] is not None
+    assert tree["logger"]["S"] is not None
+
+
+def _check_boosted(tree):
+    assert tree["vp"]["K"] == 50, f"expected K == 50, got {tree['vp']['K']}"
+
+
+def _check_k1(tree):
+    assert tree["vp"]["K"] == 1
+
+
+def _check_level1(tree):
+    level = tree["logger"]["uncertainty_handling_level"]
+    assert level == 1, f"expected uncertainty level 1, got {level}"
+    p = tree["gp"]["noise_parameters"]
+    assert p == [1, 2, 0], f"expected noise parameters [1, 2, 0], got {p}"
+    s2 = np.ravel(tree["gp"]["s2"])
+    assert np.ptp(s2) > 0, "no repeated observation: s2 is constant"
+    # The noise block follows the covariance hyperparameters: the constant
+    # term, then the log multiplier of the recorded noise.
+    cov = _cov_identifier_to_covariance_function(tree["gp"]["cov_fun"])
+    cov_N = cov.hyperparameter_count(tree["pt"]["D"])
+    log_mult = float(np.mean(tree["gp"]["hyp"][:, cov_N + 1]))
+    assert abs(log_mult) > 1, f"log noise multiplier {log_mult:.3f} near 0"
+
+
+RECIPES = [
+    Recipe(
+        "normal_D2_warmup",
+        "normal_D2",
+        {},
+        2,
+        "warm-up iteration: K = 2, Ns = 8, no warp; the baseline state",
+    ),
+    Recipe(
+        "normal_D2_K1",
+        "normal_D2",
+        {},
+        "k1",
+        "the warm-up GP of normal_D2 with a synthetic single-component VP "
+        "(K = 1 branches of the entropy and density code)",
+        _check_k1,
+    ),
+    Recipe(
+        "normal_D2_singlesample",
+        "normal_D2",
+        {"stable_gp_sampling": 1, "min_iter": 0},
+        "last",
+        "GP hyperparameter sampling switched off from the first fit: a "
+        "single posterior (the Ns = 1 squeeze regime)",
+        _check_singlesample,
+    ),
+    Recipe(
+        "corr_D5_warped",
+        "corr_D5",
+        {},
+        "last_warped",
+        "last iteration with a rotoscale warp in place (R_mat, scale set) "
+        "on a correlated 5-D Gaussian",
+        _check_warped,
+    ),
+    Recipe(
+        "cigar_D4_largeK",
+        "cigar_D4",
+        {},
+        "last",
+        "last iteration of a correlated, ill-conditioned target: large K, "
+        "warped transformer",
+        _check_warped,
+    ),
+    Recipe(
+        "cigar_D4_boosted",
+        "cigar_D4",
+        {},
+        "final_vp",
+        "the returned (final-boost, K = 50) VP with the best iteration's GP",
+        _check_boosted,
+    ),
+    Recipe(
+        "halfnormal_D2_bounded",
+        "halfnormal_D2",
+        {},
+        "last",
+        "finite bounds: probit transform and a non-constant log-Jacobian",
+    ),
+    Recipe(
+        "rosenbrock_D2_noise1_viqr",
+        "rosenbrock_D2_noise1",
+        {"max_iter": 4, "min_iter": 0, "min_fun_evals": 0},
+        "last",
+        "noisy target on the VIQR path: per-point noise, pre-drawn "
+        "importance samples for the VIQR/IMIQR acquisitions",
+        _check_noisy,
+    ),
+    Recipe(
+        "rosenbrock_D2_noise3_level1",
+        "rosenbrock_D2_noise3_level1",
+        {"max_repeated_observations": 3},
+        "first_repeat",
+        "uncertainty level 1, the target returning its value alone: the "
+        "GP noise is a constant plus the recorded noise of each point "
+        "scaled by a fitted multiplier (noise function [1, 2, 0]); the "
+        "first iteration whose GP holds a repeated observation, so that "
+        "the recorded noise differs between points, and a noise SD of 3 "
+        "keeps the multiplier away from 1, where levels 1 and 2 compute "
+        "nearly the same numbers; the live training inputs lead the "
+        "candidate set, as the candidates of a repeated observation",
+        _check_level1,
+        train_candidates=True,
+    ),
+]
+
+
+# --------------------------------------------------------------------------
+# runs and snapshots
+# --------------------------------------------------------------------------
+
+_RUNS = {}
+
+
+class _CaptureComplete(Exception):
+    pass
+
+
+def run_config(config, options):
+    key = (config, tuple(sorted(options.items())))
+    if key in _RUNS:
+        return _RUNS[key]
+    cfg = find_config(config)
+    prob = cfg.make(seed=PROBLEM_SEED)
+    args, opts = prob.vbmc_args()
+    opts.update(display="off", plot=False, print_iteration_header=False)
+    opts.update(options)
+    vbmc = VBMC(*args, options=opts, seed=PROBLEM_SEED)
+    t0 = time.perf_counter()
+    vp, results = vbmc.optimize()
+    print(
+        f"[fixtures] ran {config} {options or ''}: {results['iterations']} "
+        f"iterations, {results['func_count']} evaluations, "
+        f"{time.perf_counter() - t0:.0f}s",
+        flush=True,
+    )
+    _RUNS[key] = (vbmc, prob, vp, results)
+    return _RUNS[key]
+
+
+def pick_iteration(vbmc, pick):
+    h = vbmc.iteration_history
+    n = len(h["elbo"])
+    if pick == "last":
+        return n - 1
+    if pick == "last_warped":
+        for i in range(n - 1, -1, -1):
+            if h["vp"][i].parameter_transformer.R_mat is not None:
+                return i
+        raise RuntimeError("no warped iteration in this run")
+    if pick == "first_repeat":
+        # The first iteration whose GP holds a repeated observation.
+        for i in range(n):
+            fl = h["function_logger"][i]
+            if np.any(fl.n_evals[fl.X_flag] > 1):
+                return i
+        raise RuntimeError("no repeated observation in this run")
+    if isinstance(pick, int):
+        assert 0 <= pick < n, f"iteration {pick} not in 0..{n - 1}"
+        return pick
+    raise ValueError(pick)
+
+
+def make_snapshot(recipe):
+    vbmc, prob, vp_final, results = run_config(recipe.config, recipe.options)
+    h = vbmc.iteration_history
+    if recipe.pick == "final_vp":
+        # `final_boost` re-optimizes against the *best* iteration's GP.
+        i = int(results["best_iter"])
+    elif recipe.pick == "k1":
+        i = pick_iteration(vbmc, 2)
+    else:
+        i = pick_iteration(vbmc, recipe.pick)
+    gp = h["gp"][i]
+    fl = h["function_logger"][i]
+    os_ = copy.deepcopy(h["optim_state"][i])
+    vp = h["vp"][i]
+    # The recorded importance samples belong to the GP before the last
+    # evaluation of the iteration (they are stale for the recorded GP and
+    # large); the oracles redraw them from the rebuilt state.
+    if "active_importance_sampling" in os_:
+        os_["active_importance_sampling"] = None
+    # `vp`, `gp` and the logger are recorded after the variational fit, the
+    # `optim_state` at the end of the iteration (after any warm-up trimming
+    # of the logger): make sure both describe the same data.
+    n_eff_logger = int(np.sum(fl.n_evals[fl.X_flag]))
+    assert os_["N"] == fl.Xn + 1 and int(os_["n_eff"]) == n_eff_logger, (
+        f"{recipe.name}: optim_state (N={os_['N']}, n_eff={os_['n_eff']}) and "
+        f"logger (Xn+1={fl.Xn + 1}, n_eff={n_eff_logger}) disagree at "
+        f"iteration {i}; pick another iteration"
+    )
+    # The VP's transformer must be the one the logger's rows and the GP's
+    # inputs were produced with (a warp after this iteration would break
+    # that for a VP taken from elsewhere, e.g. the returned one).
+    pt = vp.parameter_transformer
+    live = fl.X_flag
+    assert np.allclose(
+        pt(fl.X_orig[live]), fl.X[live], atol=1e-10
+    ), f"{recipe.name}: transformer does not reproduce the logger rows"
+    assert np.array_equal(gp.X, fl.X[live]) and np.array_equal(
+        np.ravel(gp.y), np.ravel(fl.y[live])
+    ), f"{recipe.name}: GP data differ from the logger's live rows"
+    if fl.noise_flag:
+        assert np.array_equal(
+            np.ravel(gp.s2), np.ravel(fl.S[live] ** 2)
+        ), f"{recipe.name}: GP noise differs from the logger's live rows"
+    if recipe.pick == "final_vp":
+        vp = vp_final
+    elif recipe.pick == "k1":
+        src = vp
+        vp = VariationalPosterior(
+            src.D,
+            1,
+            x0=np.zeros((1, src.D)),
+            parameter_transformer=src.parameter_transformer,
+        )
+        w = np.ravel(src.w)
+        vp.mu = (src.mu @ w).reshape(-1, 1)
+        vp.sigma = np.array([[float(np.sum(w * np.ravel(src.sigma)))]])
+        vp.lambd = np.array(src.lambd)
+        vp.w = np.ones((1, 1))
+        vp.eta = np.ones((1, 1))
+        vp.stats = None
+    meta = {
+        "recipe": recipe.name,
+        "config": recipe.config,
+        "problem": prob.name,
+        "D": int(prob.D),
+        "noise_sd": prob.noise_sd,
+        "problem_seed": PROBLEM_SEED,
+        "recipe_options": recipe.options,
+        "pick": recipe.pick,
+        "note": recipe.note,
+        "r_index": float(h["r_index"][i]),
+        "best_iter": int(results["best_iter"]),
+        # The number of iterations of the run. A fixture written before
+        # commit 4822ae1 (2026-09-20) holds the index of the last iteration
+        # here, one less: it was what results["iterations"] reported.
+        "n_iterations": int(results["iterations"]),
+        "K": int(vp.K),
+        "Ns": len(gp.posteriors),
+        "N": int(gp.X.shape[0]),
+        "oracle_seed": DEFAULT_SEED,
+        "git": git_info(),
+        "versions": {
+            p: pkg_version(p) for p in ("pyvbmc", "gpyreg", "numpy", "scipy")
+        },
+        "python": platform.python_version(),
+        # The `active_sample_step` oracle reproduces only on the platform
+        # (BLAS build) that generated the fixture; the test gates on this.
+        "platform": platform.platform(),
+        "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    arrays, tree = snapshot_from_objects(
+        vp, gp, fl, os_, vbmc.options, meta=meta, iteration=i
+    )
+    # Candidate set: a fixed subsample of the seeded sieve, after the live
+    # training inputs for a recipe that asks for them (with observation
+    # noise and `max_repeated_observations` above 0, active sampling offers
+    # them as candidates for a repeated observation).
+    vp_c = copy.deepcopy(vp)
+    vp_c.rng = np.random.default_rng(DEFAULT_SEED)
+    Xs, _ = _get_search_points(
+        SIEVE, copy.deepcopy(os_), copy.deepcopy(fl), vp_c, vbmc.options
+    )
+    Xs = np.array(Xs[:: SIEVE // N_CAND][:N_CAND])
+    n_train = 0
+    if recipe.train_candidates:
+        X_train = np.array(fl.X[fl.X_flag])
+        n_train = X_train.shape[0]
+        Xs = np.vstack([X_train, Xs])
+    tree["cand"] = {"Xs": encode(Xs, "cand/Xs", arrays)}
+    tree["meta"]["cand_train_rows"] = n_train
+    if recipe.check is not None:
+        recipe.check(decode(tree, arrays))
+    return arrays, tree, prob
+
+
+def compute_references(path, fun):
+    """Rebuild the stored state and run every applicable oracle."""
+    snap = load_snapshot(path)
+    refs = {}
+    for name in applicable(build_state(snap, fun=fun)):
+        state = build_state(snap, fun=fun)
+        t0 = time.perf_counter()
+        refs[name] = ORACLES[name](state, DEFAULT_SEED)
+        print(f"    {name:22s} {time.perf_counter() - t0:6.2f}s", flush=True)
+    return snap, refs
+
+
+def generate(recipes):
+    FIXTURES.mkdir(parents=True, exist_ok=True)
+    for recipe in recipes:
+        print(f"[fixtures] {recipe.name}", flush=True)
+        arrays, tree, prob = make_snapshot(recipe)
+        path = FIXTURES / recipe.name
+        save_snapshot(path, arrays, tree)  # state only, no references yet
+        snap, refs = compute_references(path, prob.fun)
+        for name, out in refs.items():
+            tree["ref"][name] = encode(out, f"ref/{name}", arrays)
+        save_snapshot(path, arrays, tree)
+        # Round trip: reload, rebuild, recompute; must be identical.
+        bad = check_one(path, prob.fun, exact=True)
+        if bad:
+            raise RuntimeError(f"round trip failed for {recipe.name}: {bad}")
+        size = os.path.getsize(path.with_suffix(".npz")) + os.path.getsize(
+            path.with_suffix(".json")
+        )
+        print(
+            f"[fixtures] wrote {recipe.name} ({size / 1024:.0f} KB)",
+            flush=True,
+        )
+
+
+def check_one(path, fun, exact=False, verbose=False, reference=None, skip=()):
+    """Recompute every stored oracle of one snapshot and compare with the
+    stored references, or with ``reference`` (``{oracle: {key: array}}``,
+    e.g. a dump of an earlier code state, see :func:`dump_outputs`);
+    oracles named in ``skip`` are not checked."""
+    snap = load_snapshot(path)
+    refs = snap["ref"] if reference is None else reference
+    if reference is not None and set(reference) != set(snap["ref"]):
+        # A dump made before an oracle was added (or after one was removed)
+        # would otherwise pass with that oracle silently unchecked.
+        print(
+            f"  [{path.stem}] WARNING: the dump holds oracles"
+            f" {sorted(reference)} but the fixture {sorted(snap['ref'])};"
+            " only the dump's are compared",
+            flush=True,
+        )
+    bad = []
+    for name, ref in refs.items():
+        if name in skip:
+            continue
+        orc = ORACLES[name]
+        state = build_state(snap, fun=fun)
+        if not orc.applies(state):
+            bad.append((name, "not applicable on rebuilt state"))
+            continue
+        out = orc(state, snap["meta"]["oracle_seed"])
+        rtol, atol = (0.0, 0.0) if exact else (orc.rtol, orc.atol)
+        rows = compare(
+            ref,
+            out,
+            rtol,
+            atol,
+            error_scale=None if exact else oracle_error_scale(snap, name),
+        )
+        if verbose or not all(r[3] for r in rows):
+            print(f"  [{path.stem}] {name}\n{format_rows(rows)}", flush=True)
+        if not all(r[3] for r in rows):
+            bad.append((name, [r[0] for r in rows if not r[3]]))
+    return bad
+
+
+def target_for(meta):
+    prob = find_config(meta["config"]).make(seed=meta["problem_seed"])
+    return prob.fun
+
+
+def _dump_files(out_dir, name):
+    out_dir = Path(out_dir)
+    return out_dir / (name + ".npz"), out_dir / (name + ".json")
+
+
+def dump_outputs(names, out_dir):
+    """Write the *current* code's outputs of every stored oracle on every
+    snapshot to ``out_dir`` (one ``.npz`` per snapshot, keys
+    ``<oracle>/<output>``, plus a ``.json`` with the provenance).
+
+    The committed references pin the numerics of the day they were made,
+    at tolerance; a refactor that must not change any output at all is
+    checked against a dump of the code just before it (``--check --exact
+    --against <dir>``), which the dump makes reproducible without a second
+    checkout.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        path = FIXTURES / name
+        snap = load_snapshot(path)
+        fun = target_for(snap["meta"])
+        arrays = {}
+        for oracle_name in snap["ref"]:
+            state = build_state(snap, fun=fun)
+            out = ORACLES[oracle_name](state, snap["meta"]["oracle_seed"])
+            for key, val in out.items():
+                arrays[f"{oracle_name}/{key}"] = np.asarray(val, dtype=float)
+        npz, js = _dump_files(out_dir, name)
+        np.savez_compressed(npz, **arrays)
+        with open(js, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(
+                {
+                    "snapshot": name,
+                    "oracles": sorted(snap["ref"]),
+                    "git": git_info(),
+                    "platform": platform.platform(),
+                    "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "threads": {
+                        k: os.environ.get(k)
+                        for k in (
+                            "OMP_NUM_THREADS",
+                            "OPENBLAS_NUM_THREADS",
+                            "MKL_NUM_THREADS",
+                        )
+                    },
+                },
+                f,
+                indent=1,
+                sort_keys=True,
+            )
+            f.write("\n")
+        print(f"[dump] {name:28s} {len(arrays)} arrays", flush=True)
+
+
+def load_dump(out_dir, name):
+    npz, _ = _dump_files(out_dir, name)
+    reference = {}
+    with np.load(npz, allow_pickle=False) as z:
+        for key in z.files:
+            oracle_name, output = key.split("/", 1)
+            reference.setdefault(oracle_name, {})[output] = z[key]
+    return reference
+
+
+def _top_level_fixture_hashes():
+    return {
+        p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted(FIXTURES.glob("*.*"))
+        if p.suffix in (".json", ".npz")
+    }
+
+
+def _source_record(train):
+    sources = {
+        "train_gp": inspect.getsourcefile(train),
+        "gpyreg.GP.fit": inspect.getsourcefile(gpr.GP.fit),
+        "capture_helper": inspect.getsourcefile(capture_inputs),
+        "capture_script": __file__,
+    }
+    return {
+        name: {
+            "path": str(Path(path).resolve()),
+            "sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+        }
+        for name, path in sources.items()
+    }
+
+
+def _write_gp_history_fixture(role, pre, result, observation, meta):
+    hyp_n = result[0].get_hyperparameters(as_array=True).shape[1]
+    gp_s_N = result[1]
+    portable = portable_outputs(pre, hyp_n, gp_s_N)
+    proposed = observation["gp_fit_widths"]
+    if portable["gp_fit_widths"] is None or proposed is None:
+        raise RuntimeError(f"{role}: fit did not receive history widths")
+    if not np.array_equal(portable["gp_fit_widths"], proposed):
+        raise RuntimeError(
+            f"{role}: reconstructed and GP.fit proposed widths differ"
+        )
+    portable["gp_fit_widths"] = np.array(proposed, copy=True)
+    summary = history_block_summary(pre, hyp_n)
+    raw = {
+        "meta": {
+            **meta,
+            "role": role,
+            "capture_iteration": int(pre["optim_state"]["iter"]),
+            "hyp_n": int(hyp_n),
+            "gp_s_N": int(gp_s_N),
+            "history": summary,
+            "widths_source": {
+                "proposed": "gpyreg.GP.fit options",
+                "effective": "gpyreg.gaussian_process.SliceSampler argument",
+                "default": "gpyreg.GP.fit caller local widths_default",
+            },
+        },
+        "pre": pre,
+        "ref": {
+            "portable": portable,
+            "fit": fit_outputs(result),
+            "sampler_widths": {
+                "effective_widths": observation["effective_widths"],
+                "widths_default": observation["widths_default"],
+            },
+        },
+    }
+    arrays = {}
+    tree = encode(raw, "capture", arrays)
+    path = GP_HISTORY_FIXTURES / role
+    if any(p.exists() for p in _files(path)):
+        raise RuntimeError(f"refusing to overwrite existing fixture {path}")
+    save_snapshot(path, arrays, tree)
+    print(f"[gp-fit-history] wrote {role} at iteration {meta['iteration']}")
+
+
+def _capture_run(config, options, wanted):
+    """Run until all requested authentic fit roles have been captured."""
+    cfg = find_config(config)
+    prob = cfg.make(seed=PROBLEM_SEED)
+    args, opts = prob.vbmc_args()
+    opts.update(display="off", plot=False, print_iteration_header=False)
+    opts.update(options)
+    vbmc = VBMC(*args, options=opts, seed=PROBLEM_SEED)
+    vbmc_module = importlib.import_module("pyvbmc.vbmc.vbmc")
+    original = vbmc_module.train_gp
+    captured = set()
+
+    def wrapped(*fit_args, **fit_kwargs):
+        rng = fit_kwargs.get("rng")
+        pre = capture_inputs(*fit_args, rng)
+        result, observation = run_observed(original, (*fit_args, rng))
+        hyp_n = result[0].get_hyperparameters(as_array=True).shape[1]
+        proposed = observation["gp_fit_widths"]
+        effective = observation["effective_widths"]
+        widths_default = observation["widths_default"]
+        history_influences_sampler = (
+            proposed is not None
+            and np.all(np.isfinite(proposed))
+            and effective is not None
+            and widths_default is not None
+            and np.any(effective < widths_default)
+        )
+        summary = history_block_summary(pre, hyp_n)
+        role = None
+        if (
+            "early_sampled" in wanted
+            and "early_sampled" not in captured
+            and pre["optim_state"]["iter"] > 0
+            and result[1] > 0
+            and history_influences_sampler
+        ):
+            role = "early_sampled"
+        elif (
+            "later_changing_ns" in wanted
+            and "later_changing_ns" not in captured
+            and result[1] > 0
+            and history_influences_sampler
+            and len(set(summary["sample_counts"])) > 1
+        ):
+            role = "later_changing_ns"
+        elif (
+            "noisy_nonuniform_weights" in wanted
+            and "noisy_nonuniform_weights" not in captured
+            and pre["logger"]["noise_flag"]
+            and result[1] > 0
+            and history_influences_sampler
+            and len(summary["weights"]) > 1
+            and not np.allclose(summary["weights"], summary["weights"][0])
+        ):
+            role = "noisy_nonuniform_weights"
+        if role:
+            meta = {
+                "config": config,
+                "problem": prob.name,
+                "problem_seed": PROBLEM_SEED,
+                "seed": PROBLEM_SEED,
+                "iteration": int(pre["optim_state"]["iter"]),
+                "platform": platform.platform(),
+                "python": platform.python_version(),
+                "git": git_info(),
+                "sources": _source_record(original),
+                "versions": {
+                    p: pkg_version(p)
+                    for p in ("pyvbmc", "gpyreg", "numpy", "scipy")
+                },
+                "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            _write_gp_history_fixture(role, pre, result, observation, meta)
+            captured.add(role)
+            if captured == set(wanted):
+                raise _CaptureComplete
+        return result
+
+    vbmc_module.train_gp = wrapped
+    try:
+        vbmc.optimize()
+    except _CaptureComplete:
+        pass
+    finally:
+        vbmc_module.train_gp = original
+    missing = set(wanted) - captured
+    if missing:
+        raise RuntimeError(
+            f"{config}: did not find captures {sorted(missing)}"
+        )
+
+
+def capture_gp_fit_history():
+    """Add the three approved authentic history fixtures, leaving old ones."""
+    before = _top_level_fixture_hashes()
+    GP_HISTORY_FIXTURES.mkdir(parents=True, exist_ok=True)
+    _capture_run(
+        "normal_D2",
+        {"max_iter": 30, "min_iter": 0, "min_fun_evals": 0},
+        ("early_sampled", "later_changing_ns"),
+    )
+    _capture_run(
+        "rosenbrock_D2_noise1",
+        {"max_iter": 12, "min_iter": 0, "min_fun_evals": 0},
+        ("noisy_nonuniform_weights",),
+    )
+    after = _top_level_fixture_hashes()
+    if before != after:
+        raise RuntimeError("an existing top-level oracle fixture changed")
+
+
+def _arrays_close(expected, actual, exact=False):
+    if set(expected) != set(actual):
+        return False
+    for key in expected:
+        a, b = np.asarray(expected[key]), np.asarray(actual[key])
+        if a.shape != b.shape:
+            return False
+        if exact:
+            if not np.array_equal(a, b, equal_nan=True):
+                return False
+        elif not np.allclose(a, b, rtol=1e-10, atol=1e-12, equal_nan=True):
+            return False
+    return True
+
+
+def check_gp_fit_history(exact=False, verbose=False):
+    failures = {}
+    names = snapshot_names(GP_HISTORY_FIXTURES)
+    expected_names = {
+        "early_sampled",
+        "later_changing_ns",
+        "noisy_nonuniform_weights",
+    }
+    if set(names) != expected_names:
+        return {
+            "fixtures": f"found {names}, expected {sorted(expected_names)}"
+        }
+    for name in names:
+        snap = load_snapshot(GP_HISTORY_FIXTURES / name)
+        portable = portable_outputs(
+            snap["pre"], snap["meta"]["hyp_n"], snap["meta"]["gp_s_N"]
+        )
+        bad = []
+        if not _arrays_close(snap["ref"]["portable"], portable, exact=exact):
+            bad.append("portable covariance/widths")
+        if same_platform(snap) or os.environ.get("PYVBMC_ORACLES_ALL"):
+            fit, observation = replay_gp_fit_history(snap)
+            if not _arrays_close(snap["ref"]["fit"], fit, exact=exact):
+                bad.append("platform-bound fit")
+            if not _arrays_close(
+                snap["ref"]["sampler_widths"],
+                {
+                    "effective_widths": observation["effective_widths"],
+                    "widths_default": observation["widths_default"],
+                },
+                exact=exact,
+            ):
+                bad.append("effective/default sampler widths")
+        elif verbose:
+            print(f"  [{name}] platform-bound fit skipped", flush=True)
+        print(
+            f"[check] gp_fit_history/{name:25s} {'ok' if not bad else 'FAIL'}"
+        )
+        if bad:
+            failures[name] = bad
+    return failures
+
+
+def check(names, verbose, exact=False, against=None):
+    failures = {}
+    for name in names:
+        path = FIXTURES / name
+        snap = load_snapshot(path)
+        fun = target_for(snap["meta"])
+        reference = None if against is None else load_dump(against, name)
+        # The committed references of the platform-bound oracles hold on the
+        # generating platform only, so elsewhere they are skipped, as the
+        # tests skip them. A dump is compared in full: it is made on the
+        # machine that checks against it.
+        skip = ()
+        if (
+            reference is None
+            and not same_platform(snap)
+            and not os.environ.get("PYVBMC_ORACLES_ALL")
+        ):
+            skip = tuple(sorted(PLATFORM_BOUND & set(snap["ref"])))
+        bad = check_one(
+            path,
+            fun,
+            exact=exact,
+            verbose=verbose,
+            reference=reference,
+            skip=skip,
+        )
+        skipped = f" (platform-bound, skipped: {', '.join(skip)})"
+        print(
+            f"[check] {name:28s} {'ok' if not bad else 'FAIL ' + str(bad)}"
+            f"{skipped if skip else ''}",
+            flush=True,
+        )
+        if bad:
+            failures[name] = bad
+    return failures
+
+
+def _refuse_off_platform(name, oracle_name, meta):
+    if (
+        oracle_name in PLATFORM_BOUND
+        and meta.get("platform") != platform.platform()
+    ):
+        sys.exit(
+            f"{name}: {oracle_name} is platform-bound and this is not the"
+            f" generating platform ({meta.get('platform')})"
+        )
+
+
+def _write_fixture(path, arrays, tree):
+    """Write both files through temporary files outside the fixtures
+    directory (which the tests glob), renamed into place."""
+    npz, js = _files(path)
+    tmp = FIXTURES.parent / (path.name + ".rewrite-tmp")
+    tmp_npz, tmp_js = _files(tmp)
+    try:
+        save_snapshot(tmp, arrays, tree)
+        os.replace(tmp_npz, npz)  # the pair is not atomic together;
+        os.replace(tmp_js, js)  # the json holds only markers + meta
+    finally:
+        for p in (tmp_npz, tmp_js):
+            if p.exists():
+                p.unlink()
+
+
+def _verify_rewrite(path, fun, oracle_name, before, extra_keys=(), skip=()):
+    """After a targeted rewrite: every array outside ``ref/<oracle>/`` is
+    bit-identical to ``before`` (and only ``extra_keys`` were added), the
+    rewritten oracle reproduces exactly from the stored state, and the
+    other oracles still pass at their own tolerances (not bit-exactly: a
+    refactor that these modes exist for may have moved them by ulps),
+    except those named in ``skip`` (oracles known to move as well, to be
+    re-baselined next)."""
+    prefix = f"ref/{oracle_name}/"
+    npz, _ = _files(path)
+    with np.load(npz, allow_pickle=False) as z:
+        after = {k: z[k] for k in z.files}
+    assert set(after) == set(before) | set(extra_keys), path.name
+    for k in before:
+        if not k.startswith(prefix):
+            assert np.array_equal(before[k], after[k], equal_nan=True), (
+                path.name,
+                k,
+            )
+    snap = load_snapshot(path)
+    state = build_state(snap, fun=fun)
+    again = ORACLES[oracle_name](state, snap["meta"]["oracle_seed"])
+    exact = compare(snap["ref"][oracle_name], again, 0.0, 0.0)
+    if not all(r[3] for r in exact):
+        raise RuntimeError(
+            f"{path.name}: {oracle_name} does not reproduce from the stored"
+            f" state\n{format_rows(exact)}"
+        )
+    bad = check_one(path, fun, exact=False, skip=skip)
+    if bad:
+        raise RuntimeError(f"{path.name}: other oracles fail after: {bad}")
+
+
+def add_oracle(names, oracle_name, reason, expect_moving=()):
+    """Compute a newly registered oracle from the *stored* state of each
+    snapshot and add its references, leaving everything else bit-identical
+    (``expect_moving`` as in :func:`rebaseline`).
+
+    The counterpart of :func:`rebaseline` for an oracle the fixtures do not
+    hold yet: rerunning the recipes would move every snapshot (the runs'
+    trajectories change with every Stage 2 item), so a new oracle is pinned
+    on the states as they are. Records the event under
+    ``meta["oracles_added"]``.
+    """
+    orc = ORACLES[oracle_name]
+    prefix = f"ref/{oracle_name}/"
+    pending = []
+    for name in names:
+        path = FIXTURES / name
+        npz, js = _files(path)
+        tree = json.loads(js.read_text(encoding="utf-8"))
+        with np.load(npz, allow_pickle=False) as z:
+            arrays = {k: z[k] for k in z.files}
+        snap = load_snapshot(path)
+        meta = snap["meta"]
+        if oracle_name in snap["ref"]:
+            sys.exit(
+                f"{name}: {oracle_name} already has a reference"
+                " (use --rebaseline to replace it)"
+            )
+        _refuse_off_platform(name, oracle_name, meta)
+        fun = target_for(meta)
+        state = build_state(snap, fun=fun)
+        if not orc.applies(state):
+            print(
+                f"[add-oracle] {name:28s} {oracle_name} not applicable; skip"
+            )
+            continue
+        out = orc(state, meta["oracle_seed"])
+        shapes = {k: list(np.shape(v)) for k, v in out.items()}
+        print(f"  [{name}] {oracle_name} outputs {shapes}")
+        pending.append((name, path, fun, arrays, tree, out, shapes))
+
+    for name, path, fun, arrays, tree, out, shapes in pending:
+        before = {k: v.copy() for k, v in arrays.items()}
+        tree["ref"][oracle_name] = encode(out, f"ref/{oracle_name}", arrays)
+        tree["meta"].setdefault("oracles_added", []).append(
+            {
+                "oracle": oracle_name,
+                "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "git": git_info(),
+                "reason": reason,
+                "outputs": shapes,
+            }
+        )
+        _write_fixture(path, arrays, tree)
+        _verify_rewrite(
+            path,
+            fun,
+            oracle_name,
+            before,
+            [prefix + k for k in out],
+            skip=expect_moving,
+        )
+        print(f"[add-oracle] {name:28s} {oracle_name} added", flush=True)
+    print(f"[add-oracle] {len(pending)} of {len(names)} fixtures rewritten")
+    return len(pending)
+
+
+def rebaseline(names, oracle_name, reason, expect_moving=()):
+    """Recompute one oracle from the *stored* state of each snapshot and
+    replace only its references.
+
+    Regenerating a recipe would rerun its VBMC run, whose trajectory moves
+    with any change to the search, so every reference of the snapshot
+    would move and stop pinning the pre-change numerics. This mode keeps
+    the state and every other oracle's reference bit-identical (asserted
+    after the write) and records the event under ``meta["rebaselined"]``.
+    When a change moves more than one oracle (a random-stream change moves
+    every oracle that draws), name the others in ``expect_moving`` so the
+    post-write check does not fail on them; re-baseline them next.
+    """
+    orc = ORACLES[oracle_name]
+    prefix = f"ref/{oracle_name}/"
+    # Phase 1: recompute for every snapshot and check, writing nothing, so
+    # that a refusal or a mismatch leaves every fixture as it was.
+    pending = []
+    for name in names:
+        path = FIXTURES / name
+        npz, js = _files(path)
+        tree = json.loads(js.read_text(encoding="utf-8"))
+        with np.load(npz, allow_pickle=False) as z:
+            arrays = {k: z[k] for k in z.files}
+        snap = load_snapshot(path)
+        meta = snap["meta"]
+        if oracle_name not in snap["ref"]:
+            print(f"[rebaseline] {name:28s} no {oracle_name} reference; skip")
+            continue
+        _refuse_off_platform(name, oracle_name, meta)
+        fun = target_for(meta)
+        state = build_state(snap, fun=fun)
+        if not orc.applies(state):
+            sys.exit(f"{name}: {oracle_name} not applicable on rebuilt state")
+        out = orc(state, meta["oracle_seed"])
+        old = snap["ref"][oracle_name]
+        if set(out) != set(old):
+            sys.exit(
+                f"{name}: {oracle_name} outputs {sorted(out)} but the"
+                f" reference holds {sorted(old)}"
+            )
+        for key, val in out.items():
+            if np.shape(val) != np.shape(old[key]):
+                sys.exit(
+                    f"{name}: {oracle_name}/{key} changed shape"
+                    f" {np.shape(old[key])} -> {np.shape(val)}"
+                )
+        rows = compare(
+            old,
+            out,
+            orc.rtol,
+            orc.atol,
+            error_scale=oracle_error_scale(snap, oracle_name),
+        )
+        print(f"  [{name}] {oracle_name} old vs new\n{format_rows(rows)}")
+        pending.append((name, path, fun, arrays, tree, out, rows))
+
+    # Phase 2: write each fixture through temporary files (outside the
+    # fixtures directory, which the tests glob) renamed into place, then
+    # verify that every other array is bit-identical, that the new
+    # reference reproduces exactly from the stored state, and that the
+    # other oracles still pass at their own tolerances (not bit-exactly:
+    # a refactor that this mode exists for may have moved them by ulps).
+    def finite(v):
+        return float(v) if np.isfinite(v) else repr(float(v))
+
+    for name, path, fun, arrays, tree, out, rows in pending:
+        before = {k: v.copy() for k, v in arrays.items()}
+        for key, val in out.items():
+            arrays[prefix + key] = np.asarray(val, dtype=float)
+        tree["meta"].setdefault("rebaselined", []).append(
+            {
+                "oracle": oracle_name,
+                "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "git": git_info(),
+                "reason": reason,
+                "max_abs_change": {r[0]: finite(r[1]) for r in rows},
+            }
+        )
+        _write_fixture(path, arrays, tree)
+        _verify_rewrite(path, fun, oracle_name, before, skip=expect_moving)
+        print(f"[rebaseline] {name:28s} {oracle_name} replaced", flush=True)
+    print(f"[rebaseline] {len(pending)} of {len(names)} fixtures rewritten")
+    return len(pending)
+
+
+def rebaseline_gp_fit_history(name, reason):
+    """Replay one authentic GP-history capture on its stored inputs and
+    replace its platform-bound references: the outputs of the fit and the
+    widths its sampler worked with.
+
+    The counterpart of :func:`rebaseline` for the captures. The capture
+    mode refuses to write a capture again, and rightly: a new one would
+    come from a run whose trajectory has moved, and would stop pinning the
+    inputs the old one holds. This mode keeps the captured inputs and the
+    portable references, which the current code must reproduce exactly,
+    bit-identical (asserted after the write), hash-checks the top-level
+    fixtures, checks the other captures, and records the event under
+    ``meta["rebaselined"]``.
+    """
+    if name not in snapshot_names(GP_HISTORY_FIXTURES):
+        sys.exit(f"no GP-history capture named {name!r}")
+    path = GP_HISTORY_FIXTURES / name
+    npz, js = _files(path)
+    tree = json.loads(js.read_text(encoding="utf-8"))
+    with np.load(npz, allow_pickle=False) as z:
+        arrays = {k: z[k] for k in z.files}
+    snap = load_snapshot(path)
+    if not same_platform(snap):
+        sys.exit(
+            f"{name}: the fit is platform-bound and this is not the"
+            f" generating platform ({snap['meta'].get('platform')})"
+        )
+    portable = portable_outputs(
+        snap["pre"], snap["meta"]["hyp_n"], snap["meta"]["gp_s_N"]
+    )
+    if not _arrays_close(snap["ref"]["portable"], portable, exact=True):
+        sys.exit(
+            f"{name}: the portable references do not reproduce; this mode"
+            " replaces the platform-bound ones alone"
+        )
+    fit, observation = replay_gp_fit_history(snap)
+    new = {
+        "fit": fit,
+        "sampler_widths": {
+            "effective_widths": observation["effective_widths"],
+            "widths_default": observation["widths_default"],
+        },
+    }
+    # Check everything before writing anything.
+    changes = {}
+    for group, out in new.items():
+        old = snap["ref"][group]
+        if set(out) != set(old):
+            sys.exit(
+                f"{name}: {group} outputs {sorted(out)} but the reference"
+                f" holds {sorted(old)}"
+            )
+        for key, val in out.items():
+            if np.shape(val) != np.shape(old[key]):
+                sys.exit(
+                    f"{name}: {group}/{key} changed shape"
+                    f" {np.shape(old[key])} -> {np.shape(val)}"
+                )
+            if f"capture/ref/{group}/{key}" not in arrays:
+                sys.exit(f"{name}: no stored array for {group}/{key}")
+            diff = np.max(
+                np.abs(np.asarray(val, float) - np.asarray(old[key], float))
+            )
+            changes[f"{group}/{key}"] = (
+                float(diff) if np.isfinite(diff) else repr(float(diff))
+            )
+            print(f"  [{name}] {group}/{key:22s} max|d| {diff:.3e}")
+    before = {k: v.copy() for k, v in arrays.items()}
+    top_level = _top_level_fixture_hashes()
+    replaced = set()
+    for group, out in new.items():
+        for key, val in out.items():
+            k = f"capture/ref/{group}/{key}"
+            arrays[k] = np.asarray(val, dtype=float)
+            replaced.add(k)
+    tree["meta"].setdefault("rebaselined", []).append(
+        {
+            "references": ["fit", "sampler_widths"],
+            "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "git": git_info(),
+            "reason": reason,
+            "max_abs_change": changes,
+        }
+    )
+    _write_fixture(path, arrays, tree)
+    with np.load(npz, allow_pickle=False) as z:
+        after = {k: z[k] for k in z.files}
+    assert set(after) == set(before), name
+    for k in before:
+        if k not in replaced:
+            assert np.array_equal(before[k], after[k], equal_nan=True), (
+                name,
+                k,
+            )
+    if _top_level_fixture_hashes() != top_level:
+        raise RuntimeError("a top-level oracle fixture changed")
+    failures = check_gp_fit_history(exact=True)
+    if failures:
+        raise RuntimeError(f"captures fail after the rewrite: {failures}")
+    print(f"[rebaseline] gp_fit_history/{name} fit references replaced")
+    return 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--list", action="store_true")
+    ap.add_argument("--check", action="store_true")
+    ap.add_argument("--capture-gp-fit-history", action="store_true")
+    ap.add_argument("--check-gp-fit-history", action="store_true")
+    ap.add_argument(
+        "--only", default=None, help="comma-separated recipe names"
+    )
+    ap.add_argument(
+        "--rebaseline",
+        default=None,
+        metavar="ORACLE",
+        help="replace one oracle's references from the stored state"
+        " (needs --reason); every other reference stays bit-identical",
+    )
+    ap.add_argument(
+        "--add-oracle",
+        default=None,
+        metavar="ORACLE",
+        help="add a newly registered oracle's references from the stored"
+        " state (needs --reason); every existing array stays bit-identical",
+    )
+    ap.add_argument(
+        "--rebaseline-gp-fit-history",
+        default=None,
+        metavar="CAPTURE",
+        help="replace the platform-bound references of one authentic"
+        " GP-history capture by replaying it on its stored inputs (needs"
+        " --reason); its inputs and portable references stay bit-identical",
+    )
+    ap.add_argument("--reason", default=None)
+    ap.add_argument(
+        "--expect-moving",
+        default=None,
+        metavar="ORACLES",
+        help="with --rebaseline / --add-oracle: comma-separated oracles that"
+        " the same change moves too (re-baselined next); excluded from the"
+        " post-write check",
+    )
+    ap.add_argument(
+        "--exact",
+        action="store_true",
+        help="with --check: compare bit for bit instead of at the tolerances",
+    )
+    ap.add_argument(
+        "--against",
+        default=None,
+        metavar="DIR",
+        help="with --check: compare with a dump of an earlier code state"
+        " (see --dump-outputs) instead of the stored references",
+    )
+    ap.add_argument(
+        "--dump-outputs",
+        default=None,
+        metavar="DIR",
+        help="write the current code's outputs of every stored oracle to DIR",
+    )
+    ap.add_argument("--verbose", action="store_true")
+    args = ap.parse_args(argv)
+    targeted = [m for m in (args.rebaseline, args.add_oracle) if m]
+    modes = (
+        len(targeted)
+        + args.list
+        + args.check
+        + args.capture_gp_fit_history
+        + args.check_gp_fit_history
+        + bool(args.rebaseline_gp_fit_history)
+        + bool(args.dump_outputs)
+    )
+    if modes > 1:
+        sys.exit(
+            "capture/check/list/rebaseline/add/dump modes are mutually exclusive"
+        )
+    if args.exact and not (args.check or args.check_gp_fit_history):
+        sys.exit("--exact applies only to a check mode")
+    if args.against and not args.check:
+        sys.exit("--against only applies to --check")
+    if args.expect_moving and not targeted:
+        sys.exit("--expect-moving only applies to --rebaseline / --add-oracle")
+    if args.list:
+        for r in RECIPES:
+            print(
+                f"{r.name:28s} {r.config:28s} pick={r.pick!s:12s} {r.options or ''}"
+            )
+            print(f"{'':28s} {r.note}")
+        print("oracles:", ", ".join(ORACLES))
+        return 0
+    if args.capture_gp_fit_history:
+        capture_gp_fit_history()
+        return 0
+    if args.check_gp_fit_history:
+        failures = check_gp_fit_history(exact=args.exact, verbose=args.verbose)
+        return 1 if failures else 0
+    if args.rebaseline_gp_fit_history:
+        if not args.reason:
+            sys.exit("--rebaseline-gp-fit-history needs --reason")
+        rebaseline_gp_fit_history(args.rebaseline_gp_fit_history, args.reason)
+        return 0
+    wanted = set(args.only.split(",")) if args.only else None
+    if wanted:
+        unknown = wanted - {r.name for r in RECIPES}
+        if unknown:
+            sys.exit(f"unknown recipe(s): {sorted(unknown)}")
+    if wanted is not None and args.check:
+        missing = wanted - set(snapshot_names(FIXTURES))
+        if missing:
+            sys.exit(f"no fixture named {sorted(missing)}")
+    if args.check:
+        names = [
+            n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
+        ]
+        failures = check(
+            names, args.verbose, exact=args.exact, against=args.against
+        )
+        history_failures = check_gp_fit_history(
+            exact=args.exact, verbose=args.verbose
+        )
+        failures.update(
+            {f"gp_fit_history/{k}": v for k, v in history_failures.items()}
+        )
+        history_count = len(snapshot_names(GP_HISTORY_FIXTURES))
+        total = len(names) + history_count
+        print(
+            f"[check{' --exact' if args.exact else ''}"
+            f"{' --against ' + args.against if args.against else ''}]"
+            f" {total - len(failures)} of {total} fixtures ok"
+        )
+        return 1 if failures else 0
+    if args.dump_outputs:
+        names = [
+            n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
+        ]
+        dump_outputs(names, args.dump_outputs)
+        return 0
+    if targeted:
+        oracle_name = targeted[0]
+        if oracle_name not in ORACLES:
+            sys.exit(f"unknown oracle {oracle_name!r}")
+        if not args.reason:
+            sys.exit("--rebaseline / --add-oracle need --reason")
+        names = [
+            n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
+        ]
+        moving = (
+            set(args.expect_moving.split(",")) if args.expect_moving else set()
+        )
+        if moving - set(ORACLES):
+            sys.exit(
+                f"unknown oracle(s) in --expect-moving: {sorted(moving - set(ORACLES))}"
+            )
+        mode = rebaseline if args.rebaseline else add_oracle
+        return 0 if mode(names, oracle_name, args.reason, moving) else 1
+    recipes = [r for r in RECIPES if not wanted or r.name in wanted]
+    generate(recipes)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "campaign_manifest": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_20260908\\campaign.json",
+  "golden_directory": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\golden\\reference_870_20260907",
+  "config_sha256": "5ce46aba0e6123a9b9bc9d367fbbf7231348c8a97168f6f3a9ed8a00b7f30e20",
+  "campaign_protocol_version": 1,
+  "campaign_sources": [
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\dev\\scripts\\boost_penalty_campaign.py",
+      "sha256": "a233b8231042fb9a22b69c06ced81f5d5dd472259079c774aaaa4b7a860745d8"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\dev\\scripts\\boost_penalty_pilot.py",
+      "sha256": "bbba41d51ceda151b34d8452eccde4e0a106045bb3374051265a7c2f79429c26"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\dev\\scripts\\boost_reconstruction.py",
+      "sha256": "becf584f56e26416100220f8689ce49d2b668290087b2ac7644ef1ce780da942"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\dev\\scripts\\benchmark_targets.py",
+      "sha256": "7f2a9c8075464d2ae1c3abaa5b9330e7259734bf2ac0b9c70162c842842677cc"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\pyvbmc\\vbmc\\vbmc.py",
+      "sha256": "472c96b3de787d69162236177501e403bf35cc7ad0722133c5e3555832394655"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\pyvbmc\\vbmc\\variational_optimization.py",
+      "sha256": "112eae31c13439085653309ea8745caed5a8ddac04fe1a3a5c5f60518591a21e"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\latent_fixes\\boost_campaign_worktree\\pyvbmc\\entropy\\entmc_vbmc.py",
+      "sha256": "5b981048e0b0c93d7b159e42ba7b33ac083e1a74727cb2eb7e415b4e5d89eb43"
+    }
+  ],
+  "analyzer": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\analyze_boost_campaign.py",
+    "sha256": "d2f22125d1a84890c990da1e354f1a7d3250421c49abf2223a2381c7deabf842"
+  },
+  "packages": {
+    "numpy": "2.5.2",
+    "scipy": "1.18.1"
+  },
+  "campaign_seeds": {
+    "optimization": 20260908,
+    "diagnostic": 20260909
+  },
+  "case_count": 870,
+  "statistical_unit": "paired endpoint",
+  "statistical_unit_count": 870,
+  "endpoint_arm_row_count": 1740,
+  "configuration_count": 19,
+  "configuration_counts": {
+    "banana_D10": 50,
+    "banana_D2": 50,
+    "banana_D6": 50,
+    "cigar_D15_exhaust": 10,
+    "cigar_D4": 50,
+    "cigar_D8": 50,
+    "corr_D5": 50,
+    "halfnormal_D2": 50,
+    "logreg_D5": 50,
+    "logreg_D5_noise3": 50,
+    "lumpy_D10": 50,
+    "lumpy_D4": 50,
+    "normal_D5": 50,
+    "rosenbrock_D2": 50,
+    "rosenbrock_D2_noise1": 50,
+    "rosenbrock_D2_noise3": 30,
+    "student_D4": 50,
+    "student_D8": 50,
+    "student_D8_noise3": 30
+  },
+  "state_source_counts": {
+    "authentic": 9,
+    "reconstructed": 861
+  },
+  "metric_availability": {
+    "pre": {
+      "elbo_err": 870,
+      "gskl": 870,
+      "mmtv": 870,
+      "rmse": 870
+    },
+    "penalty_on": {
+      "elbo_err": 870,
+      "gskl": 870,
+      "mmtv": 870,
+      "rmse": 870
+    },
+    "penalty_off": {
+      "elbo_err": 870,
+      "gskl": 870,
+      "mmtv": 870,
+      "rmse": 870
+    },
+    "golden": {
+      "elbo_err": 870,
+      "gskl": 870,
+      "mmtv": 870,
+      "rmse": 870
+    }
+  },
+  "methods": {
+    "paired_difference": "penalty_off minus penalty_on; lower truth error is better",
+    "primary_metrics": [
+      "elbo_err",
+      "gskl",
+      "mmtv"
+    ],
+    "secondary_metric": "rmse (descriptive only)",
+    "bootstrap": {
+      "samples": 10000,
+      "seed": 20260910,
+      "ci": "percentile 95%; paired within configuration"
+    },
+    "sign_test": "exact two-sided binomial test of direction probability 0.5 on nonzero paired differences; it does not directly test the mean",
+    "multiplicity": "Holm step-down at alpha 0.05 across 57 primary tests",
+    "confidence_intervals": "pointwise bootstrap intervals; not multiplicity-adjusted",
+    "usable": "elbo_err < 1 and gskl < 1 and mmtv < 0.2",
+    "acceptance": "strict score delta > -tolerance; score delta is post minus pre",
+    "acceptance_grid_status": "post hoc exploratory threshold grid",
+    "aggregate": "equal weight per configuration; stratified paired bootstrap; finite benchmark panel only"
+  },
+  "interpretation_notes": [
+    "A non-significant test does not prove equivalence.",
+    "Exact ties are counted exactly; very small roundoff-scale differences are not scientific benefits.",
+    "Golden results use historical boosts, while campaign states may be reconstructed and use fresh RNG; golden comparisons are contextual, not causal.",
+    "Reported GP SD excludes entropy Monte Carlo uncertainty.",
+    "Pre/post component counts differ, limiting common-draw alignment in diagnostic rescoring.",
+    "No production penalty, acceptance rule, or tolerance is selected by this analysis."
+  ],
+  "outputs": {
+    "endpoints": [
+      "endpoints.csv",
+      "endpoints.json"
+    ],
+    "paired_effects": [
+      "paired_effects.csv",
+      "paired_effects.json"
+    ],
+    "grouped_stats": [
+      "grouped_stats.csv",
+      "grouped_stats.json"
+    ],
+    "acceptance_cases": "acceptance_cases.csv"
+  }
+}

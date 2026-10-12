@@ -81,14 +81,19 @@ html_title = "PyVBMC"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["css/custom.css"]
+html_static_path = ["css/wrap.css"]
+html_css_files = ["wrap.css"]
 html_show_sourcelink = False
 html_theme_options = {
+    "extra_footer": (
+        '<p>More <a href="https://acerbilab.org/model-fitting/">model-fitting '
+        "tools</a> from "
+        '<a href="https://www.helsinki.fi/en/researchgroups/'
+        "machine-and-human-intelligence\">Luigi Acerbi's group</a>.</p>"
+    ),
     "repository_url": "https://github.com/acerbilab/pyvbmc",
     "repository_branch": "main",
     "launch_buttons": {
-        "binderhub_url": "https://mybinder.org",
-        "notebook_interface": "jupyterlab",
         "colab_url": "https://colab.research.google.com/",
     },
     "use_edit_page_button": True,
@@ -99,7 +104,7 @@ html_theme_options = {
     "path_to_docs": "docsrc/source",
 }
 html_logo = "../../logo.svg"
-html_baseurl = "https://acerbilab.github.io/pyvbmc/"
+html_baseurl = "https://acerbilab.org/pyvbmc/"
 html_js_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
 ]
@@ -117,3 +122,26 @@ suppress_warnings = [
     for filename in os.listdir("../../examples")
     if os.path.isfile(os.path.join("../../examples", filename))
 ]  # Avoid duplicate label warnings for Jupyter notebooks.
+# Example 2 stores its Plotly figure twice: as HTML, which the page shows, and
+# as Plotly JSON for notebook viewers, which myst-nb cannot render and warns
+# about. The suppression covers any output type myst-nb cannot render.
+suppress_warnings.append("mystnb.unknown_mime_type")
+
+
+def notebook_source_links(app, pagename, templatename, context, doctree):
+    """Point notebook launch and edit buttons to their repository sources."""
+    if not pagename.startswith("_examples/"):
+        return
+    source = pagename + context["page_source_suffix"]
+    staged = app.config.html_theme_options["path_to_docs"] + "/" + source
+    original = source.replace("_examples/", "examples/", 1)
+    for group in context.get("header_buttons", []):
+        for button in group.get("buttons", [group]):
+            if "url" in button:
+                button["url"] = button["url"].replace(staged, original)
+
+
+def setup(app):
+    # The theme builds its buttons at priority 501. The notebooks are
+    # copied into source/_examples for rendering but live in examples/.
+    app.connect("html-page-context", notebook_source_links, priority=900)

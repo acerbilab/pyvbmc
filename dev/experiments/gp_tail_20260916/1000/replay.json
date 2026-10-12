@@ -1,0 +1,13 @@
+{
+  "seed": 1000,
+  "iteration": 15,
+  "first_call": 76,
+  "last_call": 80,
+  "batch_complete": true,
+  "calls_exact": true,
+  "gp_hyp_exact": true,
+  "gp_y_exact": true,
+  "gp_X_exact": true,
+  "vp_exact": true,
+  "rng_exact": true
+}

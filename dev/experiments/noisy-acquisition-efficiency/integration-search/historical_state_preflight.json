@@ -1,0 +1,103 @@
+{
+  "purpose": "Historical capture load and current baseline preflight, not current-base trajectory evidence or controlled timing",
+  "rows": [
+    {
+      "state": "logreg_D5_noise3_early",
+      "N": 10,
+      "Ns": 8,
+      "K": 2,
+      "D": 5,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.35030250006821007,
+      "historical_only": true
+    },
+    {
+      "state": "multisensory_s1_D6_noise1.3_early",
+      "N": 10,
+      "Ns": 8,
+      "K": 2,
+      "D": 6,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.36127879994455725,
+      "historical_only": true
+    },
+    {
+      "state": "rosenbrock_D2_noise1_early",
+      "N": 10,
+      "Ns": 8,
+      "K": 2,
+      "D": 2,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.2860991000197828,
+      "historical_only": true
+    },
+    {
+      "state": "rosenbrock_D2_noise3_early",
+      "N": 10,
+      "Ns": 8,
+      "K": 2,
+      "D": 2,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.2981363000581041,
+      "historical_only": true
+    },
+    {
+      "state": "rosenbrock_D2_noise3_late",
+      "N": 150,
+      "Ns": 6,
+      "K": 16,
+      "D": 2,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.5180536999832839,
+      "historical_only": true
+    },
+    {
+      "state": "student_D8_noise3_early",
+      "N": 10,
+      "Ns": 8,
+      "K": 2,
+      "D": 8,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.41488890000618994,
+      "historical_only": true
+    },
+    {
+      "state": "timing_D5_noise2.2_early",
+      "N": 10,
+      "Ns": 8,
+      "K": 2,
+      "D": 5,
+      "candidates": 8192,
+      "exact_historical_value": true,
+      "max_abs_difference": 0.0,
+      "finite_mask_equal": true,
+      "state_rng_unchanged": true,
+      "single_call_s": 0.3592740000458434,
+      "historical_only": true
+    }
+  ]
+}

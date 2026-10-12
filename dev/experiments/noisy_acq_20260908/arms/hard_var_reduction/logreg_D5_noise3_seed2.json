@@ -1,0 +1,145 @@
+{
+ "label": "logreg_D5_noise3",
+ "seed": 2,
+ "problem": "logreg",
+ "D": 5,
+ "noise_sd": 3.0,
+ "requested_options": {
+  "specify_target_noise": true,
+  "max_fun_evals": 350,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "search_acq_fcn": [
+   "AcqFcnVIQR(loss=\"var_reduction\")"
+  ]
+ },
+ "effective_options": {
+  "max_fun_evals": 350,
+  "max_iter": 350,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "AcqFcnVIQR(loss=\"var_reduction\")"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -34.89349,
+ "true_mean": [
+  [
+   0.95809,
+   -1.70466,
+   1.72039,
+   1.538,
+   5.47709
+  ]
+ ],
+ "true_cov": [
+  [
+   0.16504,
+   -0.09694,
+   0.10047,
+   0.0782,
+   -0.07712
+  ],
+  [
+   -0.09694,
+   2.18496,
+   -1.84405,
+   -0.14672,
+   0.06923
+  ],
+  [
+   0.10047,
+   -1.84405,
+   1.72262,
+   0.1819,
+   -0.0863
+  ],
+  [
+   0.0782,
+   -0.14672,
+   0.1819,
+   0.32108,
+   -0.01763
+  ],
+  [
+   -0.07712,
+   0.06923,
+   -0.0863,
+   -0.01763,
+   7.41547
+  ]
+ ],
+ "plb": [
+  -5.0,
+  -5.0,
+  -5.0,
+  -5.0,
+  -5.0
+ ],
+ "pub": [
+  5.0,
+  5.0,
+  5.0,
+  5.0,
+  5.0
+ ],
+ "notes": "logistic regression, 50 trials, predictors 1-2 at rho 0.95, predictor 4 rare (6 ones, all successes: its coefficient is identified only by the bound); uniform prior on [-10, 10]^D (2020 style), plausible box -+5; not a paper problem",
+ "final": {
+  "elbo": -35.06152793169182,
+  "elbo_sd": 0.3274808182767619,
+  "best_iter": 51,
+  "iterations": 52,
+  "func_count": 260,
+  "final_K": 50,
+  "final_N": 260,
+  "min_Ns_gp": 0,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 390.36210408199986,
+  "target_eval_s": 0.023027896881103516,
+  "elbo_err": 0.16803793169182057,
+  "gskl": 0.8076956701635767,
+  "mmtv": 0.2711878649418095,
+  "rmse": 0.9381711386840418,
+  "moment_method": "mc",
+  "peak_rss_mb": 332.03515625
+ },
+ "meta": {
+  "git": {
+   "sha": "4b33afe",
+   "dirty": false
+  },
+  "python": "3.11.15",
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "pyvbmc": "0.1.dev50+gbf43c2032",
+  "gpyreg": "1.1.0",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-08 23:53:29",
+  "finished": "2026-09-09 00:00:00",
+  "pid": 5203
+ }
+}

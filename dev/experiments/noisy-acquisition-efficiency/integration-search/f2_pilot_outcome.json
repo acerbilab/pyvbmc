@@ -1,0 +1,107 @@
+{
+  "created_utc": "2026-09-18T18:08:31.476773+00:00",
+  "e3_replay_check": {
+    "coarse_scores_identical": true,
+    "importance_nodes_identical": true,
+    "purpose": "Stored E3 development S0 selections replayed under the current source with their recorded search seeds.",
+    "selected_row_identical": true,
+    "states": [
+      "rosenbrock_D2_noise1_seed0_early",
+      "logreg_D5_noise3_seed0_late",
+      "student_D8_noise3_seed0_late",
+      "timing_D5_noise2.2_seed0_early"
+    ]
+  },
+  "kind": "f2_pilot_outcome",
+  "note": "The pilot manifest was derived from an earlier preparation of the development manifest (same allocation, launch_ready set); its cells ran in-process. The full campaign runs from the re-prepared, reviewed manifest in fresh processes.",
+  "pilot_manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_pilot_manifest.json",
+  "pilot_manifest_sha256_at_run": null,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Operational pilot of the F2 Stage 1 harness on one development state before the manifest is frozen. Not evidence.",
+  "raw_artifact_sha256": "04e440d5043d56cc51d1dcebf99d3d61e0d1df78648b8ebd43d3794432c2fd74",
+  "schema_version": 1,
+  "second_pilot": {
+    "baseline_row_unchanged_from_first_pilot": true,
+    "created_utc": "2026-09-18T18:18:52.002048+00:00",
+    "purpose": "Repeat of the pilot after the review fixes (scramble seed drawn from the generator, node-count assertion), on the re-prepared manifest.",
+    "selection_cells": {
+      "rosenbrock_D2_noise1_seed0_early__S0__r0": {
+        "coarse_candidate_rows": 8192,
+        "elapsed_seconds": 0.3161084000021219,
+        "importance_node_count": 100,
+        "production_candidate_rows": 8364,
+        "selected_row_sha256": "x_146fe439ba0c5608c46dfb882230771bf5a27511bc7d218b01043da202fa35fd",
+        "target_called": false
+      },
+      "rosenbrock_D2_noise1_seed0_early__S0_qmc_sorted__r0": {
+        "coarse_candidate_rows": 8192,
+        "elapsed_seconds": 0.28090789999987464,
+        "importance_node_count": 96,
+        "production_candidate_rows": 8219,
+        "selected_row_sha256": "x_d30f7b0ffa38b9be7c8232f864a93a3a9725a25bc204c9c0104e893c93bc4396",
+        "target_called": false
+      },
+      "rosenbrock_D2_noise1_seed0_early__S0_qmc_unsorted__r0": {
+        "coarse_candidate_rows": 8192,
+        "elapsed_seconds": 0.2694569000013871,
+        "importance_node_count": 96,
+        "production_candidate_rows": 8219,
+        "selected_row_sha256": "x_d30f7b0ffa38b9be7c8232f864a93a3a9725a25bc204c9c0104e893c93bc4396",
+        "target_called": false
+      }
+    },
+    "timing_cells": {
+      "rosenbrock_D2_noise1_seed0_early__S0_qmc_sorted__timing": {
+        "baseline_median_seconds": 0.3111808999965433,
+        "median_paired_ratio": 0.9882396079910897,
+        "paired_ratio_range": [
+          0.9796643527874924,
+          1.0456040848181352
+        ],
+        "treatment_median_seconds": 0.30728040000394685
+      }
+    }
+  },
+  "selection_cells": {
+    "rosenbrock_D2_noise1_seed0_early__S0__r0": {
+      "coarse_candidate_rows": 8192,
+      "elapsed_seconds": 0.3217383000010159,
+      "importance_node_count": 100,
+      "production_candidate_rows": 8364,
+      "selected_row_sha256": "x_146fe439ba0c5608c46dfb882230771bf5a27511bc7d218b01043da202fa35fd",
+      "status": "succeeded",
+      "target_called": false
+    },
+    "rosenbrock_D2_noise1_seed0_early__S0_qmc_sorted__r0": {
+      "coarse_candidate_rows": 8192,
+      "elapsed_seconds": 0.2927634000006947,
+      "importance_node_count": 96,
+      "production_candidate_rows": 8234,
+      "selected_row_sha256": "x_d809173d6a7631c74ccdb123ed0da93c8922b9b6c16d573da34c54e2fbcf06a9",
+      "status": "succeeded",
+      "target_called": false
+    },
+    "rosenbrock_D2_noise1_seed0_early__S0_qmc_unsorted__r0": {
+      "coarse_candidate_rows": 8192,
+      "elapsed_seconds": 0.2762780000048224,
+      "importance_node_count": 96,
+      "production_candidate_rows": 8234,
+      "selected_row_sha256": "x_d809173d6a7631c74ccdb123ed0da93c8922b9b6c16d573da34c54e2fbcf06a9",
+      "status": "succeeded",
+      "target_called": false
+    }
+  },
+  "source_commit": "83fedb947ef5fb8c3f9605654d2392ceaf41c866",
+  "state_id": "rosenbrock_D2_noise1_seed0_early",
+  "timing_cells": {
+    "rosenbrock_D2_noise1_seed0_early__S0_qmc_sorted__timing": {
+      "baseline_median_seconds": 0.301635100004205,
+      "median_paired_ratio": 0.985567992590753,
+      "paired_ratio_range": [
+        0.9636421682178398,
+        0.9995538980005892
+      ],
+      "treatment_median_seconds": 0.29656529999920167
+    }
+  }
+}

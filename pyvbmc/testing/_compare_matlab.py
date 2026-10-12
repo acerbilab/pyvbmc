@@ -45,7 +45,7 @@ def rand_int(hi):
     """
     proportion = 1.0 / hi
     tmp = np.random.rand()
-    res = lo
+    res = 1  # MATLAB randi(hi) is uniform on 1..hi
     while res * proportion < tmp:
         res += 1
     return res

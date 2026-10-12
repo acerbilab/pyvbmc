@@ -1,0 +1,225 @@
+{
+ "label": "corr_D5",
+ "seed": 1,
+ "problem": "corr",
+ "D": 5,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 350,
+  "max_iter": 350,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": 0.0,
+ "true_mean": [
+  [
+   -0.5,
+   -0.25,
+   0.0,
+   0.25,
+   0.5
+  ]
+ ],
+ "true_cov": [
+  [
+   0.4051659989420502,
+   0.2779120721592846,
+   0.20651893703634439,
+   -0.07348539268149624,
+   0.17892255002586346
+  ],
+  [
+   0.27791207215928454,
+   0.5756912012643322,
+   0.26686039084865204,
+   0.007750201536967119,
+   0.12601035927333767
+  ],
+  [
+   0.20651893703634439,
+   0.26686039084865204,
+   0.29420512556393874,
+   -0.10271488556364841,
+   -0.08409426386669859
+  ],
+  [
+   -0.07348539268149623,
+   0.007750201536967119,
+   -0.10271488556364841,
+   0.46655008081473137,
+   0.12713676408550778
+  ],
+  [
+   0.17892255002586346,
+   0.12601035927333767,
+   -0.08409426386669859,
+   0.12713676408550775,
+   0.45838759341494834
+  ]
+ ],
+ "plb": [
+  -2.5,
+  -2.5,
+  -2.5,
+  -2.5,
+  -2.5
+ ],
+ "pub": [
+  2.5,
+  2.5,
+  2.5,
+  2.5,
+  2.5
+ ],
+ "notes": "rotated Gaussian, SDs linspace(0.2, 1); legacy box -+2.5",
+ "final": {
+  "elbo": 0.0068580624863825435,
+  "elbo_sd": 0.0005723535031721829,
+  "best_iter": 19,
+  "iterations": 20,
+  "func_count": 100,
+  "final_K": 50,
+  "final_N": 100,
+  "min_Ns_gp": 8,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 50.25495898304507,
+  "target_eval_s": 0.005326271057128906,
+  "elbo_err": 0.0068580624863825435,
+  "gskl": 0.000823911430881008,
+  "mmtv": 0.0065756990969934774,
+  "rmse": 0.0029854026617211586,
+  "moment_method": "affine",
+  "peak_rss_mb": 170.12109375,
+  "max_rss_mb": 183.6484375
+ },
+ "meta": {
+  "git": {
+   "sha": "ad63dd5a",
+   "dirty": false
+  },
+  "python": "3.12.14",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "cma": "4.4.4",
+  "pyvbmc_source": {
+   "path": "$HARNESS_TREE/pyvbmc",
+   "git": {
+    "sha": "ad63dd5a",
+    "dirty": false
+   }
+  },
+  "gpyreg_source": {
+   "path": "$PYVBMC_GPYREG_SOURCE/gpyreg",
+   "git": {
+    "sha": "682585f",
+    "dirty": false
+   }
+  },
+  "installed_metadata_versions": {
+   "pyvbmc": null,
+   "gpyreg": null
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-10-05 17:14:54",
+  "finished": "2026-10-05 17:15:45",
+  "pid": 1642144
+ },
+ "provenance": {
+  "source": {
+   "trees": {
+    "harness": {
+     "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+     "clean": true
+    },
+    "pyvbmc": {
+     "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+     "clean": true
+    },
+    "gpyreg": {
+     "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+     "clean": true
+    }
+   },
+   "files": {
+    "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+    "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+    "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+    "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+    "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+    "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+   },
+   "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "torch": null
+   }
+  },
+  "imports": {
+   "trees": {
+    "harness": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "pyvbmc": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "gpyreg": {
+     "path": "$PYVBMC_GPYREG_SOURCE",
+     "dirty": []
+    }
+   },
+   "modules": {
+    "pyvbmc": "$HARNESS_TREE/pyvbmc",
+    "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+   },
+   "installed_metadata_versions": {
+    "pyvbmc": null,
+    "gpyreg": null
+   },
+   "harness_modules": {
+    "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+    "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+    "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+   }
+  }
+ }
+}

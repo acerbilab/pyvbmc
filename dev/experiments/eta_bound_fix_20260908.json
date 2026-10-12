@@ -1,0 +1,1762 @@
+{
+  "provenance": {
+    "before_commit": "c4c692c",
+    "after_base_commit": "c4c692c",
+    "after_is_uncommitted": true,
+    "after_vo_normalized_sha256": "8461ae568d197db1668e1be16656b2c3e879ff2037aeff3f115b672a7530e262",
+    "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\__init__.py",
+    "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+    "focused_tests": "64 passed without reruns,16.15 seconds",
+    "exact_oracles": "11 of 11 fixtures exact; no rebaseline",
+    "configs": [
+      "normal_D5",
+      "cigar_D4",
+      "rosenbrock_D2_noise1"
+    ],
+    "seeds": [
+      0
+    ],
+    "threads": 1
+  },
+  "before_report": {
+    "git": {
+      "sha": "c4c692c",
+      "dirty": false
+    },
+    "threads": 1,
+    "minutes": 3.69134130080541,
+    "rows": [
+      {
+        "label": "normal_D5",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.001041315484672456,
+          "gskl": 6.07391903302279e-05,
+          "mmtv": 0.007578598016563404,
+          "func_count": 70,
+          "iterations": 13,
+          "final_K": 50,
+          "wall_s": 26.27022250002483,
+          "elbo": -0.001041315484672456,
+          "elbo_sd": 0.00038763603790675305,
+          "best_iter": 12,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 70,
+          "min_Ns_gp": 8,
+          "n_warps": 1
+        },
+        "final_ref": {
+          "elbo_err": 0.00030716286743537324,
+          "gskl": 0.00010470676027796166,
+          "mmtv": 0.007826355149647064,
+          "func_count": 70,
+          "iterations": 13,
+          "final_K": 50,
+          "wall_s": 21.15260999999009,
+          "elbo": 0.00030716286743537324,
+          "elbo_sd": 0.0005822359249476734,
+          "best_iter": 12,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 70,
+          "min_Ns_gp": 8,
+          "n_warps": 1
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "X_orig": "value",
+          "elbo": "value",
+          "elbo_sd": "value",
+          "gp_hyp": "value",
+          "r_index": "value",
+          "sKL": "value",
+          "vp_lambd": "value",
+          "vp_mu": "value",
+          "vp_sigma": "value",
+          "vp_w": "value",
+          "y_orig": "value"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 19,
+        "X_orig_close": 19,
+        "y_orig_exact": 19,
+        "y_orig_close": 19,
+        "n_live_ref": 69,
+        "n_live_new": 69,
+        "elbo_exact_iter": 3,
+        "elbo_iter": 3,
+        "func_count_iter": 13,
+        "K_iter": 13,
+        "Ns_gp_iter": 13,
+        "n_iter_ref": 13,
+        "n_iter_new": 13,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.024850576332946184,
+          "gskl": 0.0004290985461721797,
+          "mmtv": 0.012102271465954035
+        },
+        "pop_evals": [
+          70,
+          85
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "parted at iteration 3; live points identical: 19; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "cigar_D4",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.0075337679388489676,
+          "gskl": 0.0009068561279660381,
+          "mmtv": 0.01656200164074041,
+          "func_count": 130,
+          "iterations": 26,
+          "final_K": 50,
+          "wall_s": 75.05663900001673,
+          "elbo": -3.505215892362508,
+          "elbo_sd": 0.0003523809528452354,
+          "best_iter": 25,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.0017389290198659424,
+          "gskl": 0.00042168632374939286,
+          "mmtv": 0.008798360412957628,
+          "func_count": 130,
+          "iterations": 26,
+          "final_K": 50,
+          "wall_s": 46.66208080004435,
+          "elbo": -3.511010731281491,
+          "elbo_sd": 0.000990266034008689,
+          "best_iter": 25,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "K": "value",
+          "X_orig": "value",
+          "elbo": "value",
+          "elbo_sd": "value",
+          "gp_hyp": "value",
+          "pruned": "value",
+          "pt_R": "value",
+          "pt_scale": "value",
+          "r_index": "value",
+          "sKL": "value",
+          "vp_iter": "shape (216,) -> (227,)",
+          "vp_lambd": "value",
+          "vp_mu": "shape (216, 4) -> (227, 4)",
+          "vp_sigma": "shape (216,) -> (227,)",
+          "vp_w": "shape (216,) -> (227,)",
+          "y_orig": "value"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 12,
+        "X_orig_close": 12,
+        "y_orig_exact": 12,
+        "y_orig_close": 12,
+        "n_live_ref": 114,
+        "n_live_new": 114,
+        "elbo_exact_iter": 4,
+        "elbo_iter": 4,
+        "func_count_iter": 26,
+        "K_iter": 11,
+        "Ns_gp_iter": 26,
+        "n_iter_ref": 26,
+        "n_iter_new": 26,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.03244403739528434,
+          "gskl": 0.006761469289101707,
+          "mmtv": 0.024895969012203374
+        },
+        "pop_evals": [
+          115,
+          170
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "parted at iteration 4; live points identical: 12; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.026464924977783966,
+          "gskl": 0.05201316304907311,
+          "mmtv": 0.04974921080004937,
+          "func_count": 130,
+          "iterations": 25,
+          "final_K": 50,
+          "wall_s": 117.91478479997022,
+          "elbo": -2.2863120491501685,
+          "elbo_sd": 0.11143509481056402,
+          "best_iter": 24,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.026695124383754987,
+          "gskl": 0.0634802603571391,
+          "mmtv": 0.045491413927900105,
+          "func_count": 115,
+          "iterations": 22,
+          "final_K": 50,
+          "wall_s": 73.482107000018,
+          "elbo": -2.2865422485561395,
+          "elbo_sd": 0.12046624329079332,
+          "best_iter": 21,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 115,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value",
+          "best_iter": "value",
+          "iterations": "value",
+          "func_count": "value",
+          "final_N": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "K": "shape (22,) -> (25,)",
+          "N": "shape (22,) -> (25,)",
+          "Ns_gp": "shape (22,) -> (25,)",
+          "X_orig": "shape (108, 2) -> (121, 2)",
+          "elbo": "shape (22,) -> (25,)",
+          "elbo_sd": "shape (22,) -> (25,)",
+          "func_count": "shape (22,) -> (25,)",
+          "gp_hyp": "shape (194, 9) -> (211, 9)",
+          "gp_hyp_iter": "shape (194,) -> (211,)",
+          "iter": "shape (22,) -> (25,)",
+          "n_eff": "shape (22,) -> (25,)",
+          "pruned": "shape (22,) -> (25,)",
+          "pt_R": "shape (22, 2, 2) -> (25, 2, 2)",
+          "pt_delta": "shape (22, 2) -> (25, 2)",
+          "pt_mu": "shape (22, 2) -> (25, 2)",
+          "pt_scale": "shape (22, 2) -> (25, 2)",
+          "r_index": "shape (22,) -> (25,)",
+          "sKL": "shape (22,) -> (25,)",
+          "stable": "shape (22,) -> (25,)",
+          "vp_iter": "shape (220,) -> (122,)",
+          "vp_lambd": "shape (22, 2) -> (25, 2)",
+          "vp_mu": "shape (220, 2) -> (122, 2)",
+          "vp_sigma": "shape (220,) -> (122,)",
+          "vp_w": "shape (220,) -> (122,)",
+          "warmup": "shape (22,) -> (25,)",
+          "warped": "shape (22,) -> (25,)",
+          "y_orig": "shape (108,) -> (121,)"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 17,
+        "X_orig_close": 17,
+        "y_orig_exact": 17,
+        "y_orig_close": 17,
+        "n_live_ref": 108,
+        "n_live_new": 121,
+        "elbo_exact_iter": 3,
+        "elbo_iter": 3,
+        "func_count_iter": 22,
+        "K_iter": 9,
+        "Ns_gp_iter": 7,
+        "n_iter_ref": 22,
+        "n_iter_new": 25,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.4904493366690733,
+          "gskl": 0.14438057682494926,
+          "mmtv": 0.11114708489945228
+        },
+        "pop_evals": [
+          100,
+          155
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "parted at iteration 3; live points identical: 17; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      }
+    ]
+  },
+  "after_report": {
+    "git": {
+      "sha": "c4c692c",
+      "dirty": true
+    },
+    "threads": 1,
+    "minutes": 3.244343662261963,
+    "rows": [
+      {
+        "label": "normal_D5",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.01895693985781799,
+          "gskl": 0.0004907430237146571,
+          "mmtv": 0.007747649973839282,
+          "func_count": 70,
+          "iterations": 13,
+          "final_K": 50,
+          "wall_s": 23.649880800046958,
+          "elbo": 0.01895693985781799,
+          "elbo_sd": 0.0005757210405238122,
+          "best_iter": 12,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 70,
+          "min_Ns_gp": 8,
+          "n_warps": 1
+        },
+        "final_ref": {
+          "elbo_err": 0.001041315484672456,
+          "gskl": 6.07391903302279e-05,
+          "mmtv": 0.007578598016563404,
+          "func_count": 70,
+          "iterations": 13,
+          "final_K": 50,
+          "wall_s": 26.27022250002483,
+          "elbo": -0.001041315484672456,
+          "elbo_sd": 0.00038763603790675305,
+          "best_iter": 12,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 70,
+          "min_Ns_gp": 8,
+          "n_warps": 1
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "K": "value",
+          "X_orig": "value",
+          "elbo": "value",
+          "elbo_sd": "value",
+          "gp_hyp": "value",
+          "r_index": "value",
+          "sKL": "value",
+          "vp_iter": "shape (41,) -> (44,)",
+          "vp_lambd": "value",
+          "vp_mu": "shape (41, 5) -> (44, 5)",
+          "vp_sigma": "shape (41,) -> (44,)",
+          "vp_w": "shape (41,) -> (44,)",
+          "y_orig": "value"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 49,
+        "X_orig_close": 50,
+        "y_orig_exact": 49,
+        "y_orig_close": 50,
+        "n_live_ref": 69,
+        "n_live_new": 69,
+        "elbo_exact_iter": 9,
+        "elbo_iter": 9,
+        "func_count_iter": 13,
+        "K_iter": 12,
+        "Ns_gp_iter": 13,
+        "n_iter_ref": 13,
+        "n_iter_new": 13,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.024850576332946184,
+          "gskl": 0.0004290985461721797,
+          "mmtv": 0.012102271465954035
+        },
+        "pop_evals": [
+          70,
+          85
+        ],
+        "outside": [
+          "gskl"
+        ],
+        "flagged": true,
+        "verdict": "parted at iteration 9; live points identical: 49; initial design identical (X_init in both traces); OUTSIDE envelope: gskl; returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "cigar_D4",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.004922212328954956,
+          "gskl": 0.0008254401615042095,
+          "mmtv": 0.009078664864705727,
+          "func_count": 140,
+          "iterations": 28,
+          "final_K": 50,
+          "wall_s": 65.03768330003368,
+          "elbo": -3.507827447972402,
+          "elbo_sd": 0.0003427644833563107,
+          "best_iter": 27,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 140,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.0075337679388489676,
+          "gskl": 0.0009068561279660381,
+          "mmtv": 0.01656200164074041,
+          "func_count": 130,
+          "iterations": 26,
+          "final_K": 50,
+          "wall_s": 75.05663900001673,
+          "elbo": -3.505215892362508,
+          "elbo_sd": 0.0003523809528452354,
+          "best_iter": 25,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value",
+          "best_iter": "value",
+          "iterations": "value",
+          "func_count": "value",
+          "final_N": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "K": "shape (26,) -> (28,)",
+          "N": "shape (26,) -> (28,)",
+          "Ns_gp": "shape (26,) -> (28,)",
+          "X_orig": "shape (114, 4) -> (124, 4)",
+          "elbo": "shape (26,) -> (28,)",
+          "elbo_sd": "shape (26,) -> (28,)",
+          "func_count": "shape (26,) -> (28,)",
+          "gp_hyp": "shape (217, 15) -> (230, 15)",
+          "gp_hyp_iter": "shape (217,) -> (230,)",
+          "iter": "shape (26,) -> (28,)",
+          "n_eff": "shape (26,) -> (28,)",
+          "pruned": "shape (26,) -> (28,)",
+          "pt_R": "shape (26, 4, 4) -> (28, 4, 4)",
+          "pt_delta": "shape (26, 4) -> (28, 4)",
+          "pt_mu": "shape (26, 4) -> (28, 4)",
+          "pt_scale": "shape (26, 4) -> (28, 4)",
+          "r_index": "shape (26,) -> (28,)",
+          "sKL": "shape (26,) -> (28,)",
+          "stable": "shape (26,) -> (28,)",
+          "vp_iter": "shape (227,) -> (238,)",
+          "vp_lambd": "shape (26, 4) -> (28, 4)",
+          "vp_mu": "shape (227, 4) -> (238, 4)",
+          "vp_sigma": "shape (227,) -> (238,)",
+          "vp_w": "shape (227,) -> (238,)",
+          "warmup": "shape (26,) -> (28,)",
+          "warped": "shape (26,) -> (28,)",
+          "y_orig": "shape (114,) -> (124,)"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 39,
+        "X_orig_close": 41,
+        "y_orig_exact": 39,
+        "y_orig_close": 41,
+        "n_live_ref": 114,
+        "n_live_new": 124,
+        "elbo_exact_iter": 9,
+        "elbo_iter": 10,
+        "func_count_iter": 14,
+        "K_iter": 13,
+        "Ns_gp_iter": 16,
+        "n_iter_ref": 26,
+        "n_iter_new": 28,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.03244403739528434,
+          "gskl": 0.006761469289101707,
+          "mmtv": 0.024895969012203374
+        },
+        "pop_evals": [
+          115,
+          170
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "parted at iteration 9 (beyond 1e-6 at 10); live points identical: 39; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.007515201103664992,
+          "gskl": 0.010130934063931007,
+          "mmtv": 0.019986203845813715,
+          "func_count": 125,
+          "iterations": 24,
+          "final_K": 50,
+          "wall_s": 104.02464880002663,
+          "elbo": -2.2523319230687195,
+          "elbo_sd": 0.11475775791371369,
+          "best_iter": 23,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 125,
+          "min_Ns_gp": 7,
+          "n_warps": 1
+        },
+        "final_ref": {
+          "elbo_err": 0.026464924977783966,
+          "gskl": 0.05201316304907311,
+          "mmtv": 0.04974921080004937,
+          "func_count": 130,
+          "iterations": 25,
+          "final_K": 50,
+          "wall_s": 117.91478479997022,
+          "elbo": -2.2863120491501685,
+          "elbo_sd": 0.11143509481056402,
+          "best_iter": 24,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value",
+          "best_iter": "value",
+          "iterations": "value",
+          "func_count": "value",
+          "final_N": "value",
+          "n_warps": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "K": "shape (25,) -> (24,)",
+          "N": "shape (25,) -> (24,)",
+          "Ns_gp": "shape (25,) -> (24,)",
+          "X_orig": "shape (121, 2) -> (116, 2)",
+          "elbo": "shape (25,) -> (24,)",
+          "elbo_sd": "shape (25,) -> (24,)",
+          "func_count": "shape (25,) -> (24,)",
+          "gp_hyp": "shape (211, 9) -> (204, 9)",
+          "gp_hyp_iter": "shape (211,) -> (204,)",
+          "iter": "shape (25,) -> (24,)",
+          "n_eff": "shape (25,) -> (24,)",
+          "pruned": "shape (25,) -> (24,)",
+          "pt_R": "shape (25, 2, 2) -> (24, 2, 2)",
+          "pt_delta": "shape (25, 2) -> (24, 2)",
+          "pt_mu": "shape (25, 2) -> (24, 2)",
+          "pt_scale": "shape (25, 2) -> (24, 2)",
+          "r_index": "shape (25,) -> (24,)",
+          "sKL": "shape (25,) -> (24,)",
+          "stable": "shape (25,) -> (24,)",
+          "vp_iter": "shape (122,) -> (225,)",
+          "vp_lambd": "shape (25, 2) -> (24, 2)",
+          "vp_mu": "shape (122, 2) -> (225, 2)",
+          "vp_sigma": "shape (122,) -> (225,)",
+          "vp_w": "shape (122,) -> (225,)",
+          "warmup": "shape (25,) -> (24,)",
+          "warped": "shape (25,) -> (24,)",
+          "y_orig": "shape (121,) -> (116,)"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 37,
+        "X_orig_close": 40,
+        "y_orig_exact": 37,
+        "y_orig_close": 40,
+        "n_live_ref": 121,
+        "n_live_new": 116,
+        "elbo_exact_iter": 8,
+        "elbo_iter": 8,
+        "func_count_iter": 24,
+        "K_iter": 13,
+        "Ns_gp_iter": 24,
+        "n_iter_ref": 25,
+        "n_iter_new": 24,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.4904493366690733,
+          "gskl": 0.14438057682494926,
+          "mmtv": 0.11114708489945228
+        },
+        "pop_evals": [
+          100,
+          155
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "parted at iteration 8; live points identical: 37; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      }
+    ]
+  },
+  "pairs": [
+    {
+      "tag": "normal_D5_seed0",
+      "before": {
+        "label": "normal_D5",
+        "seed": 0,
+        "problem": "normal",
+        "D": 5,
+        "noise_sd": null,
+        "requested_options": {
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "effective_options": {
+          "max_fun_evals": 350,
+          "max_iter": 350,
+          "tol_stable_count": 60,
+          "tol_stable_excpt_frac": 0.2,
+          "specify_target_noise": false,
+          "search_acq_fcn": [
+            "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x0000016CC075F860>"
+          ],
+          "active_sample_gp_update": false,
+          "active_sample_vp_update": false,
+          "min_final_components": 50,
+          "do_final_boost": true,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "timer_keys": [
+          "active_sampling",
+          "finalize",
+          "fun_time",
+          "gp_train",
+          "variational_fit",
+          "warping"
+        ],
+        "ln_Z": 0.0,
+        "true_mean": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "true_cov": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            4.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            9.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            16.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            25.0
+          ]
+        ],
+        "plb": [
+          -10.0,
+          -10.0,
+          -10.0,
+          -10.0,
+          -10.0
+        ],
+        "pub": [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "notes": "independent Gaussian, SDs 1..D; legacy box -+2D",
+        "final": {
+          "elbo": -0.001041315484672456,
+          "elbo_sd": 0.00038763603790675305,
+          "best_iter": 12,
+          "iterations": 13,
+          "func_count": 70,
+          "final_K": 50,
+          "final_N": 70,
+          "min_Ns_gp": 8,
+          "n_warps": 1,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "wall_s": 26.27022250002483,
+          "target_eval_s": 0.0009987354278564453,
+          "elbo_err": 0.001041315484672456,
+          "gskl": 6.07391903302279e-05,
+          "mmtv": 0.007578598016563404,
+          "rmse": 0.006041018966805132,
+          "moment_method": "affine",
+          "peak_rss_mb": 172.8984375
+        },
+        "meta": {
+          "git": {
+            "sha": "c4c692c",
+            "dirty": false
+          },
+          "python": "3.12.6",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+          "gpyreg": "1.1.0",
+          "cma": "4.4.4",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "started": "2026-09-08 16:39:49",
+          "finished": "2026-09-08 16:40:16",
+          "pid": 16868
+        }
+      },
+      "after": {
+        "label": "normal_D5",
+        "seed": 0,
+        "problem": "normal",
+        "D": 5,
+        "noise_sd": null,
+        "requested_options": {
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "effective_options": {
+          "max_fun_evals": 350,
+          "max_iter": 350,
+          "tol_stable_count": 60,
+          "tol_stable_excpt_frac": 0.2,
+          "specify_target_noise": false,
+          "search_acq_fcn": [
+            "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001C79FB4B320>"
+          ],
+          "active_sample_gp_update": false,
+          "active_sample_vp_update": false,
+          "min_final_components": 50,
+          "do_final_boost": true,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "timer_keys": [
+          "active_sampling",
+          "finalize",
+          "fun_time",
+          "gp_train",
+          "variational_fit",
+          "warping"
+        ],
+        "ln_Z": 0.0,
+        "true_mean": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "true_cov": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            4.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            9.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            16.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            25.0
+          ]
+        ],
+        "plb": [
+          -10.0,
+          -10.0,
+          -10.0,
+          -10.0,
+          -10.0
+        ],
+        "pub": [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "notes": "independent Gaussian, SDs 1..D; legacy box -+2D",
+        "final": {
+          "elbo": 0.01895693985781799,
+          "elbo_sd": 0.0005757210405238122,
+          "best_iter": 12,
+          "iterations": 13,
+          "func_count": 70,
+          "final_K": 50,
+          "final_N": 70,
+          "min_Ns_gp": 8,
+          "n_warps": 1,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "wall_s": 23.649880800046958,
+          "target_eval_s": 0.0,
+          "elbo_err": 0.01895693985781799,
+          "gskl": 0.0004907430237146571,
+          "mmtv": 0.007747649973839282,
+          "rmse": 0.01919763247682218,
+          "moment_method": "affine",
+          "peak_rss_mb": 172.8046875
+        },
+        "meta": {
+          "git": {
+            "sha": "c4c692c",
+            "dirty": true
+          },
+          "python": "3.12.6",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+          "gpyreg": "1.1.0",
+          "cma": "4.4.4",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "started": "2026-09-08 16:49:49",
+          "finished": "2026-09-08 16:50:14",
+          "pid": 32064
+        }
+      },
+      "sha256": {
+        "before/normal_D5_seed0.json": "96da81b1c659119a99d3438dedd5f306bb3024185c63a776e46222906289e2da",
+        "before/normal_D5_seed0.npz": "b2a75e4f67c0576edd7a9237fc589fad314feb54f68d84df050d481b3171c5d5",
+        "after/normal_D5_seed0.json": "525ccd05da884d0df196a119a5e58359a9a8d408f7a52275b3efbb85a70dd372",
+        "after/normal_D5_seed0.npz": "fdcf631b6287cc3a9496547780e4253fece38fbe68589c9cb0e1f22314305f38"
+      },
+      "pre_boost": {
+        "before": {
+          "iteration": 12,
+          "elbo": 0.019089515099155463,
+          "elbo_sd": 0.00039033220485690847,
+          "K": 8,
+          "quality": {
+            "elbo_err": 0.019089515099155463,
+            "gskl": 0.0006126390486869138,
+            "mmtv": 0.00859538661762863,
+            "rmse": 0.012045135835866853,
+            "moment_method": "affine"
+          }
+        },
+        "after": {
+          "iteration": 12,
+          "elbo": 0.0065389715803685355,
+          "elbo_sd": 0.0005765992625363082,
+          "K": 11,
+          "quality": {
+            "elbo_err": 0.0065389715803685355,
+            "gskl": 0.0002787754008981569,
+            "mmtv": 0.008768420019331665,
+            "rmse": 0.01243760998591137,
+            "moment_method": "affine"
+          }
+        }
+      }
+    },
+    {
+      "tag": "cigar_D4_seed0",
+      "before": {
+        "label": "cigar_D4",
+        "seed": 0,
+        "problem": "cigar",
+        "D": 4,
+        "noise_sd": null,
+        "requested_options": {
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "effective_options": {
+          "max_fun_evals": 300,
+          "max_iter": 300,
+          "tol_stable_count": 60,
+          "tol_stable_excpt_frac": 0.2,
+          "specify_target_noise": false,
+          "search_acq_fcn": [
+            "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x0000016CC07EADB0>"
+          ],
+          "active_sample_gp_update": false,
+          "active_sample_vp_update": false,
+          "min_final_components": 50,
+          "do_final_boost": true,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "timer_keys": [
+          "active_sampling",
+          "finalize",
+          "fun_time",
+          "gp_train",
+          "variational_fit",
+          "warping"
+        ],
+        "ln_Z": -3.512749660301357,
+        "true_mean": [
+          [
+            -0.5,
+            -0.16666666666666669,
+            0.16666666666666663,
+            0.5
+          ]
+        ],
+        "true_cov": [
+          [
+            0.05827296793462907,
+            -0.18515421378088975,
+            0.034990238686527314,
+            0.03743206194897333
+          ],
+          [
+            -0.18515421378088975,
+            0.5894128069069604,
+            -0.11136768318326512,
+            -0.11913957070646519
+          ],
+          [
+            0.034990238686527314,
+            -0.11136768318326512,
+            0.021146105270293543,
+            0.02251486439818677
+          ],
+          [
+            0.03743206194897333,
+            -0.11913957070646519,
+            0.02251486439818677,
+            0.024186051328759145
+          ]
+        ],
+        "plb": [
+          -1.3699810396321572,
+          -2.933847368591483,
+          -0.35728456115392815,
+          -0.06037403976337341
+        ],
+        "pub": [
+          0.3699810396321572,
+          2.60051403525815,
+          0.6906178944872614,
+          1.0603740397633734
+        ],
+        "notes": "likelihood: SDs 0.01 on D-1 axes and 1 on one, mixed by a seeded orthogonal matrix (det -1), centred at linspace(-0.5, 0.5); times the papers' prior N(centre, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
+        "final": {
+          "elbo": -3.505215892362508,
+          "elbo_sd": 0.0003523809528452354,
+          "best_iter": 25,
+          "iterations": 26,
+          "func_count": 130,
+          "final_K": 50,
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "wall_s": 75.05663900001673,
+          "target_eval_s": 0.029806137084960938,
+          "elbo_err": 0.0075337679388489676,
+          "gskl": 0.0009068561279660381,
+          "mmtv": 0.01656200164074041,
+          "rmse": 0.014630928457200409,
+          "moment_method": "affine",
+          "peak_rss_mb": 191.8984375
+        },
+        "meta": {
+          "git": {
+            "sha": "c4c692c",
+            "dirty": false
+          },
+          "python": "3.12.6",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+          "gpyreg": "1.1.0",
+          "cma": "4.4.4",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "started": "2026-09-08 16:40:16",
+          "finished": "2026-09-08 16:41:32",
+          "pid": 16868
+        }
+      },
+      "after": {
+        "label": "cigar_D4",
+        "seed": 0,
+        "problem": "cigar",
+        "D": 4,
+        "noise_sd": null,
+        "requested_options": {
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "effective_options": {
+          "max_fun_evals": 300,
+          "max_iter": 300,
+          "tol_stable_count": 60,
+          "tol_stable_excpt_frac": 0.2,
+          "specify_target_noise": false,
+          "search_acq_fcn": [
+            "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001C7A4EC83E0>"
+          ],
+          "active_sample_gp_update": false,
+          "active_sample_vp_update": false,
+          "min_final_components": 50,
+          "do_final_boost": true,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "timer_keys": [
+          "active_sampling",
+          "finalize",
+          "fun_time",
+          "gp_train",
+          "variational_fit",
+          "warping"
+        ],
+        "ln_Z": -3.512749660301357,
+        "true_mean": [
+          [
+            -0.5,
+            -0.16666666666666669,
+            0.16666666666666663,
+            0.5
+          ]
+        ],
+        "true_cov": [
+          [
+            0.05827296793462907,
+            -0.18515421378088975,
+            0.034990238686527314,
+            0.03743206194897333
+          ],
+          [
+            -0.18515421378088975,
+            0.5894128069069604,
+            -0.11136768318326512,
+            -0.11913957070646519
+          ],
+          [
+            0.034990238686527314,
+            -0.11136768318326512,
+            0.021146105270293543,
+            0.02251486439818677
+          ],
+          [
+            0.03743206194897333,
+            -0.11913957070646519,
+            0.02251486439818677,
+            0.024186051328759145
+          ]
+        ],
+        "plb": [
+          -1.3699810396321572,
+          -2.933847368591483,
+          -0.35728456115392815,
+          -0.06037403976337341
+        ],
+        "pub": [
+          0.3699810396321572,
+          2.60051403525815,
+          0.6906178944872614,
+          1.0603740397633734
+        ],
+        "notes": "likelihood: SDs 0.01 on D-1 axes and 1 on one, mixed by a seeded orthogonal matrix (det -1), centred at linspace(-0.5, 0.5); times the papers' prior N(centre, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
+        "final": {
+          "elbo": -3.507827447972402,
+          "elbo_sd": 0.0003427644833563107,
+          "best_iter": 27,
+          "iterations": 28,
+          "func_count": 140,
+          "final_K": 50,
+          "final_N": 140,
+          "min_Ns_gp": 7,
+          "n_warps": 2,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "wall_s": 65.03768330003368,
+          "target_eval_s": 0.029043912887573242,
+          "elbo_err": 0.004922212328954956,
+          "gskl": 0.0008254401615042095,
+          "mmtv": 0.009078664864705727,
+          "rmse": 0.005159737769174136,
+          "moment_method": "affine",
+          "peak_rss_mb": 197.36328125
+        },
+        "meta": {
+          "git": {
+            "sha": "c4c692c",
+            "dirty": true
+          },
+          "python": "3.12.6",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+          "gpyreg": "1.1.0",
+          "cma": "4.4.4",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "started": "2026-09-08 16:50:14",
+          "finished": "2026-09-08 16:51:19",
+          "pid": 32064
+        }
+      },
+      "sha256": {
+        "before/cigar_D4_seed0.json": "83410b4321a1fec6b26f0dd3414bb7c66c6bc98194c0b9dc9ef62eab4b7576cc",
+        "before/cigar_D4_seed0.npz": "3d6d932dc2a8af041ec3ece517cebfe58a59ec20df2f54d0c0bbac34f4be4ccd",
+        "after/cigar_D4_seed0.json": "932a3ecee20c8ce78921ffe992752adbc3775044d1d133c8fa1080775bf99c70",
+        "after/cigar_D4_seed0.npz": "98efb53c0491483511a8e06810299f5598523d5ee68b7f71e4a08834507dc0e6"
+      },
+      "pre_boost": {
+        "before": {
+          "iteration": 25,
+          "elbo": -3.500939688401064,
+          "elbo_sd": 0.00035251307187026526,
+          "K": 22,
+          "quality": {
+            "elbo_err": 0.011809971900293093,
+            "gskl": 0.0015448507094257824,
+            "mmtv": 0.015221703509663594,
+            "rmse": 0.014956220501461101,
+            "moment_method": "affine"
+          }
+        },
+        "after": {
+          "iteration": 27,
+          "elbo": -3.517482915254816,
+          "elbo_sd": 0.00034278720577174626,
+          "K": 20,
+          "quality": {
+            "elbo_err": 0.0047332549534591095,
+            "gskl": 0.0014689826403441186,
+            "mmtv": 0.009590578269079861,
+            "rmse": 0.0035289050533528392,
+            "moment_method": "affine"
+          }
+        }
+      }
+    },
+    {
+      "tag": "rosenbrock_D2_noise1_seed0",
+      "before": {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 0,
+        "problem": "rosenbrock",
+        "D": 2,
+        "noise_sd": 1.0,
+        "requested_options": {
+          "specify_target_noise": true,
+          "max_fun_evals": 200,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "effective_options": {
+          "max_fun_evals": 200,
+          "max_iter": 200,
+          "tol_stable_count": 90,
+          "tol_stable_excpt_frac": 0.2,
+          "specify_target_noise": true,
+          "search_acq_fcn": [
+            "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x0000016CC5BFC890>"
+          ],
+          "active_sample_gp_update": true,
+          "active_sample_vp_update": true,
+          "min_final_components": 50,
+          "do_final_boost": true,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "timer_keys": [
+          "active_sampling",
+          "finalize",
+          "fun_time",
+          "gp_train",
+          "variational_fit",
+          "warping"
+        ],
+        "ln_Z": -2.2598471241723845,
+        "true_mean": [
+          [
+            0.026341030923601183,
+            1.248229380722166
+          ]
+        ],
+        "true_cov": [
+          [
+            1.3168816075188348,
+            0.041579143037725065
+          ],
+          [
+            0.041579143037725065,
+            2.444556103217786
+          ]
+        ],
+        "plb": [
+          -3.0,
+          -3.0
+        ],
+        "pub": [
+          3.0,
+          3.0
+        ],
+        "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
+        "final": {
+          "elbo": -2.2863120491501685,
+          "elbo_sd": 0.11143509481056402,
+          "best_iter": 24,
+          "iterations": 25,
+          "func_count": 130,
+          "final_K": 50,
+          "final_N": 130,
+          "min_Ns_gp": 7,
+          "n_warps": 2,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "wall_s": 117.91478479997022,
+          "target_eval_s": 0.022188425064086914,
+          "elbo_err": 0.026464924977783966,
+          "gskl": 0.05201316304907311,
+          "mmtv": 0.04974921080004937,
+          "rmse": 0.14039122744887422,
+          "moment_method": "affine",
+          "peak_rss_mb": 229.09765625
+        },
+        "meta": {
+          "git": {
+            "sha": "c4c692c",
+            "dirty": false
+          },
+          "python": "3.12.6",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+          "gpyreg": "1.1.0",
+          "cma": "4.4.4",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "started": "2026-09-08 16:41:32",
+          "finished": "2026-09-08 16:43:30",
+          "pid": 16868
+        }
+      },
+      "after": {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 0,
+        "problem": "rosenbrock",
+        "D": 2,
+        "noise_sd": 1.0,
+        "requested_options": {
+          "specify_target_noise": true,
+          "max_fun_evals": 200,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "effective_options": {
+          "max_fun_evals": 200,
+          "max_iter": 200,
+          "tol_stable_count": 90,
+          "tol_stable_excpt_frac": 0.2,
+          "specify_target_noise": true,
+          "search_acq_fcn": [
+            "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001C79F955D90>"
+          ],
+          "active_sample_gp_update": true,
+          "active_sample_vp_update": true,
+          "min_final_components": 50,
+          "do_final_boost": true,
+          "display": "off",
+          "plot": false,
+          "print_iteration_header": false
+        },
+        "timer_keys": [
+          "active_sampling",
+          "finalize",
+          "fun_time",
+          "gp_train",
+          "variational_fit",
+          "warping"
+        ],
+        "ln_Z": -2.2598471241723845,
+        "true_mean": [
+          [
+            0.026341030923601183,
+            1.248229380722166
+          ]
+        ],
+        "true_cov": [
+          [
+            1.3168816075188348,
+            0.041579143037725065
+          ],
+          [
+            0.041579143037725065,
+            2.444556103217786
+          ]
+        ],
+        "plb": [
+          -3.0,
+          -3.0
+        ],
+        "pub": [
+          3.0,
+          3.0
+        ],
+        "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
+        "final": {
+          "elbo": -2.2523319230687195,
+          "elbo_sd": 0.11475775791371369,
+          "best_iter": 23,
+          "iterations": 24,
+          "func_count": 125,
+          "final_K": 50,
+          "final_N": 125,
+          "min_Ns_gp": 7,
+          "n_warps": 1,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "wall_s": 104.02464880002663,
+          "target_eval_s": 0.013994693756103516,
+          "elbo_err": 0.007515201103664992,
+          "gskl": 0.010130934063931007,
+          "mmtv": 0.019986203845813715,
+          "rmse": 0.03851008466410999,
+          "moment_method": "affine",
+          "peak_rss_mb": 228.04296875
+        },
+        "meta": {
+          "git": {
+            "sha": "c4c692c",
+            "dirty": true
+          },
+          "python": "3.12.6",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+          "gpyreg": "1.1.0",
+          "cma": "4.4.4",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "started": "2026-09-08 16:51:19",
+          "finished": "2026-09-08 16:53:04",
+          "pid": 32064
+        }
+      },
+      "sha256": {
+        "before/rosenbrock_D2_noise1_seed0.json": "25f138c2f4960b5e9e27f7080e678ad1ef91fd8d24fce109acf41f8bd86f210f",
+        "before/rosenbrock_D2_noise1_seed0.npz": "bd18c2ba6a8d1f59655970810b89a6133a3c7cc89caf58e31cd69799771d3c82",
+        "after/rosenbrock_D2_noise1_seed0.json": "5319be9479789d7eea243a455186c16f60a7c084b9ef72e966dfbf39e6490bbe",
+        "after/rosenbrock_D2_noise1_seed0.npz": "396f0e1d6eaa7cca2f762418b30fcd5a46b2e2f2bf7cd7c68a48de7e26748ec6"
+      },
+      "pre_boost": {
+        "before": {
+          "iteration": 24,
+          "elbo": -2.3551206479348563,
+          "elbo_sd": 0.11200777463519467,
+          "K": 7,
+          "quality": {
+            "elbo_err": 0.09527352376247178,
+            "gskl": 0.1615941796606672,
+            "mmtv": 0.07992514050351476,
+            "rmse": 0.21035665753545385,
+            "moment_method": "affine"
+          }
+        },
+        "after": {
+          "iteration": 23,
+          "elbo": -2.261992753199325,
+          "elbo_sd": 0.11457818781015193,
+          "K": 24,
+          "quality": {
+            "elbo_err": 0.0021456290269403766,
+            "gskl": 0.010999713751369433,
+            "mmtv": 0.022419858169013977,
+            "rmse": 0.04040098408097939,
+            "moment_method": "affine"
+          }
+        }
+      }
+    }
+  ],
+  "pre_post_quality_reconstruction": {
+    "before": {
+      "normal_D5_seed0": {
+        "transformer": "best_iter assumption; absent as final trace state",
+        "final_sidecar_validation": "passed rtol=1e-9 atol=1e-11",
+        "before": {
+          "elbo_err": 0.019089515099155463,
+          "gskl": 0.0006126390486869138,
+          "mmtv": 0.00859538661762863,
+          "rmse": 0.012045135835866853,
+          "moment_method": "affine"
+        },
+        "after": {
+          "elbo_err": 0.001041315484672456,
+          "gskl": 6.073919032978381e-05,
+          "mmtv": 0.007578598016563404,
+          "rmse": 0.006041018966805171,
+          "moment_method": "affine"
+        },
+        "delta": {
+          "elbo_err": -0.018048199614483007,
+          "gskl": -0.00055189985835713,
+          "mmtv": -0.0010167886010652265,
+          "rmse": -0.006004116869061682
+        }
+      },
+      "cigar_D4_seed0": {
+        "transformer": "best_iter assumption; absent as final trace state",
+        "final_sidecar_validation": "passed rtol=1e-9 atol=1e-11",
+        "before": {
+          "elbo_err": 0.011809971900293093,
+          "gskl": 0.0015448507094257824,
+          "mmtv": 0.015221703509663594,
+          "rmse": 0.014956220501461101,
+          "moment_method": "affine"
+        },
+        "after": {
+          "elbo_err": 0.0075337679388489676,
+          "gskl": 0.0009068561279660381,
+          "mmtv": 0.01656200164074041,
+          "rmse": 0.014630928457200399,
+          "moment_method": "affine"
+        },
+        "delta": {
+          "elbo_err": -0.004276203961444125,
+          "gskl": -0.0006379945814597443,
+          "mmtv": 0.0013402981310768145,
+          "rmse": -0.00032529204426070234
+        }
+      },
+      "rosenbrock_D2_noise1_seed0": {
+        "transformer": "best_iter assumption; absent as final trace state",
+        "final_sidecar_validation": "passed rtol=1e-9 atol=1e-11",
+        "before": {
+          "elbo_err": 0.09527352376247178,
+          "gskl": 0.1615941796606672,
+          "mmtv": 0.07992514050351476,
+          "rmse": 0.21035665753545385,
+          "moment_method": "affine"
+        },
+        "after": {
+          "elbo_err": 0.026464924977783966,
+          "gskl": 0.05201316304907311,
+          "mmtv": 0.04974921080004937,
+          "rmse": 0.14039122744887422,
+          "moment_method": "affine"
+        },
+        "delta": {
+          "elbo_err": -0.06880859878468781,
+          "gskl": -0.10958101661159408,
+          "mmtv": -0.030175929703465394,
+          "rmse": -0.06996543008657963
+        }
+      }
+    },
+    "after": {
+      "normal_D5_seed0": {
+        "transformer": "best_iter assumption; absent as final trace state",
+        "final_sidecar_validation": "passed rtol=1e-9 atol=1e-11",
+        "before": {
+          "elbo_err": 0.0065389715803685355,
+          "gskl": 0.0002787754008981569,
+          "mmtv": 0.008768420019331665,
+          "rmse": 0.01243760998591137,
+          "moment_method": "affine"
+        },
+        "after": {
+          "elbo_err": 0.01895693985781799,
+          "gskl": 0.0004907430237148791,
+          "mmtv": 0.007747649973839282,
+          "rmse": 0.01919763247682218,
+          "moment_method": "affine"
+        },
+        "delta": {
+          "elbo_err": 0.012417968277449454,
+          "gskl": 0.0002119676228167222,
+          "mmtv": -0.0010207700454923831,
+          "rmse": 0.006760022490910811
+        }
+      },
+      "cigar_D4_seed0": {
+        "transformer": "best_iter assumption; absent as final trace state",
+        "final_sidecar_validation": "passed rtol=1e-9 atol=1e-11",
+        "before": {
+          "elbo_err": 0.0047332549534591095,
+          "gskl": 0.0014689826403441186,
+          "mmtv": 0.009590578269079861,
+          "rmse": 0.0035289050533528392,
+          "moment_method": "affine"
+        },
+        "after": {
+          "elbo_err": 0.004922212328954956,
+          "gskl": 0.0008254401615042095,
+          "mmtv": 0.009078664864705727,
+          "rmse": 0.005159737769174141,
+          "moment_method": "affine"
+        },
+        "delta": {
+          "elbo_err": 0.00018895737549584624,
+          "gskl": -0.0006435424788399091,
+          "mmtv": -0.0005119134043741341,
+          "rmse": 0.001630832715821302
+        }
+      },
+      "rosenbrock_D2_noise1_seed0": {
+        "transformer": "best_iter assumption; absent as final trace state",
+        "final_sidecar_validation": "passed rtol=1e-9 atol=1e-11",
+        "before": {
+          "elbo_err": 0.0021456290269403766,
+          "gskl": 0.010999713751369433,
+          "mmtv": 0.022419858169013977,
+          "rmse": 0.04040098408097939,
+          "moment_method": "affine"
+        },
+        "after": {
+          "elbo_err": 0.007515201103664992,
+          "gskl": 0.010130934063931007,
+          "mmtv": 0.019986203845813715,
+          "rmse": 0.03851008466411011,
+          "moment_method": "affine"
+        },
+        "delta": {
+          "elbo_err": 0.005369572076724616,
+          "gskl": -0.0008687796874384257,
+          "mmtv": -0.002433654323200262,
+          "rmse": -0.0018908994168692836
+        }
+      }
+    },
+    "elapsed_seconds": 4.056676799955312
+  },
+  "validation": {
+    "runs": 6,
+    "all_converged": true,
+    "all_usable": true,
+    "all_initial_designs_identical": true,
+    "all_counts_consistent": true,
+    "before_accuracy_flags": 0,
+    "after_accuracy_flags": 1,
+    "remaining_flag": "normal_D5 seed0 gsKL 0.000490743 > fence0.000429099; retain for population assessment",
+    "mathematical_and_regression_tests": "64 passed without reruns",
+    "exact_fixtures": "11 of 11, no reference changes",
+    "stopping_settings_changed": false
+  }
+}

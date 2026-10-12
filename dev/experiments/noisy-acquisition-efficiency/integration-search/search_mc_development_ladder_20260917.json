@@ -1,0 +1,380 @@
+{
+  "automatic_override": false,
+  "budgets": [
+    32768,
+    65536
+  ],
+  "deduplicated_pair_count": 137,
+  "final_counts": {
+    "observed": 137,
+    "raw": {
+      "agree": 108,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 29
+    },
+    "scheduled": 137,
+    "score": {
+      "agree": 118,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "unresolved": 19
+    }
+  },
+  "kind": "e3_search_ordinary_mc_development_completed_ladder",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "0f21946a7d80776be807a76bf834d4a1d56ae2b2b61b340509f1f16888899084",
+  "rounds": [
+    {
+      "allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768_allocation.json",
+        "sha256": "94f0e09fc7bbaa7cff70912d10894d9af442a9ed99fa2faf2b655da6d45e6b2f"
+      },
+      "budget": 32768,
+      "conservative_seconds_for_new_cells": 481.02,
+      "costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768_costs.json",
+        "sha256": "1f0d8623a2f279f788527ddf5e1843be055c1aad0dcfb1f1bbb96ff807b2f014"
+      },
+      "freeze": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development_b32768_freeze.json",
+        "sha256": "eefec5f084c0c987777a0490c3afe44734db87fddc6eef66f2a283df460c1656"
+      },
+      "manifest": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development_b32768_manifest.json",
+        "sha256": "f51c1ef85686e7c97caf0801901db29b55dedd5589cff19c8170021d781ab13e"
+      },
+      "manifest_digest": "c2144bb833ed9a37e954c90c87678d27adb87a259834003f6e0f7fb91a77f3af",
+      "new_worker_seconds_including_imports": 135.49412510000184,
+      "pilot_allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768_pilot_allocation.json",
+        "sha256": "36152ac8aecb04f8b90cb1544d1d485f88cb7e5984f60da1baf01eaa7eac0003"
+      },
+      "pilot_costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768_pilot_costs.json",
+        "sha256": "6479c4c40dc0d264f1a6d6c3c41344b23ea8af2c1beba93877269b90d9b5b7ec"
+      },
+      "pilot_worker_seconds_including_imports": 32.44402149999951,
+      "predicted_seconds_for_new_cells": 240.51,
+      "previous_summary_sha256": null,
+      "scheduled_pair_count": 137,
+      "state_count": 12,
+      "summary": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\summary.json",
+        "sha256": "96194923cf5a61c8f8a199e64a250c51335c74625a6614a61a045f888494150e"
+      },
+      "terminals": [
+        {
+          "payload_hashes": {
+            "json": "eef78c50ee3eaaf9946f6c9f82f0bbb2b43f9f0373001fb24438b9ca131e30bc",
+            "npz": "5252eb1b96f937aab08498f23b682c2be84e8c616acec9a284ff90d6712275f2"
+          },
+          "state_id": "logreg_D5_noise3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\logreg_D5_noise3_seed0_early.complete.json",
+            "sha256": "9577790e8209ff608b6e9ecc006aba8bd4c6fd0bf42262d90d4013826aa08a8a"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "854a0ae89a9c83e59bc077f4619237088d971a72078a095546ca3baa751bed31",
+            "npz": "ef9059e02d8a42d52fc56ae0457693d57a65af57ae870b438b93ffb32dfb20fa"
+          },
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\logreg_D5_noise3_seed0_late.complete.json",
+            "sha256": "7f5c5112be3c34f57176c1632209e7c01b9f597102b26fe272722cb82f0337af"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "19b0185eb6faf977553d027e11b2be179fb9fa91880a0db7b9f8511db7d1d1c4",
+            "npz": "279148f20e440df85d5893393a512cbcf66bd8570cc96ae827533da46a2f6872"
+          },
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\multisensory_s1_D6_noise1.3_seed0_early.complete.json",
+            "sha256": "053fc23ee4833c6782f451c818d25322b3df35cb6e6db7bfe05c1d508cb07de9"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "0dd7fbe7e1d511699e3a3ccbff22d6af9d9f01f7f5e7aaf9338626051f1027b6",
+            "npz": "40dab23f79730fa561926a0f0c26ecd9c775b77d1edb1001a7bced7e4292ae41"
+          },
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\multisensory_s1_D6_noise1.3_seed0_late.complete.json",
+            "sha256": "596a2b7bb2b863796af5c0feedd69bcc2faf3647974511b5b2e26611018b8816"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "15d933325ba3d0dd3104bbb122a1458206dcfc92acec2cd1b190e5b3d4a8b8d9",
+            "npz": "ec101162351e287c410eacd49f405171ba3128b95d547edbcfadd4d968ce13d7"
+          },
+          "state_id": "rosenbrock_D2_noise1_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\rosenbrock_D2_noise1_seed0_early.complete.json",
+            "sha256": "ac51ad2b8dc3cc9038ce8e7ccaa1c0fbbb1ca66cbae6d4bd2ac347e910ad5b8b"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "ae13ec3908f0d88010d36e941561372d7e419df56c22ecd0616132d223804cda",
+            "npz": "9aeafedd4ddaba78e09d776ad308c0485f4a7c8ceeccc5fd526d9a5a0cda6aa0"
+          },
+          "state_id": "rosenbrock_D2_noise1_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\rosenbrock_D2_noise1_seed0_late.complete.json",
+            "sha256": "6e892e8241412953e575c9e857fcffa875fd4bd8dcf477fc945f87f17ecd8958"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "004b064c0ec533a0cdff4c5a0cb6c8ae5ce49c86ee55992dd15feb7ebe686691",
+            "npz": "221fc02f4b221cb6c6966c13e424cee32d6c595cb5301ed4e74e00766eb18d04"
+          },
+          "state_id": "rosenbrock_D2_noise3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\rosenbrock_D2_noise3_seed0_early.complete.json",
+            "sha256": "6c3db1b2e7ca351f93c34e2dfee682ba1469e86a205b62345d3364cb58e2c9c4"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "86c463ef0d4fd9a3ecacd8a6af63220cf76bba7e89c00a89c932166af9223226",
+            "npz": "49065d8411ecd46bab31cd9181974d6ec9b6ad51f5fdeda216665343b42667b6"
+          },
+          "state_id": "rosenbrock_D2_noise3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\rosenbrock_D2_noise3_seed0_late.complete.json",
+            "sha256": "67fae973de1c9d0c20316096a94eca45bc86fa81a8d87d681da5c9ef12c50e36"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "121c5a2f65cb3fc00073c48758a1cd382b14c16ffd1e167595a2a589f5628bca",
+            "npz": "9d8e0fa498a79a7416335ffcc84cf7d423f7c964f1946c6aca3b7296e12a3c12"
+          },
+          "state_id": "student_D8_noise3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\student_D8_noise3_seed0_early.complete.json",
+            "sha256": "c9b66c9ca3e534f2115d502bc1a65b653aa92f8c6331f182f856ce598e4a1031"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "d3e5244b8888ba72882ff7e6b09d2f3aa604ff4c4f826fd2d4861c3057c10698",
+            "npz": "6d216b26d0ff42a545d49bf9381bde073ef853d048d095590af8c82ad32cf153"
+          },
+          "state_id": "student_D8_noise3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\student_D8_noise3_seed0_late.complete.json",
+            "sha256": "d75db2f2400170aa914dfe42cf2e416dd98c83c3661ee8652718e55bcc9103fa"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "c0c9c8b52208b27cb63dc8a4c7b453e589c4b53190512d4876ae2546a386da19",
+            "npz": "ceb0c3859193bc0bb4accf6744fd736edb0b13e2408c86899d783b6846e99c03"
+          },
+          "state_id": "timing_D5_noise2.2_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\timing_D5_noise2.2_seed0_early.complete.json",
+            "sha256": "bf4a933e1271c92327b399ff7c27b2bbd07cee49290c5f335c8a770ab43f0cdd"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "127ef644798bd53608de482c616f86b3e159ed7b82e47bda2ad506d901a486a5",
+            "npz": "bdbbc8682bf14733a9bd8041f628e26b7ea3c052be992dbf9f6772420a7332ee"
+          },
+          "state_id": "timing_D5_noise2.2_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b32768\\records\\timing_D5_noise2.2_seed0_late.complete.json",
+            "sha256": "f97a4c26e0184e57ef1006969c01f8a407de5d70d4ee203aa2e82ee2a1a40180"
+          }
+        }
+      ],
+      "total_worker_seconds_including_imports": 167.93814660000135
+    },
+    {
+      "allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536_allocation.json",
+        "sha256": "435315c06faac8f39d198e0cd3a561afef5f4eaec77cb5539cc8a394ca5a7efd"
+      },
+      "budget": 65536,
+      "conservative_seconds_for_new_cells": 448.53197484117317,
+      "costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536_costs.json",
+        "sha256": "2213d68dd568ece3eda04ba1788ad51ed023d62d839e6ce5545f10f064fbf1c8"
+      },
+      "freeze": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development_b65536_freeze.json",
+        "sha256": "0b86ff9d0583b456f4b28e39d782d9907498e9c9544a623c3f30bf40bff42165"
+      },
+      "manifest": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development_b65536_manifest.json",
+        "sha256": "12d8d0241cb111cbe9bcbe51fd10b8f5b6fe1a74089f3d770d74441c3893f723"
+      },
+      "manifest_digest": "95ec4942637e9e9bdc52115eeb3ab18437862e7355b43f1fdc04afa4992653af",
+      "new_worker_seconds_including_imports": 309.02945330000875,
+      "pilot_allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536_pilot_allocation.json",
+        "sha256": "94161a67bd584a8cf1563f67bbc2c166de419879d445e855961ea042595de9fc"
+      },
+      "pilot_costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536_pilot_costs.json",
+        "sha256": "b1e8082c4e74fc088a41d48de12b620d95d20554645db361b6b3f8ad9e0c8394"
+      },
+      "pilot_worker_seconds_including_imports": 53.700413300000946,
+      "predicted_seconds_for_new_cells": 224.26598742058658,
+      "previous_summary_sha256": "96194923cf5a61c8f8a199e64a250c51335c74625a6614a61a045f888494150e",
+      "scheduled_pair_count": 137,
+      "state_count": 12,
+      "summary": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\summary.json",
+        "sha256": "5da5273ea6f20f70a4f8b6286512bbb176d7788beaecd42784754df8627a7623"
+      },
+      "terminals": [
+        {
+          "payload_hashes": {
+            "json": "119f2057b202e2adabed5c23726af29bc81ec5b50d12542168f7bb39d3f151ad",
+            "npz": "f1a144a6465029f6844349430b0bbab8c409e88e9975a0dc6d6cddae63c3922a"
+          },
+          "state_id": "logreg_D5_noise3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\logreg_D5_noise3_seed0_early.complete.json",
+            "sha256": "d644a18dc8d89c8fb78f97dfe4ecb504196b67818f439887b77980e72efed48e"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "223a8734de865f0ab69076ca83b76b1dab445e180325ebabafe98a6ddc9d53d7",
+            "npz": "ecf002504c831a75d4d754a4935c6d9946a46715cfaf5af34ceaadb0a9e0b3d1"
+          },
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\logreg_D5_noise3_seed0_late.complete.json",
+            "sha256": "ccce36627fb2ec810711ecca984f3858b0fb8634f5e7c49d183588d0e05273d9"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "9870d336141294d0987d07549147efa8117f3cc540cc0cc8aaa3072c1d4cd81f",
+            "npz": "320435bf87bd16cd4f9d42132d50ae1b4826f611db549a3e0cd3206caad81df1"
+          },
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\multisensory_s1_D6_noise1.3_seed0_early.complete.json",
+            "sha256": "a5091e5ca06bc584ea85fded3ffc13c2bbc59a00d4892b40cf1fe04ee8917c91"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "44bf65ded613ff2ddf0f37315de721fd6c36e6c95008b2b5465d17f2b08c40d3",
+            "npz": "e8ce627f3d0a075b32a9709d2599cd580105f8b7c334d148d1df45c4bba60fb6"
+          },
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\multisensory_s1_D6_noise1.3_seed0_late.complete.json",
+            "sha256": "a883933bdd205019fd58394b268ecf5feffb5ca8a318ee95468e1942b817f6f9"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "89529efbf981b998c97249ba01957c734e5acbc91302b21bffcaafdf0b4dcfae",
+            "npz": "16f91ac202699327d7fba37eaf5501bbc7e56b23e686ec1575974bf70f8a8f3d"
+          },
+          "state_id": "rosenbrock_D2_noise1_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\rosenbrock_D2_noise1_seed0_early.complete.json",
+            "sha256": "ddbcf622221fff539375415227aa7298908c3038385cdefae60e5a9b78f8bcc1"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "7ad2a4cfb6ffd211ac0c4202d06599cdbb5b6b46cdec7ee10b5d12a9a33961ce",
+            "npz": "77446d86ebf0f0858483d4a52de267814a4842e20a054ff7a890a69baf1d9f6f"
+          },
+          "state_id": "rosenbrock_D2_noise1_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\rosenbrock_D2_noise1_seed0_late.complete.json",
+            "sha256": "4dedf25dee28298fa9c9b56e35e6b39f63f22fd2750f7839b491ba9af7c4e61f"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "b9896cd5cb4d79af3a2e6603fb279837f75495f8d21bf24261d78a7a92ce4662",
+            "npz": "bb444143bf5163edfa27ba9365056e9ef7d9c9ff9ed68b9429091940e5b7f3a6"
+          },
+          "state_id": "rosenbrock_D2_noise3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\rosenbrock_D2_noise3_seed0_early.complete.json",
+            "sha256": "cc33c90aa82c2039b2993a26c26a9c45b067a797ac433a18305ebb38b0c405a8"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "5098b8f5700df1b9746be577088e1486da833a70887be64efde559ca1e1bf850",
+            "npz": "b41082f33f6211e7bfa0e21b799d4b57b62c97cad33fb33166ec0714bfee28b8"
+          },
+          "state_id": "rosenbrock_D2_noise3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\rosenbrock_D2_noise3_seed0_late.complete.json",
+            "sha256": "60c0cc98ffd2c0d6e3515169c87defdeb3bf86b43fe058c7cf8497e1e331041f"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "dd2918c0daa995235a2b27560efed0838b8cc57e5842cc42ff3ccd748ee0a73d",
+            "npz": "02072da6ea8e232f7e42c6aac7676e07804ed3d8213c9ba6d0ab721a3eaaef33"
+          },
+          "state_id": "student_D8_noise3_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\student_D8_noise3_seed0_early.complete.json",
+            "sha256": "a25346a5b829e62cb9f4681241ad6de86236ff23ceb75ba62fdd6f8352854c91"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "18318e34d31415fec464bf6e9ed801dc463c6e49e987269582822ba7132bbbf2",
+            "npz": "07071598f34289e0841e3d59fc3a61a3551b61feb0a8e66112c02c943f0687e5"
+          },
+          "state_id": "student_D8_noise3_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\student_D8_noise3_seed0_late.complete.json",
+            "sha256": "28ce4e684ed29e62900279a03cc8246a85a3294b130a0183293edd2fc7772bb0"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "55c8ef28904d3f9ec280b85dd4b00f0665d5dbbb7348046ad562359a1b480d76",
+            "npz": "d3da5d6f02e7b5d08dbcf594db97df71681989f087bb12098609771bc0c65ef7"
+          },
+          "state_id": "timing_D5_noise2.2_seed0_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\timing_D5_noise2.2_seed0_early.complete.json",
+            "sha256": "eafa892520efc651b3475933f36ba7e6138c8b4c62c088a1dd32db6b46e302cf"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "4ea33698b2a7ee9f63dd2bb3d777a1b92dceca99b414f5349a8d348f84954482",
+            "npz": "d20979f6a8e5969b361afeb55b564f7478fe29ee86dec1333098479d6ea1db57"
+          },
+          "state_id": "timing_D5_noise2.2_seed0_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development\\b65536\\records\\timing_D5_noise2.2_seed0_late.complete.json",
+            "sha256": "a54fc439b9d75fd6a69b2d9c92028a542bba5a6eaec5031e3bb6b9a890c87912"
+          }
+        }
+      ],
+      "total_worker_seconds_including_imports": 362.7298666000097
+    }
+  ],
+  "schema_version": 1,
+  "selected_original_tag_count": 183
+}

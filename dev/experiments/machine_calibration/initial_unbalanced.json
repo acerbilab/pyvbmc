@@ -1,0 +1,3739 @@
+{
+  "campaign_numpy_global_rng_unchanged": true,
+  "cases": {
+    "entropy": [
+      {
+        "D": 4,
+        "K": 20,
+        "budget_aliases": {
+          "131072": 65536,
+          "16384": 16384,
+          "262144": 65536,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.004752699984237552,
+        "effective_count": 38,
+        "first_use_seconds": {
+          "16384": 0.0014930999604985118,
+          "32768": 0.0010024000657722354,
+          "65536": 0.0008419000077992678
+        },
+        "grad_flags": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "jacobian_flag": true,
+        "kernel": "entropy",
+        "measurement_seconds": 0.013265600078739226,
+        "name": "adam",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.3306690738754696e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                3.3306690738754696e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.3306690738754696e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                3.3306690738754696e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 37,
+        "round_seconds": {
+          "16384": [
+            0.0005041999975219369,
+            0.0005264000501483679,
+            0.0005213000113144517,
+            0.0004787000361829996,
+            0.00048439996317029
+          ],
+          "32768": [
+            0.00045199994929134846,
+            0.0007671000203117728,
+            0.0004285000031813979,
+            0.0005087000317871571,
+            0.0004195000510662794
+          ],
+          "65536": [
+            0.0004105999832972884,
+            0.0006700999801978469,
+            0.0005166999762877822,
+            0.00039329996798187494,
+            0.00037779996637254953
+          ]
+        },
+        "selection_wall_seconds": 0.00943500001449138,
+        "signatures": {
+          "131072": [
+            20,
+            38,
+            38
+          ],
+          "16384": [
+            5,
+            38,
+            38
+          ],
+          "262144": [
+            20,
+            38,
+            38
+          ],
+          "32768": [
+            10,
+            38,
+            38
+          ],
+          "65536": [
+            20,
+            38,
+            38
+          ]
+        },
+        "synthetic_setup_seconds": 0.000238100066781044,
+        "timing_scope": "source-derived entropy function",
+        "workspace_estimates": {
+          "16384": {
+            "bytes_estimate": 249280,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 449920,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 851200,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 4,
+        "K": 50,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.021104799932800233,
+        "effective_count": 56,
+        "first_use_seconds": {
+          "131072": 0.003494200063869357,
+          "16384": 0.004940799903124571,
+          "262144": 0.004360000020824373,
+          "32768": 0.0029221000149846077,
+          "65536": 0.002632400020956993
+        },
+        "grad_flags": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "jacobian_flag": true,
+        "kernel": "entropy",
+        "measurement_seconds": 0.12173790007364005,
+        "name": "boost",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 2.220446049250313e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                2.220446049250313e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 1.1102230246251565e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                1.1102230246251565e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 4.440892098500626e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                4.440892098500626e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 5.551115123125783e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                5.551115123125783e-16
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 55,
+        "round_seconds": {
+          "131072": [
+            0.0028039999306201935,
+            0.00275859993416816,
+            0.0028180000372231007,
+            0.0027538000140339136,
+            0.002725499914959073
+          ],
+          "16384": [
+            0.003729599993675947,
+            0.003927099984139204,
+            0.003572199959307909,
+            0.003727799979969859,
+            0.0036045999731868505
+          ],
+          "262144": [
+            0.004670799942687154,
+            0.0038710000226274133,
+            0.004643099964596331,
+            0.004154999973252416,
+            0.00465690006967634
+          ],
+          "32768": [
+            0.0029909000732004642,
+            0.003246299922466278,
+            0.002940000034868717,
+            0.0028734999941661954,
+            0.0031554000452160835
+          ],
+          "65536": [
+            0.0026503000408411026,
+            0.0038622000720351934,
+            0.002568199997767806,
+            0.0026842999504879117,
+            0.00278550002258271
+          ]
+        },
+        "selection_wall_seconds": 0.10295830003451556,
+        "signatures": {
+          "131072": [
+            11,
+            56,
+            56
+          ],
+          "16384": [
+            1,
+            56,
+            56
+          ],
+          "262144": [
+            23,
+            56,
+            56
+          ],
+          "32768": [
+            2,
+            56,
+            56
+          ],
+          "65536": [
+            5,
+            56,
+            56
+          ]
+        },
+        "synthetic_setup_seconds": 0.0001732000382617116,
+        "timing_scope": "source-derived entropy function",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 1716736,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 318976,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 3394048,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 458752,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 878080,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 15,
+        "K": 50,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.06073750008363277,
+        "effective_count": 56,
+        "first_use_seconds": {
+          "131072": 0.01138309994712472,
+          "16384": 0.011701200040988624,
+          "262144": 0.013534999918192625,
+          "32768": 0.008981799939647317,
+          "65536": 0.007375000044703484
+        },
+        "grad_flags": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "jacobian_flag": true,
+        "kernel": "entropy",
+        "measurement_seconds": 0.36765009991358966,
+        "name": "boost_high_d",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 6.661338147750939e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                6.661338147750939e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 5.551115123125783e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                5.551115123125783e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 2.220446049250313e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                2.220446049250313e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 5.551115123125783e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                5.551115123125783e-16
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 55,
+        "round_seconds": {
+          "131072": [
+            0.011898199911229312,
+            0.011025900021195412,
+            0.010293900035321712,
+            0.0125537000130862,
+            0.010768000036478043
+          ],
+          "16384": [
+            0.010005900054238737,
+            0.011242700042203069,
+            0.010495400056242943,
+            0.010028599994257092,
+            0.010881499969400465
+          ],
+          "262144": [
+            0.014248999999836087,
+            0.013293500058352947,
+            0.0128573999973014,
+            0.013610300025902689,
+            0.013665599981322885
+          ],
+          "32768": [
+            0.010321100009605289,
+            0.009054800029844046,
+            0.009035799885168672,
+            0.008786299964413047,
+            0.008602900081314147
+          ],
+          "65536": [
+            0.0076793000334873796,
+            0.007899099960923195,
+            0.00723050010856241,
+            0.007436000043526292,
+            0.007562600076198578
+          ]
+        },
+        "selection_wall_seconds": 0.31375189998652786,
+        "signatures": {
+          "131072": [
+            3,
+            56,
+            56
+          ],
+          "16384": [
+            1,
+            21,
+            56
+          ],
+          "262144": [
+            6,
+            56,
+            56
+          ],
+          "32768": [
+            1,
+            43,
+            56
+          ],
+          "65536": [
+            1,
+            56,
+            56
+          ]
+        },
+        "synthetic_setup_seconds": 0.0004403999773785472,
+        "timing_scope": "source-derived entropy function",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 1874880,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 822360,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 3077760,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 979880,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 1072960,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 4,
+        "K": 20,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.19597440003417432,
+        "effective_count": 4096,
+        "first_use_seconds": {
+          "131072": 0.04440629994496703,
+          "16384": 0.028610699926503003,
+          "262144": 0.04847249994054437,
+          "32768": 0.025500699994154274,
+          "65536": 0.02623329998459667
+        },
+        "grad_flags": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "jacobian_flag": true,
+        "kernel": "entropy",
+        "measurement_seconds": 1.1924586000386626,
+        "name": "fine",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 8.881784197001252e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                8.881784197001252e-16,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 4096,
+        "round_seconds": {
+          "131072": [
+            0.04374470002949238,
+            0.04334749991539866,
+            0.04446839995216578,
+            0.0429200999205932,
+            0.043790799914859235
+          ],
+          "16384": [
+            0.027820899966172874,
+            0.028111399966292083,
+            0.02779800002463162,
+            0.02836090000346303,
+            0.03049719997216016
+          ],
+          "262144": [
+            0.04554900003131479,
+            0.046933699981309474,
+            0.04605560004711151,
+            0.04618409997783601,
+            0.045573399984277785
+          ],
+          "32768": [
+            0.025428099907003343,
+            0.02594880003016442,
+            0.025504999910481274,
+            0.027062400011345744,
+            0.02587490004952997
+          ],
+          "65536": [
+            0.02521979995071888,
+            0.025875400053337216,
+            0.024041700060479343,
+            0.024141900008544326,
+            0.025842800037935376
+          ]
+        },
+        "selection_wall_seconds": 1.0184989999979734,
+        "signatures": {
+          "131072": [
+            1,
+            1638,
+            4096
+          ],
+          "16384": [
+            1,
+            204,
+            4096
+          ],
+          "262144": [
+            1,
+            3276,
+            4096
+          ],
+          "32768": [
+            1,
+            409,
+            4096
+          ],
+          "65536": [
+            1,
+            819,
+            4096
+          ]
+        },
+        "synthetic_setup_seconds": 0.00020340003538876772,
+        "timing_scope": "source-derived entropy function",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 6972608,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 5458304,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 8702336,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 5674784,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 6107744,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 15,
+        "K": 26,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.9465236000251025,
+        "effective_count": 4096,
+        "first_use_seconds": {
+          "131072": 0.24847409990616143,
+          "16384": 0.13380319997668266,
+          "262144": 0.2388767000520602,
+          "32768": 0.1140659999800846,
+          "65536": 0.10732650000136346
+        },
+        "grad_flags": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "jacobian_flag": true,
+        "kernel": "entropy",
+        "measurement_seconds": 5.954266100074165,
+        "name": "fine_high_d",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.552713678800501e-15,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                3.552713678800501e-15,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 7.105427357601002e-15,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                7.105427357601002e-15,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.552713678800501e-15,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                3.552713678800501e-15,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.552713678800501e-15,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                3.552713678800501e-15,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 4096,
+        "round_seconds": {
+          "131072": [
+            0.24178759998176247,
+            0.2516833000117913,
+            0.250988700077869,
+            0.2491212000604719,
+            0.24849869997706264
+          ],
+          "16384": [
+            0.13075389992445707,
+            0.13247529999352992,
+            0.1320492000086233,
+            0.13417320000007749,
+            0.13378429994918406
+          ],
+          "262144": [
+            0.2439637000206858,
+            0.24919679993763566,
+            0.2451100000180304,
+            0.23718519997783005,
+            0.2445257999934256
+          ],
+          "32768": [
+            0.11513709998689592,
+            0.11605109996162355,
+            0.11365559999831021,
+            0.11714109999593347,
+            0.11676430003717542
+          ],
+          "65536": [
+            0.10848349996376783,
+            0.11206849990412593,
+            0.10979500005487353,
+            0.11570249998476356,
+            0.10654339997563511
+          ]
+        },
+        "selection_wall_seconds": 5.110891700023785,
+        "signatures": {
+          "131072": [
+            1,
+            336,
+            4096
+          ],
+          "16384": [
+            1,
+            42,
+            4096
+          ],
+          "262144": [
+            1,
+            672,
+            4096
+          ],
+          "32768": [
+            1,
+            84,
+            4096
+          ],
+          "65536": [
+            1,
+            168,
+            4096
+          ]
+        },
+        "synthetic_setup_seconds": 0.00036090007051825523,
+        "timing_scope": "source-derived entropy function",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 26868096,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 25722672,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 28177152,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 25886304,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 26213568,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 4,
+        "K": 20,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.015526099945418537,
+        "effective_count": 200,
+        "first_use_seconds": {
+          "131072": 0.0025475999573245645,
+          "16384": 0.0024028999032452703,
+          "262144": 0.004167499952018261,
+          "32768": 0.001953599974513054,
+          "65536": 0.0018400999251753092
+        },
+        "grad_flags": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "jacobian_flag": true,
+        "kernel": "entropy",
+        "measurement_seconds": 0.08646650006994605,
+        "name": "active",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.3306690738754696e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                3.3306690738754696e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 3.3306690738754696e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                3.3306690738754696e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 7.771561172376096e-16,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                7.771561172376096e-16
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": false,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 1.3322676295501878e-15,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0,
+                1.3322676295501878e-15
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 200,
+        "round_seconds": {
+          "131072": [
+            0.002572300028987229,
+            0.0024710000725463033,
+            0.002249099896289408,
+            0.0025132999289780855,
+            0.002135000075213611
+          ],
+          "16384": [
+            0.002458499977365136,
+            0.0025390000082552433,
+            0.002837300067767501,
+            0.0022380000445991755,
+            0.0024051000364124775
+          ],
+          "262144": [
+            0.003103499999269843,
+            0.0029854000313207507,
+            0.0029154999647289515,
+            0.002624099957756698,
+            0.003597100032493472
+          ],
+          "32768": [
+            0.0019307000329717994,
+            0.0019583000103011727,
+            0.002142300014384091,
+            0.001889800070784986,
+            0.002023100038059056
+          ],
+          "65536": [
+            0.002079300000332296,
+            0.0023349999682977796,
+            0.0018683000234887004,
+            0.0020014001056551933,
+            0.0018965998897328973
+          ]
+        },
+        "selection_wall_seconds": 0.0730174999916926,
+        "signatures": {
+          "131072": [
+            8,
+            200,
+            200
+          ],
+          "16384": [
+            1,
+            200,
+            200
+          ],
+          "262144": [
+            16,
+            200,
+            200
+          ],
+          "32768": [
+            2,
+            200,
+            200
+          ],
+          "65536": [
+            4,
+            200,
+            200
+          ]
+        },
+        "synthetic_setup_seconds": 0.00022460008040070534,
+        "timing_scope": "source-derived entropy function",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 1945600,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 467200,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 3635200,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 678400,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 1100800,
+            "detail": "estimated transient antithetic setup, delta, d2/E, and sample/gradient work arrays",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      }
+    ],
+    "pdf": [
+      {
+        "D": 4,
+        "K": 10,
+        "budget_aliases": {
+          "131072": 65536,
+          "16384": 65536,
+          "262144": 65536,
+          "32768": 65536,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.0006176000460982323,
+        "effective_count": 8,
+        "first_use_seconds": {
+          "65536": 5.989999044686556e-05
+        },
+        "grad_flags": null,
+        "jacobian_flag": true,
+        "kernel": "pdf",
+        "measurement_seconds": 0.0004173999186605215,
+        "name": "small_batch",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 8,
+        "round_seconds": {
+          "65536": [
+            3.269989974796772e-05,
+            2.9799994081258774e-05,
+            2.559996210038662e-05,
+            2.450007013976574e-05,
+            2.4399952962994576e-05
+          ]
+        },
+        "selection_wall_seconds": 0.00020100001711398363,
+        "signatures": {
+          "131072": [
+            8
+          ],
+          "16384": [
+            8
+          ],
+          "262144": [
+            8
+          ],
+          "32768": [
+            8
+          ],
+          "65536": [
+            8
+          ]
+        },
+        "synthetic_setup_seconds": 0.00012310000602155924,
+        "timing_scope": "public PDF input adapter plus source-derived kernel",
+        "workspace_estimates": {
+          "65536": {
+            "bytes_estimate": 9280,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 4,
+        "K": 20,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.03358519996982068,
+        "effective_count": 8192,
+        "first_use_seconds": {
+          "131072": 0.007209400064311922,
+          "16384": 0.004600300104357302,
+          "262144": 0.008570299949496984,
+          "32768": 0.004384400090202689,
+          "65536": 0.004400400095619261
+        },
+        "grad_flags": null,
+        "jacobian_flag": true,
+        "kernel": "pdf",
+        "measurement_seconds": 0.19725069997366518,
+        "name": "sieve_8192",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 8192,
+        "round_seconds": {
+          "131072": [
+            0.007379699964076281,
+            0.007855199975892901,
+            0.007435199921019375,
+            0.007489899988286197,
+            0.007765499991364777
+          ],
+          "16384": [
+            0.004268300021067262,
+            0.005610099993646145,
+            0.004478599992580712,
+            0.0044272999512031674,
+            0.004496500012464821
+          ],
+          "262144": [
+            0.00727609999012202,
+            0.007181899971328676,
+            0.0072682000463828444,
+            0.007117500063031912,
+            0.007281300029717386
+          ],
+          "32768": [
+            0.004107399960048497,
+            0.004070499911904335,
+            0.00410839996766299,
+            0.004402299993671477,
+            0.004278599983081222
+          ],
+          "65536": [
+            0.004254000028595328,
+            0.004027700051665306,
+            0.004178400035016239,
+            0.0041356999427080154,
+            0.004110399982891977
+          ]
+        },
+        "selection_wall_seconds": 0.16748319996986538,
+        "signatures": {
+          "131072": [
+            1638
+          ],
+          "16384": [
+            204
+          ],
+          "262144": [
+            3276
+          ],
+          "32768": [
+            409
+          ],
+          "65536": [
+            819
+          ]
+        },
+        "synthetic_setup_seconds": 0.0005481999833136797,
+        "timing_scope": "public PDF input adapter plus source-derived kernel",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 3996800,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 784640,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 7665920,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 1243840,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 2162240,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 15,
+        "K": 26,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 1.3363914999645203,
+        "effective_count": 100000,
+        "first_use_seconds": {
+          "131072": 0.3389463999774307,
+          "16384": 0.15609350008890033,
+          "262144": 0.32902010006364435,
+          "32768": 0.14865059999283403,
+          "65536": 0.1436235000146553
+        },
+        "grad_flags": null,
+        "jacobian_flag": true,
+        "kernel": "pdf",
+        "measurement_seconds": 7.864305900060572,
+        "name": "large_export",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 100000,
+        "round_seconds": {
+          "131072": [
+            0.34525390004273504,
+            0.33953820005990565,
+            0.3483669999986887,
+            0.34563899994827807,
+            0.34473110001999885
+          ],
+          "16384": [
+            0.15177659993059933,
+            0.15805910003837198,
+            0.15422240004409105,
+            0.1547063000034541,
+            0.1548555000917986
+          ],
+          "262144": [
+            0.32751959993038327,
+            0.3306778999976814,
+            0.33444350003264844,
+            0.34291949996259063,
+            0.34501309995539486
+          ],
+          "32768": [
+            0.1477701999247074,
+            0.14119649992790073,
+            0.14318770007230341,
+            0.14659230003599077,
+            0.14688440004829317
+          ],
+          "65536": [
+            0.14466280001215637,
+            0.13760220003314316,
+            0.13864839996676892,
+            0.14010860002599657,
+            0.13914199999999255
+          ]
+        },
+        "selection_wall_seconds": 6.7272403000388294,
+        "signatures": {
+          "131072": [
+            336
+          ],
+          "16384": [
+            42
+          ],
+          "262144": [
+            672
+          ],
+          "32768": [
+            84
+          ],
+          "65536": [
+            168
+          ]
+        },
+        "synthetic_setup_seconds": 0.02064170001540333,
+        "timing_scope": "public PDF input adapter plus source-derived kernel",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 16084736,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 13210592,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 19369472,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 13621184,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 14442368,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      }
+    ]
+  },
+  "configuration": {
+    "budgets": [
+      16384,
+      32768,
+      65536,
+      131072,
+      262144
+    ],
+    "calibration_seconds": 90.0,
+    "case_seconds": 20.0,
+    "deadline_seconds": 180.0,
+    "default_budget": 65536,
+    "heldout_repeats": 4,
+    "repeats": 5,
+    "selection_gates": {
+      "minimum_case_median_speedup": 0.95,
+      "minimum_median_advantage": 0.1,
+      "minimum_win_fraction": 0.8
+    },
+    "trace_allocations": true,
+    "warmups": 1
+  },
+  "environment": {
+    "logical_cpu_count": 22,
+    "machine": "AMD64",
+    "numpy_configuration": {
+      "Build Dependencies": {
+        "blas": {
+          "detection method": "pkgconfig",
+          "found": true,
+          "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+          "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+          "name": "scipy-openblas",
+          "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+          "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+          "version": "0.3.34.0.0"
+        },
+        "lapack": {
+          "detection method": "pkgconfig",
+          "found": true,
+          "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+          "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+          "name": "scipy-openblas",
+          "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+          "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+          "version": "0.3.34.0.0"
+        }
+      },
+      "Compilers": {
+        "c": {
+          "commands": "cl",
+          "linker": "link",
+          "name": "msvc",
+          "version": "19.44.35228"
+        },
+        "c++": {
+          "commands": "cl",
+          "linker": "link",
+          "name": "msvc",
+          "version": "19.44.35228"
+        },
+        "cython": {
+          "commands": "cython",
+          "linker": "cython",
+          "name": "cython",
+          "version": "3.2.9"
+        }
+      },
+      "Machine Information": {
+        "build": {
+          "cpu": "x86_64",
+          "endian": "little",
+          "family": "x86_64",
+          "system": "windows"
+        },
+        "host": {
+          "cpu": "x86_64",
+          "endian": "little",
+          "family": "x86_64",
+          "system": "windows"
+        }
+      },
+      "Python Information": {
+        "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-03ol50fu\\Scripts\\python.exe",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "X86_V2"
+        ],
+        "found": [
+          "X86_V3"
+        ]
+      }
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+    "thread_environment": {
+      "BLIS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": null
+    },
+    "threadpools": {
+      "available": true,
+      "libraries": [
+        {
+          "architecture": "Haswell",
+          "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-327b2e0bcffce2882e0dc04cdeb4eaa6.dll",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libscipy_openblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.34.0.0"
+        },
+        {
+          "architecture": "Haswell",
+          "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-197ee2fc9b4d071f7e048078cac74115.dll",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libscipy_openblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.31.dev"
+        }
+      ]
+    },
+    "versions": {
+      "numpy": "2.5.2",
+      "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+      "scipy": "1.18.1",
+      "threadpoolctl": null
+    }
+  },
+  "heldout": {
+    "entropy": {
+      "cases": [
+        {
+          "complete": true,
+          "name": "adam",
+          "round_seconds": {
+            "default": [
+              0.0004152000183239579,
+              0.00038430001586675644,
+              0.0003717000363394618,
+              0.0003698000218719244
+            ],
+            "default_same_budget_control": [
+              0.0003936999710276723,
+              0.00040630006697028875,
+              0.0003731000469997525,
+              0.0003789999755099416
+            ],
+            "selected": [
+              0.00042699999175965786,
+              0.0003847000189125538,
+              0.00039709999691694975,
+              0.0003744000568985939
+            ],
+            "selected_same_budget_control": [
+              0.0004016000311821699,
+              0.00038839993067085743,
+              0.00038590002804994583,
+              0.000377100077457726
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "boost",
+          "round_seconds": {
+            "default": [
+              0.002652799943462014,
+              0.002623800071887672,
+              0.0025664999848231673,
+              0.002612499985843897
+            ],
+            "default_same_budget_control": [
+              0.0025987999979406595,
+              0.00246850005351007,
+              0.002498599933460355,
+              0.0025098000187426805
+            ],
+            "selected": [
+              0.00253950001206249,
+              0.002465300029143691,
+              0.0025427000364288688,
+              0.0025396000128239393
+            ],
+            "selected_same_budget_control": [
+              0.0025234000058844686,
+              0.00246850005351007,
+              0.002495700027793646,
+              0.0025967999827116728
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "boost_high_d",
+          "round_seconds": {
+            "default": [
+              0.008596800034865737,
+              0.007656999980099499,
+              0.007140500005334616,
+              0.007171100005507469
+            ],
+            "default_same_budget_control": [
+              0.00751159992069006,
+              0.007237900048494339,
+              0.007313000038266182,
+              0.007264000014401972
+            ],
+            "selected": [
+              0.00760370003990829,
+              0.007250800030305982,
+              0.008583500050008297,
+              0.007569200010038912
+            ],
+            "selected_same_budget_control": [
+              0.007396199973300099,
+              0.007329300045967102,
+              0.007484600064344704,
+              0.007170199998654425
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "fine",
+          "round_seconds": {
+            "default": [
+              0.024284100043587387,
+              0.0246480000205338,
+              0.024480100022628903,
+              0.024665999924764037
+            ],
+            "default_same_budget_control": [
+              0.024869099957868457,
+              0.025799000053666532,
+              0.02479609998408705,
+              0.027905100025236607
+            ],
+            "selected": [
+              0.024596800096333027,
+              0.025846400065347552,
+              0.02655050007160753,
+              0.025446400046348572
+            ],
+            "selected_same_budget_control": [
+              0.02512949996162206,
+              0.02442569995764643,
+              0.025069399969652295,
+              0.023974900017492473
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "fine_high_d",
+          "round_seconds": {
+            "default": [
+              0.11041960003785789,
+              0.10683169995900244,
+              0.11255010007880628,
+              0.10779909999109805
+            ],
+            "default_same_budget_control": [
+              0.11184460006188601,
+              0.10697140009142458,
+              0.10795059998054057,
+              0.10682649991940707
+            ],
+            "selected": [
+              0.10936230001971126,
+              0.10769139998592436,
+              0.1073776000412181,
+              0.1080862000817433
+            ],
+            "selected_same_budget_control": [
+              0.10668129997793585,
+              0.11035410000476986,
+              0.10720770002808422,
+              0.10908770002424717
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "active",
+          "round_seconds": {
+            "default": [
+              0.0018590000690892339,
+              0.001736900070682168,
+              0.0017791000427678227,
+              0.0019521000795066357
+            ],
+            "default_same_budget_control": [
+              0.0018328999867662787,
+              0.003031899919733405,
+              0.0017299000173807144,
+              0.0018231000285595655
+            ],
+            "selected": [
+              0.0018059000140056014,
+              0.0018344999989494681,
+              0.0017909000162035227,
+              0.0018177999882027507
+            ],
+            "selected_same_budget_control": [
+              0.0018427999457344413,
+              0.00184599997010082,
+              0.0018177999882027507,
+              0.001765900058671832
+            ]
+          },
+          "selected_budget": 65536
+        }
+      ],
+      "clone_setup_seconds": 0.061475299997255206,
+      "complete": true,
+      "gates": {
+        "active": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "adam": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "boost": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "boost_high_d": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "fine": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "fine_high_d": {
+          "pass": true,
+          "reason": "default selected"
+        }
+      }
+    },
+    "pdf": {
+      "cases": [
+        {
+          "complete": true,
+          "name": "small_batch",
+          "round_seconds": {
+            "default": [
+              2.8099981136620045e-05,
+              2.4000066332519054e-05,
+              2.2600055672228336e-05,
+              2.3699947632849216e-05
+            ],
+            "default_same_budget_control": [
+              2.4699955247342587e-05,
+              2.410006709396839e-05,
+              2.2600055672228336e-05,
+              2.3099943064153194e-05
+            ],
+            "selected": [
+              3.42000275850296e-05,
+              2.720009069889784e-05,
+              2.329994458705187e-05,
+              2.3700064048171043e-05
+            ],
+            "selected_same_budget_control": [
+              2.589996438473463e-05,
+              2.319994382560253e-05,
+              2.3399945348501205e-05,
+              2.480007242411375e-05
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "sieve_8192",
+          "round_seconds": {
+            "default": [
+              0.003963100025430322,
+              0.004026200040243566,
+              0.004487499943934381,
+              0.004408400040119886
+            ],
+            "default_same_budget_control": [
+              0.00415279995650053,
+              0.004041100037284195,
+              0.004182299948297441,
+              0.004463199991732836
+            ],
+            "selected": [
+              0.005120699992403388,
+              0.005315499962307513,
+              0.004257500055246055,
+              0.004448199993930757
+            ],
+            "selected_same_budget_control": [
+              0.004166599945165217,
+              0.003961200010962784,
+              0.004092899966053665,
+              0.004300699918530881
+            ]
+          },
+          "selected_budget": 65536
+        },
+        {
+          "complete": true,
+          "name": "large_export",
+          "round_seconds": {
+            "default": [
+              0.14062890002969652,
+              0.14028230006806552,
+              0.14128550002351403,
+              0.14051509997807443
+            ],
+            "default_same_budget_control": [
+              0.13796490000095218,
+              0.13931110000703484,
+              0.1446091999532655,
+              0.1394089999375865
+            ],
+            "selected": [
+              0.14808120008092374,
+              0.14107330003753304,
+              0.1426799000473693,
+              0.13983430003281683
+            ],
+            "selected_same_budget_control": [
+              0.1428701999830082,
+              0.14044880005531013,
+              0.138867300003767,
+              0.13898500008508563
+            ]
+          },
+          "selected_budget": 65536
+        }
+      ],
+      "clone_setup_seconds": 0.040033700061030686,
+      "complete": true,
+      "gates": {
+        "large_export": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "sieve_8192": {
+          "pass": true,
+          "reason": "default selected"
+        },
+        "small_batch": {
+          "pass": true,
+          "reason": "default selected"
+        }
+      }
+    }
+  },
+  "mode": "full",
+  "numerical_validation": {
+    "bounded_pdf_input_unchanged": true,
+    "checks": [
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "value"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "log_value"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "log_value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "variant": "gradient"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "variant": "gradient_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_value_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_log_value_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_log_value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_jacobian_default_clone"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 8.881784197001252e-16,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          8.881784197001252e-16
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_jacobian_partial_components"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 1.1102230246251565e-15,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          1.1102230246251565e-15
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_jacobian_partial_samples"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_raw_default_clone"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 2.6645352591003757e-15,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          2.6645352591003757e-15
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_raw_partial_components"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 3.552713678800501e-15,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          3.552713678800501e-15
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_raw_partial_samples"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "sigma_only_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "sigma_only_partial_components"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 2.220446049250313e-16,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          2.220446049250313e-16
+        ],
+        "rng_advancement_exact": true,
+        "variant": "sigma_only_partial_samples"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "value_only_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "value_only_partial_components"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "value_only_partial_samples"
+      }
+    ],
+    "entropy_state_unchanged": true,
+    "numpy_global_rng_unchanged": true,
+    "pass": true,
+    "pdf_state_unchanged": true
+  },
+  "provenance": {
+    "script_sha256": "0e78c525f99f41fb35075ab70f21d30afc7a28d526072616d793190f95366860",
+    "sources": {
+      "entmc_vbmc": {
+        "sha256": "dad1948227aacaa89b81485e62eac0eef0031296e62620fe4043944a750ac9c5",
+        "source_file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\entropy\\entmc_vbmc.py"
+      },
+      "variational_posterior_pdf": {
+        "sha256": "b5ba2b742b813f1e93866566e5da214f6518575d00891e5ff462b6fdbba70086",
+        "source_file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\variational_posterior\\variational_posterior.py"
+      }
+    }
+  },
+  "purpose": "developer-only machine-local chunk calibration evidence",
+  "schema_version": 1,
+  "selection": {
+    "entropy": {
+      "by_regime": {
+        "active": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.8306878794361442
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8306878794361442,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.808342719317607,
+                0.94496151345379,
+                0.8306878794361442,
+                0.7963236232091758,
+                0.8883371535914998
+              ],
+              "win_fraction": 0.0
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.8457596174398819
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8457596174398819,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.8457596174398819,
+                0.919653391376848,
+                0.6584781231682528,
+                0.894280637073733,
+                0.7885742218697585
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.6699855005063607
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.6699855005063607,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.6699855005063607,
+                0.7821397279428473,
+                0.6408163423395523,
+                0.7626996447826473,
+                0.5272580335827342
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                1.0590538843740496
+              ],
+              "eligible": false,
+              "median_paired_speedup": 1.0590538843740496,
+              "no_case_median_below_0_95": true,
+              "paired_speedups": [
+                1.0769668849757912,
+                1.1923606985727755,
+                0.8721000844626493,
+                1.0590538843740496,
+                0.9374721239946584
+              ],
+              "win_fraction": 0.6
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "adam": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "eligible": false,
+              "ratios": []
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.8216000381322772
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8216000381322772,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.8143593520732294,
+                1.2729861632972426,
+                0.9911758393883964,
+                0.8216000381322772,
+                0.7799339287722749
+              ],
+              "win_fraction": 0.2
+            },
+            "262144": {
+              "eligible": false,
+              "ratios": []
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.9005957577651369
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.9005957577651369,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.9084071446048446,
+                0.8735496838150231,
+                1.205834241427173,
+                0.7731471268050438,
+                0.9005957577651369
+              ],
+              "win_fraction": 0.2
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "boost": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.9747621239044899
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.9747621239044899,
+              "no_case_median_below_0_95": true,
+              "paired_speedups": [
+                0.9451854873102314,
+                1.4000580599592516,
+                0.9113555584969221,
+                0.9747621239044899,
+                1.0220143494756035
+              ],
+              "win_fraction": 0.4
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.7200761749319006
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.7200761749319006,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.7106124102678714,
+                0.9834738325058876,
+                0.7189407163717056,
+                0.7200761749319006,
+                0.7727625931595485
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.598144684426588
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.598144684426588,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.567418873289692,
+                0.9977266983878117,
+                0.553121840440729,
+                0.6460409068033562,
+                0.598144684426588
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.8861212263788885
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8861212263788885,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.8861212263788885,
+                1.189723736031452,
+                0.8735374038464889,
+                0.9341569361188796,
+                0.8827723846951891
+              ],
+              "win_fraction": 0.2
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "boost_high_d": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.7023216986050573
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.7023216986050573,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.6454169614547988,
+                0.716413167699555,
+                0.7024062875831528,
+                0.5923353302830937,
+                0.7023216986050573
+              ],
+              "win_fraction": 0.0
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.7025981242291797
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.7025981242291797,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.7674771876453279,
+                0.7025981242291797,
+                0.6889208672194935,
+                0.7414793737694733,
+                0.6949961032454289
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.5534041744624877
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.5534041744624877,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.5389360680451764,
+                0.5942076899424098,
+                0.5623609835643285,
+                0.5463509275603281,
+                0.5534041744624877
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.8463175709507023
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8463175709507023,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.7440389131333551,
+                0.8723660307116958,
+                0.8002058700337671,
+                0.8463175709507023,
+                0.8790756610814133
+              ],
+              "win_fraction": 0.0
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "fine": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.5765224114856397
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.5765224114856397,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.5765224114856397,
+                0.5969294677625757,
+                0.5406468432941316,
+                0.5624847112007996,
+                0.5901422236675405
+              ],
+              "win_fraction": 0.0
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.8648715749038116
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8648715749038116,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.9065055401293041,
+                0.9204593184389245,
+                0.8648715749038116,
+                0.8512388536892856,
+                0.8473827125613622
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.5513181373648709
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.5513181373648709,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.55368504101913,
+                0.5513181373648709,
+                0.5220146960605538,
+                0.5227318497086691,
+                0.5670588555352639
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.991808276786458
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.991808276786458,
+              "no_case_median_below_0_95": true,
+              "paired_speedups": [
+                0.991808276786458,
+                0.9971713537141649,
+                0.9426269415746757,
+                0.8920827420488568,
+                0.9987594150495983
+              ],
+              "win_fraction": 0.0
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "fine_high_d": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.44527586812027475
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.44527586812027475,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.4486727192459436,
+                0.44527586812027475,
+                0.4374499729302942,
+                0.4644426084840545,
+                0.42874831934923385
+              ],
+              "win_fraction": 0.0
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.8314703917002413
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8314703917002413,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.829676973508584,
+                0.8459576986019232,
+                0.8314703917002413,
+                0.8623368898162729,
+                0.7963819373133021
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.4479417406339886
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.4479417406339886,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.4446706618835895,
+                0.44971885647075865,
+                0.4479417406339886,
+                0.4878150069885406,
+                0.435714349890685
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.9656823583851026
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.9656823583851026,
+              "no_case_median_below_0_95": true,
+              "paired_speedups": [
+                0.9422115024272336,
+                0.9656823583851026,
+                0.9660324705206423,
+                0.9877190839831634,
+                0.9124655390535791
+              ],
+              "win_fraction": 0.0
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        }
+      },
+      "scope": "per_regime_evidence_only"
+    },
+    "pdf": {
+      "by_regime": {
+        "large_export": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.40526279519908404
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.40526279519908404,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.41900410102318963,
+                0.40526279519908404,
+                0.39799521759320144,
+                0.4053610849671554,
+                0.40362473821456935
+              ],
+              "win_fraction": 0.0
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.8990159660797029
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.8990159660797029,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.9531297978628076,
+                0.8705743611075699,
+                0.8990159660797029,
+                0.9056424982232035,
+                0.8985279820058631
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.41456449281637714
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.41456449281637714,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.4416920393249916,
+                0.41612154919971367,
+                0.41456449281637714,
+                0.40857577373488857,
+                0.4032948314657663
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.9682982539474945
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.9682982539474945,
+              "no_case_median_below_0_95": true,
+              "paired_speedups": [
+                0.9789714034755699,
+                0.974543987304268,
+                0.9682982539474945,
+                0.9557705281354999,
+                0.9472891604162522
+              ],
+              "win_fraction": 0.0
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "sieve_8192": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "case_median_speedups": [
+                0.5521702491590046
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.5521702491590046,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.5764462036808299,
+                0.5127431591844964,
+                0.561975478723022,
+                0.5521702491590046,
+                0.5293155608090573
+              ],
+              "win_fraction": 0.0
+            },
+            "16384": {
+              "case_median_speedups": [
+                0.9329701339566411
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.9329701339566411,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.996649721809303,
+                0.7179373016928353,
+                0.9329701339566411,
+                0.934135926702706,
+                0.9141332083837361
+              ],
+              "win_fraction": 0.0
+            },
+            "262144": {
+              "case_median_speedups": [
+                0.5748878688466613
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.5748878688466613,
+              "no_case_median_below_0_95": false,
+              "paired_speedups": [
+                0.5846538714930426,
+                0.5608126077701647,
+                0.5748878688466613,
+                0.5810607525230271,
+                0.5645145737871093
+              ],
+              "win_fraction": 0.0
+            },
+            "32768": {
+              "case_median_speedups": [
+                0.9894853553211341
+              ],
+              "eligible": false,
+              "median_paired_speedup": 0.9894853553211341,
+              "no_case_median_below_0_95": true,
+              "paired_speedups": [
+                1.0356916954698272,
+                0.9894853553211341,
+                1.017038279598923,
+                0.9394407352187011,
+                0.9606880753390468
+              ],
+              "win_fraction": 0.4
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        },
+        "small_batch": {
+          "accepted": false,
+          "budget": 65536,
+          "candidates": {
+            "131072": {
+              "eligible": false,
+              "ratios": []
+            },
+            "16384": {
+              "eligible": false,
+              "ratios": []
+            },
+            "262144": {
+              "eligible": false,
+              "ratios": []
+            },
+            "32768": {
+              "eligible": false,
+              "ratios": []
+            }
+          },
+          "reason": "no candidate cleared conservative selection gates"
+        }
+      },
+      "scope": "per_regime_evidence_only"
+    }
+  },
+  "soft_deadlines": {
+    "maximum_observed_call_seconds": 0.3483669999986887,
+    "note": "deadlines are checked between calls and cannot interrupt NumPy",
+    "total_deadline_overshoot_seconds": 0.0
+  },
+  "status": "complete",
+  "tentative_selection": {
+    "entropy": {
+      "active": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.8306878794361442
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8306878794361442,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.808342719317607,
+              0.94496151345379,
+              0.8306878794361442,
+              0.7963236232091758,
+              0.8883371535914998
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.8457596174398819
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8457596174398819,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.8457596174398819,
+              0.919653391376848,
+              0.6584781231682528,
+              0.894280637073733,
+              0.7885742218697585
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.6699855005063607
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.6699855005063607,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.6699855005063607,
+              0.7821397279428473,
+              0.6408163423395523,
+              0.7626996447826473,
+              0.5272580335827342
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              1.0590538843740496
+            ],
+            "eligible": false,
+            "median_paired_speedup": 1.0590538843740496,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              1.0769668849757912,
+              1.1923606985727755,
+              0.8721000844626493,
+              1.0590538843740496,
+              0.9374721239946584
+            ],
+            "win_fraction": 0.6
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "adam": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "eligible": false,
+            "ratios": []
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.8216000381322772
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8216000381322772,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.8143593520732294,
+              1.2729861632972426,
+              0.9911758393883964,
+              0.8216000381322772,
+              0.7799339287722749
+            ],
+            "win_fraction": 0.2
+          },
+          "262144": {
+            "eligible": false,
+            "ratios": []
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.9005957577651369
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9005957577651369,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.9084071446048446,
+              0.8735496838150231,
+              1.205834241427173,
+              0.7731471268050438,
+              0.9005957577651369
+            ],
+            "win_fraction": 0.2
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "boost": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.9747621239044899
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9747621239044899,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              0.9451854873102314,
+              1.4000580599592516,
+              0.9113555584969221,
+              0.9747621239044899,
+              1.0220143494756035
+            ],
+            "win_fraction": 0.4
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.7200761749319006
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.7200761749319006,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.7106124102678714,
+              0.9834738325058876,
+              0.7189407163717056,
+              0.7200761749319006,
+              0.7727625931595485
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.598144684426588
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.598144684426588,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.567418873289692,
+              0.9977266983878117,
+              0.553121840440729,
+              0.6460409068033562,
+              0.598144684426588
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.8861212263788885
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8861212263788885,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.8861212263788885,
+              1.189723736031452,
+              0.8735374038464889,
+              0.9341569361188796,
+              0.8827723846951891
+            ],
+            "win_fraction": 0.2
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "boost_high_d": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.7023216986050573
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.7023216986050573,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.6454169614547988,
+              0.716413167699555,
+              0.7024062875831528,
+              0.5923353302830937,
+              0.7023216986050573
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.7025981242291797
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.7025981242291797,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.7674771876453279,
+              0.7025981242291797,
+              0.6889208672194935,
+              0.7414793737694733,
+              0.6949961032454289
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.5534041744624877
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.5534041744624877,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.5389360680451764,
+              0.5942076899424098,
+              0.5623609835643285,
+              0.5463509275603281,
+              0.5534041744624877
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.8463175709507023
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8463175709507023,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.7440389131333551,
+              0.8723660307116958,
+              0.8002058700337671,
+              0.8463175709507023,
+              0.8790756610814133
+            ],
+            "win_fraction": 0.0
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "fine": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.5765224114856397
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.5765224114856397,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.5765224114856397,
+              0.5969294677625757,
+              0.5406468432941316,
+              0.5624847112007996,
+              0.5901422236675405
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.8648715749038116
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8648715749038116,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.9065055401293041,
+              0.9204593184389245,
+              0.8648715749038116,
+              0.8512388536892856,
+              0.8473827125613622
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.5513181373648709
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.5513181373648709,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.55368504101913,
+              0.5513181373648709,
+              0.5220146960605538,
+              0.5227318497086691,
+              0.5670588555352639
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.991808276786458
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.991808276786458,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              0.991808276786458,
+              0.9971713537141649,
+              0.9426269415746757,
+              0.8920827420488568,
+              0.9987594150495983
+            ],
+            "win_fraction": 0.0
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "fine_high_d": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.44527586812027475
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.44527586812027475,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.4486727192459436,
+              0.44527586812027475,
+              0.4374499729302942,
+              0.4644426084840545,
+              0.42874831934923385
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.8314703917002413
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8314703917002413,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.829676973508584,
+              0.8459576986019232,
+              0.8314703917002413,
+              0.8623368898162729,
+              0.7963819373133021
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.4479417406339886
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.4479417406339886,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.4446706618835895,
+              0.44971885647075865,
+              0.4479417406339886,
+              0.4878150069885406,
+              0.435714349890685
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.9656823583851026
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9656823583851026,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              0.9422115024272336,
+              0.9656823583851026,
+              0.9660324705206423,
+              0.9877190839831634,
+              0.9124655390535791
+            ],
+            "win_fraction": 0.0
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      }
+    },
+    "pdf": {
+      "large_export": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.40526279519908404
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.40526279519908404,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.41900410102318963,
+              0.40526279519908404,
+              0.39799521759320144,
+              0.4053610849671554,
+              0.40362473821456935
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.8990159660797029
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.8990159660797029,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.9531297978628076,
+              0.8705743611075699,
+              0.8990159660797029,
+              0.9056424982232035,
+              0.8985279820058631
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.41456449281637714
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.41456449281637714,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.4416920393249916,
+              0.41612154919971367,
+              0.41456449281637714,
+              0.40857577373488857,
+              0.4032948314657663
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.9682982539474945
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9682982539474945,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              0.9789714034755699,
+              0.974543987304268,
+              0.9682982539474945,
+              0.9557705281354999,
+              0.9472891604162522
+            ],
+            "win_fraction": 0.0
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "sieve_8192": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.5521702491590046
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.5521702491590046,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.5764462036808299,
+              0.5127431591844964,
+              0.561975478723022,
+              0.5521702491590046,
+              0.5293155608090573
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.9329701339566411
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9329701339566411,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.996649721809303,
+              0.7179373016928353,
+              0.9329701339566411,
+              0.934135926702706,
+              0.9141332083837361
+            ],
+            "win_fraction": 0.0
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.5748878688466613
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.5748878688466613,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.5846538714930426,
+              0.5608126077701647,
+              0.5748878688466613,
+              0.5810607525230271,
+              0.5645145737871093
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              0.9894853553211341
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9894853553211341,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              1.0356916954698272,
+              0.9894853553211341,
+              1.017038279598923,
+              0.9394407352187011,
+              0.9606880753390468
+            ],
+            "win_fraction": 0.4
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "small_batch": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "eligible": false,
+            "ratios": []
+          },
+          "16384": {
+            "eligible": false,
+            "ratios": []
+          },
+          "262144": {
+            "eligible": false,
+            "ratios": []
+          },
+          "32768": {
+            "eligible": false,
+            "ratios": []
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      }
+    }
+  },
+  "timings_seconds": {
+    "calibration": 15.79781880020164,
+    "imports": 1.3031056000618264,
+    "setup": 0.031882999930530787,
+    "total": 24.94706420006696,
+    "validation": 9.032928900094703
+  },
+  "traced_allocations": {
+    "entropy": [
+      {
+        "budget": 65536,
+        "current_bytes": 280,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "adam",
+        "peak_bytes": 1093728
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 376,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "boost",
+        "peak_bytes": 1762656
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 376,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "boost_high_d",
+        "peak_bytes": 1494632
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 160,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "fine",
+        "peak_bytes": 5246768
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 216,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "fine_high_d",
+        "peak_bytes": 25567984
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 328,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "active",
+        "peak_bytes": 2076336
+      }
+    ],
+    "pdf": [
+      {
+        "budget": 65536,
+        "current_bytes": 512,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "small_batch",
+        "peak_bytes": 13792
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 1232,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "sieve_8192",
+        "peak_bytes": 2174224
+      },
+      {
+        "budget": 65536,
+        "current_bytes": 752,
+        "label": "Python/NumPy allocator trace outside timings; excludes any native or process allocations tracemalloc does not observe",
+        "name": "large_export",
+        "peak_bytes": 14548176
+      }
+    ]
+  }
+}

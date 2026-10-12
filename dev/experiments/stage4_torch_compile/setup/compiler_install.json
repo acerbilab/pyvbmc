@@ -1,0 +1,18 @@
+{
+  "command": [
+    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pip",
+    "install",
+    "--target",
+    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\deps_compiler",
+    "--no-deps",
+    "--only-binary=:all:",
+    "--report",
+    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\compiler_pip_report.json",
+    "triton-windows==3.8.0.post28"
+  ],
+  "exit_code": 0,
+  "wall_seconds": 7.328059500083327,
+  "installed_bytes": 157813678
+}

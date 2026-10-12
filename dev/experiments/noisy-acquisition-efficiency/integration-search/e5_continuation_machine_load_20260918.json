@@ -1,0 +1,40 @@
+{
+  "batch_in_progress": "batch_20260917T195101.806988+0000.json",
+  "created_utc": "2026-09-18T02:16:19.896862+00:00",
+  "interpretation": "Operator observation, not a measurement of the slowdown's cause. Cumulative CPU seconds count from each process's start, not current load; the reported clock is a single WMI reading. No system setting or process was changed during the campaign. The measured slowdown itself is derivable from the fit records: median seconds per target call, continuation over pilot, ranged from 0.82 to 2.23 by target and arm and rose with position in the target-major schedule (independent results review, item 5).",
+  "kind": "noisy_acq_e5_continuation_machine_load_observation",
+  "logical_processors": 22,
+  "method": [
+    "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 2 -MaxSamples 3",
+    "Get-CimInstance Win32_Processor: NumberOfLogicalProcessors, CurrentClockSpeed, MaxClockSpeed",
+    "Get-Process sorted by cumulative CPU seconds (top 8)",
+    "Get-CimInstance Win32_Battery: BatteryStatus, EstimatedChargeRemaining"
+  ],
+  "observed_by": "Fable orchestrator, from the PowerShell tool in the Claude Code session that launched the batches",
+  "observed_utc": "2026-09-18T00:08:30+00:00",
+  "observed_utc_precision": "approximate; taken immediately after the 00:07:55 UTC progress check, while batch 1 was running its multisensory cells",
+  "power": {
+    "battery_status_code": 2,
+    "battery_status_meaning": "system on AC power",
+    "estimated_charge_percent": 79
+  },
+  "processor_total_percent_samples": [
+    17.3,
+    5.2,
+    24.4
+  ],
+  "reported_current_clock_mhz": 1400,
+  "reported_max_clock_mhz": 3800,
+  "schema_version": 1,
+  "single_threaded_worker_expected_percent": 4.5,
+  "top_processes_by_cumulative_cpu_seconds": {
+    "Code": 1046,
+    "NVIDIA Share": 710,
+    "OLED Care Screensaver.scr": 8293,
+    "PSExpressCore": 1241,
+    "Surfshark": 3528,
+    "WindowsTerminal": 1834,
+    "claude": 519,
+    "explorer": 1039
+  }
+}

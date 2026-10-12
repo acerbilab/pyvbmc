@@ -1,0 +1,15 @@
+state student_D8_noise3.pkl: D=8 N=200 Ns=6 K=11; VIQR at sieve best 4.7550, at reference 4.7517; sigma0(prod)=1.09, max ell=29.26
+strategy                                                                                  reduction, % of ref  VIQR - ref  points  calls  wall s  |dx| from sieve (ell)
+sieve 8192 (production, no refinement)                                                                  60.4%    +0.00328    8192      1    0.68                   0.00
+CMA-ES as in production (VIQR, tolfun 1e-2, noise handler, sigma0 = VP sd)                              60.4%    +0.00328      15      4    0.01                   0.00
+CMA-ES on log-reduction, tolfun 1e-3, no noise handler, sigma0 = VP sd                                 100.0%    +0.00000    1012    103    0.33                   0.58
+CMA-ES on log-reduction, tolfun 1e-3, no noise handler, sigma0 = 0.3 ell                                72.9%    +0.00224    1172    119    0.40                   0.32
+L-BFGS-B from the sieve best, batched finite-difference gradient                                       100.0%    +0.00000     279     31    0.07                   0.57
+L-BFGS-B, 8 diverse starts from the sieve                                                              100.0%    +0.00000    2142    238    0.62                   0.57
+coarse-to-fine resampling around the top 32, 4 rounds of 1024                                           97.2%    +0.00023    4096      4    0.23                   0.60
+reference: 65536-point sieve, then L-BFGS-B from 8 diverse tops and every result above                 100.0%    +0.00000   68209    301    6.00                   0.57
+sieve size alone, best reduction as % of the reference (median [min, max] over 5 draws):
+  ns_search =   512:  58.5% [ 55.7,  64.4]
+  ns_search =  2048:  60.0% [ 59.6,  77.7]
+  ns_search =  8192:  62.6% [ 61.1,  66.0]
+  ns_search = 32768:  67.7% [ 67.0,  72.1]

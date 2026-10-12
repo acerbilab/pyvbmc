@@ -1,0 +1,22 @@
+{
+  "accurate_rule": {
+    "budget": 1600,
+    "method": "mc",
+    "provenance": "Unused: both arms are the production search. The field satisfies the record schema shared with E3."
+  },
+  "control_rule": {
+    "kind": "node_stream_offset",
+    "offset": 1
+  },
+  "created_utc": "2026-09-18T20:41:31.995017+00:00",
+  "declared_after": "Declared after the development, holdout and search-stream control stages were complete and read, on the user's decision of 2026-09-18; it evaluates no treatment and is not merged with them.",
+  "frozen": true,
+  "kind": "noisy_acq_search_selection",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Node-redraw null control for the F2 frozen-state judge: the production selection (S0) against itself with one extra generator draw after the sieve and before the importance nodes (S0_renoded), so that the 8192 candidates are identical and the 100 Monte Carlo nodes are a fresh set, on the twelve development states. Its verdict rates are the node-noise floor against which the treatment's late-state counts are read.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "bfd91edef8680911af7e8360246d36786dd70957353719a3c4451117e1764677",
+  "schema_version": 1,
+  "source_commit": "99a31f65e54822ee436cfa0ede6bd4f2944b98ef",
+  "stage": "f2_node_control_development"
+}

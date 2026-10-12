@@ -1,0 +1,11 @@
+{
+  "authorization": "User decision of 2026-09-18 to run the node-redraw control after the Stage 1 report.",
+  "created_utc": "2026-09-18T20:41:35.508076+00:00",
+  "kind": "f2_node_control_launch_clearance",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_node_control_development_manifest.json",
+  "manifest_sha256": "416cce88079a49ae19ff509f0155ae4cced8b79e18a1e11cd8b3f88d198d050a",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "f162ca80467e5b1aefca0c7eabb7d4038fa9140f67f6b0480777d42fe9b44470",
+  "schema_version": 1,
+  "source_commit": "99a31f65e54822ee436cfa0ede6bd4f2944b98ef"
+}

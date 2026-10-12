@@ -1,0 +1,64 @@
+{
+  "artifacts": [
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/launch_clearance.json",
+      "published_copy": "e5_continuation_launch_clearance_20260918.json",
+      "published_copy_lf_bytes_sha256": "43cf3acbf212bab3b063d2c19404278a83635522869b91db3e5df066ba3ace8d",
+      "raw_artifact_sha256": "fe30c641ed95299a88e8f9ceae4f8b555cb4f384eb5117cec39afaded0e4298e"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/campaign/summary.json",
+      "published_copy": "e5_continuation_summary_20260918.json",
+      "published_copy_lf_bytes_sha256": "3e6ecf64cac3f5686895251c565ca256fd26c355992f5e5b0a605f3b385a3b2d",
+      "raw_artifact_sha256": "78143a984b112ee15ef16a85712fcd124bf5823a400d7bf87c3a1cf3dab520bd"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/campaign/summary_combined.json",
+      "published_copy": "e5_combined_summary_20260918.json",
+      "published_copy_lf_bytes_sha256": "8ff86dfec05e916074b78ce5c376c934dd7627b1efad3dbf1ae88e948fa2125e",
+      "raw_artifact_sha256": "1e9f46c518ad7b85c819cabf79ac212603a2b5cc29ff6be369ff6deec925da59"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/completion.json",
+      "published_copy": "e5_continuation_completion_20260918.json",
+      "published_copy_lf_bytes_sha256": "96d2a58d6bf1d2bf6f7a848425e1b6e5d6fb8b01aa73fe8ee66831723d86ca96",
+      "raw_artifact_sha256": "7a7523571ae9f19bc5845a61b02df6acbea9cd14f50f5cba2dfbf0a071630f39"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/campaign/batches/batch_20260917T195101.806988+0000.json",
+      "published_copy": "e5_continuation_batch1_20260918.json",
+      "published_copy_lf_bytes_sha256": "7c0387590693fa7f5a951326fa75f55af49b2821c66b3e170fcea6019429f02a",
+      "raw_artifact_sha256": "9ecb91ba736dd3aa273cd460a4eb42e0f0bc86d2835d8e2d48e046126a4fa66f"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/campaign/batches/batch_20260918T013247.253170+0000.json",
+      "published_copy": "e5_continuation_batch2_20260918.json",
+      "published_copy_lf_bytes_sha256": "44b96658bb058887ed3ef6ffd8ef4e47e434a62c04b6ccae2174d1803e8e44c2",
+      "raw_artifact_sha256": "a53f1cafa10e3fcbfb2bfec94436be2441c1df80c7f5a3736f53922f2b9d5704"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/results_review.json",
+      "published_copy": "e5_results_review_20260918.json",
+      "published_copy_lf_bytes_sha256": "2283566d114bccb9d93cfe0f995dbc6eb67c89716d7bd6e52deb38fe75737362",
+      "raw_artifact_sha256": "7d023c773d80b9115ba78140dda8e25a338ad0547c8bc8b6479383efd53ac64f"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/machine_load_observation.json",
+      "published_copy": "e5_continuation_machine_load_20260918.json",
+      "published_copy_lf_bytes_sha256": "15de908846331557583a66cceb2f4d5d23a99b3252acc42ba1649a6323afef46",
+      "raw_artifact_sha256": "06f1fc7c9cb86b30613b10293d24182af320f4fd308b72215afc009f6d45ebba"
+    }
+  ],
+  "continuation_manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "created_utc": "2026-09-18T02:22:50.388942+00:00",
+  "hash_convention": "Raw hashes bind original local bytes. Published-copy hashes bind UTF-8 LF bytes as stored in Git; normalize CRLF before checking a Windows working copy. Review copies are not executable manifests.",
+  "kind": "noisy_acquisition_e5_continuation_results_publication_index",
+  "launch_authorized": true,
+  "local_run_root": "dev/scripts/runs/noisy_acq_efficiency_20260916",
+  "pilot_manifest_semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134",
+  "pilot_publication_index": "publication_index_e5_20260917.json",
+  "preparation_publication_index": "publication_index_e5_continuation_20260917.json",
+  "schema_version": 1,
+  "scientific_adoption_approved": false,
+  "source_checkpoint": "d50987462839b32105df196fabfd5757d1d7f1bb"
+}

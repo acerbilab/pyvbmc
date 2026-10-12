@@ -1,7 +1,87 @@
 import copy
+import math
+from numbers import Real
 
 import gpyreg as gpr
 import numpy as np
+
+# The refusal of a value of the option `warp_cov_reg` that is neither a
+# number nor a function; `format` takes the value.
+_WARP_COV_REG_REFUSAL = (
+    "The option 'warp_cov_reg' must be a finite real number (not a "
+    "boolean) or a function of the number of training points that returns "
+    "one; it is {!r}."
+)
+
+
+def _is_finite_real_number(value):
+    """Whether ``value`` is a finite real number.
+
+    A Python or NumPy integer or floating-point number is one, and so is a
+    0-d array that holds one; a boolean is not.
+    """
+    if isinstance(value, np.ndarray):
+        if value.ndim != 0 or not (
+            np.issubdtype(value.dtype, np.integer)
+            or np.issubdtype(value.dtype, np.floating)
+        ):
+            return False
+        value = value.item()
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
+def _drop_low_correlations(vp_cov, corr_thresh):
+    """Set the weakly correlated entries of a covariance matrix to zero.
+
+    An entry is kept where the absolute value of its correlation exceeds
+    ``corr_thresh``. An entry whose correlation is not a number does not
+    exceed the threshold, and goes to zero with the weakly correlated
+    ones.
+
+    Parameters
+    ----------
+    vp_cov : (D,D) np.ndarray
+        The covariance matrix.
+    corr_thresh : float
+        The correlation below which an entry is dropped.
+
+    Returns
+    -------
+    dropped : (D,D) np.ndarray
+        A copy of the covariance matrix with the dropped entries zeroed.
+    """
+    vp_corr = vp_cov / np.sqrt(np.outer(np.diag(vp_cov), np.diag(vp_cov)))
+    mask_idx = np.abs(vp_corr) > corr_thresh
+    dropped = np.copy(vp_cov)
+    dropped[~mask_idx] = 0
+    return dropped
+
+
+def _is_positive_definite(matrix):
+    """Whether a real symmetric matrix is positive definite.
+
+    Parameters
+    ----------
+    matrix : (D,D) np.ndarray
+        The symmetric matrix to test.
+
+    Returns
+    -------
+    positive_definite : bool
+        `True` if the matrix is finite and admits a Cholesky factorization.
+    """
+    if not np.all(np.isfinite(matrix)):
+        return False
+    try:
+        np.linalg.cholesky(matrix)
+    except np.linalg.LinAlgError:
+        return False
+    return True
 
 
 def unscent_warp(fun, x, sigma):
@@ -12,17 +92,22 @@ def unscent_warp(fun, x, sigma):
     fun : function
         A single-argument function which warps input points.
     x : (n,D) or (D,) np.ndarray
-        The input mean for which to compute the unscented transform.
+        The input mean for which to compute the unscented transform. A
+        single row is broadcast against the rows of `sigma`.
     sigma : (n,D) or (D,) np.ndarray
         The input matrix of standard deviations or scale parameters for which
-        to compute the unscented transform.
+        to compute the unscented transform. A single row is broadcast
+        against the rows of `x`.
 
     Returns
     -------
     x_warped_mean : (n,D) or (D,) np.ndarray
-        The unscented estimate of the mean.
-    x_warped_sigma : (n,D) np.ndarray
-        The unscented estimate of the standard deviation / scale parameters.
+        The unscented estimate of the mean, with one row per row of the
+        broadcast inputs. It is one-dimensional where `x` is and the
+        inputs give a single row.
+    x_warped_sigma : (n,D) or (D,) np.ndarray
+        The unscented estimate of the standard deviation / scale
+        parameters, shaped like `x_warped_mean`.
     x_warped : (U,n,D) np.ndarray
         The warped mean points at `x_warped[0, :, :]`, and the warped std.
         simplex points, at `[1:, :, :]`. Here `U=2*D+1`.
@@ -32,6 +117,10 @@ def unscent_warp(fun, x, sigma):
     ValueError
         If the rows/columns of `x` and `sigma` cannot be coerced to match.
     """
+    # The sigma points are taken in floating point whatever the dtype of
+    # the inputs, so that an array of integers does not truncate them.
+    x = np.asarray(x, dtype=float)
+    sigma = np.asarray(sigma, dtype=float)
     x_shape_orig = x.shape
     x = np.atleast_2d(x)
     sigma = np.atleast_2d(sigma)
@@ -70,9 +159,14 @@ def unscent_warp(fun, x, sigma):
     x_warped = np.reshape(x_warped, [U, N, D])
 
     # Estimate the mean and standard deviation of the warped points
-    # by the mean and std of these sigma-points
-    x_warped_mean = np.mean(x_warped, axis=0).reshape(x_shape_orig)
-    x_warped_sigma = np.std(x_warped, axis=0, ddof=1).reshape(x_shape_orig)
+    # by the mean and std of these sigma-points. The estimates carry one
+    # row per row of the broadcast inputs; a single row takes the shape
+    # `x` was given in.
+    x_warped_mean = np.mean(x_warped, axis=0)
+    x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
+    if N == 1:
+        x_warped_mean = x_warped_mean.reshape(x_shape_orig)
+        x_warped_sigma = x_warped_sigma.reshape(x_shape_orig)
 
     return x_warped_mean, x_warped_sigma, x_warped
 
@@ -83,16 +177,24 @@ def warp_input(vp, optim_state, function_logger, options):
 
     Currently supports only a whitening transformation: a rotation and
     rescaling of the inference space such that the variational posterior
-    acheives unit diagonal covariance.
+    achieves unit diagonal covariance.
 
     Parameters
     ----------
     vp : VariationalPosterior
-        The current VP object for which to compute the warping.
+        The variational posterior whose covariance the whitening
+        transformation is computed from. That covariance is expressed in
+        the inference space of the posterior's own parameter transformer,
+        which need not be the space the run is currently in.
     optim_state : dict
         The dictionary recording the current optimization state.
     function_logger : FunctionLogger
-        The record including cached function values.
+        The record including cached function values. Its parameter
+        transformer defines the current inference space, the one the
+        search bounds and the cached search points are given in.
+    options : Options
+        The options of the run: ``warp_rotoscaling``,
+        ``warp_roto_corr_thresh`` and ``warp_cov_reg`` are read.
 
     Returns
     -------
@@ -105,52 +207,74 @@ def warp_input(vp, optim_state, function_logger, options):
     function_logger : FunctionLogger
         An updated copy of the original function logger.
     warp_action : str
-        The type of warping performed ("rotoscaling" or "warp")
+        The label of the warp in the iteration display, "rotoscale".
 
     Raises
     ------
-    NotImplementedError
-        If `vbmc.options["warp_nonlinear"]` is set other than False.
+    ValueError
+        If ``warp_cov_reg`` is neither a finite real number nor a function
+        of the number of training points that returns one.
+
+    Notes
+    -----
+    Random draws use ``vp.rng``.
     """
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
-
-    if options.get("warp_nonlinear"):
-        raise NotImplementedError("Non-linear warping is not supported.")
+    # The transformation of the inference space the run is in. The
+    # posterior given here may have been recorded in an earlier one, and
+    # its own transformation is what its covariance lives in, but the
+    # search bounds and the cached search points below are points of the
+    # current space.
+    current_transformer = function_logger.parameter_transformer
 
     if options.get("warp_rotoscaling"):
-        if options.get("warp_nonlinear"):
-            raise NotImplementedError("Non-linear warping is not supported.")
-        else:
-            # Get covariance matrix analytically
-            __, vp_cov = vp.moments(orig_flag=False, cov_flag=True)
-            delta = parameter_transformer.delta
-            R_mat = parameter_transformer.R_mat
-            scale = parameter_transformer.scale
-            if R_mat is None:
-                R_mat = np.eye(vp.D)
-            if scale is None:
-                scale = np.ones(vp.D)
-            vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
-            vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
+        # Get covariance matrix analytically
+        __, vp_cov = vp.moments(orig_flag=False, cov_flag=True)
+        delta = parameter_transformer.delta
+        R_mat = parameter_transformer.R_mat
+        scale = parameter_transformer.scale
+        if R_mat is None:
+            R_mat = np.eye(vp.D)
+        if scale is None:
+            scale = np.ones(vp.D)
+        vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
+        vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
 
-        # Remove low-correlation entries
+        # Remove low-correlation entries. Setting entries of a covariance
+        # matrix to zero can leave a matrix that is no longer positive
+        # definite; its singular values would then be the absolute values
+        # of its eigenvalues, and the transform computed from them would
+        # miss unit variance along the direction of a negative one. The
+        # covariance is kept as it was whenever that happens.
         if options["warp_roto_corr_thresh"] > 0:
-            vp_corr = vp_cov / np.sqrt(
-                np.outer(np.diag(vp_cov), np.diag(vp_cov))
+            vp_cov_dropped = _drop_low_correlations(
+                vp_cov, options["warp_roto_corr_thresh"]
             )
-            mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
-            vp_cov[mask_idx] = 0
+            if _is_positive_definite(vp_cov_dropped):
+                vp_cov = vp_cov_dropped
 
-        # Regularization of covariance matrix towards diagonal
-        if (
-            type(options["warp_cov_reg"]) == float
-            or type(options["warp_cov_reg"]) == int
-        ):
-            w_reg = options["warp_cov_reg"]
+        # Regularization of covariance matrix towards diagonal. The
+        # amount is a number, or a function of the number of training
+        # points.
+        warp_cov_reg = options["warp_cov_reg"]
+        if callable(warp_cov_reg):
+            N = optim_state["N"]
+            returned = warp_cov_reg(N)
+            w_reg = returned
+            if isinstance(returned, np.ndarray) and returned.size == 1:
+                w_reg = returned.reshape(())
+            if not _is_finite_real_number(w_reg):
+                raise ValueError(
+                    "The option 'warp_cov_reg' is a function of the number "
+                    "of training points, and it must return a finite real "
+                    f"number; given N = {N}, it returned {returned!r}."
+                )
+        elif _is_finite_real_number(warp_cov_reg):
+            w_reg = warp_cov_reg
         else:
-            w_reg = options.warp_cov_reg[optim_state["N"]]
+            raise ValueError(_WARP_COV_REG_REFUSAL.format(warp_cov_reg))
         w_reg = np.max([0, np.min([1, w_reg])])
         vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
 
@@ -167,7 +291,7 @@ def warp_input(vp, optim_state, function_logger, options):
     parameter_transformer.delta = np.ones(vp.D)
     Nrnd = 100000
     xx = (
-        np.random.rand(Nrnd, vp.D)
+        vp.rng.random((Nrnd, vp.D))
         * (optim_state["pub_orig"] - optim_state["plb_orig"])
         + optim_state["plb_orig"]
     )
@@ -188,26 +312,28 @@ def warp_input(vp, optim_state, function_logger, options):
     else:
         T = 1
 
-    # Adjust stored points after warping
-    X_flag = function_logger.X_flag
-    X_orig = function_logger.X_orig[X_flag, :]
-    y_orig = function_logger.y_orig[X_flag].T
+    # Adjust stored points after warping. Every filled row is rewritten,
+    # whether or not it is active, so that the inference-space coordinates
+    # of the logger agree with its original-space ones throughout.
+    filled = slice(0, function_logger.Xn + 1)
+    X_orig = function_logger.X_orig[filled, :]
+    y_orig = function_logger.y_orig[filled].T
     X = parameter_transformer(X_orig)
     dy = parameter_transformer.log_abs_det_jacobian(X)
     y = y_orig + dy / T
-    function_logger.X[X_flag, :] = X
-    function_logger.y[X_flag] = y.T
+    function_logger.X[filled, :] = X
+    function_logger.y[filled] = y.T
     function_logger.parameter_transformer = parameter_transformer
 
     # Update search bounds:
     # Invert points to original space with old transform,
     # then map to new space with new transform
     def warpfun(x):
-        return parameter_transformer(vp.parameter_transformer.inverse(x))
+        return parameter_transformer(current_transformer.inverse(x))
 
     Nrnd = 1000
     xx = (
-        np.random.rand(Nrnd, vp.D)
+        vp.rng.random((Nrnd, vp.D))
         * (optim_state["ub_search"] - optim_state["lb_search"])
         + optim_state["lb_search"]
     )
@@ -219,8 +345,9 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["ub_search"] = np.atleast_2d(yyMax + delta / Nrnd)
 
     # If search cache is not empty, update it
-    if optim_state.get("search_cache"):
-        optim_state["search_cache"] = warpfun(optim_state["search_cache"])
+    search_cache = optim_state.get("search_cache")
+    if search_cache is not None and np.size(search_cache) > 0:
+        optim_state["search_cache"] = warpfun(search_cache)
 
     # Update other state fields
     optim_state["recompute_var_post"] = True
@@ -229,16 +356,14 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["last_warping"] = optim_state["iter"]
     optim_state["last_successful_warping"] = optim_state["iter"]
 
-    # Reset GP Hyperparameters
+    # Restart the running mean and covariance of the variational
+    # posterior, which were taken in the old inference space
     optim_state["run_mean"] = []
     optim_state["run_cov"] = []
     optim_state["last_run_avg"] = np.nan
 
     # Warp action for output display
-    if options.get("warp_nonlinear"):
-        warp_action = "warp"
-    else:
-        warp_action = "rotoscale"
+    warp_action = "rotoscale"
 
     return parameter_transformer, optim_state, function_logger, warp_action
 
@@ -265,9 +390,15 @@ def warp_gp_and_vp(parameter_transformer, gp_old, vp_old, vbmc):
     -------
     vp : VariationalPosterior
         An updated copy of the original variational posterior.
-    hyp_warped : dict
-        An updated copy of the dictionary of original GP hyperparameters, with
-        the warping transformation applied.
+    hyp_warped : np.ndarray
+        The GP hyperparameters with the warping transformation applied, one
+        row per hyperparameter sample, of shape ``(Ns_gp, n_hyp)``.
+
+    Raises
+    ------
+    ValueError
+        If the mean function of the GP is none of the zero, constant and
+        negative quadratic means.
     """
     vp_old = copy.deepcopy(vp_old)
 
@@ -303,7 +434,12 @@ def warp_gp_and_vp(parameter_transformer, gp_old, vp_old, vbmc):
         hyp_warped[0 : vbmc.D, s] = np.mean(np.log(ell_new), axis=0)
 
         # We assume relatively no change to GP output and noise scales
-        if isinstance(gp_old.mean, gpr.mean_functions.ConstantMean):
+        if isinstance(gp_old.mean, gpr.mean_functions.ZeroMean):
+            # No mean hyperparameter to warp. The warp shifts the stored log
+            # joint by a constant, which a zero mean cannot follow; the GP
+            # refit that follows every warp takes it up.
+            pass
+        elif isinstance(gp_old.mean, gpr.mean_functions.ConstantMean):
             # Warp constant mean
             m0 = hyp[Ncov + Nnoise]
             dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(

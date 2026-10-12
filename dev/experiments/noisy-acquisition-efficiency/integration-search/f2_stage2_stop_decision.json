@@ -1,0 +1,18 @@
+{
+  "completed_pairs_at_stop": {
+    "logreg_D5_noise3_production": 20,
+    "rosenbrock_D2_noise1_production": 10,
+    "rosenbrock_D2_noise3_production": 20
+  },
+  "created_utc": "2026-09-19T05:06:27.303761+00:00",
+  "decision": "The user stopped the paired campaign on 2026-09-19 after logistic regression (20 pairs) fired both pre-registered triggers on posterior shape with a net usability loss and high-noise Rosenbrock (20 pairs) leaned the same way, under the release rule that PyVBMC 1.5 promotes only bug fixes and unequivocal improvements: the node rule is not promoted regardless of the remaining configurations. The treatment arm's remaining fits were not run; the baseline arm's remaining fits continue separately as production-reference runs.",
+  "kind": "f2_stage2_stop_decision",
+  "manifest_sha256": "4171687378c90f48b7007ce405614f8a3e8d961877f1be972520be1646a26814",
+  "partial_at_stop": "student_D8_noise3_production: a few fits of the first pairs",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "ff92d88f22baf40de7b7eee4b6fe08ade86510a5ad2b0b3c82d077cf5e4e3783",
+  "runs_batch_records": [
+    "f2_stage2_batch_1789768615.json"
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,33 @@
+{
+  "baseline_commit": "69a7a1844c9d4856a994bfd2042a18c10f253781",
+  "matlab_commit": "396d649c3490f1459828ac85f552482869edf41c",
+  "baseline_archive_sha256": "7ecef55159a6eec28bc65a3ad2eda75597b2b010988a27e1124728f3c8a97e0a",
+  "changed_numerical_files": [
+    "vbmc\\active_sample.py"
+  ],
+  "config": "rosenbrock_D2_noise3_svbmc",
+  "seeds": [
+    1000,
+    1001,
+    1002
+  ],
+  "arms": [
+    "normal",
+    "uniform"
+  ],
+  "gpyreg_source": "dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1",
+  "blas_threads": 1,
+  "selection": "All six runs, without filtering or replacement.",
+  "matlab_historical_commit": "20445308b2957fc4756e51a3e418bd4cb57bf4e9",
+  "versions": {
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "gpyreg": "1.2.1"
+  },
+  "gpyreg_commit": "9e70e6b",
+  "normal_source_sha256": "c9cb7328d97296203293cce6fb5af0ea3a5c93241f84f023a382c1e01a1c299b",
+  "uniform_source_sha256": "9ab2e0c2c9ed71730756d4b4cc7b36164eee1092c249e6216d87b4f2c06c5fc3",
+  "gpyreg_source_sha256": "bb2b3ef6e4c533fcb42948724cf764c2a200e080d11c17da9e5712b8363a7d2a",
+  "execution_probe_sha256": "d75872f41a7a18f4be34d066e54660f8216f6036c9d45fba563eff7d43878e17"
+}

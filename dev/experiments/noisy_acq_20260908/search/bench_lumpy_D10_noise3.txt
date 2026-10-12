@@ -1,0 +1,15 @@
+state lumpy_D10_noise3.pkl: D=10 N=246 Ns=5 K=16; VIQR at sieve best 4.2827, at reference 4.2803; sigma0(prod)=0.20, max ell=1.20
+strategy                                                                                  reduction, % of ref  VIQR - ref  points  calls  wall s  |dx| from sieve (ell)
+sieve 8192 (production, no refinement)                                                                   0.0%    +0.00238    8192      1    1.25                   0.00
+CMA-ES as in production (VIQR, tolfun 1e-2, noise handler, sigma0 = VP sd)                               0.0%    +0.00238      14      4    0.01                   0.00
+CMA-ES on log-reduction, tolfun 1e-3, no noise handler, sigma0 = VP sd                                  97.8%    +0.00005    6012    603    2.14                 101.36
+CMA-ES on log-reduction, tolfun 1e-3, no noise handler, sigma0 = 0.3 ell                               100.0%    +0.00000    5872    589    2.24                 113.44
+L-BFGS-B from the sieve best, batched finite-difference gradient                                         0.0%    +0.00238      33      3    0.01                   0.00
+L-BFGS-B, 8 diverse starts from the sieve                                                                0.0%    +0.00238    1518    138    0.39                   0.00
+coarse-to-fine resampling around the top 32, 4 rounds of 1024                                            0.0%    +0.00238    4096      4    0.48                   0.16
+reference: 65536-point sieve, then L-BFGS-B from 8 diverse tops and every result above                 100.0%    +0.00000   66867    125    8.93                 113.44
+sieve size alone, best reduction as % of the reference (median [min, max] over 5 draws):
+  ns_search =   512:   0.0% [  0.0,   0.0]
+  ns_search =  2048:   0.0% [  0.0,   0.0]
+  ns_search =  8192:   0.0% [  0.0,   0.0]
+  ns_search = 32768:   0.0% [  0.0,   0.0]

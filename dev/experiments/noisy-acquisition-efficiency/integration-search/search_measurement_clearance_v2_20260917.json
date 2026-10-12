@@ -1,0 +1,12 @@
+{
+  "allocation_sha256": "cc397893a64e2be6707db29582975a8b68ad9da6bf0bb74989a04313b8a8f4c6",
+  "created_utc": "2026-09-17T12:15:21.948183+00:00",
+  "decision": "authorized_exact_remaining_35_timing_plus_70_allocation_cells",
+  "kind": "noisy_acq_search_measurement_v2_full_launch_clearance",
+  "manifest_sha256": "ca307bd6077eb2542cfedaf349c64c1af6fc369572da8f4cc401a3c7ba15a0a5",
+  "pilot_costs_sha256": "7e23a535adcc04197070ec50a258b4d876517c79d74441698529b5069994dd06",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "ffcdeee34c36512d6fc1ce3f8b59ea640d362fa921310dad861d8c0f23a18194",
+  "remaining_forecast_sha256": "cfcc25561005d791fe6519fe659d464c692549dd55e97166f55f8eb3a38b3a37",
+  "schema_version": 1
+}

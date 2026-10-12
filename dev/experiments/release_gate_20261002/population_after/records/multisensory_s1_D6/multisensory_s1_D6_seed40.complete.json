@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "multisensory_s1_D6/multisensory_s1_D6_seed40",
+  "case": "multisensory_s1_D6/multisensory_s1_D6_seed40 multisensory_s1_D6 40",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          35,
+          99
+        ],
+        "physical_cores": [
+          "1:3"
+        ],
+        "core_threads": {
+          "1:3": [
+            35,
+            99
+          ]
+        },
+        "job_cpuset": [
+          35,
+          99
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2299445",
+        "array_job_id": "2296436",
+        "array_task_id": "1441",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-02T12:22:19+0000",
+  "finished": "2026-10-02T12:24:09+0000",
+  "elapsed_seconds": 110.00473856925964,
+  "artifacts": {
+    "multisensory_s1_D6/multisensory_s1_D6_seed40.npz": {
+      "sha256": "5240c2cf21792597ec4104a129b3c5fdc801ef6944294dc5ef3c98e8d0da031d",
+      "bytes": 247107
+    },
+    "multisensory_s1_D6/multisensory_s1_D6_seed40.json": {
+      "sha256": "2e72098c82f60c5843cfe49be15f40411395b8bfb7a4bd5d8127813a445b1013",
+      "bytes": 5961
+    },
+    "multisensory_s1_D6/multisensory_s1_D6_seed40.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/multisensory_s1_D6/multisensory_s1_D6_seed40.boost.pkl": {
+      "sha256": "385843dd2edfaecf53612642518bf121942eab3a93d9d5e9eede31d2bef709a7",
+      "bytes": 314071
+    },
+    "boost/multisensory_s1_D6/multisensory_s1_D6_seed40.boost.json": {
+      "sha256": "d21a3bdce740cd1b672706c510f18082db832226ccb9301edbcc573b7824aea7",
+      "bytes": 11528
+    }
+  },
+  "harness": "population_run",
+  "label": "multisensory_s1_D6",
+  "seed": 40,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

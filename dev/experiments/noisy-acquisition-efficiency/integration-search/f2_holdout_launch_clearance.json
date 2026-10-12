@@ -1,0 +1,20 @@
+{
+  "authorization": "Stage 1 of the F2 amendment (user decision of 2026-09-18) specifies the holdout confirmation of the order chosen on development; the holdout was unlocked after the development evidence record named that order.",
+  "created_utc": "2026-09-18T18:53:05.702506+00:00",
+  "development_choice": {
+    "descriptive_contrasts": [
+      "S0_qmc_unsorted_minus_S0"
+    ],
+    "development_choice": "axis",
+    "primary_contrast": "S0_qmc_sorted_minus_S0"
+  },
+  "development_evidence_sha256": "18e82e0c6dbf36979238dff7c9ccd4f22f2fa8a268e78a7fa3d9bb4dfcae4d53",
+  "development_manifest_sha256": "111c0cf2d7be3bdd4d0beacbbaef7e8982a41896759d3eb50eb85bd32ce6b687",
+  "kind": "f2_holdout_launch_clearance",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_holdout_manifest.json",
+  "manifest_sha256": "2c451b013b0d669ba1a815be8a5961c80122b6cabc2c01b8e2656b21a5ab0958",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "149e92bc76205fbf47037da2dcdb73d4821c54ae855f71f9dfdf474dfae37865",
+  "schema_version": 1,
+  "source_commit": "37e3f218870eb43328a649671919a497bd8d304f"
+}

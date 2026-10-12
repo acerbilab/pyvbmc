@@ -1,0 +1,60 @@
+{
+  "identity": {
+    "candidate_sha": "68a43db18f69cf1a99aa44779503c8a1b861891b",
+    "numerical_base_sha": "de686f712c6822968f0b98779469ec9e6152d0f4",
+    "gpyreg_sha": "a2f8ddce867f502e29717959cf0ff3529f598618",
+    "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\population_overnight_20260910\\source\\pyvbmc\\__init__.py",
+    "gpyreg_import": "C:\\Users/luigi/Documents/GitHub/pyvbmc/dev/scripts/runs/population_overnight_20260910/gpyreg\\gpyreg\\__init__.py",
+    "helper_imports": {
+      "golden_trace": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\population_overnight_20260910\\source\\dev\\scripts\\golden_trace.py",
+      "benchmark_targets": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\population_overnight_20260910\\source\\dev\\scripts\\benchmark_targets.py",
+      "profile_run": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\population_overnight_20260910\\source\\dev\\scripts\\profile_run.py"
+    },
+    "python": "3.12.6",
+    "dependencies": {
+      "numpy": "2.5.2",
+      "scipy": "1.18.1",
+      "gpyreg": "1.1.0",
+      "cma": "4.4.4",
+      "psutil": "7.2.2",
+      "dill": "0.4.1",
+      "filelock": "3.32.5"
+    },
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "options": {
+      "vectorized_target": false,
+      "performance_calibration": "off",
+      "tol_elcbo_boost": 0.1,
+      "display": "off",
+      "plot": false,
+      "print_iteration_header": false
+    }
+  },
+  "retained_campaigns": {
+    "population_overnight_20260910": {
+      "cases": 273,
+      "manifest_sha256": "2019961f3033afab85ac9c80625a281f9797b5a3745e81ccb7aae248fc21a2f8"
+    },
+    "population_extension_20260911": {
+      "cases": 30,
+      "manifest_sha256": "b9f2554006ba4f80cbb8b29a9dc7d4916f8bf22131aebceb6a17e372e8c69cc6"
+    }
+  },
+  "old_reference_pairs_verified": 870,
+  "combined_reference_pairs_verified": 990,
+  "retained_realdata_cases_verified": 120,
+  "missing_pairs": 567,
+  "allocation_disjoint_from_completed": true,
+  "pooled_allocation_equals_historical_870": true,
+  "reference_manifest_sha256": "cee949a0792544c0dba78093eaf2209b596c7be71b58990680af73384425ad0a",
+  "combined_reference_manifest_sha256": "d76aeb1fe1a0601d5d10e0ec275c9d0817023eb2bd68723ca2f2d4bfe74d497a",
+  "disk_free_bytes": 27670044672,
+  "estimated_additional_result_bytes": 234619158.46153846,
+  "preparation_script_sha256": "ad438d668cc14b73b523c10233aae0a903bfb45da355586e9165606697d08c81",
+  "prior_303_assessment_reproduced_exactly": true,
+  "assessment_preflight": "dev/scripts/runs/population_completion_20260912/assessment_preflight/assessment.json"
+}

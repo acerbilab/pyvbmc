@@ -6,16 +6,16 @@ PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has t
 
 The reference code is the :labrepos:`MATLAB toolbox <vbmc>`.
 
-The documentation is available at: https://acerbilab.github.io/pyvbmc/
+The documentation is available at: https://acerbilab.org/pyvbmc/
 
 Installation instructions for developers
 ########################################
 
 Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but developers will need to work with the latest source code. They should follow these steps to install:
 
-1. (Optional, but recommended for development): Create a new environment in Conda and activate it.
+1. (Optional, but recommended for development): Create a new environment in Conda and activate it::
 
-     conda create --name pyvbmc-env
+     conda create --name pyvbmc-env python=3.12
      conda activate pyvbmc-env
 
 2. Clone the PyVBMC and GPyReg GitHub repos locally::
@@ -31,11 +31,13 @@ Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but de
      cd ../pyvbmc
      pip install -e ".[dev]"
 
-4. Install Jupyter to view the examples You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
+4. Install Jupyter to view the examples. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
 
      conda install jupyter
 
-We are using the dependencies listed in ``pyproject.toml``. Please list all used dependencies there. Dependencies are separated into basic dependencies, and optional development dependencies included under ``dev``.
+The dependencies installed with PyVBMC are declared in ``pyproject.toml``.
+Runtime dependencies belong in ``project.dependencies``; optional integrations
+and extras have separate groups under ``project.optional-dependencies``.
 
 The necessary packages can be installed with `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`__ or `pip <https://pypi.org/project/pip/>`__.
 
@@ -44,7 +46,7 @@ Coding conventions
 
 We try to follow common conventions whenever possible. Some useful reading:
 
-- `PEP 8 -- Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`__
+- `PEP 8 -- Style Guide for Python Code <https://peps.python.org/pep-0008/>`__
 - `Code style in The Hitchhiker's Guide to Python <https://docs.python-guide.org/writing/style/>`__
 
 These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.
@@ -52,15 +54,16 @@ These basic rules should be followed to ensure coherence and to make it easy for
 Code formatting
 ---------------
 
-The code is formatted using `Black <https://pypi.org/project/black/>`__ with a line length of 79, with the help of pre-commit hooks. To install and use::
+Formatting is enforced by the pre-commit hooks in ``.pre-commit-config.yaml``.
+They include `Black <https://pypi.org/project/black/>`__ with a line length of
+79. To install and use them::
 
     pip install pre-commit
     pre-commit install
     pre-commit run -a  # run for all files, optional
 
-After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in ``.pre-commit-config.yaml``. The settings of the hooks are specified in ``pyproject.toml``. You need to restage the file if it gets modified by the hooks.
-
-If you want, you can also check with `ruff <https://beta.ruff.rs/docs/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
+After installation, Git runs the hooks on staged files before each commit. Restage
+any file that a hook modifies.
 
 Docstrings
 ----------
@@ -69,19 +72,19 @@ The docstrings are generated following the `NumPy format <https://numpydoc.readt
 There are add-ons to generate docstring blueprints using IDEs.
 
 - See an example for a correct docstring from NumPy `here <https://numpydoc.readthedocs.io/en/latest/example.html>`__.
-- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <variational_posterior/variational_posterior.py>`.
+- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <pyvbmc/variational_posterior/variational_posterior.py>`.
 - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 Code documentation
 ------------------
 
-The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch.
+The documentation is published at https://acerbilab.org/pyvbmc/ from the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch, which holds the built pages. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>`.
 
 GitHub workflows automatically build and update the documentation whenever a commit is merged into the ``main`` branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:
 
 1. From your working branch, render new documentation::
 
-     cd /docsrc  # navigate to documentation source folder
+     cd docsrc  # navigate to documentation source folder
      make github  # build the docs and copy them to ./docs
 
    (If you are using Windows, run ``.\make.bat github`` with ``cmd`` instead.)
@@ -96,36 +99,29 @@ GitHub workflows automatically build and update the documentation whenever a com
 
    (If you are using Windows, run ``.\make.bat clean`` with ``cmd`` instead.)
 
-If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
+If any changes have been made to the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
 
 General structure
 .................
 
-For each new class, function, etc. a ``.rst`` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have ``functions``, ``classes``, etc.
-The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example::
+Nothing generates the API pages: each new public class or function needs a hand-written ``.rst`` file under ``docsrc/source/api/``, in ``classes``, ``functions``, ``methods`` or ``options``.
+The ``.rst`` file contains text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphinx where to compile the documentation: an autodoc directive, which renders the docstrings, and any usage notes, for example::
 
     .. autoclass:: pyvbmc.vbmc.VBMC
       :members:
 
-Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
-
-- Status of the port (what is missing?);
-- Reference to the respective file of the original :labrepos:`MATLAB <vbmc>` implementation;
-- Known issues (if something is currently suboptimal in PyVBMC);
-- The documentation of the Python code (generated from the docstrings).
-
-For each new file, a link needs to be added manually to the :mainbranch:`index page <docsrc/source/index.rst>`.
+Each new page also needs an entry in the toctree that owns it: ``documentation.rst`` for a headline page, ``api/classes/classes.rst`` or ``api/functions/functions.rst`` otherwise, and the page of its class for a method.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
 
 Exceptions
 ----------
 
-Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/library/exceptions.html>`__.
+Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/builtins/exceptions.html>`__.
 
 ``git`` commits
 ---------------
 
-Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet is can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
+Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
 
 Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. `Read this <https://martinfowler.com/bliki/FeatureBranch.html>`__ ::
 
@@ -156,8 +152,10 @@ The final command creates an html folder with a full report on coverage -- doubl
 A few comments about testing:
 
 - Testing is mandatory! The full suite of tests is automatically run before any pull request can be merged into ``main``. The tests run on Windows, Linux, and macOS. Automatic tests are skipped for PRs which do not change the source code or tests (e.g., changes to the documentation only).
+- Tests for the optional torch, ArviZ and PyMC integrations skip unless the matching ``torch``, ``arviz`` or ``pymc`` extra is installed.
 - Still, as a good practice, please rerun all tests before major commits and pull requests. This might take a while, but it is worth it to avoid surprises.
 - Please try to keep the total runtime of the tests minimal for the task at hand.
 - A nice way of proceeding is "test first": write a test first, make it fail, write the code until the test is passed.
 - Many methods are tested against test cases produced with the original :labrepos:`MATLAB implementation <vbmc>`.
-- The ``pytest-mock`` library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to ``unittest.mock`` in the future, which is part of the Python standard library.)
+- The ``pytest-mock`` library lets tests replace parts of the system under test
+  with mock objects and make assertions about how they were used.

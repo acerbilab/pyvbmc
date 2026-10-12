@@ -1,0 +1,31 @@
+{
+  "created_utc": "2026-09-17T10:58:34.075901+00:00",
+  "environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "gpyreg_source": "<USER_HOME>/Documents/GitHub/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1"
+  },
+  "format_checks": {
+    "black": "pass via direct Black 23.3 formatter API; CLI process pool hung and was stopped",
+    "git_diff_check": "pass",
+    "isort_check_only": "pass",
+    "pycln": "unavailable in frozen environment; changed patch adds no imports"
+  },
+  "kind": "noisy_acq_search_prefreeze_validation",
+  "publication_note": "Review copy with user-home paths redacted. Execute from the original local artifacts; hashes refer to unredacted raw artifacts unless explicitly labelled published-copy hashes.",
+  "raw_artifact_sha256": "acf15a279b5c4e7d08cf0d96716bdc38cac93b0880beabee58986559bb383069",
+  "schema_version": 1,
+  "source_sha256": {
+    "dev/scripts/noisy_acq_search.py": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf",
+    "dev/scripts/noisy_acq_search_experiment.py": "40bcc2e144e583e19b85cba0dbcfb9bc129c5c11d725e7bc68604d0339de24f0",
+    "dev/scripts/test_noisy_acq_search.py": "7ea110e04d432675104455ec22ab12c364bf1628dac9db7ef50db99c93b37cb8",
+    "dev/scripts/test_noisy_acq_search_experiment.py": "c951e43c5403da05a762c5c164d0560ff460fb156d7fa1577d20cf8b2afa2ab0"
+  },
+  "test_command": ".venv/Scripts/python.exe -m pytest dev/scripts/test_noisy_acq_search.py dev/scripts/test_noisy_acq_search_experiment.py -q -p no:cacheprovider --basetemp .tmp_pytest_e3",
+  "test_result": {
+    "failed": 0,
+    "passed": 25,
+    "seconds": 3.72
+  }
+}

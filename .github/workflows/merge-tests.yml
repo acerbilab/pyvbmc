@@ -13,7 +13,7 @@ jobs:
       run_job: ${{ steps.check_files.outputs.run_job }}
     steps:
       - name: Checkout PyVBMC
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           path: pyvbmc
@@ -48,40 +48,5 @@ jobs:
   tests:
     needs: check_changes
     if: needs.check_changes.outputs.run_job == 'true'
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12"]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout PyVBMC
-        uses: actions/checkout@v6
-        with:
-          path: pyvbmc
-
-      - name: Checkout GPyReg
-        uses: actions/checkout@v6
-        with:
-          repository: acerbilab/gpyreg
-          path: gpyreg
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install PyVBMC
-        run: |
-          cd ./pyvbmc
-          python -m pip install -e .
-
-      - name: Install GPyReg
-        run: |
-          cd ./gpyreg
-          python -m pip install -e .
-
-      - name: Run tests
-        run: |
-          cd ./pyvbmc
-          python -m pytest --reruns=5 -x -vv
+    # Full matrix against the pinned gpyreg; see test-matrix.yml.
+    uses: ./.github/workflows/test-matrix.yml

@@ -1,0 +1,2750 @@
+"""Recording, resume and campaign-contract checks of the population harness.
+
+The boost capture and the records of campaigns run before array mode are
+checked on hand-made posteriors. The array-mode subcommands run on
+campaigns of the ``smoke`` suite's ``normal_D2`` whose identity is fixed by
+the test (the real one needs clean trees) and whose cases are written by
+hand or by a stand-in for the run, so that the contract's states (the
+early exit, the refusals, a stop by SIGTERM, a failure), ``verify``,
+``rescore``, ``summarize``, the comparison of two arms that the harness
+verified and rescored, and a campaign's use as the envelope population of
+``golden_replay.py --sidecars`` are exercised without VBMC. One such campaign,
+prepared at a stand-in site (``campaign_slurm_stubs.FakeSite``), has its
+tracked copies redacted.
+
+Two real runs of one case (``normal_D2`` at seed 0, a few seconds of
+inference each), made once for the module through the command line, one by
+``run`` with its finishing steps and one by ``worker --case``, give the
+artifacts that the rescoring must reproduce and that the two paths must
+share, and the run that a stand-in replays to seed a failed check. They
+take the gpyreg checkout from ``PYVBMC_GPYREG_SOURCE``, or else the git
+checkout the imported gpyreg lies in, and skip without either.
+"""
+
+import copy
+import json
+import os
+import shutil
+import signal
+import socket
+import subprocess
+import sys
+import textwrap
+import time
+from contextlib import nullcontext
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+import campaign_slurm_stubs as stubs
+import dill
+import numpy as np
+import population_run as runner
+import pytest
+
+from pyvbmc import VBMC
+
+contract = runner.contract
+
+
+@pytest.fixture(autouse=True)
+def outside_any_campaign(monkeypatch):
+    """Every test outside any Slurm task, and without the operator settings
+    that a campaign's environment exports (the node feature among them,
+    which ``prepare`` would record and ``verify`` then check every record
+    against), but for the gpyreg checkout; a test that needs a setting sets
+    it."""
+    for key in list(os.environ):
+        upper = key.upper()
+        if upper.startswith("SLURM") or (
+            upper in contract.SETTINGS and upper != "PYVBMC_GPYREG_SOURCE"
+        ):
+            monkeypatch.delenv(key)
+
+
+def make_vbmc(skip=False):
+    vbmc = VBMC(
+        lambda x: -np.sum(x**2),
+        np.zeros((1, 2)),
+        np.full((1, 2), -np.inf),
+        np.full((1, 2), np.inf),
+        np.full((1, 2), -2.0),
+        np.full((1, 2), 2.0),
+        seed=123,
+        options={
+            "display": "off",
+            "performance_calibration": "off",
+            "min_final_components": 1 if skip else 5,
+            "ns_ent_boost": [],
+            "ns_ent_fast_boost": [],
+            "ns_ent_fine_boost": [],
+        },
+    )
+    vbmc.vp.stats = {"elbo": -10.0, "elbo_sd": 0.1, "stable": True}
+    return vbmc
+
+
+@pytest.mark.parametrize(
+    "candidate_elbo,skip,accepted",
+    [(-9.0, False, True), (-12.0, False, False), (-9.0, True, False)],
+)
+def test_capture_preserves_production_guard_and_rng(
+    candidate_elbo, skip, accepted
+):
+    def optimize(options, optim_state, vp, gp, *args):
+        assert options["weight_penalty"] == 0
+        vp.mu += vp.rng.normal(size=vp.mu.shape)
+        vp.stats = {"elbo": candidate_elbo, "elbo_sd": 0.1, "stable": False}
+        return vp, None, None
+
+    outcomes = []
+    for recording in (False, True):
+        vbmc = make_vbmc(skip)
+        global_before = copy.deepcopy(np.random.get_state())
+        with patch.object(runner.VBMC_MODULE, "optimize_vp", optimize):
+            with (
+                runner.BoostCapture() if recording else nullcontext()
+            ) as capture:
+                outcome = vbmc.final_boost(vbmc.vp, object())
+        assert outcome[3] == accepted
+        outcomes.append((outcome, copy.deepcopy(vbmc.rng.bit_generator.state)))
+        global_after = np.random.get_state()
+        for a, b in zip(global_before, global_after):
+            np.testing.assert_equal(a, b)
+    a, b = outcomes
+    np.testing.assert_array_equal(a[0][0].mu, b[0][0].mu)
+    assert a[0][1:] == b[0][1:]
+    assert a[1] == b[1]
+    state = capture.state
+    assert state["attempted"] == (not skip)
+    assert state["accepted"] == accepted
+    assert state["pre"].stats["elbo"] == -10
+    if not skip:
+        assert state["candidate"].stats["elbo"] == candidate_elbo
+    # Recorded VPs are independent, including their generators and transforms.
+    before = copy.deepcopy(vbmc.rng.bit_generator.state)
+    state["pre"].rng.normal()
+    assert vbmc.rng.bit_generator.state == before
+    assert (
+        state["returned"].parameter_transformer
+        is not vbmc.vp.parameter_transformer
+    )
+
+
+def test_capture_restores_hooks_on_failure():
+    vbmc = make_vbmc()
+    original = VBMC.final_boost
+    with patch.object(
+        runner.VBMC_MODULE,
+        "optimize_vp",
+        side_effect=RuntimeError("test failure"),
+    ) as mocked:
+        with pytest.raises(RuntimeError, match="test failure"):
+            with runner.BoostCapture():
+                vbmc.final_boost(vbmc.vp, object())
+        assert runner.VBMC_MODULE.optimize_vp is mocked
+    assert VBMC.final_boost is original
+
+
+def write_case(tmp_path):
+    tag = "normal_D5_seed0"
+    expected = {
+        "candidate_sha": "test",
+        "options": {"display": "off", "tol_elcbo_boost": 0.1},
+    }
+    side = {
+        "label": "normal_D5",
+        "seed": 0,
+        "requested_options": expected["options"],
+        "effective_options": expected["options"],
+        "final": {
+            k: 0.1 for k in (*runner.golden_trace.METRICS, "elbo", "elbo_sd")
+        },
+    }
+    runner.write_json(tmp_path / f"{tag}.json", side)
+    np.savez(tmp_path / f"{tag}.npz", final_mu=np.zeros((2, 1)))
+    vp = make_vbmc().vp
+    side["final"].update(runner.scores(vp))
+    runner.write_json(tmp_path / f"{tag}.json", side)
+    state = {
+        "pre": vp,
+        "candidate": None,
+        "returned": vp,
+        "attempted": False,
+        "accepted": False,
+        "tolerance": 0.1,
+        "boost_options": None,
+        "boost_call": None,
+    }
+    (tmp_path / f"{tag}.boost.pkl").write_bytes(dill.dumps(state))
+    report = {
+        k: state[k]
+        for k in (
+            "attempted",
+            "accepted",
+            "tolerance",
+            "boost_options",
+            "boost_call",
+        )
+    }
+    report["scores"] = {
+        k: runner.scores(state[k]) for k in ("pre", "candidate", "returned")
+    }
+    report["metrics"] = {
+        k: {
+            "elbo_err": 0.1,
+            "gskl": 0.1,
+            "mmtv": 0.1,
+            "rmse": 0.1,
+            "post_mean": [[0, 0]],
+            "post_cov": [[1, 0], [0, 1]],
+            "moment_method": "affine",
+        }
+        for k in ("pre", "returned")
+    }
+    runner.write_json(runner.case_path(tmp_path, tag, ".boost.json"), report)
+    done = {
+        "identity": expected,
+        "hashes": {
+            s: runner.sha256(runner.case_path(tmp_path, tag, s))
+            for s in runner.SUFFIXES
+        },
+    }
+    runner.write_json(runner.case_path(tmp_path, tag, ".complete.json"), done)
+    return tag, expected
+
+
+@pytest.mark.parametrize(
+    "damage", ["missing", "tampered", "identity", "nan", "options"]
+)
+def test_resume_rejects_invalid_case(tmp_path, damage):
+    tag, expected = write_case(tmp_path)
+    runner.validate_case(tmp_path, tag, expected)
+    if damage == "missing":
+        (tmp_path / f"{tag}.boost.pkl").unlink()
+    elif damage == "tampered":
+        (tmp_path / f"{tag}.npz").write_bytes(b"broken")
+    elif damage == "identity":
+        expected["candidate_sha"] = "different"
+    else:
+        path = tmp_path / f"{tag}.json"
+        side = json.loads(path.read_text())
+        if damage == "nan":
+            side["final"]["gskl"] = float("nan")
+        else:
+            side["effective_options"]["display"] = "iter"
+        runner.write_json(path, side)
+        marker = runner.case_path(tmp_path, tag, ".complete.json")
+        done = json.loads(marker.read_text())
+        done["hashes"][".json"] = runner.sha256(path)
+        runner.write_json(marker, done)
+    with pytest.raises((RuntimeError, FileNotFoundError)):
+        runner.validate_case(tmp_path, tag, expected)
+
+
+def test_auxiliary_records_do_not_enter_population(tmp_path):
+    write_case(tmp_path)
+    population = runner.golden_trace.load_population(tmp_path)
+    assert population["normal_D5"]["seeds"] == [0]
+
+
+def test_resume_rejects_empty_boost_report_even_with_matching_hash(tmp_path):
+    tag, expected = write_case(tmp_path)
+    report = runner.case_path(tmp_path, tag, ".boost.json")
+    runner.write_json(report, {})
+    marker = runner.case_path(tmp_path, tag, ".complete.json")
+    done = json.loads(marker.read_text())
+    done["hashes"][".boost.json"] = runner.sha256(report)
+    runner.write_json(marker, done)
+    with pytest.raises(RuntimeError, match="inconsistent boost"):
+        runner.validate_case(tmp_path, tag, expected)
+
+
+def test_optional_candidate_metric_failure_is_retained():
+    with patch.object(
+        runner, "metrics", side_effect=ValueError("invalid candidate")
+    ):
+        assert runner.diagnostic_metrics(None, make_vbmc().vp) == {
+            "error": "ValueError: invalid candidate"
+        }
+        with pytest.raises(ValueError):
+            runner.diagnostic_metrics(None, make_vbmc().vp, required=True)
+
+
+def test_validate_case_compares_transformers_by_their_data(tmp_path):
+    # An accepted boost returns a copy of the candidate: equal transformers
+    # whose bounded transforms are different functions once unpickled.
+    tag, expected = write_case(tmp_path)
+    state = dill.loads((tmp_path / f"{tag}.boost.pkl").read_bytes())
+    state["candidate"] = clone = copy.deepcopy(state["returned"])
+    state.update(attempted=True, accepted=True, boost_options={})
+    state["boost_options"]["weight_penalty"] = 0
+    state["boost_call"] = {"n_fast_opts": 1, "n_slow_opts": 1, "K_new": 50}
+    assert (
+        clone.parameter_transformer._bounded_transforms
+        != state["returned"].parameter_transformer._bounded_transforms
+    )
+    (tmp_path / f"{tag}.boost.pkl").write_bytes(dill.dumps(state))
+    report_path = runner.case_path(tmp_path, tag, ".boost.json")
+    report = json.loads(report_path.read_text())
+    report.update(
+        attempted=True,
+        accepted=True,
+        boost_options=state["boost_options"],
+        boost_call=state["boost_call"],
+    )
+    report["scores"]["candidate"] = runner.scores(clone)
+    report["metrics"]["candidate"] = report["metrics"]["pre"]
+    runner.write_json(report_path, report)
+    marker = runner.case_path(tmp_path, tag, ".complete.json")
+    done = json.loads(marker.read_text())
+    for suffix in (".boost.pkl", ".boost.json"):
+        done["hashes"][suffix] = runner.sha256(
+            runner.case_path(tmp_path, tag, suffix)
+        )
+    runner.write_json(marker, done)
+    runner.validate_case(tmp_path, tag, expected)
+    # Transformers whose data differ still differ.
+    clone.parameter_transformer.mu = clone.parameter_transformer.mu + 1.0
+    (tmp_path / f"{tag}.boost.pkl").write_bytes(dill.dumps(state))
+    done["hashes"][".boost.pkl"] = runner.sha256(tmp_path / f"{tag}.boost.pkl")
+    runner.write_json(marker, done)
+    with pytest.raises(AssertionError):
+        runner.validate_case(tmp_path, tag, expected)
+
+
+# --------------------------------------------------------------------------
+# Array mode
+# --------------------------------------------------------------------------
+
+LABEL = "normal_D2"
+FAKE_IDENTITY = {
+    "contract": contract.CONTRACT_VERSION,
+    "source": {
+        "trees": {
+            name: {"commit": "0" * 40, "clean": True}
+            for name in ("harness", "pyvbmc", "gpyreg")
+        },
+        "files": {
+            "dev/scripts/population_run.py": "1" * 64,
+            **{rel: "5" * 64 for rel in runner.RUN_FILES},
+        },
+        "versions": {"python": "3", "numpy": "2", "scipy": "1", "cma": "4"},
+    },
+    "imports": {"trees": {}, "modules": {}, "harness_modules": {}},
+    "host": {"hostname": "test"},
+}
+#: The identity of an arm of other code than the harness checkout's: its
+#: package tree and its gpyreg are at other commits.
+OTHER_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+OTHER_IDENTITY["source"]["trees"]["pyvbmc"]["commit"] = "b" * 40
+OTHER_IDENTITY["source"]["trees"]["gpyreg"]["commit"] = "c" * 40
+#: The allocation of every campaign of the module but the real runs'.
+ARGUMENTS = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0-2"]
+
+
+def use_identity(monkeypatch, identity):
+    """Make ``identity`` this process's (the real one needs clean trees),
+    and pass the check of the gpyreg release, which reads the trees too."""
+    monkeypatch.setattr(
+        runner, "this_identity", lambda host=True: copy.deepcopy(identity)
+    )
+    monkeypatch.setattr(
+        runner, "gpyreg_release_problem", lambda trees, release: None
+    )
+
+
+@pytest.fixture
+def campaign(tmp_path, monkeypatch):
+    """A prepared campaign: normal_D2 at seeds 0-2, with a fixed identity."""
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    out = tmp_path / "campaign"
+    assert (
+        runner.main(
+            ["prepare", "--out", str(out), *ARGUMENTS, "--arm", "after"]
+        )
+        == 0
+    )
+    return out
+
+
+def prepare_other_arm(tmp_path, monkeypatch, name, identity, extra=()):
+    """Prepare, at ``tmp_path / name``, an arm whose package tree is not
+    the harness checkout (``PYVBMC_SOURCE`` names a stand-in) and whose
+    identity is ``identity``; this process's identity is then
+    :data:`FAKE_IDENTITY` again, with ``PYVBMC_SOURCE`` unset."""
+    tree = tmp_path / f"{name}_tree"
+    tree.mkdir(exist_ok=True)
+    monkeypatch.setenv("PYVBMC_SOURCE", str(tree))
+    use_identity(monkeypatch, identity)
+    out = tmp_path / name
+    arguments = [*ARGUMENTS, "--arm", name, *extra]
+    assert runner.main(["prepare", "--out", str(out), *arguments]) == 0
+    monkeypatch.delenv("PYVBMC_SOURCE")
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    return out
+
+
+def line_of(seed):
+    return f"{LABEL}/{LABEL}_seed{seed} {LABEL} {seed}"
+
+
+def files_of(out, seed):
+    return {
+        key: out / rel for key, rel in runner.case_files(LABEL, seed).items()
+    }
+
+
+def complete_case(
+    out,
+    seed,
+    exact_metrics=False,
+    identity=None,
+    shift=0.0,
+    boost_penalty=None,
+):
+    """Write a verified-looking case by hand, with a real posterior.
+
+    With ``exact_metrics`` the sidecar's metrics, and the boost report's of
+    the returned posterior, are those that ``benchmark_targets.metrics``
+    gives the posterior itself, as ``golden_trace.run_task`` computes them,
+    so that a rescoring, which rebuilds the posterior from its plain
+    arrays, reproduces them; otherwise they are 0.1. ``identity`` is the
+    one its record and its sidecar's provenance hold,
+    :data:`FAKE_IDENTITY` by default; ``shift`` moves the posterior's
+    means. With ``boost_penalty`` the run made a final boost at that weight
+    penalty and kept it; without, it made none.
+    """
+    identity = FAKE_IDENTITY if identity is None else identity
+    vp = make_vbmc().vp
+    vp.mu = vp.mu + shift
+    files = files_of(out, seed)
+    for path in files.values():
+        path.parent.mkdir(parents=True, exist_ok=True)
+    transformer = vp.parameter_transformer
+    np.savez_compressed(
+        files["trace"],
+        final_w=np.ravel(vp.w),
+        final_mu=np.asarray(vp.mu),
+        final_sigma=np.ravel(vp.sigma),
+        final_lambd=np.ravel(vp.lambd),
+        pt_mu=transformer.mu[None],
+        pt_delta=transformer.delta[None],
+        pt_scale=np.ones((1, vp.D)),
+        pt_R=np.eye(vp.D)[None],
+    )
+    extras = runner.posterior_extras(vp)
+    np.savez(files["posterior"], **extras)
+    options = contract.read_json(out / "manifest.json")["options"]
+    final = {k: 0.1 for k in runner.golden_trace.METRICS}
+    final.update(
+        runner.scores(vp),
+        best_iter=0,
+        rmse=0.1,
+        iterations=1,
+        final_K=vp.K,
+        n_warps=0,
+        wall_s=1.0,
+        success_flag=True,
+        peak_rss_mb=100.0,
+    )
+    metric = {
+        "elbo_err": 0.1,
+        "gskl": 0.1,
+        "mmtv": 0.1,
+        "rmse": 0.1,
+        "post_mean": [[0, 0]],
+        "post_cov": [[1, 0], [0, 1]],
+        "moment_method": "affine",
+    }
+    if exact_metrics:
+        problem = runner.find_config(LABEL).make(seed=seed)
+        found = runner.jsonable(runner.metrics(problem, vp, final["elbo"]))
+        final.update({k: found[k] for k in runner.RESCORED_METRICS})
+        metric = {k: found[k] for k in metric}
+    side = {
+        "label": LABEL,
+        "seed": seed,
+        "requested_options": options,
+        "effective_options": options,
+        "final": final,
+        "provenance": {
+            "source": identity["source"],
+            "imports": identity["imports"],
+        },
+    }
+    files["sidecar"].write_text(json.dumps(side, indent=1))
+    boosted = boost_penalty is not None
+    state = {
+        "pre": vp,
+        "candidate": vp if boosted else None,
+        "returned": vp,
+        "attempted": boosted,
+        "accepted": boosted,
+        "tolerance": options.get("tol_elcbo_boost"),
+        "boost_options": (
+            {"weight_penalty": boost_penalty} if boosted else None
+        ),
+        "boost_call": (
+            {"n_fast_opts": 1, "n_slow_opts": 1, "K_new": vp.K}
+            if boosted
+            else None
+        ),
+    }
+    files["boost_state"].write_bytes(dill.dumps(state))
+    report = {
+        k: state[k]
+        for k in (
+            "attempted",
+            "accepted",
+            "tolerance",
+            "boost_options",
+            "boost_call",
+        )
+    }
+    report["scores"] = {
+        k: runner.scores(state[k]) for k in ("pre", "candidate", "returned")
+    }
+    report["metrics"] = {"pre": metric, "returned": metric}
+    if boosted:
+        report["metrics"]["candidate"] = metric
+    runner.write_json(files["boost_report"], report)
+    tag = contract.case_tag(line_of(seed))
+    contract.write_completion(
+        out,
+        tag,
+        line_of(seed),
+        list(files.values()),
+        copy.deepcopy(identity),
+        time.time(),
+        1.0,
+        {"boost": {"attempted": boosted, "accepted": boosted}},
+    )
+    return tag, files
+
+
+def test_case_lines_subsets_and_files(campaign):
+    manifest = contract.read_json(campaign / "manifest.json")
+    lines = runner.case_lines(manifest)
+    assert lines == [line_of(seed) for seed in range(3)]
+    assert [runner.parse_case(line)[1:] for line in lines] == [
+        (LABEL, 0),
+        (LABEL, 1),
+        (LABEL, 2),
+    ]
+    assert runner.subset_indices(manifest, "canary") == [1]
+    assert runner.subset_indices(manifest, LABEL) == [1, 2, 3]
+    assert runner.subset_indices(manifest, "noiseless") == [1, 2, 3]
+    with pytest.raises(SystemExit):
+        runner.subset_indices(manifest, "noisy")
+    with pytest.raises(contract.ContractError):
+        runner.parse_case(f"{LABEL}/{LABEL}_seed1 {LABEL} 2")
+    # The sidecars of a configuration's directory are all the population
+    # discovery of golden_trace.py finds; the boost files lie apart.
+    rels = runner.case_files(LABEL, 0).values()
+    assert sorted(r for r in rels if r.endswith(".json")) == [
+        f"boost/{LABEL}/{LABEL}_seed0.boost.json",
+        f"{LABEL}/{LABEL}_seed0.json",
+    ]
+
+
+def test_prepare_records_the_campaign(campaign, capsys):
+    manifest = contract.read_json(campaign / "manifest.json")
+    assert manifest["allocation"] == {
+        "suite": "smoke",
+        "labels": [LABEL],
+        "seeds": [0, 1, 2],
+    }
+    assert manifest["options"] == runner.DEFAULT_OPTIONS
+    assert manifest["identity"] == FAKE_IDENTITY
+    assert manifest["arm"] == "after"
+    # The harness checkout's own package is the release code: it rescores,
+    # and its tracked copies hold the rescored metrics and their record.
+    assert manifest["finishing_steps"] == [["summarize"], ["rescore"]]
+    assert manifest["tracked_copies"] == runner.tracked_copies(True)
+    assert runner.RESCORING in manifest["tracked_copies"]["files"]
+    family = manifest["confirmatory"]
+    assert family["labels"] == [LABEL]
+    assert family["signed_rank"] == ["elbo_err", "gskl", "mmtv"]
+    assert family["tests"] == 4 and "Holm" in family["statement"]
+    assert set(manifest["site"]) == set(contract.SETTINGS)
+    runner.main(["cases", "--out", str(campaign), "--subset", "canary"])
+    assert capsys.readouterr().out == f"1 {line_of(0)}\n"
+    # Preparing again changes nothing; preparing otherwise is refused.
+    before = (campaign / "manifest.json").read_bytes()
+    base = ["prepare", "--out", str(campaign), *ARGUMENTS]
+    assert runner.main([*base, "--arm", "after"]) == 0
+    assert (campaign / "manifest.json").read_bytes() == before
+    with pytest.raises(SystemExit, match="prepared otherwise"):
+        runner.main([*base[:-1], "0-3"])
+
+
+def test_prepare_pairs_arms(campaign, tmp_path, monkeypatch):
+    before = prepare_other_arm(tmp_path, monkeypatch, "before", OTHER_IDENTITY)
+    manifest = contract.read_json(before / "manifest.json")
+    # A campaign of other code than the harness checkout's does not rescore.
+    assert manifest["finishing_steps"] == [["summarize"]]
+    assert manifest["tracked_copies"] == runner.tracked_copies(False)
+    after = tmp_path / "after"
+    runner.main(
+        ["prepare", "--out", str(after), *ARGUMENTS, "--pair", str(before)]
+    )
+    steps = contract.read_json(after / "manifest.json")["finishing_steps"]
+    assert steps == [
+        ["summarize"],
+        ["rescore", "--campaign", before.resolve().as_posix()],
+    ]
+
+    def paired_with(other, *extra):
+        out = tmp_path / f"with_{other.name}{len(extra)}"
+        return runner.main(
+            ["prepare", "--out", str(out), *ARGUMENTS, *extra]
+            + ["--pair", str(other)]
+        )
+
+    with pytest.raises(SystemExit, match="another allocation"):
+        paired_with(before, "--seeds", "0-4")
+    # The campaign fixture holds the code of this process.
+    with pytest.raises(SystemExit, match="the code with itself"):
+        paired_with(campaign)
+    # The arms differ in their code alone.
+    for name, change, value, message in (
+        ("harness", ("trees", "harness", "clean"), False, "harness checkouts"),
+        (
+            "files",
+            ("files", "dev/scripts/population_run.py"),
+            "d" * 64,
+            "harness files",
+        ),
+        ("versions", ("versions", "numpy"), "9", "environment versions"),
+    ):
+        identity = copy.deepcopy(OTHER_IDENTITY)
+        part = identity["source"]
+        for key in change[:-1]:
+            part = part[key]
+        part[change[-1]] = value
+        other = prepare_other_arm(tmp_path, monkeypatch, name, identity)
+        with pytest.raises(SystemExit, match=message):
+            paired_with(other)
+    # And they run on one node family, in one environment.
+    for key in ("NODE_FEATURE", "CAMPAIGN_ENV"):
+        monkeypatch.setenv(key, "elsewhere")
+        name = f"site_{key.lower()}"
+        other = prepare_other_arm(tmp_path, monkeypatch, name, OTHER_IDENTITY)
+        monkeypatch.delenv(key)
+        with pytest.raises(SystemExit, match=f"different {key}"):
+            paired_with(other)
+    monkeypatch.setenv("PYVBMC_SOURCE", str(tmp_path / "before_tree"))
+    with pytest.raises(SystemExit, match="only a campaign"):
+        paired_with(before)
+
+
+#: The identity of an arm whose package is its own harness checkout's at an
+#: earlier commit than this process's, with other harness files but the
+#: same files that build and score a run (Arm 3's reference, the after arm).
+EARLIER_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+for _name in ("harness", "pyvbmc"):
+    EARLIER_IDENTITY["source"]["trees"][_name]["commit"] = "e" * 40
+EARLIER_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
+
+
+def test_pair_differences_across_harness_commits(monkeypatch):
+    # The stand-in commits resolve to nothing; their package code differs.
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: True)
+    assert runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY) == []
+    other = copy.deepcopy(EARLIER_IDENTITY)
+    other["source"]["files"]["dev/scripts/golden_trace.py"] = "6" * 64
+    other["source"]["trees"]["harness"]["clean"] = False
+    assert runner.pair_differences(FAKE_IDENTITY, other) == [
+        "a harness checkout is not clean",
+        "the arms have different dev/scripts/golden_trace.py",
+    ]
+    # At one commit, every harness file and the checkout's state count.
+    same = copy.deepcopy(EARLIER_IDENTITY)
+    same["source"]["trees"]["pyvbmc"]["commit"] = "f" * 40
+    assert runner.pair_differences(same, EARLIER_IDENTITY) == []
+    same["source"]["files"]["dev/scripts/population_run.py"] = "3" * 64
+    assert runner.pair_differences(same, EARLIER_IDENTITY) == [
+        "the arms have different harness files"
+    ]
+    assert "would compare the code with itself" in "".join(
+        runner.pair_differences(EARLIER_IDENTITY, EARLIER_IDENTITY)
+    )
+    # An arm of other code than its harness checkout's does not pair so.
+    other_code = copy.deepcopy(EARLIER_IDENTITY)
+    other_code["source"]["trees"]["pyvbmc"]["commit"] = "f" * 40
+    assert runner.pair_differences(FAKE_IDENTITY, other_code) == [
+        "an arm ran other code than its harness checkout's"
+    ]
+
+
+def test_pair_across_harness_commits_needs_different_package_code(
+    monkeypatch,
+):
+    """Arms of the harness's own code at two commits whose package code is
+    the same, a later commit having changed only the documentation, compare
+    the code with itself; package code that the harness checkout cannot
+    compare, for a commit it does not hold, refuses the pair too."""
+    commits = f"{'0' * 40} and {'e' * 40}"
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: False)
+    assert runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY) == [
+        f"the package trees at {commits} hold the same package code, so the "
+        "comparison would compare the code with itself"
+    ]
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: None)
+    (reason,) = runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY)
+    assert "cannot compare their package code" in reason
+
+
+def test_package_code_differs_reads_the_harness_checkouts_history(
+    tmp_path, monkeypatch
+):
+    """The package's scoring code leaves out its tests; a commit that the
+    checkout does not hold leaves the comparison undecided, which the
+    scoring checks read as code that differs."""
+
+    def git(*args):
+        return subprocess.run(
+            ["git", "-C", str(tmp_path), *args],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    git("init", "-q")
+    for key, value in (
+        ("user.email", "test@example.com"),
+        ("user.name", "test"),
+        ("commit.gpgsign", "false"),
+    ):
+        git("config", key, value)
+    code = tmp_path / "pyvbmc" / "vbmc" / "vbmc.py"
+    test = tmp_path / "pyvbmc" / "testing" / "test_vbmc.py"
+    for path in (code, test):
+        path.parent.mkdir(parents=True)
+        path.write_text("x = 1\n", encoding="utf-8")
+
+    def commit(message):
+        git("add", "-A")
+        git("commit", "-q", "-m", message)
+        return git("rev-parse", "HEAD")
+
+    first = commit("first")
+    test.write_text("x = 2\n", encoding="utf-8")
+    tests_only = commit("tests")
+    code.write_text("x = 2\n", encoding="utf-8")
+    code_too = commit("code")
+    monkeypatch.setattr(runner, "ROOT", tmp_path)
+    assert runner.package_code_differs(first, tests_only) is False
+    assert runner.package_code_differs(first, code_too) is True
+    assert runner.package_code_differs(first, "f" * 40) is None
+    assert runner.package_numerics_differ(first, "f" * 40)
+    assert not runner.package_numerics_differ(first, tests_only)
+
+
+def test_prepare_pairs_arms_across_harness_commits(tmp_path, monkeypatch):
+    """Each arm's package is its own harness checkout's, and the candidate's
+    checkout is at a later commit than the reference's."""
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    # The stand-in commits resolve to nothing; their package code differs.
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: True)
+
+    def own_arm(name, identity, *extra):
+        use_identity(monkeypatch, identity)
+        out = tmp_path / name
+        arguments = [*ARGUMENTS, "--arm", name, *extra]
+        return out, runner.main(["prepare", "--out", str(out), *arguments])
+
+    after, code = own_arm("after", EARLIER_IDENTITY)
+    assert code == 0
+    arm3, code = own_arm("arm3", FAKE_IDENTITY, "--pair", str(after))
+    assert code == 0
+    steps = contract.read_json(arm3 / "manifest.json")["finishing_steps"]
+    assert steps == [
+        ["summarize"],
+        ["rescore", "--campaign", after.resolve().as_posix()],
+    ]
+    # A file that builds or scores a run differs: no pair.
+    identity = copy.deepcopy(EARLIER_IDENTITY)
+    identity["source"]["files"]["dev/scripts/benchmark_targets.py"] = "6" * 64
+    other, code = own_arm("other", identity)
+    assert code == 0
+    with pytest.raises(SystemExit, match="benchmark_targets.py"):
+        own_arm("with_other", FAKE_IDENTITY, "--pair", str(other))
+
+
+def test_the_gpyreg_tree_is_the_release_the_package_needs(
+    tmp_path, monkeypatch
+):
+    """The release code takes its minimum gpyreg release or a later commit;
+    other code takes its minimum release exactly."""
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    for key, value in {
+        "HOME": str(home),
+        "GIT_CONFIG_GLOBAL": str(home / ".gitconfig"),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }.items():
+        monkeypatch.setenv(key, value)
+    package = tmp_path / "package"
+    package.mkdir()
+    needs = '[project]\nname = "pyvbmc"\ndependencies = ["numpy", "{}"]\n'
+    (package / "pyproject.toml").write_text(
+        needs.format("gpyreg >= 1.4.0"), encoding="utf-8"
+    )
+
+    def repository(path, *tags):
+        path.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=path, check=True)
+        for tag in tags:
+            subprocess.run(
+                ["git", "commit", "-q", "--allow-empty", "-m", str(tag)],
+                cwd=path,
+                check=True,
+            )
+            if tag:
+                subprocess.run(["git", "tag", tag], cwd=path, check=True)
+        return path
+
+    trees = {"pyvbmc": package, "gpyreg": repository(tmp_path / "g", "v1.3.3")}
+    problem = runner.gpyreg_release_problem(trees, True)
+    assert "is at v1.3.3-0-g" in problem and "1.4.0 or later" in problem
+    trees["gpyreg"] = repository(tmp_path / "h", "v1.3.3", "v1.4.0")
+    assert runner.gpyreg_release_problem(trees, True) is None
+    assert runner.gpyreg_release_problem(trees, False) is None
+    trees["gpyreg"] = repository(tmp_path / "i", "v1.4.0", None)
+    assert runner.gpyreg_release_problem(trees, True) is None
+    assert "exactly" in runner.gpyreg_release_problem(trees, False)
+    trees["gpyreg"] = repository(tmp_path / "j", None)
+    assert "no release tag" in runner.gpyreg_release_problem(trees, True)
+    (package / "pyproject.toml").write_text(
+        needs.format("gpyreg"), encoding="utf-8"
+    )
+    assert "names no gpyreg minimum" in runner.gpyreg_release_problem(
+        trees, True
+    )
+
+
+def test_confirmatory_family_override_and_refusals():
+    family = runner.confirmatory_family(
+        {"labels": ["b"], "signed_rank": ["gskl"], "alpha": 0.01},
+        ["a", "b"],
+    )
+    assert family["tests"] == 2 and family["alpha"] == 0.01
+    assert runner.confirmatory_family(family, ["a", "b"]) == family
+    for spec in (
+        {"labels": ["c"]},
+        {"signed_rank": ["rmse"]},
+        {"correction": "bonferroni"},
+        {"alpha": 1.5},
+        {"primary": ["x"]},
+        {"signed_rank": [], "mcnemar_usability": False},
+    ):
+        with pytest.raises(SystemExit):
+            runner.confirmatory_family(spec, ["a", "b"])
+
+
+def fail_if_run(*args, **kwargs):
+    raise AssertionError("the case must not run")
+
+
+def test_worker_exits_early_on_a_completed_case(campaign, monkeypatch):
+    tag = contract.case_tag(line_of(0))
+    contract.write_json(contract.record_path(campaign, tag), {"tag": tag})
+    monkeypatch.setattr(runner, "run_case", fail_if_run)
+    args = ["worker", "--out", str(campaign), "--case", line_of(0)]
+    assert runner.main(args) == 0
+
+
+def live_claim(campaign, seed):
+    """A claim of this process's, which is live while it runs."""
+    tag = contract.case_tag(line_of(seed))
+    claim = contract.claim_path(campaign, tag)
+    contract.write_json(
+        claim,
+        {
+            "tag": tag,
+            "job": None,
+            "host": socket.gethostname(),
+            "pid": os.getpid(),
+            "started": contract.now(),
+            "token": "someone else",
+        },
+    )
+    return claim
+
+
+def test_worker_refuses_a_live_claim_and_leaves_the_files(
+    campaign, monkeypatch
+):
+    partial = files_of(campaign, 0)["trace"]
+    partial.parent.mkdir(parents=True)
+    partial.write_bytes(b"left by another attempt")
+    claim = live_claim(campaign, 0)
+    monkeypatch.setattr(runner, "run_case", fail_if_run)
+    args = ["worker", "--out", str(campaign), "--case", line_of(0)]
+    assert runner.main(args) == contract.EXIT_CLAIMED
+    assert partial.read_bytes() == b"left by another attempt"
+    assert contract.read_json(claim)["token"] == "someone else"
+
+
+def test_worker_refuses_another_identity_and_leaves_the_files(
+    campaign, monkeypatch
+):
+    partial = files_of(campaign, 0)["trace"]
+    partial.parent.mkdir(parents=True)
+    partial.write_bytes(b"left")
+    use_identity(monkeypatch, OTHER_IDENTITY)
+    monkeypatch.setattr(runner, "run_case", fail_if_run)
+    args = ["worker", "--out", str(campaign), "--case", line_of(0)]
+    assert runner.main(args) == contract.EXIT_IDENTITY
+    assert partial.read_bytes() == b"left"
+    assert not contract.claim_path(
+        campaign, contract.case_tag(line_of(0))
+    ).exists()
+
+
+def test_worker_stopped_by_sigterm_cleans_up(campaign, monkeypatch):
+    def stopped(out, label, seed, options, identity):
+        files = files_of(Path(out), seed)
+        files["trace"].parent.mkdir(parents=True, exist_ok=True)
+        files["trace"].write_bytes(b"partial")
+        signal.raise_signal(signal.SIGTERM)
+        time.sleep(5)
+        raise AssertionError("SIGTERM did not stop the run")
+
+    monkeypatch.setattr(runner, "run_case", stopped)
+    tag = contract.case_tag(line_of(1))
+    args = ["worker", "--out", str(campaign), "--case", line_of(1)]
+    assert runner.main(args) == 128 + signal.SIGTERM
+    assert not files_of(campaign, 1)["trace"].exists()
+    assert not contract.error_path(campaign, tag).exists()
+    assert not contract.claim_path(campaign, tag).exists()
+    assert not contract.record_path(campaign, tag).exists()
+
+
+def test_worker_failure_keeps_the_traceback_of_run_task(campaign, monkeypatch):
+    def failed(label, seed, options, directory):
+        stem = f"{label}_seed{seed}"
+        (Path(directory) / f"{stem}.npz").write_bytes(b"partial")
+        (Path(directory) / f"{stem}.error.txt").write_text(
+            "Traceback (most recent call last):\nValueError: the target broke\n"
+        )
+        return {"tag": stem, "ok": False, "wall_s": 0.0}
+
+    monkeypatch.setattr(runner.golden_trace, "run_task", failed)
+    tag = contract.case_tag(line_of(2))
+    args = ["worker", "--out", str(campaign), "--case", line_of(2)]
+    assert runner.main(args) == 1
+    text = contract.error_path(campaign, tag).read_text()
+    assert "golden_trace.run_task failed" in text
+    assert "ValueError: the target broke" in text
+    assert not files_of(campaign, 2)["trace"].exists()
+    assert not contract.claim_path(campaign, tag).exists()
+
+
+def test_worker_success_writes_the_record(campaign, monkeypatch):
+    def succeeded(out, label, seed, options, identity):
+        files = files_of(Path(out), seed)
+        for path in files.values():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(path.name)
+        return list(files.values()), {"boost": {"attempted": True}}
+
+    monkeypatch.setattr(runner, "run_case", succeeded)
+    tag = contract.case_tag(line_of(0))
+    args = ["worker", "--out", str(campaign), "--case", line_of(0)]
+    assert runner.main(args) == 0
+    record = contract.read_json(contract.record_path(campaign, tag))
+    assert sorted(record["artifacts"]) == sorted(
+        runner.case_files(LABEL, 0).values()
+    )
+    assert record["boost"] == {"attempted": True}
+    assert not contract.claim_path(campaign, tag).exists()
+    unknown = ["worker", "--out", str(campaign), "--case", line_of(7)]
+    assert runner.main(unknown) == runner.EXIT_USAGE
+
+
+def test_worker_refuses_a_directory_that_is_not_its_campaign(tmp_path, capsys):
+    """A directory without a manifest, or with another harness's, exits 64
+    and is left as it is."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    args = ["worker", "--out", str(empty), "--case", line_of(0)]
+    assert runner.main(args) == runner.EXIT_USAGE
+    assert "holds no readable manifest.json" in capsys.readouterr().out
+    assert list(empty.iterdir()) == []
+    other = tmp_path / "other"
+    other.mkdir()
+    contract.write_json(
+        other / "manifest.json",
+        {"campaign": "svbmc_pool", "contract": contract.CONTRACT_VERSION},
+    )
+    args = ["worker", "--out", str(other), "--case", line_of(0)]
+    assert runner.main(args) == runner.EXIT_USAGE
+    assert "is not a manifest of population_run" in capsys.readouterr().out
+    assert sorted(path.name for path in other.iterdir()) == ["manifest.json"]
+
+
+def verification(out):
+    report = contract.read_json(out / "verification.json")
+    return report, {case["index"]: case for case in report["cases"]}
+
+
+def test_verify_reconciles_every_state(campaign):
+    tag, _ = complete_case(campaign, 0)
+    failed = contract.case_tag(line_of(1))
+    contract.error_path(campaign, failed).write_text("x: RuntimeError: boom\n")
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    report, cases = verification(campaign)
+    assert [cases[i]["status"] for i in (1, 2, 3)] == [
+        "verified",
+        "failed",
+        "missing",
+    ]
+    assert cases[1]["boost"] == {"attempted": False, "accepted": False}
+    # The record verify checked, for the readers of the report.
+    assert cases[1]["record_sha256"] == runner.sha256(
+        contract.record_path(campaign, tag)
+    )
+    assert report["manifest_sha256"] == runner.sha256(
+        campaign / "manifest.json"
+    )
+    # Files without a record or a claim, and a file no case owns.
+    files_of(campaign, 2)["trace"].write_bytes(b"x")
+    (campaign / LABEL / "notes.txt").write_text("x")
+    assert runner.main(["verify", "--out", str(campaign)]) == 1
+    report, cases = verification(campaign)
+    assert cases[3]["status"] == "partial"
+    assert report["stray"] == [f"{LABEL}/notes.txt"]
+    # A stale claim beside them: the case was interrupted.
+    contract.write_json(
+        contract.claim_path(campaign, contract.case_tag(line_of(2))),
+        {"job": None, "host": socket.gethostname(), "pid": 2**30},
+    )
+    (campaign / LABEL / "notes.txt").unlink()
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    assert verification(campaign)[1][3]["status"] == "interrupted"
+
+
+def test_verify_fails_a_changed_or_inconsistent_case(campaign):
+    _, files = complete_case(campaign, 0)
+    side = json.loads(files["sidecar"].read_text())
+    side["final"]["gskl"] = 0.2
+    files["sidecar"].write_text(json.dumps(side, indent=1))
+    assert runner.main(["verify", "--out", str(campaign)]) == 1
+    case = verification(campaign)[1][1]
+    assert case["status"] == "verify_failed"
+    assert "differs from its recorded SHA-256" in case["error"]
+
+
+def test_verify_checks_the_rebuilt_posterior(campaign):
+    tag, files = complete_case(campaign, 0)
+    # Arrays that claim a rescaling the returned posterior does not have.
+    np.savez(
+        files["posterior"],
+        bounded_types=np.array([12]),
+        scale_is_none=np.asarray(False),
+        rotation_is_none=np.asarray(True),
+    )
+    record_path = contract.record_path(campaign, tag)
+    record = contract.read_json(record_path)
+    rel = runner.case_files(LABEL, 0)["posterior"]
+    record["artifacts"][rel]["sha256"] = runner.sha256(files["posterior"])
+    contract.write_json(record_path, record)
+    assert runner.main(["verify", "--out", str(campaign)]) == 1
+    case = verification(campaign)[1][1]
+    assert "parameter_transformer.scale" in case["error"]
+
+
+def test_verify_refuses_other_trees(campaign, monkeypatch):
+    use_identity(monkeypatch, OTHER_IDENTITY)
+    assert (
+        runner.main(["verify", "--out", str(campaign)])
+        == contract.EXIT_IDENTITY
+    )
+    assert not (campaign / "verification.json").exists()
+
+
+def test_summarize_reads_the_verified_cases_alone(campaign):
+    complete_case(campaign, 0)
+    # A case in flight has written its sidecar, and holds a live claim.
+    _, files = complete_case(campaign, 1)
+    contract.record_path(campaign, contract.case_tag(line_of(1))).unlink()
+    live_claim(campaign, 1)
+    contract.error_path(campaign, contract.case_tag(line_of(2))).write_text(
+        "x: RuntimeError: boom\n"
+    )
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    assert [case["status"] for case in verification(campaign)[0]["cases"]] == [
+        "verified",
+        "in_flight",
+        "failed",
+    ]
+    assert files["sidecar"].exists()
+    assert runner.main(["summarize", "--out", str(campaign)]) == 0
+    summary = (campaign / "summary.md").read_text()
+    assert f"| {LABEL} | 1 | 1 |" in summary
+    assert "verified 1, failed 1, in flight 1" in summary
+    assert "skipped 1" in summary
+
+
+def test_rescore_and_its_resumption(campaign, monkeypatch):
+    complete_case(campaign, 0, exact_metrics=True)
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    assert runner.main(["rescore", "--out", str(campaign)]) == 0
+    path = campaign / "rescored" / f"{campaign.name}.json"
+    report = contract.read_json(path)
+    assert report["counts"] == {
+        "rescored": 1,
+        "reused": 0,
+        "not_verified": 2,
+        "equal_to_in_run": {k: 1 for k in runner.RESCORED_METRICS},
+        "nonfinite": {k: 0 for k in runner.RESCORED_METRICS},
+    }
+    case = report["cases"][f"{LABEL}_seed0"]
+    assert case["moment_method"] == "affine"
+    assert all(case["finite"].values())
+    assert report["campaign"]["verification_sha256"] == runner.sha256(
+        campaign / "verification.json"
+    )
+    assert report["rescoring"]["identity"] == FAKE_IDENTITY
+    # The rescoring's record binds the file by its SHA-256.
+    record = contract.read_json(campaign / runner.RESCORING)
+    assert record["identity"] == FAKE_IDENTITY
+    assert record["rescored"][campaign.name]["file"] == (
+        f"rescored/{campaign.name}.json"
+    )
+    assert record["rescored"][campaign.name]["sha256"] == runner.sha256(path)
+    # A second rescoring takes the case from its work file.
+    rescore_case = runner.rescore_case
+    monkeypatch.setattr(runner, "rescore_case", fail_if_run)
+    assert runner.main(["rescore", "--out", str(campaign)]) == 0
+    again = contract.read_json(path)
+    assert again["counts"]["reused"] == 1
+    assert again["cases"] == report["cases"]
+    # A work file made by other code is rescored anew.
+    work = campaign / "rescored" / f"{campaign.name}.parts" / f"{LABEL}.json"
+    part = contract.read_json(work)
+    part["rescoring_source"] = OTHER_IDENTITY["source"]
+    contract.write_json(work, part)
+    with pytest.raises(AssertionError, match="must not run"):
+        runner.main(["rescore", "--out", str(campaign)])
+    monkeypatch.setattr(runner, "rescore_case", rescore_case)
+    assert runner.main(["rescore", "--out", str(campaign)]) == 0
+    assert contract.read_json(path)["counts"]["reused"] == 0
+    # A sidecar changed after verification is refused.
+    side = files_of(campaign, 0)["sidecar"]
+    side.write_text(side.read_text() + " ")
+    with pytest.raises(contract.ContractError, match="not the file"):
+        runner.main(["rescore", "--out", str(campaign)])
+
+
+def test_readers_refuse_a_verification_older_than_the_campaign(campaign):
+    tag, _ = complete_case(campaign, 0, exact_metrics=True)
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    # A case completes after the verification, as after a canary's finish.
+    complete_case(campaign, 1, exact_metrics=True)
+    for step in ("rescore", "summarize"):
+        with pytest.raises(contract.ContractError, match="is older than"):
+            runner.main([step, "--out", str(campaign)])
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    assert runner.main(["rescore", "--out", str(campaign)]) == 0
+    report = contract.read_json(
+        campaign / "rescored" / f"{campaign.name}.json"
+    )
+    assert report["counts"]["rescored"] == 2
+    # A record rewritten after the verification is not the one it checked.
+    record = contract.record_path(campaign, tag)
+    record.write_text(record.read_text() + " ")
+    with pytest.raises(contract.ContractError, match="not the record"):
+        runner.main(["rescore", "--out", str(campaign)])
+
+
+def test_rescore_refuses_another_identity_than_the_manifests(
+    campaign, monkeypatch
+):
+    complete_case(campaign, 0, exact_metrics=True)
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    other = copy.deepcopy(FAKE_IDENTITY)
+    other["source"]["versions"]["numpy"] = "3"
+    use_identity(monkeypatch, other)
+    assert (
+        runner.main(["rescore", "--out", str(campaign)])
+        == contract.EXIT_IDENTITY
+    )
+    assert not (campaign / runner.RESCORING).exists()
+    assert not (campaign / "rescored").exists()
+
+
+def test_rescore_runs_in_the_release_code_alone(
+    campaign, tmp_path, monkeypatch
+):
+    other = tmp_path / "other_tree"
+    other.mkdir()
+    monkeypatch.setenv("PYVBMC_SOURCE", str(other))
+    assert (
+        runner.main(["rescore", "--out", str(campaign)])
+        == contract.EXIT_IDENTITY
+    )
+
+
+def test_rescore_without_the_gpyreg_checkout_is_refused(
+    campaign, monkeypatch, capsys
+):
+    """Without ``PYVBMC_GPYREG_SOURCE`` no identity can be established."""
+    monkeypatch.delenv("PYVBMC_GPYREG_SOURCE")
+    assert (
+        runner.main(["rescore", "--out", str(campaign)])
+        == contract.EXIT_IDENTITY
+    )
+    printed = capsys.readouterr().out
+    assert "rescore refused: no identity" in printed
+    assert "PYVBMC_GPYREG_SOURCE is not set" in printed
+    assert not (campaign / "rescored").exists()
+
+
+def test_rescore_requires_its_own_code_to_reproduce_the_in_run_metrics(
+    campaign,
+):
+    # In-run metrics of 0.1, which the posterior does not score.
+    complete_case(campaign, 0)
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    with pytest.raises(contract.ContractError, match="differ from their in"):
+        runner.main(["rescore", "--out", str(campaign)])
+    assert not (campaign / "rescored" / f"{campaign.name}.json").exists()
+    assert not (campaign / runner.RESCORING).exists()
+    work = campaign / "rescored" / f"{campaign.name}.parts" / f"{LABEL}.json"
+    entry = contract.read_json(work)["cases"][f"{LABEL}_seed0"]
+    assert entry["equal_to_in_run"]["gskl"] is False
+
+
+def sited_identity(site, node=None):
+    """:data:`FAKE_IDENTITY` with the host part and the paths of ``site``:
+    of its login node, or with ``node`` of an array task there."""
+    identity = copy.deepcopy(FAKE_IDENTITY)
+    identity["imports"] = {
+        "trees": {
+            name: {"path": "", "dirty": []}
+            for name in ("harness", "pyvbmc", "gpyreg")
+        },
+        "modules": {"pyvbmc": "", "gpyreg": ""},
+        "installed_metadata_versions": {"pyvbmc": None, "gpyreg": None},
+    }
+    identity = site.plant(identity, node=node)
+    identity["imports"]["harness_modules"] = {
+        "golden_trace": str(site.home / "src" / "golden_trace.py")
+    }
+    return identity
+
+
+@pytest.fixture
+def sited(tmp_path, monkeypatch):
+    """``(site, campaign)``: the campaign of :func:`campaign`, prepared at
+    a stand-in site (``campaign_slurm_stubs.FakeSite``) in its operator's
+    home, with the site's settings and the login node's identity."""
+    site = stubs.FakeSite(tmp_path)
+    for name, value in site.site_block(
+        "dev/scripts/population_run.py"
+    ).items():
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
+    use_identity(monkeypatch, sited_identity(site))
+    monkeypatch.setattr(
+        contract,
+        "pip_freeze",
+        lambda: ["pyvbmc==0", f"gpyreg @ file://{site.gpyreg.as_posix()}"],
+    )
+    out = site.home / "runs" / "population_after"
+    assert runner.main(["prepare", "--out", str(out), *ARGUMENTS]) == 0
+    return site, out
+
+
+def test_the_tracked_copies_of_a_campaign_are_redacted(sited, tmp_path):
+    site, out = sited
+    manifest = contract.read_json(out / "manifest.json")
+    assert manifest["tracked_copies"] == runner.tracked_copies(True)
+    tag, files = complete_case(
+        out,
+        0,
+        exact_metrics=True,
+        identity=sited_identity(site, site.nodes[0]),
+    )
+    assert runner.main(["verify", "--out", str(out)]) == 0
+    assert runner.main(["summarize", "--out", str(out)]) == 0
+    assert runner.main(["rescore", "--out", str(out)]) == 0
+    site.write_slurm(out)
+    assert site.leaks(out)
+    target = tmp_path / "handback" / "population_after"
+    contract.redact(
+        out,
+        target,
+        operator=site.operator(),
+        environ={},
+        host="fakelogin9",
+        say=lambda message: None,
+    )
+    assert site.leaks(target) == []
+    rels = runner.case_files(LABEL, 0)
+    names = sorted(
+        p.relative_to(target).as_posix()
+        for p in target.rglob("*")
+        if p.is_file()
+    )
+    # Every verified case's record, sidecar and boost report, and none of
+    # the unverified ones; the traces, the pickles and the rescoring's work
+    # files stay in the archive.
+    assert names == sorted(
+        [
+            "manifest.json",
+            "verification.json",
+            "summary.md",
+            "rescored/population_after.json",
+            runner.RESCORING,
+            "redaction.json",
+            f"records/{tag}.complete.json",
+            rels["sidecar"],
+            rels["boost_report"],
+        ]
+    )
+    side = json.loads((target / rels["sidecar"]).read_text())
+    raw = json.loads(files["sidecar"].read_text())
+    assert side["final"] == raw["final"]
+    trees = side["provenance"]["imports"]["trees"]
+    # A tree under the home is named for itself.
+    assert trees["pyvbmc"]["path"] == "$PYVBMC_TREE"
+    assert trees["gpyreg"]["path"] == "$PYVBMC_GPYREG_SOURCE"
+    record = contract.read_json(contract.record_path(target, tag))
+    assert record["identity"]["host"]["hostname"] == site.family
+    for key in ("sidecar", "boost_report"):
+        assert (
+            contract.source_sha256(target, rels[key])
+            == record["artifacts"][rels[key]]["sha256"]
+        )
+    rescored = contract.read_json(target / "rescored/population_after.json")
+    assert rescored["campaign"]["path"].startswith("$CAMPAIGN_PARENT")
+    assert rescored["rescoring"]["identity"]["host"]["hostname"] == "login"
+    # The rescoring's record names the SHA-256 of the file as it was
+    # written, which the copy's source SHA-256 is.
+    rescoring = contract.read_json(target / runner.RESCORING)
+    assert rescoring["identity"]["host"]["hostname"] == "login"
+    assert rescoring["rescored"]["population_after"]["sha256"] == (
+        contract.source_sha256(target, "rescored/population_after.json")
+    )
+    # A sidecar field the redaction knows nothing of, holding the username.
+    raw["notes"] = f"run by {site.user}"
+    files["sidecar"].write_text(json.dumps(raw, indent=1))
+    again = tmp_path / "handback" / "again"
+    with pytest.raises(contract.ContractError) as refusal:
+        contract.redact(
+            out,
+            again,
+            operator=site.operator(),
+            environ={},
+            say=lambda message: None,
+        )
+    assert rels["sidecar"] in str(refusal.value)
+    assert "the username" in str(refusal.value)
+    assert not again.exists()
+
+
+# --------------------------------------------------------------------------
+# A population as the envelope of golden_replay.py
+# --------------------------------------------------------------------------
+
+
+def test_golden_replay_reads_the_envelopes_of_either_layout(
+    campaign, tmp_path
+):
+    import golden_replay
+
+    complete_case(campaign, 0)
+    complete_case(campaign, 1)
+    # A case in flight has written its sidecar.
+    _, files = complete_case(campaign, 2)
+    contract.record_path(campaign, contract.case_tag(line_of(2))).unlink()
+    live_claim(campaign, 2)
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    # A campaign directory, as its tracked copies: one directory per
+    # configuration, and the verified cases alone.
+    found = golden_replay.load_envelopes(campaign, [LABEL, "normal_D5"])
+    assert sorted(found) == [LABEL]
+    assert sorted(found[LABEL]["seeds"]) == [0, 1]
+    assert golden_replay.sidecar_directory(campaign, LABEL) == campaign / LABEL
+    # A flat directory, as dev/golden/baseline/ is: every sidecar.
+    flat = tmp_path / "flat"
+    flat.mkdir()
+    for seed in range(3):
+        shutil.copy(files_of(campaign, seed)["sidecar"], flat)
+    found = golden_replay.load_envelopes(flat, [LABEL])
+    assert sorted(found[LABEL]["seeds"]) == [0, 1, 2]
+    np.testing.assert_array_equal(found[LABEL]["gskl"], [0.1] * 3)
+    assert golden_replay.sidecar_directory(flat, LABEL) == flat
+
+
+def test_golden_replay_refuses_a_configuration_without_a_population(
+    campaign, tmp_path
+):
+    import golden_replay
+
+    complete_case(campaign, 0)
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    out = tmp_path / "replay"
+
+    def replay(labels, sidecars):
+        return golden_replay.main(
+            ["--configs", labels, "--sidecars", str(sidecars)]
+            + ["--report-only", "--out", str(out)]
+        )
+
+    for labels, sidecars, missing in (
+        (LABEL, empty, LABEL),
+        (f"{LABEL},normal_D5", campaign, "normal_D5"),
+        (LABEL, tmp_path / "absent", None),
+    ):
+        with pytest.raises(SystemExit) as refusal:
+            replay(labels, sidecars)
+        assert str(missing or "is not a directory") in str(refusal.value)
+    # With a population, the replay goes on: here nothing is left to
+    # report, which is its own failure.
+    assert replay(LABEL, campaign) == 1
+
+
+# --------------------------------------------------------------------------
+# Two arms, verified and rescored by the harness, compared
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture
+def arms(tmp_path, monkeypatch):
+    """``(before, after)``: two verified arms on one allocation, the first
+    of other code (:data:`OTHER_IDENTITY`), whose posteriors lie elsewhere,
+    and the second of the harness checkout's, prepared with ``--pair``."""
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    before = prepare_other_arm(tmp_path, monkeypatch, "before", OTHER_IDENTITY)
+    for seed in range(3):
+        complete_case(
+            before,
+            seed,
+            exact_metrics=True,
+            identity=OTHER_IDENTITY,
+            shift=0.2 * (seed + 1),
+        )
+    use_identity(monkeypatch, OTHER_IDENTITY)
+    assert runner.main(["verify", "--out", str(before)]) == 0
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    after = tmp_path / "after"
+    assert (
+        runner.main(
+            ["prepare", "--out", str(after), *ARGUMENTS]
+            + ["--arm", "after", "--pair", str(before)]
+        )
+        == 0
+    )
+    for seed in range(3):
+        complete_case(after, seed, exact_metrics=True)
+    assert runner.main(["verify", "--out", str(after)]) == 0
+    return before, after
+
+
+def finish(out):
+    """Run the finishing steps of a verified campaign, as the finish does."""
+    manifest = contract.read_json(out / "manifest.json")
+    for step in contract.finishing_steps(manifest):
+        assert runner.main([*step, "--out", str(out)]) == 0, step
+
+
+def test_two_arms_verified_rescored_and_compared(arms, tmp_path):
+    import analyze_population_run as analysis
+
+    before, after = arms
+    finish(after)
+    record = contract.read_json(after / runner.RESCORING)
+    assert sorted(record["rescored"]) == ["after", "before"]
+    result = analysis.analyze_arms(before, after, None, tmp_path / "report")
+    assert result["paired_cases"] == 3
+    assert "legacy_reference" not in result
+    assert result["arms"]["reference"]["arm"] == "before"
+    assert result["arms"]["candidate"]["rescored_equal_to_in_run"] == {
+        k: 3 for k in runner.RESCORED_METRICS
+    }
+    tests = result["confirmatory_tests"]
+    assert len(tests) == result["confirmatory_family"]["tests"] == 4
+    assert all(t["computed"] and t["n_pairs"] == 3 for t in tests)
+    # The arms' posteriors differ, and so do their metrics.
+    gskl = next(t for t in tests if t["metric"] == "gskl")
+    assert gskl["tied"] < 3
+    assert (tmp_path / "report" / "assessment.json").is_file()
+
+
+def test_rescore_counts_rescored_metrics_that_are_not_finite(
+    arms, tmp_path, monkeypatch
+):
+    # The other arm's posteriors score no finite gsKL with the release
+    # code: the rescoring records it, where it would refuse its own arm.
+    before, _ = arms
+    rescore_metrics = runner.rescore_metrics
+
+    def infinite(problem, vp, elbo):
+        return {**rescore_metrics(problem, vp, elbo), "gskl": float("inf")}
+
+    monkeypatch.setattr(runner, "rescore_metrics", infinite)
+    report = runner.rescore_campaign(
+        before, copy.deepcopy(FAKE_IDENTITY), tmp_path / "parts"
+    )
+    assert report["counts"]["nonfinite"]["gskl"] == 3
+    assert report["counts"]["equal_to_in_run"]["gskl"] == 0
+    case = report["cases"][f"{LABEL}_seed1"]
+    assert case["finite"] == {k: k != "gskl" for k in runner.RESCORED_METRICS}
+
+
+def test_the_comparison_refuses_a_rescoring_of_other_code(arms, tmp_path):
+    import analyze_population_run as analysis
+
+    before, after = arms
+    finish(after)
+    path = after / runner.RESCORING
+    record = contract.read_json(path)
+    record["identity"]["source"]["versions"]["numpy"] = "3"
+    contract.write_json(path, record)
+    with pytest.raises(AssertionError, match="another process"):
+        analysis.analyze_arms(before, after, None, tmp_path / "report")
+
+
+def test_the_comparison_refuses_arms_of_other_families(tmp_path, monkeypatch):
+    import analyze_population_run as analysis
+
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    spec = tmp_path / "family.json"
+    contract.write_json(spec, {"signed_rank": ["gskl"]})
+    before = prepare_other_arm(
+        tmp_path,
+        monkeypatch,
+        "before",
+        OTHER_IDENTITY,
+        extra=["--confirmatory", str(spec)],
+    )
+    for seed in range(3):
+        complete_case(
+            before, seed, exact_metrics=True, identity=OTHER_IDENTITY
+        )
+    use_identity(monkeypatch, OTHER_IDENTITY)
+    assert runner.main(["verify", "--out", str(before)]) == 0
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    after = tmp_path / "after"
+    with pytest.raises(SystemExit, match="another confirmatory"):
+        runner.main(
+            ["prepare", "--out", str(after), *ARGUMENTS]
+            + ["--pair", str(before)]
+        )
+    # Prepared without the pair, rescored with the other arm all the same.
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    for seed in range(3):
+        complete_case(after, seed, exact_metrics=True)
+    assert runner.main(["verify", "--out", str(after)]) == 0
+    rescore = ["rescore", "--out", str(after), "--campaign", str(before)]
+    assert runner.main(rescore) == 0
+    with pytest.raises(AssertionError, match="different confirmatory"):
+        analysis.analyze_arms(before, after, None, tmp_path / "report")
+
+
+# --------------------------------------------------------------------------
+# Legacy campaigns
+# --------------------------------------------------------------------------
+
+#: The commit of PyVBMC 1.0.4, the legacy package of the harness.
+RELEASE_104 = "0bb8b8f5b48c05eafaaa790bd1432a5ea681e25d"
+#: The identity of a legacy arm: 1.0.4 with its own gpyreg, run by a later
+#: harness commit than :data:`FAKE_IDENTITY`'s, whose harness module
+#: differs and whose files that build and score a run do not.
+LEGACY_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+LEGACY_IDENTITY["source"]["trees"]["harness"]["commit"] = "f" * 40
+LEGACY_IDENTITY["source"]["trees"]["pyvbmc"]["commit"] = RELEASE_104
+LEGACY_IDENTITY["source"]["trees"]["gpyreg"]["commit"] = "e" * 40
+LEGACY_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
+#: The release code run from that later harness commit, as ``rescore-arms``
+#: is: its package is the harness checkout, with the after arm's gpyreg.
+LATER_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+for _tree in ("harness", "pyvbmc"):
+    LATER_IDENTITY["source"]["trees"][_tree]["commit"] = "f" * 40
+LATER_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
+
+
+def same_scoring_code(monkeypatch):
+    """The package's scoring code is the same at the stand-in commits of
+    the release code (no git history holds them)."""
+    release = {"0" * 40, "f" * 40}
+    monkeypatch.setattr(
+        runner,
+        "package_numerics_differ",
+        lambda a, b: not ({a, b} <= release or a == b),
+    )
+
+
+def test_legacy_profiles_and_options():
+    profile = runner.legacy_profile(LEGACY_IDENTITY)
+    assert profile == runner.LEGACY_PACKAGES[RELEASE_104]
+    assert profile["release"] == "1.0.4" and profile["gpyreg"] == "1.0.4"
+    assert runner.legacy_profile(FAKE_IDENTITY) is None
+    assert runner.legacy_profile({}) is None
+    options = runner.campaign_options(profile, {"display": "iter"})
+    assert options == {
+        "display": "iter",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    with pytest.raises(SystemExit, match="does not define the options"):
+        runner.campaign_options(profile, {"tol_elcbo_boost": 0.2})
+    assert runner.campaign_options(None, {}) == runner.DEFAULT_OPTIONS
+
+
+def test_prepare_a_legacy_campaign(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    same_scoring_code(monkeypatch)
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    after = tmp_path / "after"
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    compare = ["--compare", str(after)]
+    legacy = prepare_other_arm(
+        tmp_path, monkeypatch, "legacy", LEGACY_IDENTITY, extra=compare
+    )
+    manifest = contract.read_json(legacy / "manifest.json")
+    profile = runner.LEGACY_PACKAGES[RELEASE_104]
+    assert manifest["legacy"] == profile
+    assert manifest["compare"] == str(after.resolve())
+    assert manifest["options"] == runner.campaign_options(profile, {})
+    # It does not rescore itself; it holds the rescoring of rescore-arms.
+    assert manifest["finishing_steps"] == [["summarize"]]
+    assert manifest["tracked_copies"] == runner.tracked_copies(True)
+
+    def refused(name, extra, message, identity=LEGACY_IDENTITY):
+        with pytest.raises(SystemExit, match=message):
+            prepare_other_arm(tmp_path, monkeypatch, name, identity, extra)
+        # A refused preparation leaves its package tree in place.
+        monkeypatch.delenv("PYVBMC_SOURCE")
+
+    # What the comparison would refuse after the runs is refused before.
+    refused("no_compare", [], "names, with --compare")
+    refused(
+        "with_options",
+        [*compare, "--options", '{"tol_elcbo_boost": 0.1}'],
+        "does not define the options",
+    )
+    refused("other_seeds", [*compare, "--seeds", "0-1"], "another allocation")
+    refused("with_pair", [*compare, "--pair", str(after)], "only a campaign")
+    dirty = copy.deepcopy(LEGACY_IDENTITY)
+    dirty["source"]["trees"]["pyvbmc"]["clean"] = False
+    refused("dirty", compare, "not clean", identity=dirty)
+    versions = copy.deepcopy(LEGACY_IDENTITY)
+    versions["source"]["versions"]["numpy"] = "3"
+    refused("versions", compare, "different environment versions", versions)
+    monkeypatch.setenv("NODE_FEATURE", "u8")
+    refused("family", compare, "node family")
+    monkeypatch.delenv("NODE_FEATURE")
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: True)
+    refused("other_code", compare, "holds other package code")
+    # Its own arm and the campaign it is compared with are no legacy arms.
+    same_scoring_code(monkeypatch)
+    refused("with_itself", ["--compare", str(legacy)], "is a legacy campaign")
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    with pytest.raises(SystemExit, match="is for a legacy campaign"):
+        runner.main(
+            ["prepare", "--out", str(tmp_path / "x"), *ARGUMENTS, *compare]
+        )
+
+
+def test_the_gpyreg_tree_of_a_legacy_package_is_its_profiles(
+    tmp_path, monkeypatch
+):
+    """A legacy package runs the gpyreg release its profile names, exactly,
+    whatever minimum its ``pyproject.toml`` names."""
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    for key, value in {
+        "HOME": str(home),
+        "GIT_CONFIG_GLOBAL": str(home / ".gitconfig"),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }.items():
+        monkeypatch.setenv(key, value)
+    package = tmp_path / "package"
+    package.mkdir()
+    (package / "pyproject.toml").write_text(
+        '[project]\nname = "pyvbmc"\ndependencies = ["gpyreg >= 0.1.0"]\n',
+        encoding="utf-8",
+    )
+    profile = runner.LEGACY_PACKAGES[RELEASE_104]
+    monkeypatch.setattr(
+        runner,
+        "package_profile",
+        lambda tree: copy.deepcopy(profile) if tree == package else None,
+    )
+
+    def repository(path, *tags):
+        path.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=path, check=True)
+        for tag in tags:
+            subprocess.run(
+                ["git", "commit", "-q", "--allow-empty", "-m", str(tag)],
+                cwd=path,
+                check=True,
+            )
+            if tag:
+                subprocess.run(["git", "tag", tag], cwd=path, check=True)
+        return path
+
+    trees = {"pyvbmc": package, "gpyreg": repository(tmp_path / "g", "v1.0.4")}
+    assert runner.gpyreg_release_problem(trees, False) is None
+    trees["gpyreg"] = repository(tmp_path / "h", "v1.0.4", "v1.4.0")
+    problem = runner.gpyreg_release_problem(trees, False)
+    assert "needs gpyreg 1.0.4 exactly, the release 1.0.4 runs with" in (
+        problem
+    )
+    trees["gpyreg"] = repository(tmp_path / "i", "v1.0.4", None)
+    assert "exactly" in runner.gpyreg_release_problem(trees, False)
+
+
+class StandInPackageVBMC:
+    """What the legacy shims construct: the options it is given, and the
+    first draw of NumPy's global state when it is constructed."""
+
+    def __init__(self, *args, options=None):
+        self.args = args
+        self.options = options
+        self.first_draw = np.random.random()
+
+
+def test_the_legacy_shims_seed_the_run_and_the_metrics(monkeypatch):
+    import benchmark_targets
+
+    import pyvbmc
+
+    # The compatibility patches apply to 1.0.4's source alone, and this
+    # process imports the release code's (test_the_patches_of_1_0_4_...).
+    profile = dict(runner.LEGACY_PACKAGES[RELEASE_104], patches=[])
+    package_vbmc = pyvbmc.VBMC
+    harness_metrics = runner.metrics
+    monkeypatch.setattr(runner, "VBMC", StandInPackageVBMC)
+    monkeypatch.setattr(
+        benchmark_targets, "metrics", lambda *args: np.random.random()
+    )
+    expected = np.random.RandomState(benchmark_targets.DIAG_SEED).random()
+    np.random.seed(99)
+    after_one_draw = np.random.RandomState(99)
+    after_one_draw.random()
+    with runner.legacy_shims(profile):
+        vbmc = pyvbmc.VBMC(
+            "target",
+            options={"display": "off", "performance_calibration": "off"},
+            seed=7,
+        )
+        # The run's global state is seeded with the case's seed; the
+        # options the package does not define are left out.
+        assert vbmc.first_draw == np.random.RandomState(7).random()
+        assert vbmc.options == {"display": "off"} and vbmc.args == ("target",)
+        np.random.seed(99)
+        np.random.random()
+        # The metrics draw from the global state seeded as their own
+        # generators are, and leave it as they found it.
+        for metrics in (benchmark_targets.metrics, runner.metrics):
+            assert metrics(None, None, 0.0) == expected
+        assert np.random.random() == after_one_draw.random()
+        with pytest.raises(RuntimeError, match="none was given"):
+            pyvbmc.VBMC("target", options={})
+    assert pyvbmc.VBMC is package_vbmc
+    assert runner.metrics is harness_metrics
+    # Without a profile nothing changes.
+    with runner.legacy_shims(None):
+        assert pyvbmc.VBMC is package_vbmc
+
+
+def test_a_compatibility_patch_replaces_its_text_once(tmp_path, monkeypatch):
+    import importlib
+
+    (tmp_path / "standin_patched_module.py").write_text(
+        "SCALE = 2\n\n\ndef f(x):\n    y = x\n    return y\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    module = importlib.import_module("standin_patched_module")
+    spec = {
+        "module": "standin_patched_module",
+        "function": "f",
+        "old": "    y = x\n",
+        "new": "    y = SCALE * x\n",
+    }
+    original, patched = runner.legacy_patch(spec)
+    # The patched function lives in its module's namespace.
+    assert original is module.f and original(3) == 3 and patched(3) == 6
+    with pytest.raises(RuntimeError, match="does not find the text"):
+        runner.legacy_patch(dict(spec, old="    z = x\n"))
+
+
+def test_the_capture_of_a_legacy_boost_records_the_global_state():
+    def optimize(options, optim_state, vp, gp, *args):
+        np.random.random()
+        vp.stats = {"elbo": -9.0, "elbo_sd": 0.1, "stable": False}
+        return vp, None, None
+
+    vbmc = make_vbmc()
+    np.random.seed(3)
+    before = copy.deepcopy(np.random.get_state())
+    with patch.object(runner.VBMC_MODULE, "optimize_vp", optimize):
+        with runner.BoostCapture(legacy=True) as capture:
+            vbmc.final_boost(vbmc.vp, object())
+    state = capture.state
+    for a, b in zip(state["rng_before"], before):
+        np.testing.assert_equal(a, b)
+    # The boost's draw moved the global state's position.
+    assert state["rng_after"][2] != before[2]
+    # A posterior without a generator is copied without one.
+    vp = SimpleNamespace(mu=np.zeros((2, 1)))
+    clone = runner.clone_vp(vp)
+    assert clone is not vp and not hasattr(clone, "rng")
+
+
+@pytest.fixture
+def legacy_arms(tmp_path, monkeypatch):
+    """``(legacy, after)``: a verified legacy arm, 1.0.4 run by a later
+    harness commit, and a verified arm of the release code, on one
+    allocation; the package's scoring code is the same at the stand-in
+    commits of the release code."""
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    same_scoring_code(monkeypatch)
+    after = tmp_path / "after"
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    for seed in range(3):
+        complete_case(after, seed, exact_metrics=True, boost_penalty=0)
+    assert runner.main(["verify", "--out", str(after)]) == 0
+    legacy = prepare_other_arm(
+        tmp_path,
+        monkeypatch,
+        "legacy",
+        LEGACY_IDENTITY,
+        extra=["--compare", str(after)],
+    )
+    for seed in range(3):
+        complete_case(
+            legacy,
+            seed,
+            exact_metrics=True,
+            identity=LEGACY_IDENTITY,
+            shift=0.2 * (seed + 1),
+            boost_penalty=0.1,
+        )
+    use_identity(monkeypatch, LEGACY_IDENTITY)
+    assert runner.main(["verify", "--out", str(legacy)]) == 0
+    use_identity(monkeypatch, LATER_IDENTITY)
+    return legacy, after
+
+
+def test_a_legacy_case_keeps_its_packages_boost(legacy_arms):
+    legacy, after = legacy_arms
+    # The legacy arm's boosts keep 1.0.4's weight penalty, which a case of
+    # the release code may not.
+    assert verification(legacy)[0]["counts"]["verified"] == 3
+    report = contract.read_json(files_of(legacy, 0)["boost_report"])
+    assert report["tolerance"] is None and report["accepted"]
+    for out, penalty, profile in (
+        (legacy, 0, runner.LEGACY_PACKAGES[RELEASE_104]),
+        (after, 0.1, None),
+    ):
+        _, files = complete_case(out, 1, boost_penalty=penalty)
+        options = contract.read_json(out / "manifest.json")["options"]
+        with pytest.raises(RuntimeError, match="penalty"):
+            runner.check_case_artifacts(
+                f"{LABEL}_seed1", files, options, profile
+            )
+
+
+def test_rescore_arms_and_the_comparison_of_a_legacy_arm(
+    legacy_arms, tmp_path
+):
+    import analyze_population_run as analysis
+
+    legacy, after = legacy_arms
+    # The campaign it is compared with is the one prepare --compare named.
+    assert runner.main(["rescore-arms", "--out", str(legacy)]) == 0
+    record = contract.read_json(legacy / runner.RESCORING)
+    assert record["identity"] == LATER_IDENTITY
+    # The campaign of the process's code, whose reproduction tests the
+    # rescoring, is rescored first.
+    assert list(record["rescored"]) == ["after", "legacy"]
+    assert record["campaign"] == legacy.name
+    assert {
+        name: entry["own_scoring_code"]
+        for name, entry in record["rescored"].items()
+    } == {"legacy": False, "after": True}
+    for name in ("legacy", "after"):
+        path = legacy / "rescored" / f"{name}.json"
+        assert record["rescored"][name]["sha256"] == runner.sha256(path)
+    # A legacy reference holds the rescoring the comparison reads.
+    result = analysis.analyze_arms(legacy, after, None, tmp_path / "report")
+    assert result["legacy_reference"] == runner.LEGACY_PACKAGES[RELEASE_104]
+    assert result["paired_cases"] == 3
+    assert result["arms"]["candidate"]["rescored_equal_to_in_run"] == {
+        k: 3 for k in runner.RESCORED_METRICS
+    }
+    # The legacy boosts, which have no guard, kept every boost.
+    summary = result["boost_summary"]["reference"]
+    assert summary["attempted"] == summary["accepted"] == 3
+    # A rescoring that does not score as the candidate's code is refused.
+    changed = copy.deepcopy(record)
+    changed["identity"]["source"]["trees"]["gpyreg"]["commit"] = "9" * 40
+    for name in ("legacy", "after"):
+        path = legacy / "rescored" / f"{name}.json"
+        report = contract.read_json(path)
+        report["rescoring"]["identity"] = changed["identity"]
+        contract.write_json(path, report)
+        changed["rescored"][name]["sha256"] = runner.sha256(path)
+    contract.write_json(legacy / runner.RESCORING, changed)
+    with pytest.raises(AssertionError, match="does not score as"):
+        analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
+
+
+def test_rescore_arms_refusals(legacy_arms, monkeypatch):
+    legacy, after = legacy_arms
+    arguments = [
+        "rescore-arms",
+        "--out",
+        str(legacy),
+        "--campaign",
+        str(after),
+    ]
+    # Only a legacy campaign holds such a rescoring.
+    with pytest.raises(SystemExit, match="no legacy campaign"):
+        runner.main(
+            ["rescore-arms", "--out", str(after), "--campaign", str(legacy)]
+        )
+    # It runs in the release code alone, from the legacy campaign's
+    # harness checkout at its commit.
+    monkeypatch.setenv("PYVBMC_SOURCE", str(legacy.parent / "legacy_tree"))
+    assert runner.main(arguments) == contract.EXIT_IDENTITY
+    monkeypatch.delenv("PYVBMC_SOURCE")
+    moved = copy.deepcopy(LATER_IDENTITY)
+    for tree in ("harness", "pyvbmc"):
+        moved["source"]["trees"][tree]["commit"] = "c" * 40
+    use_identity(monkeypatch, moved)
+    assert runner.main(arguments) == contract.EXIT_IDENTITY
+    use_identity(monkeypatch, LATER_IDENTITY)
+    # One campaign at least runs the process's scoring code, whose in-run
+    # metrics the rescoring must reproduce.
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: True)
+    with pytest.raises(SystemExit, match="none of the campaigns"):
+        runner.main(arguments)
+    assert not (legacy / runner.RESCORING).exists()
+
+
+def test_the_comparison_of_a_legacy_arm_needs_one_node_family(
+    legacy_arms, tmp_path, monkeypatch
+):
+    import analyze_population_run as analysis
+
+    legacy, after = legacy_arms
+    arguments = [
+        "rescore-arms",
+        "--out",
+        str(legacy),
+        "--campaign",
+        str(after),
+    ]
+    assert runner.main(arguments) == 0
+    monkeypatch.setattr(
+        runner,
+        "node_family",
+        lambda campaign: "u8" if Path(campaign) == legacy else "u7",
+    )
+    with pytest.raises(AssertionError, match="node families"):
+        analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
+
+
+def test_the_comparison_of_a_legacy_arm_refuses(
+    legacy_arms, tmp_path, monkeypatch
+):
+    import analyze_population_run as analysis
+
+    legacy, after = legacy_arms
+    assert runner.main(["rescore-arms", "--out", str(legacy)]) == 0
+    # A legacy arm is the reference.
+    with pytest.raises(AssertionError, match="the candidate is a legacy arm"):
+        analysis.analyze_arms(after, legacy, legacy, tmp_path / "a")
+    # The rescoring ran from the legacy arm's harness checkout.
+    record = contract.read_json(legacy / runner.RESCORING)
+    for tree in ("harness", "pyvbmc"):
+        record["identity"]["source"]["trees"][tree]["commit"] = "9" * 40
+    for name in ("legacy", "after"):
+        path = legacy / "rescored" / f"{name}.json"
+        report = contract.read_json(path)
+        report["rescoring"]["identity"] = record["identity"]
+        contract.write_json(path, report)
+        record["rescored"][name]["sha256"] = runner.sha256(path)
+    contract.write_json(legacy / runner.RESCORING, record)
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: False)
+    with pytest.raises(AssertionError, match="reference's harness checkout"):
+        analysis.analyze_arms(legacy, after, None, tmp_path / "b")
+
+
+def test_the_comparison_of_a_legacy_arm_refuses_other_options(
+    tmp_path, monkeypatch
+):
+    """Options that differ beyond those the legacy package does not define
+    are refused by the comparison, as prepare --compare refuses them before
+    the runs."""
+    import analyze_population_run as analysis
+
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    same_scoring_code(monkeypatch)
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    after = tmp_path / "after"
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    for seed in range(3):
+        complete_case(after, seed, exact_metrics=True, boost_penalty=0)
+    assert runner.main(["verify", "--out", str(after)]) == 0
+    monkeypatch.setattr(runner, "compare_problems", lambda *args: [])
+    legacy = prepare_other_arm(
+        tmp_path,
+        monkeypatch,
+        "legacy",
+        LEGACY_IDENTITY,
+        extra=["--compare", str(after), "--options", '{"display": "iter"}'],
+    )
+    for seed in range(3):
+        complete_case(
+            legacy, seed, identity=LEGACY_IDENTITY, boost_penalty=0.1
+        )
+    use_identity(monkeypatch, LEGACY_IDENTITY)
+    assert runner.main(["verify", "--out", str(legacy)]) == 0
+    use_identity(monkeypatch, LATER_IDENTITY)
+    assert runner.main(["rescore-arms", "--out", str(legacy)]) == 0
+    with pytest.raises(AssertionError, match="different options"):
+        analysis.analyze_arms(legacy, after, None, tmp_path / "report")
+
+
+def test_the_node_family_of_a_campaign_and_of_its_copies(
+    tmp_path, monkeypatch
+):
+    copies = tmp_path / "copies"
+    copies.mkdir()
+    contract.write_json(copies / "redaction.json", {"node_family": "u8"})
+    assert runner.node_family(copies) == "u8"
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    plain = tmp_path / "plain"
+    assert runner.main(["prepare", "--out", str(plain), *ARGUMENTS]) == 0
+    assert runner.node_family(plain) is None
+    monkeypatch.setenv("NODE_FEATURE", "u8")
+    sited_campaign = tmp_path / "sited"
+    arguments = ["prepare", "--out", str(sited_campaign), *ARGUMENTS]
+    assert runner.main(arguments) == 0
+    assert runner.node_family(sited_campaign) == "u8"
+
+
+def test_the_run_files_and_package_paths_are_the_promotions():
+    """What the comparison of a legacy arm requires to be equal is what
+    the promotion of ``reference_2400_20261007`` compared with the after
+    arm: ``NUMERIC_PATHS`` of its record's ``promote.py``, read without
+    importing the script."""
+    import ast
+
+    record = runner.ROOT / "dev/golden/promotion_20261007/promote.py"
+    [paths] = [
+        ast.literal_eval(node.value)
+        for node in ast.parse(record.read_text(encoding="utf-8")).body
+        if isinstance(node, ast.Assign)
+        and any(
+            getattr(t, "id", None) == "NUMERIC_PATHS" for t in node.targets
+        )
+    ]
+    files = {rel.rstrip("/") for rel in runner.RUN_FILES}
+    assert set(runner.PACKAGE_PATHS) | files == set(paths)
+
+
+def test_scoring_and_legacy_pair_differences(monkeypatch):
+    same_scoring_code(monkeypatch)
+    assert runner.scoring_differences(LATER_IDENTITY, FAKE_IDENTITY) == []
+    assert runner.legacy_pair_differences(LEGACY_IDENTITY, FAKE_IDENTITY) == []
+    other = copy.deepcopy(FAKE_IDENTITY)
+    other["source"]["files"]["dev/scripts/benchmark_targets.py"] = "3" * 64
+    other["source"]["versions"]["numpy"] = "3"
+    other["source"]["trees"]["gpyreg"]["clean"] = False
+    assert runner.scoring_differences(LATER_IDENTITY, other) == [
+        "environment versions",
+        "dev/scripts/benchmark_targets.py",
+        "a gpyreg tree that is not clean",
+    ]
+    assert runner.legacy_pair_differences(LEGACY_IDENTITY, other) == [
+        "the arms have different environment versions",
+        "the arms have different dev/scripts/benchmark_targets.py",
+    ]
+    assert "the package's scoring code" in runner.scoring_differences(
+        LEGACY_IDENTITY, FAKE_IDENTITY
+    )
+    assert "would compare the code with itself" in "".join(
+        runner.legacy_pair_differences(LEGACY_IDENTITY, LEGACY_IDENTITY)
+    )
+    # A file that builds or scores a run that one identity lacks differs.
+    lacking = copy.deepcopy(FAKE_IDENTITY)
+    del lacking["source"]["files"]["dev/scripts/data/"]
+    assert runner.legacy_pair_differences(LEGACY_IDENTITY, lacking) == [
+        "the arms have different dev/scripts/data/"
+    ]
+    assert runner.scoring_differences(LATER_IDENTITY, lacking) == [
+        "dev/scripts/data/"
+    ]
+    # One source identity scores alike, whatever its trees' state.
+    unclean = copy.deepcopy(FAKE_IDENTITY)
+    unclean["source"]["trees"]["pyvbmc"]["clean"] = False
+    assert runner.scoring_mismatches(unclean, copy.deepcopy(unclean)) == []
+    assert runner.scoring_mismatches(LATER_IDENTITY, unclean) == [
+        "a pyvbmc tree that is not clean"
+    ]
+
+
+# --------------------------------------------------------------------------
+# The returned posterior as plain arrays
+# --------------------------------------------------------------------------
+
+
+def test_returned_posterior_rebuilds_a_posterior_exactly():
+    vp = make_vbmc().vp
+    problem = runner.find_config(LABEL).make(seed=0)
+    transformer = vp.parameter_transformer
+    trace = {
+        "final_w": np.ravel(vp.w),
+        "final_mu": np.asarray(vp.mu),
+        "final_sigma": np.ravel(vp.sigma),
+        "final_lambd": np.ravel(vp.lambd),
+        "pt_mu": np.stack([np.full(2, 7.0), transformer.mu]),
+        "pt_delta": np.stack([np.ones(2), transformer.delta]),
+        "pt_scale": np.ones((2, 2)),
+        "pt_R": np.stack([np.eye(2)] * 2),
+    }
+    extras = runner.posterior_extras(vp)
+    rebuilt = runner.returned_posterior(trace, extras, problem, 1)
+    assert runner.posterior_differences(rebuilt, vp) == []
+    # The iteration matters, and so does every array.
+    wrong = runner.returned_posterior(trace, extras, problem, 0)
+    assert runner.posterior_differences(wrong, vp) == [
+        "parameter_transformer.delta",
+        "parameter_transformer.mu",
+    ]
+    rebuilt.sigma = rebuilt.sigma * 2
+    assert runner.posterior_differences(rebuilt, vp) == ["sigma"]
+
+
+@pytest.mark.parametrize("rotoscaled", [False, True])
+@pytest.mark.parametrize("transform", ["logit", "probit"])
+def test_returned_posterior_rebuilds_bounded_and_rotoscaled_posteriors(
+    transform, rotoscaled
+):
+    """A posterior with bounded, unbounded, rescaled and rotated
+    coordinates, as a run returns it after a warp, rebuilds exactly: the
+    same data and the same density in the original space."""
+    from pyvbmc.parameter_transformer import ParameterTransformer
+    from pyvbmc.variational_posterior import VariationalPosterior
+
+    D, K = 3, 4
+    rng = np.random.default_rng(5)
+    lb, ub = np.array([[-np.inf, 0.0, -3.0]]), np.array([[np.inf, 5.0, 2.0]])
+    plb, pub = np.array([[-2.0, 0.5, -2.0]]), np.array([[2.0, 4.0, 1.0]])
+    scale = rotation = None
+    if rotoscaled:
+        scale = rng.uniform(0.5, 2.0, D)
+        rotation = np.linalg.qr(rng.normal(size=(D, D)))[0]
+    transformer = ParameterTransformer(
+        D,
+        lb,
+        ub,
+        plb,
+        pub,
+        scale=scale,
+        rotation_matrix=rotation,
+        transform_type=transform,
+    )
+    vp = VariationalPosterior(
+        D, K, parameter_transformer=transformer, rng=np.random.default_rng(1)
+    )
+    vp.w = rng.dirichlet(np.ones(K)).reshape(1, K)
+    vp.mu = rng.normal(size=(D, K))
+    vp.sigma = rng.uniform(0.2, 1.0, (1, K))
+    vp.lambd = rng.uniform(0.5, 1.5, (D, 1))
+    returned = vp.parameter_transformer
+    trace = {
+        "final_w": np.ravel(vp.w),
+        "final_mu": vp.mu,
+        "final_sigma": np.ravel(vp.sigma),
+        "final_lambd": np.ravel(vp.lambd),
+        # As golden_trace.run_task stores them: ones and the identity where
+        # the transformer neither rescales nor rotates.
+        "pt_mu": returned.mu[None],
+        "pt_delta": returned.delta[None],
+        "pt_scale": np.ones((1, D)) if scale is None else returned.scale[None],
+        "pt_R": (np.eye(D) if rotation is None else returned.R_mat)[None],
+    }
+    extras = runner.posterior_extras(vp)
+    assert (
+        int(extras["bounded_types"][0])
+        == {"logit": 3, "probit": 12}[transform]
+    )
+    assert bool(extras["rotation_is_none"]) == (not rotoscaled)
+    problem = SimpleNamespace(D=D, lb=lb, ub=ub)
+    rebuilt = runner.returned_posterior(trace, extras, problem, 0)
+    assert runner.posterior_differences(rebuilt, vp) == []
+    x = vp.sample(200, orig_flag=True)[0]
+    assert np.all((x > lb) & (x < ub))
+    for log_flag in (False, True):
+        np.testing.assert_array_equal(
+            rebuilt.pdf(x, orig_flag=True, log_flag=log_flag),
+            vp.pdf(x, orig_flag=True, log_flag=log_flag),
+        )
+    # Arrays that name another bounded transform, or deny the rotation and
+    # the rescaling, rebuild another posterior.
+    other = {"logit": 12, "probit": 3}[transform]
+    wrong = dict(extras, bounded_types=np.array([other]))
+    assert (
+        "parameter_transformer.bounded_types"
+        in runner.posterior_differences(
+            runner.returned_posterior(trace, wrong, problem, 0), vp
+        )
+    )
+    if rotoscaled:
+        wrong = dict(
+            extras,
+            scale_is_none=np.asarray(True),
+            rotation_is_none=np.asarray(True),
+        )
+        assert runner.posterior_differences(
+            runner.returned_posterior(trace, wrong, problem, 0), vp
+        ) == ["parameter_transformer.R_mat", "parameter_transformer.scale"]
+
+
+def test_recorded_options_are_the_same_in_every_process():
+    # Two processes record equal options alike: no memory address, and a
+    # set in sorted order.
+    class Thing:
+        pass
+
+    value = {"f": lambda x: x, "o": Thing(), "s": {"b", "a", "c"}}
+    recorded = runner.jsonable(value)
+    assert recorded["s"] == ["a", "b", "c"]
+    assert " at 0x" not in recorded["f"] and " at 0x" not in recorded["o"]
+    assert recorded["o"].endswith("Thing object>")
+
+
+# --------------------------------------------------------------------------
+# PYVBMC_SOURCE
+# --------------------------------------------------------------------------
+
+
+def stand_in_tree(tmp_path):
+    """A stand-in package tree, whose ``pyvbmc`` holds what the harness
+    imports of it."""
+    tree = tmp_path / "tree"
+    (tree / "pyvbmc" / "vbmc").mkdir(parents=True)
+    (tree / "pyvbmc" / "__init__.py").write_text(
+        "from .vbmc.vbmc import VBMC\n"
+    )
+    (tree / "pyvbmc" / "vbmc" / "__init__.py").write_text("")
+    (tree / "pyvbmc" / "vbmc" / "vbmc.py").write_text(
+        "class VBMC:\n    pass\n\n\ndef optimize_vp(*args):\n    pass\n"
+    )
+    return tree
+
+
+def run_python(script, tree):
+    """Run ``script`` in a fresh interpreter in this directory, with
+    ``PYVBMC_SOURCE`` naming ``tree``; return its output."""
+    env = dict(os.environ, PYVBMC_SOURCE=str(tree))
+    env.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent(script), str(tree)],
+        cwd=runner.HERE,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    return result.stdout.strip()
+
+
+def test_the_harness_run_as_a_script_takes_the_package_tree(tmp_path):
+    # The harness modules put the harness checkout first on sys.path when
+    # they are imported, after the harness has imported PyVBMC from the
+    # tree PYVBMC_SOURCE names.
+    tree = stand_in_tree(tmp_path)
+    script = """
+        import runpy
+        import sys
+        from pathlib import Path
+        tree = Path(sys.argv[1]).resolve()
+        sys.argv = ["population_run.py", "--help"]
+        try:
+            runpy.run_path("population_run.py", run_name="__main__")
+        except SystemExit as stop:
+            assert stop.code == 0, stop.code
+        import golden_trace
+        import pyvbmc
+        assert Path(pyvbmc.__file__).resolve().parents[1] == tree, pyvbmc
+        here = Path.cwd().resolve()
+        assert Path(golden_trace.__file__).resolve().parent == here
+        print("ok")
+        """
+    assert run_python(script, tree).endswith("ok")
+
+
+@pytest.mark.parametrize("holds", ["no package", "a package that fails"])
+def test_a_package_tree_that_does_not_import_leaves_no_identity(
+    tmp_path, holds
+):
+    """Run as a script, the harness imports PyVBMC from the tree that
+    ``PYVBMC_SOURCE`` names before anything else. From a tree that holds no
+    package, or one whose import fails, no identity can be established:
+    the worker exits 78 and writes nothing, an error file included."""
+    tree = tmp_path / "tree"
+    tree.mkdir()
+    if holds == "a package that fails":
+        (tree / "pyvbmc").mkdir()
+        (tree / "pyvbmc" / "__init__.py").write_text(
+            "raise ImportError('a tree that does not import')\n"
+        )
+    out = tmp_path / "campaign"
+    out.mkdir()
+    (out / "manifest.json").write_text("{}\n")
+    env = dict(os.environ, PYVBMC_SOURCE=str(tree))
+    env.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        [sys.executable, "-u", str(runner.HERE / "population_run.py")]
+        + ["worker", "--out", str(out), "--case", line_of(0)],
+        cwd=runner.ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        stdin=subprocess.DEVNULL,
+    )
+    assert result.returncode == contract.EXIT_IDENTITY, (
+        result.stdout + result.stderr
+    )
+    assert "cannot be imported from the campaign's package tree" in (
+        result.stderr
+    )
+    assert sorted(path.name for path in out.iterdir()) == ["manifest.json"]
+
+
+@pytest.mark.parametrize(
+    "imports",
+    [
+        # make_oracle_fixtures.py, the gate of the oracles
+        "from benchmark_targets import find_config\n"
+        "from profile_run import git_info, pkg_version\n"
+        "import golden_trace\n",
+        # svbmc_pool_io.py, the pool readers
+        "from profile_run import effective_options, jsonable\n",
+        # analyze_population_run.py and reference_join.py
+        "import population_run\n",
+    ],
+)
+def test_importers_of_the_harness_modules_ignore_PYVBMC_SOURCE(
+    tmp_path, imports
+):
+    tree = stand_in_tree(tmp_path)
+    # gpyreg from the checkout PYVBMC_GPYREG_SOURCE names, where the
+    # environment does not install it, as the campaign environment does not.
+    script = (
+        "import os\n"
+        "import sys\n"
+        "from pathlib import Path\n"
+        "root = Path.cwd().resolve().parents[1]\n"
+        "sys.path.insert(0, str(Path.cwd()))\n"
+        "sys.path.insert(0, str(root))\n"
+        "if os.environ.get('PYVBMC_GPYREG_SOURCE'):\n"
+        "    sys.path.append(os.environ['PYVBMC_GPYREG_SOURCE'])\n"
+        + imports
+        + "import pyvbmc\n"
+        "assert Path(pyvbmc.__file__).resolve().parents[1] == root, pyvbmc\n"
+        "print('ok')\n"
+    )
+    assert run_python(script, tree) == "ok"
+
+
+# --------------------------------------------------------------------------
+# Real runs
+# --------------------------------------------------------------------------
+
+
+def gpyreg_checkout():
+    """The gpyreg checkout of the real runs: the one
+    ``PYVBMC_GPYREG_SOURCE`` names, else the git checkout the imported
+    gpyreg lies in; None without either."""
+    named = os.environ.get("PYVBMC_GPYREG_SOURCE")
+    if named:
+        return Path(named).resolve()
+    import gpyreg
+
+    top = Path(gpyreg.__file__).resolve().parents[1]
+    return top if (top / ".git").exists() else None
+
+
+def harness_environment(gpyreg):
+    """This process's environment outside any Slurm task and campaign,
+    with the campaign's thread settings and ``gpyreg``."""
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("SLURM")
+        and key.upper() not in contract.SETTINGS
+        and key != "PYTHONPATH"
+    }
+    env.update({key: "1" for key in runner.THREAD_KEYS})
+    env.update(MPLBACKEND="Agg", PYVBMC_GPYREG_SOURCE=str(gpyreg))
+    return env
+
+
+def harness(*args, env):
+    result = subprocess.run(
+        [sys.executable, "-u", str(runner.HERE / "population_run.py")]
+        + [str(arg) for arg in args],
+        cwd=runner.ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        stdin=subprocess.DEVNULL,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    return result
+
+
+@pytest.fixture(scope="module")
+def real(tmp_path_factory):
+    """``(ran, arrayed)``: one case run by ``run``, its finishing steps
+    included, and by ``worker --case``, in two campaigns prepared alike."""
+    gpyreg = gpyreg_checkout()
+    if gpyreg is None:
+        pytest.skip(
+            "PYVBMC_GPYREG_SOURCE is unset and the imported gpyreg lies in "
+            "no git checkout"
+        )
+    env = harness_environment(gpyreg)
+    root = tmp_path_factory.mktemp("real")
+    ran, arrayed = root / "ran", root / "arrayed"
+    arguments = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0"]
+    for out in (ran, arrayed):
+        harness("prepare", "--out", out, *arguments, "--arm", "after", env=env)
+    harness("run", "--out", ran, env=env)
+    harness("worker", "--out", arrayed, "--case", line_of(0), env=env)
+    return ran, arrayed
+
+
+def test_run_verifies_and_rescores_its_real_cases_exactly(real):
+    ran, _ = real
+    report, cases = verification(ran)
+    assert report["counts"]["verified"] == 1 and report["exit_code"] == 0
+    rels = runner.case_files(LABEL, 0)
+    side = contract.read_json(ran / rels["sidecar"])
+    # The package is the harness checkout's, and so is every tree.
+    source = side["meta"]["pyvbmc_source"]
+    assert Path(source["path"]).parent == runner.ROOT
+    # The process's peak resident set, which is never below the field that
+    # earlier sidecars hold (the peak on Windows, the final resident set
+    # elsewhere).
+    assert side["final"]["max_rss_mb"] >= side["final"]["peak_rss_mb"] > 0
+    record = contract.read_json(contract.record_path(ran, cases[1]["tag"]))
+    assert side["provenance"] == {
+        "source": record["identity"]["source"],
+        "imports": record["identity"]["imports"],
+    }
+    # The in-run metrics are golden_trace.run_task's, of the posterior the
+    # run returned; the rescoring's are of the posterior rebuilt from the
+    # plain arrays, by the same code.
+    rescored = contract.read_json(ran / "rescored" / f"{ran.name}.json")
+    case = rescored["cases"][f"{LABEL}_seed0"]
+    assert case["metrics"] == {
+        key: side["final"][key] for key in runner.RESCORED_METRICS
+    }
+    assert all(case["equal_to_in_run"].values())
+    assert np.all(np.isfinite(list(case["metrics"].values())))
+    record = contract.read_json(ran / runner.RESCORING)
+    assert record["rescored"][ran.name]["sha256"] == runner.sha256(
+        ran / "rescored" / f"{ran.name}.json"
+    )
+    assert f"| {LABEL} | 1 | 0 |" in (ran / "summary.md").read_text()
+
+
+#: What says when a case ran, how long it took and how much memory its
+#: process held, in its sidecar.
+TIMING_FINAL = ("wall_s", "target_eval_s", "peak_rss_mb", "max_rss_mb")
+TIMING_META = ("started", "finished", "pid")
+
+
+def sidecar_content(path):
+    """A sidecar without its timings and process id."""
+    side = contract.read_json(path)
+    for key in TIMING_FINAL:
+        side["final"].pop(key)
+    for key in TIMING_META:
+        side["meta"].pop(key)
+    return side
+
+
+def test_the_array_worker_and_run_give_identical_artifacts(real):
+    """One case, run by ``run`` in one campaign and by ``worker --case`` in
+    another prepared alike: every stored array but the timer's is equal bit
+    for bit, the boost capture and its report are equal, and the sidecar
+    and the record differ in their timings and the process alone."""
+    ran, arrayed = real
+    rels = runner.case_files(LABEL, 0)
+    for key in ("trace", "posterior"):
+        with np.load(ran / rels[key], allow_pickle=False) as a, np.load(
+            arrayed / rels[key], allow_pickle=False
+        ) as b:
+            assert sorted(a.files) == sorted(b.files)
+            for name in a.files:
+                if name == "timer":
+                    continue
+                assert a[name].dtype == b[name].dtype, name
+                assert a[name].shape == b[name].shape, name
+                assert a[name].tobytes() == b[name].tobytes(), name
+    assert sidecar_content(ran / rels["sidecar"]) == sidecar_content(
+        arrayed / rels["sidecar"]
+    )
+    assert contract.read_json(
+        ran / rels["boost_report"]
+    ) == contract.read_json(arrayed / rels["boost_report"])
+    captures = []
+    for out in (ran, arrayed):
+        with (out / rels["boost_state"]).open("rb") as stream:
+            captures.append(dill.load(stream))
+    a, b = captures
+    assert set(a) == set(b)
+    for key in a:
+        if key in ("pre", "candidate", "returned"):
+            if a[key] is None:
+                assert b[key] is None, key
+                continue
+            assert runner.posterior_differences(a[key], b[key]) == [], key
+            assert a[key].stats.keys() == b[key].stats.keys(), key
+            np.testing.assert_equal(dict(a[key].stats), dict(b[key].stats))
+            assert (
+                a[key].rng.bit_generator.state
+                == b[key].rng.bit_generator.state
+            ), key
+        else:
+            np.testing.assert_equal(a[key], b[key])
+    tag = contract.case_tag(line_of(0))
+    records = [
+        contract.read_json(contract.record_path(out, tag))
+        for out in (ran, arrayed)
+    ]
+    for key in ("harness", "label", "seed", "boost", "case", "tag"):
+        assert records[0][key] == records[1][key], key
+    assert records[0]["identity"]["source"] == records[1]["identity"]["source"]
+
+
+@pytest.mark.parametrize(
+    "seeded, message",
+    [
+        (lambda side: None, None),
+        (
+            lambda side: side["effective_options"].update(tol_elcbo_boost=0.2),
+            "incorrect effective tol_elcbo_boost",
+        ),
+        (
+            lambda side: side["final"].update(elbo_sd=float("nan")),
+            "nonfinite elbo_sd",
+        ),
+    ],
+    ids=["unchanged", "option_not_applied", "nonfinite_elbo_sd"],
+)
+def test_a_case_that_fails_its_checks_fails_in_the_worker(
+    real, campaign, monkeypatch, seeded, message
+):
+    """The real run replayed through the worker, with a fault seeded into
+    its sidecar: a case that ``verify`` would fail gets an error file and
+    no completion record, and the case unchanged completes."""
+    ran, _ = real
+    stored = runner.case_files(LABEL, 0)
+    with (ran / stored["boost_state"]).open("rb") as stream:
+        state = dill.load(stream)
+
+    def run_task(label, seed, options, directory):
+        for key in ("trace", "sidecar"):
+            shutil.copyfile(
+                ran / stored[key], Path(directory) / Path(stored[key]).name
+            )
+        path = Path(directory) / Path(stored["sidecar"]).name
+        side = json.loads(path.read_text())
+        seeded(side)
+        path.write_text(json.dumps(side, indent=1))
+        return {"tag": f"{label}_seed{seed}", "ok": True}
+
+    class Capture:
+        def __enter__(self):
+            self.state = copy.deepcopy(state)
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(runner, "BoostCapture", Capture)
+    monkeypatch.setattr(runner.golden_trace, "run_task", run_task)
+    tag = contract.case_tag(line_of(0))
+    args = ["worker", "--out", str(campaign), "--case", line_of(0)]
+    code = runner.main(args)
+    if message is None:
+        assert code == 0
+        assert contract.record_path(campaign, tag).is_file()
+        return
+    assert code == 1
+    assert message in contract.error_path(campaign, tag).read_text()
+    assert not contract.record_path(campaign, tag).exists()
+    assert not files_of(campaign, 0)["sidecar"].exists()
+    assert runner.main(["verify", "--out", str(campaign)]) == 0
+    assert verification(campaign)[1][1]["status"] == "failed"
+
+
+@pytest.fixture(scope="module")
+def real_legacy(real, tmp_path_factory):
+    """``(legacy, ran)``: one case of PyVBMC 1.0.4 (``normal_D2`` at seed 0)
+    run by the worker as a legacy campaign and verified, and the rescoring
+    of it and of the release code's real case (:func:`real`) that
+    ``rescore-arms`` writes into it. ``PYVBMC_LEGACY_SOURCE`` names a
+    checkout of 1.0.4 and ``PYVBMC_LEGACY_GPYREG_SOURCE`` one of gpyreg
+    1.0.4; without them the tests skip."""
+    tree = os.environ.get("PYVBMC_LEGACY_SOURCE")
+    legacy_gpyreg = os.environ.get("PYVBMC_LEGACY_GPYREG_SOURCE")
+    if not tree or not legacy_gpyreg:
+        pytest.skip(
+            "PYVBMC_LEGACY_SOURCE and PYVBMC_LEGACY_GPYREG_SOURCE name no "
+            "checkouts of PyVBMC 1.0.4 and gpyreg 1.0.4"
+        )
+    env = harness_environment(Path(legacy_gpyreg).resolve())
+    env["PYVBMC_SOURCE"] = str(Path(tree).resolve())
+    legacy = tmp_path_factory.mktemp("legacy") / "legacy"
+    arguments = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0"]
+    ran, _ = real
+    harness(
+        "prepare",
+        "--out",
+        legacy,
+        *arguments,
+        "--arm",
+        "1.0.4",
+        "--compare",
+        ran,
+        env=env,
+    )
+    harness("worker", "--out", legacy, "--case", line_of(0), env=env)
+    harness("verify", "--out", legacy, env=env)
+    release = harness_environment(gpyreg_checkout())
+    harness("rescore-arms", "--out", legacy, env=release)
+    return legacy, ran
+
+
+def test_a_real_legacy_case_is_run_rescored_and_compared(
+    real_legacy, tmp_path
+):
+    import analyze_population_run as analysis
+
+    legacy, ran = real_legacy
+    report, _ = verification(legacy)
+    assert report["counts"]["verified"] == 1 and report["exit_code"] == 0
+    manifest = contract.read_json(legacy / "manifest.json")
+    assert manifest["legacy"]["release"] == "1.0.4"
+    rels = runner.case_files(LABEL, 0)
+    side = contract.read_json(legacy / rels["sidecar"])
+    # 1.0.4 ran, from its own tree: asked for no machine calibration, which
+    # it does not have, and with no guard on its final boost.
+    tree = Path(os.environ["PYVBMC_LEGACY_SOURCE"]).resolve()
+    assert Path(side["meta"]["pyvbmc_source"]["path"]).parent == tree
+    assert side["requested_options"]["performance_calibration"] == "off"
+    assert side["effective_options"]["performance_calibration"] is None
+    boost = contract.read_json(legacy / rels["boost_report"])
+    assert boost["tolerance"] is None
+    # The release code reproduced its own case exactly and rescored 1.0.4's.
+    record = contract.read_json(legacy / runner.RESCORING)
+    assert record["rescored"][ran.name]["own_scoring_code"]
+    assert not record["rescored"][legacy.name]["own_scoring_code"]
+    rescored = contract.read_json(legacy / "rescored" / f"{legacy.name}.json")
+    case = rescored["cases"][f"{LABEL}_seed0"]
+    assert all(case["finite"].values())
+    result = analysis.analyze_arms(legacy, ran, None, tmp_path / "report")
+    assert result["paired_cases"] == 1
+    assert result["legacy_reference"]["release"] == "1.0.4"
+
+
+def test_the_patches_of_1_0_4_apply_to_its_source():
+    """In a process of PyVBMC 1.0.4, the shims replace the function of each
+    compatibility patch in every module that holds it, the one that imports
+    it by name among them, and restore it after."""
+    tree = os.environ.get("PYVBMC_LEGACY_SOURCE")
+    legacy_gpyreg = os.environ.get("PYVBMC_LEGACY_GPYREG_SOURCE")
+    if not tree or not legacy_gpyreg:
+        pytest.skip(
+            "PYVBMC_LEGACY_SOURCE and PYVBMC_LEGACY_GPYREG_SOURCE name no "
+            "checkouts of PyVBMC 1.0.4 and gpyreg 1.0.4"
+        )
+    script = """
+        import importlib
+        import sys
+        tree, gpyreg, here = sys.argv[1:4]
+        sys.path[:0] = [tree, gpyreg]
+        import pyvbmc
+        sys.path.insert(0, here)
+        import population_run as runner
+        assert runner.VBMC.__module__ == "pyvbmc.vbmc.vbmc"
+        profile = runner.LEGACY_PACKAGES[sys.argv[4]]
+        names = ("variational_optimization", "active_sample")
+        modules = [importlib.import_module(f"pyvbmc.vbmc.{n}") for n in names]
+        original = modules[0]._gp_log_joint
+        assert modules[1]._gp_log_joint is original
+        with runner.legacy_shims(profile):
+            patched = modules[0]._gp_log_joint
+            assert patched is not original
+            assert modules[1]._gp_log_joint is patched
+            assert patched.__globals__ is vars(modules[0])
+        assert all(m._gp_log_joint is original for m in modules)
+        print("ok")
+        """
+    env = {
+        key: value for key, value in os.environ.items() if key != "PYTHONPATH"
+    }
+    env.pop("PYVBMC_GPYREG_SOURCE", None)
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent(script), tree, legacy_gpyreg]
+        + [str(runner.HERE), RELEASE_104],
+        cwd=runner.HERE,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip().endswith("ok")

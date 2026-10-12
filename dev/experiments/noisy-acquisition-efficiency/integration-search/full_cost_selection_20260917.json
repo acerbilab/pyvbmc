@@ -1,0 +1,56 @@
+{
+  "cost_first_gate": {
+    "above_threshold": "end arm without fresh full-sieve selections, judging, or holdout",
+    "at_or_below_threshold": "continue through the original quality gates",
+    "incomplete": "leave arm pending",
+    "rule": "median of state median treatment-over-production ratios",
+    "threshold": 1.1
+  },
+  "frozen": true,
+  "kind": "noisy_acquisition_E2_full_sieve_selection",
+  "limitations": [
+    "This shortlist is a cost-screen allocation and is not a promotion decision.",
+    "MC2048 repetition 3 and RQMC512 repetition 6 on rosenbrock_D2_noise3_seed0_early retain severe unresolved raw-loss limitations.",
+    "stratified_mc2048 timing_D5_noise2.2_seed0_late repetition 6 is harmful by about 12.7 practical bands and the complete-score loss is independently MC-agreed; its RQMC raw ratio is about 0.939 and classified no material loss while the MC raw check remains unresolved."
+  ],
+  "panel_evidence": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\panel_evidence.json",
+  "panel_evidence_sha256": "abb51a2780ba26544333e231809a371a2743a22f708ab876944ba22a384acda2",
+  "publication_note": "Local user-directory paths are redacted in this review copy. Recorded hashes identify the unmodified local allocation and its inputs; execute with the original local manifests.",
+  "rationale": "Retain MC2048 and stratified-MC2048 controls plus RQMC512/RQMC2048 for the quality/cost tradeoff. The other five panel settings have confirmed material raw loss and more than 5% harmful complete-score selections.",
+  "raw_artifact_sha256": "a751aee8b4e0d0817f411d3ec0cf0841b2f87321ea4e4a7f4b7001e95aea15a3",
+  "schema_version": 1,
+  "settings": [
+    {
+      "budget": 2048,
+      "method": "mc"
+    },
+    {
+      "budget": 2048,
+      "method": "stratified_mc"
+    },
+    {
+      "budget": 512,
+      "method": "stratified_rqmc"
+    },
+    {
+      "budget": 2048,
+      "method": "stratified_rqmc"
+    }
+  ],
+  "source_summaries": {
+    "judge": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\panel_judging\\b65536\\summary.json",
+      "sha256": "04c7308afd8cd2b34e4bf633f54f546d36bed50167cfdc8f3880394431ce9f03"
+    },
+    "mc": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\panel_mc\\b65536\\summary.json",
+      "sha256": "7646d3a8263f875de423c2c782c1f4c871c847a94404e99cb5047836233b5300"
+    },
+    "timing": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\panel_timing\\summary_timing.json",
+      "sha256": "0e0d44e858ed1c73477657cd09a485a5de3d3f9f3b9d63385893ed1c4692ccde"
+    }
+  },
+  "tracked_review_copy": "dev/experiments/noisy-acquisition-efficiency/integration-search/panel_evidence_20260917.json",
+  "tracked_review_copy_raw_sha256": "abb51a2780ba26544333e231809a371a2743a22f708ab876944ba22a384acda2"
+}

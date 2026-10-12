@@ -1,0 +1,190 @@
+{
+ "label": "rosenbrock_D2_noise3_production",
+ "seed": 100,
+ "problem": "rosenbrock",
+ "D": 2,
+ "noise_sd": 3.0,
+ "requested_options": {
+  "specify_target_noise": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 300,
+  "max_iter": 200,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object>"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -2.2598471241723845,
+ "true_mean": [
+  [
+   0.026341030923601183,
+   1.248229380722166
+  ]
+ ],
+ "true_cov": [
+  [
+   1.3168816075188348,
+   0.041579143037725065
+  ],
+  [
+   0.041579143037725065,
+   2.444556103217786
+  ]
+ ],
+ "plb": [
+  -3.0,
+  -3.0
+ ],
+ "pub": [
+  3.0,
+  3.0
+ ],
+ "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
+ "final": {
+  "elbo": -2.4977060431420957,
+  "elbo_sd": 0.21357081197014183,
+  "best_iter": 37,
+  "iterations": 38,
+  "func_count": 190,
+  "final_K": 50,
+  "final_N": 190,
+  "min_Ns_gp": 6,
+  "n_warps": 3,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 222.07149737793952,
+  "target_eval_s": 0.0294339656829834,
+  "elbo_err": 0.23785891896971112,
+  "gskl": 0.6032976066929673,
+  "mmtv": 0.14328399471819775,
+  "rmse": 0.3973213509014863,
+  "moment_method": "affine",
+  "peak_rss_mb": 175.953125,
+  "max_rss_mb": 277.20703125
+ },
+ "meta": {
+  "git": {
+   "sha": "b196402b",
+   "dirty": false
+  },
+  "python": "3.12.14",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "cma": "4.4.4",
+  "pyvbmc_source": {
+   "path": "$HARNESS_TREE/pyvbmc",
+   "git": {
+    "sha": "b196402b",
+    "dirty": false
+   }
+  },
+  "gpyreg_source": {
+   "path": "$PYVBMC_GPYREG_SOURCE/gpyreg",
+   "git": {
+    "sha": "682585f",
+    "dirty": false
+   }
+  },
+  "installed_metadata_versions": {
+   "pyvbmc": null,
+   "gpyreg": null
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-10-05 16:06:14",
+  "finished": "2026-10-05 16:09:56",
+  "pid": 2129519
+ },
+ "provenance": {
+  "source": {
+   "trees": {
+    "harness": {
+     "commit": "b196402b4e72dd0b17cf369becf128228402dc8f",
+     "clean": true
+    },
+    "pyvbmc": {
+     "commit": "b196402b4e72dd0b17cf369becf128228402dc8f",
+     "clean": true
+    },
+    "gpyreg": {
+     "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+     "clean": true
+    }
+   },
+   "files": {
+    "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+    "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+    "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+    "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+    "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+    "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+   },
+   "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "torch": null
+   }
+  },
+  "imports": {
+   "trees": {
+    "harness": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "pyvbmc": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "gpyreg": {
+     "path": "$PYVBMC_GPYREG_SOURCE",
+     "dirty": []
+    }
+   },
+   "modules": {
+    "pyvbmc": "$HARNESS_TREE/pyvbmc",
+    "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+   },
+   "installed_metadata_versions": {
+    "pyvbmc": null,
+    "gpyreg": null
+   },
+   "harness_modules": {
+    "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+    "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+    "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+   }
+  }
+ }
+}

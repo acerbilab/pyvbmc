@@ -1,0 +1,45 @@
+{
+  "created_utc": "2026-09-17T14:22:18.047908+00:00",
+  "final_process_query": {
+    "filters": [
+      "Python command line contains noisy_acq",
+      "Python command line contains pyvbmc-stage3",
+      "Python parent PID is one of the verified formatter parents"
+    ],
+    "matching_processes": [],
+    "method": "elevated Win32_Process query"
+  },
+  "kind": "e3_search_owned_process_cleanup_successor",
+  "orchestration_cleanup": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_cleanup_20260917.json",
+    "sha256": "db9f7a4f2aa2342a8cb3587b1b8e11525a96da8f92f57805489a5b44ae3513d3"
+  },
+  "ownership_basis": "Each parent command line was a Black invocation on this experiment's scratch wrapper or loss-diagnostic files. Each child command line was multiprocessing.spawn with parent_pid equal to one of those exact formatter parents.",
+  "prior_final_closure": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_compute_closure_20260917_final.json",
+    "sha256": "bdd96a38d5a69bffb04c3698f60f2d6b9a44c0ac487c32c9d22725e1696aab5a"
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "be0245a5a3b1e06575297113772ec9b4c20c1411cd84fa4f06bccdb280c54d12",
+  "recorder_archive": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_record_e3_process_cleanup.py",
+    "sha256": "d0948cdf0cb530a7bb190e3f49d3f8f39d57535fd232eb9ad358e72df6633e06"
+  },
+  "schema_version": 1,
+  "status": "no experiment or owned formatter process remains",
+  "stopped_formatter_parents": [
+    3724,
+    27656,
+    2792,
+    29372,
+    5556,
+    12792,
+    2240,
+    31148
+  ],
+  "stopped_orphan_formatter_children": [
+    26452,
+    14896,
+    12664
+  ]
+}

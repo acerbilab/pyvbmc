@@ -1,0 +1,591 @@
+"""Every number the S-VBMC headline documents quote, from the tracked cells.
+
+The headline note (``dev/2026-09-15-svbmc-headline-shrinkage.md``) and the
+shrinkage and cap sections of the stage D report
+(``dev/results/2026-09-15-svbmc-pool-comparison.md``) quote medians over
+cells, worst and mean cases over the noisy conditions, threshold sweeps
+and paired bootstrap intervals. This prints all of them from the per-cell
+records of ``svbmc_shrink_elbo.py`` and ``svbmc_cap_kappa.py``, the
+single-run biases of ``svbmc_single_run_bias.py`` and the re-optimization
+of ``svbmc_shrink_optimize.py``, so that a sentence in those documents can
+be checked or updated without the raw directories::
+
+    python dev/scripts/svbmc_headline_numbers.py \
+        --shrink DIR [--shrink DIR ...] --caps DIR [--caps DIR ...] \
+        --single-run DIR --shrink-opt DIR
+
+Reads the ``cells.jsonl`` of every ``--shrink`` and ``--caps`` directory
+(the scorings of one comparison's cells, which together cover the grid
+of ``M``), the ``summary.json`` and ``added.json`` of ``--single-run``
+(the single-run biases and the added-bias ranges) and the
+``summary.json`` of ``--shrink-opt`` (the re-optimization), and names the
+last two by their directories. The numbers the documents quote are those
+of the tracked scorings of ``pool_20260914`` under
+``dev/experiments/svbmc_pool/``::
+
+    E=dev/experiments/svbmc_pool
+    python dev/scripts/svbmc_headline_numbers.py \
+        --shrink $E/shrink_20260915 --shrink $E/shrink_M35_20260915 \
+        --shrink $E/shrink_M32_20260916 \
+        --caps $E/cap_kappa_20260915 --caps $E/cap_kappa_M35_20260915 \
+        --caps $E/cap_kappa_M32_20260916 \
+        --single-run $E/single_run_20260915 \
+        --shrink-opt $E/shrink_opt_20260915
+
+A condition outside the eight of the ``svbmc_pool`` suite is printed
+under its label. Needs NumPy only.
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+
+GRID = (2, 3, 4, 5, 8, 16, 32)
+# The grid of stage D and the M = 3 and 5 run; the aggregates over M are
+# printed for it (the numbers quoted before the M = 32 run) and for GRID.
+GRID16 = (2, 3, 4, 5, 8, 16)
+SCOPES = (("M <= 16", GRID16), ("all M", GRID))
+SHORT = {
+    "multisensory_s1_D6_noise3_svbmc": "multisensory noise 3",
+    "multisensory_s1_D6_noise1.3_svbmc": "multisensory noise 1.3",
+    "rosenbrock_D2_noise3_svbmc": "Rosenbrock noise 3",
+    "gmm_D2_noise3_svbmc": "GMM noise 3",
+    "ring_D2_noise3_svbmc": "ring noise 3",
+    "student_D8_noise3_svbmc": "Student D8 noise 3",
+    "gmm_D2_svbmc": "GMM (noiseless)",
+    "multisensory_s1_D6_svbmc": "multisensory (noiseless)",
+}
+
+
+def short(label):
+    """The printed name of a condition: its short name, or its label."""
+    return SHORT.get(label, label)
+
+
+RULES = {
+    "raw": lambda r: r["bias_raw"],
+    "cap": lambda r: r["bias_class_cap"],
+    "within": lambda r: r["variants"]["within"]["bias"],
+    "within_full": lambda r: r["variants"]["within_full"]["bias"],
+    "stack": lambda r: r["variants"]["stack"]["bias"],
+    "run_level": lambda r: r["variants"]["run_level"]["bias"],
+    "two_level": lambda r: r["variants"]["two_level"]["bias"],
+    "two_level_full": lambda r: r["variants"]["two_level_full"]["bias"],
+    "hybrid": lambda r: r["variants"]["hybrid"]["bias"],
+}
+
+
+def load(directories):
+    rows = []
+    for directory in directories:
+        path = Path(directory) / "cells.jsonl"
+        rows += [json.loads(line) for line in path.open(encoding="utf-8")]
+    return rows
+
+
+def median(values):
+    return float(np.median(values))
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument(
+        "--shrink",
+        type=Path,
+        action="append",
+        required=True,
+        help="a directory of svbmc_shrink_elbo.py, repeatable",
+    )
+    parser.add_argument(
+        "--caps",
+        type=Path,
+        action="append",
+        required=True,
+        help="a directory of svbmc_cap_kappa.py, repeatable",
+    )
+    parser.add_argument(
+        "--single-run",
+        type=Path,
+        required=True,
+        help="the directory of svbmc_single_run_bias.py",
+    )
+    parser.add_argument(
+        "--shrink-opt",
+        type=Path,
+        required=True,
+        help="the directory of svbmc_shrink_optimize.py",
+    )
+    args = parser.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
+    rows = load(args.shrink)
+    caps = load(args.caps)
+    conditions = list(dict.fromkeys(r["condition"] for r in rows))
+    noisy = [c for c in conditions if "noise" in c]
+    controls = [c for c in conditions if "noise" not in c]
+    rng = np.random.default_rng(0)
+
+    def cells(c, M):
+        return [r for r in rows if r["condition"] == c and r["M"] == M]
+
+    def bias(c, M, rule):
+        return median([RULES[rule](r) for r in cells(c, M)])
+
+    def factor(c, M, name):
+        return median([r["variants"][name]["factor"] for r in cells(c, M)])
+
+    def share(c, M):
+        return median(
+            [
+                r["noise_share"]
+                for r in cells(c, M)
+                if r["noise_share"] is not None
+            ]
+        )
+
+    print(
+        "# Report, M = 16 table: raw | cap | within [f] | within full [f] | stack [f] | noise share"
+    )
+    for c in conditions:
+        print(
+            f"| {short(c)} | {bias(c, 16, 'raw'):+.2f} | {bias(c, 16, 'cap'):+.2f} | "
+            f"{bias(c, 16, 'within'):+.2f} [{factor(c, 16, 'within'):.2f}] | "
+            f"{bias(c, 16, 'within_full'):+.2f} [{factor(c, 16, 'within_full'):.2f}] | "
+            f"{bias(c, 16, 'stack'):+.2f} [{factor(c, 16, 'stack'):.2f}] | {share(c, 16):.2f} |"
+        )
+    for label, grid in SCOPES:
+        print(
+            f"controls, max |median bias| over M ({label}):",
+            {
+                rule: round(
+                    max(abs(bias(c, M, rule)) for c in controls for M in grid),
+                    3,
+                )
+                for rule in (
+                    "raw",
+                    "cap",
+                    "within",
+                    "within_full",
+                    "stack",
+                    "two_level_full",
+                    "hybrid",
+                )
+            },
+        )
+
+    print(
+        "\n# Report, two-level table at M = 2 / 4 / 8 / 16: two_level_full | two_level | run_level | cap"
+    )
+    for c in conditions:
+        print(
+            f"| {short(c)} | "
+            + " | ".join(
+                " / ".join(f"{bias(c, M, rule):+.2f}" for M in (2, 4, 8, 16))
+                for rule in ("two_level_full", "two_level", "run_level", "cap")
+            )
+            + " |"
+        )
+
+    print(
+        "\n# Report, M = 2 to 5 table: raw / cap / within_full / two_level_full"
+    )
+    for c in conditions:
+        print(
+            f"| {short(c)} | "
+            + " | ".join(
+                " / ".join(
+                    f"{bias(c, M, rule):+.2f}"
+                    for rule in ("raw", "cap", "within_full", "two_level_full")
+                )
+                for M in (2, 3, 4, 5)
+            )
+            + " |"
+        )
+
+    print(
+        "\n# Report, M = 32 table: raw | cap | within_full [f] | run_level [f] | two_level_full [f] | hybrid [cap fraction] | noise share within / stack / runs"
+    )
+
+    def population_share(c, M, key):
+        return median(
+            [
+                r[key]["noise_share"]
+                for r in cells(c, M)
+                if r[key]["noise_share"] is not None
+            ]
+        )
+
+    for c in conditions:
+        rs = cells(c, 32)
+        print(
+            f"| {short(c)} | {bias(c, 32, 'raw'):+.2f} | {bias(c, 32, 'cap'):+.2f} | "
+            f"{bias(c, 32, 'within_full'):+.2f} [{factor(c, 32, 'within_full'):.2f}] | "
+            f"{bias(c, 32, 'run_level'):+.2f} [{factor(c, 32, 'run_level'):.2f}] | "
+            f"{bias(c, 32, 'two_level_full'):+.2f} [{factor(c, 32, 'two_level_full'):.2f}] | "
+            f"{bias(c, 32, 'hybrid'):+.2f} [{np.mean([r['variants']['hybrid']['cap'] for r in rs]):.2f}] | "
+            f"{share(c, 32):.2f} / {population_share(c, 32, 'stack_population'):.2f} / {population_share(c, 32, 'run_population'):.2f} |"
+        )
+    print("  M = 16 -> 32, median bias: raw | cap | two_level_full | hybrid")
+    for c in conditions:
+        print(
+            f"    {short(c)}: "
+            + " | ".join(
+                f"{bias(c, 16, rule):+.2f} -> {bias(c, 32, rule):+.2f}"
+                for rule in ("raw", "cap", "two_level_full", "hybrid")
+            )
+        )
+    print(
+        "  |cap| - |two_level_full| at M = 32 per noisy condition (positive: shrinkage closer):"
+    )
+    for c in noisy:
+        print(
+            f"    {short(c)}: {abs(bias(c, 32, 'cap')) - abs(bias(c, 32, 'two_level_full')):+.2f}"
+        )
+    print(
+        "  run_level minus raw at M = 16 and 32 (what the run-level shift removes):"
+    )
+    for c in noisy:
+        print(
+            f"    {short(c)}: "
+            + ", ".join(
+                f"M={M}: {bias(c, M, 'run_level') - bias(c, M, 'raw'):+.2f}"
+                for M in (16, 32)
+            )
+        )
+
+    print(
+        "\n# Worst and mean over the six noisy conditions of the median absolute bias, per M"
+    )
+    for rule in (
+        "raw",
+        "cap",
+        "within",
+        "within_full",
+        "two_level_full",
+        "hybrid",
+    ):
+        worst = [max(abs(bias(c, M, rule)) for c in noisy) for M in GRID]
+        mean = [np.mean([abs(bias(c, M, rule)) for c in noisy]) for M in GRID]
+        print(
+            f"  {rule:15s} worst "
+            + " / ".join(f"{x:.2f}" for x in worst)
+            + "   mean "
+            + " / ".join(f"{x:.2f}" for x in mean)
+        )
+
+    print("\n# Prose numbers")
+    for M in GRID:
+        d = {
+            c: abs(bias(c, M, "two_level_full") - bias(c, M, "within_full"))
+            for c in conditions
+        }
+        worst = max(d, key=d.get)
+        print(
+            f"  max |two_level_full - within_full| at M={M}: {d[worst]:.3f} ({short(worst)})"
+        )
+    print(
+        "  run-level tau2 == 0 fraction and factor 10th-90th percentile, per condition at M = 2 to 5:"
+    )
+    for c in conditions:
+        parts = []
+        for M in (2, 3, 4, 5):
+            rs = cells(c, M)
+            zero = np.mean([r["run_population"]["tau2"] == 0 for r in rs])
+            f = [r["variants"]["run_level"]["factor"] for r in rs]
+            parts.append(
+                f"M={M}: zero {zero:.2f}, factor {np.percentile(f, 10):.2f}-{np.percentile(f, 90):.2f}"
+            )
+        print(f"    {short(c)}: " + "; ".join(parts))
+    for label, grid in SCOPES:
+        print(f"  hybrid chooses the cap, cells per condition ({label}):")
+        for c in conditions:
+            rs = [r for r in rows if r["condition"] == c and r["M"] in grid]
+            print(
+                f"    {short(c)}: {sum(r['variants']['hybrid']['cap'] for r in rs)}/{len(rs)}"
+            )
+    for label, grid in SCOPES:
+        print(
+            f"  cell noise share ({label}): median over all cells, 5th-95th percentile, min, max:"
+        )
+        for c in conditions:
+            s = np.array(
+                [
+                    r["noise_share"]
+                    for r in rows
+                    if r["condition"] == c
+                    and r["M"] in grid
+                    and r["noise_share"] is not None
+                ]
+            )
+            print(
+                f"    {short(c)}: median {np.median(s):.3f}, 5-95% {np.percentile(s, 5):.3f}-{np.percentile(s, 95):.3f}, "
+                f"min {s.min():.3f}, max {s.max():.3f}"
+            )
+
+    def hybrid(r, t):
+        s = r["noise_share"]
+        if s is not None and s >= t:
+            return r["bias_class_cap"]
+        return r["variants"]["within_full"]["bias"]
+
+    print(
+        "  hybrid threshold sweep, worst and mean over the noisy conditions at M = 2 to 16:"
+    )
+    for t in (0.05, 0.08, 0.10, 0.12, 0.15, 0.20, 0.25, 0.30):
+        worst = [
+            max(
+                abs(median([hybrid(r, t) for r in cells(c, M)])) for c in noisy
+            )
+            for M in GRID
+        ]
+        mean = [
+            np.mean(
+                [
+                    abs(median([hybrid(r, t) for r in cells(c, M)]))
+                    for c in noisy
+                ]
+            )
+            for M in GRID
+        ]
+        print(
+            f"    t={t:.2f}: worst "
+            + " ".join(f"{x:.2f}" for x in worst)
+            + "  mean "
+            + " ".join(f"{x:.2f}" for x in mean)
+        )
+    for label, grid in SCOPES:
+        print(
+            f"  |cap| - |two_level_full| (median biases), min..max over M ({label}), per noisy condition (positive: shrinkage closer):"
+        )
+        for c in noisy:
+            d = [
+                abs(bias(c, M, "cap")) - abs(bias(c, M, "two_level_full"))
+                for M in grid
+            ]
+            print(f"    {short(c)}: {min(d):+.2f} .. {max(d):+.2f}")
+    print(
+        "  Student: |two_level_full| and |raw| at M = 2 to 5, fraction of cells where two_level_full is worse:"
+    )
+    for M in (2, 3, 4, 5):
+        rs = cells("student_D8_noise3_svbmc", M)
+        worse = np.mean(
+            [
+                abs(r["variants"]["two_level_full"]["bias"])
+                > abs(r["bias_raw"])
+                for r in rs
+            ]
+        )
+        print(
+            f"    M={M}: {abs(bias('student_D8_noise3_svbmc', M, 'two_level_full')):.2f} against "
+            f"{abs(bias('student_D8_noise3_svbmc', M, 'raw')):.2f}; worse in {worse:.2f} of cells"
+        )
+    for label, grid in SCOPES:
+        print(
+            f"  interval [two_level_full, raw] contains the reference, fraction of cells per noisy condition ({label}):"
+        )
+        for c in noisy:
+            rs = [r for r in rows if r["condition"] == c and r["M"] in grid]
+            inside = np.mean(
+                [
+                    min(r["variants"]["two_level_full"]["bias"], r["bias_raw"])
+                    <= 0
+                    <= max(
+                        r["variants"]["two_level_full"]["bias"], r["bias_raw"]
+                    )
+                    for r in rs
+                ]
+            )
+            print(f"    {short(c)}: {inside:.2f}")
+
+    print(
+        "\n# Caps (svbmc_cap_kappa.py): max bind fraction and max |median move from raw| per cap"
+    )
+    names = [f"kappa_{k:g}" for k in (0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99)] + [
+        "E_max",
+        "E_top",
+    ]
+
+    def cap_bias(name, c, M):
+        return median(
+            [
+                r["caps"][name]["bias"]
+                for r in caps
+                if r["condition"] == c and r["M"] == M
+            ]
+        )
+
+    for label, grid in SCOPES:
+        print(f"  ({label})")
+        for name in names:
+            binds, moves = [], []
+            for c in conditions:
+                for M in grid:
+                    rs = [
+                        r for r in caps if r["condition"] == c and r["M"] == M
+                    ]
+                    binds.append(
+                        np.mean([r["caps"][name]["binds"] for r in rs])
+                    )
+                    moves.append(
+                        abs(
+                            cap_bias(name, c, M)
+                            - median([r["bias_raw"] for r in rs])
+                        )
+                    )
+            print(
+                f"  {name}: max binds {max(binds):.2f}, max |median move| {max(moves):.2f}"
+            )
+        for name in ("kappa_0.9", "kappa_0.95", "kappa_0.99"):
+            typical = [
+                cap_bias(name, c, M)
+                for c in noisy
+                if "student" not in c
+                for M in grid
+            ]
+            student = [
+                cap_bias(name, "student_D8_noise3_svbmc", M) for M in grid
+            ]
+            print(
+                f"  {name}: typical residual {min(typical):+.2f}..{max(typical):+.2f}; Student {min(student):+.2f}..{max(student):+.2f}"
+            )
+    print(
+        "  M = 32, per condition: raw | kappa_0.8 [binds] | kappa_0.9 | kappa_0.99 | E_max [binds] | E_top [binds]"
+    )
+    for c in conditions:
+        rs = [r for r in caps if r["condition"] == c and r["M"] == 32]
+
+        def binds(name):
+            return np.mean([r["caps"][name]["binds"] for r in rs])
+
+        print(
+            f"    {short(c)}: {median([r['bias_raw'] for r in rs]):+.2f} | "
+            f"{cap_bias('kappa_0.8', c, 32):+.2f} [{binds('kappa_0.8'):.2f}] | "
+            f"{cap_bias('kappa_0.9', c, 32):+.2f} | {cap_bias('kappa_0.99', c, 32):+.2f} | "
+            f"{cap_bias('E_max', c, 32):+.2f} [{binds('E_max'):.2f}] | "
+            f"{cap_bias('E_top', c, 32):+.2f} [{binds('E_top'):.2f}]"
+        )
+
+    print(
+        "\n# Paired bootstrap over cells (10000 resamples) of the difference of median |bias|, at M = 3 / 5 / 16, then at M = 32"
+    )
+    pairs = (("cap", "two_level_full"), ("hybrid", "two_level_full"))
+
+    def paired(a_name, b_name, c, M):
+        # The M = 32 draws come after every earlier one so that the
+        # intervals quoted before that run was added stay reproducible.
+        rs = cells(c, M)
+        a = np.array([abs(RULES[a_name](r)) for r in rs])
+        b = np.array([abs(RULES[b_name](r)) for r in rs])
+        index = rng.integers(0, len(rs), size=(10000, len(rs)))
+        d = np.median(a[index], axis=1) - np.median(b[index], axis=1)
+        return f"M={M}: {np.median(a) - np.median(b):+.2f} [{np.percentile(d, 2.5):+.2f}, {np.percentile(d, 97.5):+.2f}]"
+
+    for grid in ((3, 5, 16), (32,)):
+        for a_name, b_name in pairs:
+            print(f"  {a_name} minus {b_name} (positive: {b_name} closer):")
+            for c in noisy:
+                print(
+                    f"    {short(c)}: "
+                    + "; ".join(paired(a_name, b_name, c, M) for M in grid)
+                )
+    single_dir = args.single_run
+    print(f"\n# Single runs and what stacking adds ({single_dir.name})")
+    single = json.loads(
+        (single_dir / "summary.json").read_text(encoding="utf-8")
+    )
+    for c in single["conditions"]:
+        v = c["bias_vbmc"]
+        print(
+            f"  {short(c['condition'])}: reported-ELBO bias median "
+            f"{v['median']:+.2f} [{v['lo']:+.2f}, {v['hi']:+.2f}], quartiles "
+            f"{v['q25']:+.2f}..{v['q75']:+.2f}; class raw "
+            f"{c['bias_raw']['median']:+.2f}; cap {c['bias_cap']['median']:+.2f}"
+        )
+    added = json.loads((single_dir / "added.json").read_text(encoding="utf-8"))
+    noisy_added = [c for c in added["conditions"] if "noise" in c["condition"]]
+    for name in (
+        "raw",
+        "capped_I_median",
+        "run_level",
+        "two_level_full",
+        "anchored",
+        "two_level_anchored",
+        "anchored_mean",
+        "two_level_anchored_mean",
+    ):
+        parts = []
+        for M in GRID:
+            v = [
+                r["added"][name]
+                for c in noisy_added
+                for r in c["by_M"]
+                if r["M"] == M
+            ]
+            parts.append(f"M={M}: {min(v):+.2f}..{max(v):+.2f}")
+        print(f"  added bias of {name}, noisy conditions: " + "; ".join(parts))
+    for M in GRID:
+        by_M = [r for c in noisy_added for r in c["by_M"] if r["M"] == M]
+        pos = [r["raw_added_positive"] for r in by_M]
+        best = [r["inputs_best_bias"] - r["bias"]["raw"] for r in by_M]
+        fr = [
+            1 - r["added"]["run_level"] / r["added"]["raw"]
+            for r in by_M
+            if abs(r["added"]["raw"]) > 1e-9
+        ]
+        print(
+            f"  M={M}: raw added > 0 in {min(pos):.2f}..{max(pos):.2f} of "
+            f"cells; best input minus stack raw {min(best):+.2f}..{max(best):+.2f}; "
+            f"run_level removes {min(fr):.2f}..{max(fr):.2f} of the addition"
+        )
+    for label, grid in SCOPES:
+        controls_added = [
+            abs(r["added"][n])
+            for c in added["conditions"]
+            if "noise" not in c["condition"]
+            for r in c["by_M"]
+            if r["M"] in grid
+            for n in r["added"]
+        ]
+        print(
+            f"  controls: max |added| over estimates and M ({label}) {max(controls_added):.3f}"
+        )
+    for c in added["conditions"]:
+        if "noise" in c["condition"]:
+            continue
+        for r in c["by_M"]:
+            if r["M"] != 32:
+                continue
+            print(
+                f"  {short(c['condition'])} at M = 32: inputs mean {r['inputs_mean_bias']:+.2f}, "
+                f"best input {r['inputs_best_bias']:+.2f}, stack raw {r['bias']['raw']:+.2f}, "
+                f"added raw {r['added']['raw']:+.2f}, two_level_full {r['added']['two_level_full']:+.2f}, "
+                f"positive on {r['raw_added_positive']:.2f} of cells"
+            )
+    print(
+        "\n# Re-optimizing on the shrunken estimates "
+        f"({args.shrink_opt.name})"
+    )
+    opt = json.loads(
+        (args.shrink_opt / "summary.json").read_text(encoding="utf-8")
+    )
+    for c in opt["conditions"]:
+        for r in c["by_M"]:
+            b = r["bias"]
+            print(
+                f"  {short(c['condition'])} M={r['M']}: re-optimized "
+                f"{b['shrunk_opt']:+.2f}, value-only {b['two_level_full']:+.2f}, "
+                f"raw {b['raw']:+.2f}, raw at new weights {b['raw_at_opt']:+.2f}; "
+                f"added {r['added']['shrunk_opt']:+.2f}; gsKL "
+                f"{r['gskl']:.2f}/{r['gskl_recorded']:.2f} (improved "
+                f"{r['gskl_improved']:.2f}), MMTV improved {r['mmtv_improved']:.2f}; "
+                f"KL gap {r['kl_gap']:+.2f}/{r['kl_gap_recorded']:+.2f}; "
+                f"mass moved {r['mass_shift']:.2f}, max |dw| {r['max_abs_dw']:.3f}"
+            )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

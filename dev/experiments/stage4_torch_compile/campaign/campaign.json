@@ -1,0 +1,876 @@
+{
+  "arms": [
+    "numpy_cpu",
+    "eager_cpu",
+    "compiled_cpu",
+    "eager_cuda",
+    "compiled_cuda"
+  ],
+  "campaign_wall_s": 2053.876792200026,
+  "cases": [
+    "deterministic",
+    "warped",
+    "boost_sampled",
+    "boost_single"
+  ],
+  "cold_policy": "first seed-1701 complete fit in a fresh worker",
+  "command": [
+    "dev/scripts/torch_vi_compile_benchmark.py",
+    "--phase",
+    "campaign",
+    "--out",
+    "dev/scripts/runs/torch_compile/campaign",
+    "--cpu-overlay",
+    "dev/scripts/runs/svbmc_compat_20260908/deps",
+    "--cuda-overlay",
+    "dev/scripts/runs/stage4_torch/deps_cuda",
+    "--compiler-overlay",
+    "dev/scripts/runs/torch_compile/deps_compiler",
+    "--cpu-smoke",
+    "dev/scripts/runs/torch_compile/toolchain_cpu_02/smoke.json",
+    "--cuda-smoke",
+    "dev/scripts/runs/torch_compile/toolchain_cuda_triton_02/smoke.json"
+  ],
+  "compiled_scope": "ordinary optimization objective and backward are compiled; exact full-variance/per-component fine scoring is deliberately eager",
+  "failures": [
+    {
+      "arm": "compiled_cpu",
+      "case": "boost_sampled",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "eager_cuda",
+      "case": "boost_sampled",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "compiled_cuda",
+      "case": "boost_sampled",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "numpy_cpu",
+      "case": "boost_sampled",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "eager_cpu",
+      "case": "boost_sampled",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "eager_cuda",
+      "case": "boost_single",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "compiled_cuda",
+      "case": "boost_single",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "numpy_cpu",
+      "case": "boost_single",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "eager_cpu",
+      "case": "boost_single",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    },
+    {
+      "arm": "compiled_cpu",
+      "case": "boost_single",
+      "launcher_error": null,
+      "returncode": 2,
+      "stage": "worker",
+      "status": "gate_failed"
+    }
+  ],
+  "fit_timing_policy": "primary wall time is run_step timing.total; launcher/API wall retains source-hash checking and synchronization around the call",
+  "hot_policy": "same-session complete fits for seeds 1701, 1702, 1703",
+  "limits_s": {
+    "campaign": 10800,
+    "toolchain_smoke": 600,
+    "worker": 1800
+  },
+  "phase": "campaign",
+  "schedule": [
+    [
+      "deterministic",
+      "numpy_cpu"
+    ],
+    [
+      "deterministic",
+      "eager_cpu"
+    ],
+    [
+      "deterministic",
+      "compiled_cpu"
+    ],
+    [
+      "deterministic",
+      "eager_cuda"
+    ],
+    [
+      "deterministic",
+      "compiled_cuda"
+    ],
+    [
+      "warped",
+      "eager_cpu"
+    ],
+    [
+      "warped",
+      "compiled_cpu"
+    ],
+    [
+      "warped",
+      "eager_cuda"
+    ],
+    [
+      "warped",
+      "compiled_cuda"
+    ],
+    [
+      "warped",
+      "numpy_cpu"
+    ],
+    [
+      "boost_sampled",
+      "compiled_cpu"
+    ],
+    [
+      "boost_sampled",
+      "eager_cuda"
+    ],
+    [
+      "boost_sampled",
+      "compiled_cuda"
+    ],
+    [
+      "boost_sampled",
+      "numpy_cpu"
+    ],
+    [
+      "boost_sampled",
+      "eager_cpu"
+    ],
+    [
+      "boost_single",
+      "eager_cuda"
+    ],
+    [
+      "boost_single",
+      "compiled_cuda"
+    ],
+    [
+      "boost_single",
+      "numpy_cpu"
+    ],
+    [
+      "boost_single",
+      "eager_cpu"
+    ],
+    [
+      "boost_single",
+      "compiled_cpu"
+    ]
+  ],
+  "schema": 1,
+  "seeds": [
+    1701,
+    1702,
+    1703
+  ],
+  "source_manifest": {
+    "archive": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\source\\measured-source.zip",
+    "archive_sha256": "cbc626c7fad0dbbc01da9fd3808903efa28898e9612fed2243eb3c4f55fe1d01",
+    "files": {
+      "dev/scripts/torch_compile_toolchain.py": "4ab5f7ae155ac73fd4727f485c705650164ae128c213e1f94b7852a16b8ed443",
+      "dev/scripts/torch_vi_benchmark.py": "c4f2cb92c6d90e8a312424d7cbf782453fc41c47ff92a9a77b5d2329990660d0",
+      "dev/scripts/torch_vi_compile.py": "3c2935f695d0897b6c063799e05635cb4779dde4911b902296889a607229187b",
+      "dev/scripts/torch_vi_compile_benchmark.py": "2a597bce291304c13761ebfc4b9f5eb14f0acf0fc9ea7b708fd3d9f1709bcff7",
+      "dev/scripts/torch_vi_core.py": "a31b8a22f55dbf0ddedb675e08116236d19bdb3c16abe9e2722f3328e2c9aee9",
+      "dev/scripts/torch_vi_fixtures.py": "647a137fc9d3baca91436439bda33a7a08689535e137aea7e41557ae83a56b16",
+      "dev/scripts/torch_vi_step.py": "80caac8fcd7e515c2e9e2591433ec84aec7ce2640057bce9cb2af926c920ffb1"
+    },
+    "git_branch": "dev-torch-compile-prototype",
+    "git_commit": "e0ca4e61da973f605b914f3b05794107402f794f"
+  },
+  "status": "completed_with_failures",
+  "toolchain": {
+    "cpu": {
+      "compiler": null,
+      "device": "cpu",
+      "error": null,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\toolchain_cpu_02\\smoke.json",
+      "required": true,
+      "sha256": "840bf0061dbf813128da7436ac08cde28d624c13a6cbc5b79fe922d4c0b3f9ac",
+      "status": "passed",
+      "torch": "2.14.0+cpu",
+      "valid": true
+    },
+    "cuda": {
+      "compiler": null,
+      "device": "cuda",
+      "error": null,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\toolchain_cuda_triton_02\\smoke.json",
+      "required": true,
+      "sha256": "5a26b045c0a1af7a4ead13eb0f5f2dd8e43e5058a46617e6cb75f8f12417f5cd",
+      "status": "passed",
+      "torch": "2.14.0+cu126",
+      "valid": true
+    }
+  },
+  "updated_utc": "2026-09-09T11:55:36Z",
+  "workers": [
+    {
+      "arm": "numpy_cpu",
+      "case": "deterministic",
+      "cold_api_wall_s": 0.05966140003874898,
+      "cold_fit_wall_s": 0.004820000031031668,
+      "hot_api_wall_s": [
+        0.06201260001398623,
+        0.05996350001078099,
+        0.06086379999760538
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.004602500004693866,
+        0.004344300017692149,
+        0.004298300016671419
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 2.2522886000806466,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\00-deterministic-numpy_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\00-deterministic-numpy_cpu\\summary.json",
+      "summary_sha256": "c1cfd03b50ea2ba0ee938767f33d6aca7a7b9efc3f4cdb88ffd7ba3ccdb62a20"
+    },
+    {
+      "arm": "eager_cpu",
+      "case": "deterministic",
+      "cold_api_wall_s": 0.07609639992006123,
+      "cold_fit_wall_s": 0.02076189999934286,
+      "hot_api_wall_s": [
+        0.07463809999171644,
+        0.08366459992248565,
+        0.07375759992282838
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.018609500024467707,
+        0.024891800014302135,
+        0.018759700004011393
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 3.9157031000358984,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\01-deterministic-eager_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\01-deterministic-eager_cpu\\summary.json",
+      "summary_sha256": "b25aa066834c935acba371b81c20333755fc76aac53d011b61c05a862c5964f4"
+    },
+    {
+      "arm": "compiled_cpu",
+      "case": "deterministic",
+      "cold_api_wall_s": 23.047427400015295,
+      "cold_fit_wall_s": 22.986549000022933,
+      "hot_api_wall_s": [
+        0.0733177000656724,
+        0.06447580002713948,
+        0.07369160000234842
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.008669200004078448,
+        0.008098200079984963,
+        0.010750100016593933
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 63.33545349992346,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\02-deterministic-compiled_cpu.log",
+      "log_sha256": "aaa1ab4b55ec74a442880328ad7f0baa5ca1ba7228e9146cdb23fdafb8897181",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\02-deterministic-compiled_cpu\\summary.json",
+      "summary_sha256": "b09a55aafee7688eac2b04205dbdef616965358a4bd86296068aba4895671890"
+    },
+    {
+      "arm": "eager_cuda",
+      "case": "deterministic",
+      "cold_api_wall_s": 0.43730980006512254,
+      "cold_fit_wall_s": 0.3803774000843987,
+      "hot_api_wall_s": [
+        0.13580459996592253,
+        0.13635420007631183,
+        0.12751160003244877
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.07597360003273934,
+        0.07556369993835688,
+        0.06904950004536659
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 5.143114999984391,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\03-deterministic-eager_cuda.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\03-deterministic-eager_cuda\\summary.json",
+      "summary_sha256": "a277a190c87a5c48a21de4edc8e9293a903343904dde2c45ec8b011426411cc5"
+    },
+    {
+      "arm": "compiled_cuda",
+      "case": "deterministic",
+      "cold_api_wall_s": 12.023688000044785,
+      "cold_fit_wall_s": 11.962511499994434,
+      "hot_api_wall_s": [
+        0.08802200003992766,
+        0.085644599981606,
+        0.08691189996898174
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.02359760005492717,
+        0.02298399992287159,
+        0.024896000046283007
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 39.541297899908386,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\04-deterministic-compiled_cuda.log",
+      "log_sha256": "45862eb91b6abf98d071fa0125cad8a221f6fd899a1ff5fe8d4a62bca6f66159",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\04-deterministic-compiled_cuda\\summary.json",
+      "summary_sha256": "96b4ce66a53a78d894e627138aa374704547a68c92d47707ff2c4b48eb9692cd"
+    },
+    {
+      "arm": "eager_cpu",
+      "case": "warped",
+      "cold_api_wall_s": 0.7721548000117764,
+      "cold_fit_wall_s": 0.6774269000161439,
+      "hot_api_wall_s": [
+        0.6677203000290319,
+        0.8119070999091491,
+        0.8438209000742063
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.5756668000249192,
+        0.7221528000663966,
+        0.7756006999406964
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 8.099626999930479,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\05-warped-eager_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\05-warped-eager_cpu\\summary.json",
+      "summary_sha256": "6dd99c3b964b21043ea21c56e72f943bf7cd2ad37c8047f6d8ae9bd5bc834e76"
+    },
+    {
+      "arm": "compiled_cpu",
+      "case": "warped",
+      "cold_api_wall_s": 85.65720430004876,
+      "cold_fit_wall_s": 85.59419610002078,
+      "hot_api_wall_s": [
+        0.4801442000316456,
+        0.6376076999586076,
+        0.6411465000128374
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.41690709989052266,
+        0.5736747999908403,
+        0.5751118999905884
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 145.47683060006239,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\06-warped-compiled_cpu.log",
+      "log_sha256": "aaa1ab4b55ec74a442880328ad7f0baa5ca1ba7228e9146cdb23fdafb8897181",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\06-warped-compiled_cpu\\summary.json",
+      "summary_sha256": "1ec6758701f7053200033823c0450d6b18ddf804bbea8dba535cde300e70fc07"
+    },
+    {
+      "arm": "eager_cuda",
+      "case": "warped",
+      "cold_api_wall_s": 1.0566754000028595,
+      "cold_fit_wall_s": 0.9958495999453589,
+      "hot_api_wall_s": [
+        0.8362206999445334,
+        1.2178823000285774,
+        1.2398552999366075
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.7790908999741077,
+        1.1582172999624163,
+        1.1788918999955058
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 9.317189000081271,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\07-warped-eager_cuda.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\07-warped-eager_cuda\\summary.json",
+      "summary_sha256": "0ee607e136861634d8c01c8f7dd2f54c6fbbd2d8793c3fcc826de91b99a9986c"
+    },
+    {
+      "arm": "compiled_cuda",
+      "case": "warped",
+      "cold_api_wall_s": 46.84295899991412,
+      "cold_fit_wall_s": 46.77929249999579,
+      "hot_api_wall_s": [
+        0.650174199952744,
+        0.4670581000391394,
+        0.45010140002705157
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.5850547000300139,
+        0.40603990003000945,
+        0.38611259998288006
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 87.76169120008126,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\08-warped-compiled_cuda.log",
+      "log_sha256": "c9c29049e8a1c5ba27607962866f2859e0ad0bbbfa0058d4185234689c0df292",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\08-warped-compiled_cuda\\summary.json",
+      "summary_sha256": "8c16c7b9642ccb2b257b2e7dc61dca7b82ff06b09f4096d95b63980715c3bd41"
+    },
+    {
+      "arm": "numpy_cpu",
+      "case": "warped",
+      "cold_api_wall_s": 0.29070160002447665,
+      "cold_fit_wall_s": 0.22905460000038147,
+      "hot_api_wall_s": [
+        0.2825690000317991,
+        0.33359789999667555,
+        0.3381368999835104
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        0.22116929991170764,
+        0.274070700048469,
+        0.27826319995801896
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 4.000942399958149,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\09-warped-numpy_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 0,
+      "status": "ok",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\09-warped-numpy_cpu\\summary.json",
+      "summary_sha256": "431236a45951b88ea1c8392fe1f44e91adf5fd20deb24ea18063637f454c6f47"
+    },
+    {
+      "arm": "compiled_cpu",
+      "case": "boost_sampled",
+      "cold_api_wall_s": 64.60573930002283,
+      "cold_fit_wall_s": 64.54436629998963,
+      "hot_api_wall_s": [
+        3.125793799990788,
+        3.2335118000628427,
+        11.072054999996908
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        3.0577963000396267,
+        3.1582821999909356,
+        10.996967899962328
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 184.23683830001391,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\10-boost_sampled-compiled_cpu.log",
+      "log_sha256": "aaa1ab4b55ec74a442880328ad7f0baa5ca1ba7228e9146cdb23fdafb8897181",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\10-boost_sampled-compiled_cpu\\summary.json",
+      "summary_sha256": "97d1819028376374c45c43368899722d4fbef53f6147009018202e01b0050a2f"
+    },
+    {
+      "arm": "eager_cuda",
+      "case": "boost_sampled",
+      "cold_api_wall_s": 4.82158529991284,
+      "cold_fit_wall_s": 4.761369499959983,
+      "hot_api_wall_s": [
+        4.538336599944159,
+        4.257269899942912,
+        15.305421900004148
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        4.478351999889128,
+        4.195014199940488,
+        15.236969399964437
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 36.75138319993857,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\11-boost_sampled-eager_cuda.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\11-boost_sampled-eager_cuda\\summary.json",
+      "summary_sha256": "1a3eb44b03e2d05c46b70eca43fadb399091ef387347104b6f6e7f5c4ed7f664"
+    },
+    {
+      "arm": "compiled_cuda",
+      "case": "boost_sampled",
+      "cold_api_wall_s": 105.68348619993776,
+      "cold_fit_wall_s": 105.61980300000869,
+      "hot_api_wall_s": [
+        1.230536499992013,
+        1.2641889000078663,
+        2.923096499987878
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        1.1603817000286654,
+        1.1920141000300646,
+        2.837315100012347
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 185.29462910001166,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\12-boost_sampled-compiled_cuda.log",
+      "log_sha256": "6401e9b9d401c365c5bfa103f1359cf74012c9f4626798daebd7aea2fa265aad",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\12-boost_sampled-compiled_cuda\\summary.json",
+      "summary_sha256": "9bbd3d02789c1ef2f5a81401e4735dd75bbeaf2dcaed34da78c16201cdd58d25"
+    },
+    {
+      "arm": "numpy_cpu",
+      "case": "boost_sampled",
+      "cold_api_wall_s": 1.5321657999884337,
+      "cold_fit_wall_s": 1.4669300999958068,
+      "hot_api_wall_s": [
+        1.542525100056082,
+        1.540377900004387,
+        4.476462099933997
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        1.479755200096406,
+        1.4792064999928698,
+        4.414159100037068
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 14.775601700064726,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\13-boost_sampled-numpy_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\13-boost_sampled-numpy_cpu\\summary.json",
+      "summary_sha256": "2691d90c858ce50365fbfa5d1672a89ce97592f9e4ee9f7be47054683fa391f3"
+    },
+    {
+      "arm": "eager_cpu",
+      "case": "boost_sampled",
+      "cold_api_wall_s": 3.6897002001060173,
+      "cold_fit_wall_s": 3.6182680000783876,
+      "hot_api_wall_s": [
+        3.6876707000192255,
+        4.003062600037083,
+        13.094109499943443
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        3.6275461999466643,
+        3.943959799944423,
+        13.03123650001362
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 31.44896599999629,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\14-boost_sampled-eager_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\14-boost_sampled-eager_cpu\\summary.json",
+      "summary_sha256": "65b6cf1bc22d07ea7b07127a3a6d0bbbff8b8dd237a5f6afdc934ae38384f847"
+    },
+    {
+      "arm": "eager_cuda",
+      "case": "boost_single",
+      "cold_api_wall_s": 32.719729500007816,
+      "cold_fit_wall_s": 32.653283399995416,
+      "hot_api_wall_s": [
+        34.21352079999633,
+        30.038312799995765,
+        39.34441490005702
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        34.121380000025965,
+        29.971501299994998,
+        39.27678830001969
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 149.66298689995892,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\15-boost_single-eager_cuda.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\15-boost_single-eager_cuda\\summary.json",
+      "summary_sha256": "3654afa501eafaaf6da024b4813e5014096adf6612b8b4759568877c78c8b180"
+    },
+    {
+      "arm": "compiled_cuda",
+      "case": "boost_single",
+      "cold_api_wall_s": 121.60331499995664,
+      "cold_fit_wall_s": 121.53786529996432,
+      "hot_api_wall_s": [
+        5.949983399943449,
+        5.202843499951996,
+        5.185936699970625
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        5.244264199980535,
+        5.132212599972263,
+        5.116919600055553
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 221.63127420004457,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\16-boost_single-compiled_cuda.log",
+      "log_sha256": "9e4571e2953e67c189849f2f6c9cfe690edea59fbeb79a88462888f994d98478",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\16-boost_single-compiled_cuda\\summary.json",
+      "summary_sha256": "ded1c71c4f09b3df51c566d6addfc3c4e770cc02effdb4a011d9fd33dde03036"
+    },
+    {
+      "arm": "numpy_cpu",
+      "case": "boost_single",
+      "cold_api_wall_s": 8.796539300004952,
+      "cold_fit_wall_s": 8.737242699950002,
+      "hot_api_wall_s": [
+        8.579862899961881,
+        7.93407620000653,
+        7.964397400035523
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        8.51794599997811,
+        7.869690399966203,
+        7.902483399957418
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 43.252811999991536,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\17-boost_single-numpy_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\17-boost_single-numpy_cpu\\summary.json",
+      "summary_sha256": "1b82479b1c483899725375c51a6e2b8d54c20463427f5f4edcaa3a98ede140ba"
+    },
+    {
+      "arm": "eager_cpu",
+      "case": "boost_single",
+      "cold_api_wall_s": 27.56408569996711,
+      "cold_fit_wall_s": 27.507163700065576,
+      "hot_api_wall_s": [
+        26.508932000026107,
+        24.342868399922736,
+        24.776368099963292
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        26.445605300017633,
+        24.27868000010494,
+        24.717823899933137
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 114.64818280003965,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\18-boost_single-eager_cpu.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\18-boost_single-eager_cpu\\summary.json",
+      "summary_sha256": "ec96347bfee3d9040afdf78b45d96b06b31c926251938531f472c570d8a9c65e"
+    },
+    {
+      "arm": "compiled_cpu",
+      "case": "boost_single",
+      "cold_api_wall_s": 444.4162484999979,
+      "cold_fit_wall_s": 444.35537829995155,
+      "hot_api_wall_s": [
+        21.35047529998701,
+        31.884337299969047,
+        30.482690899982117
+      ],
+      "hot_classifications": [
+        "hot",
+        "hot",
+        "hot"
+      ],
+      "hot_fit_wall_s": [
+        21.27375190006569,
+        31.787384600029327,
+        30.372470200061798
+      ],
+      "hot_recompilation_count": 0,
+      "kernel_gate_pass": true,
+      "launcher_error": null,
+      "launcher_wall_s": 702.8034141999669,
+      "log": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\19-boost_single-compiled_cpu.log",
+      "log_sha256": "aaa1ab4b55ec74a442880328ad7f0baa5ca1ba7228e9146cdb23fdafb8897181",
+      "returncode": 2,
+      "status": "gate_failed",
+      "summary": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\runs\\19-boost_single-compiled_cpu\\summary.json",
+      "summary_sha256": "1b2803a004e651234fcf30c9f8dee9e9b9d7a428264802ae2f26eeb0bf3b3362"
+    }
+  ]
+}

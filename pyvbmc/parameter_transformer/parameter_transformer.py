@@ -19,20 +19,32 @@ class ParameterTransformer:
     lb_orig : np.ndarray, optional
         The lower bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
         of strict lower and upper bounds for each parameter, given in the
-        original space. By default `None`.
+        original space. Each parameter is bounded on both sides or on
+        neither. By default `None`.
     ub_orig : np.ndarray, optional
         The upper bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
         of strict lower and upper bounds for each parameter, given in the
-        original space. By default `None`.
+        original space. Each parameter is bounded on both sides or on
+        neither. By default `None`.
     plb_orig : np.ndarray, optional
-        The plausible lower bounds such that ``lb_orig < plb_orig < pub_orig <
-        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
-        for each parameter, given in the original space. By default `None`.
+        The plausible lower bounds such that ``lb_orig <= plb_orig < pub_orig
+        <= ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible"
+        range for each parameter, given in the original space. By default
+        `None`, which takes the hard bounds.
     pub_orig : np.ndarray, optional
-        The plausible upper bounds such that ``lb_orig < plb_orig < pub_orig <
-        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
-        for each parameter, given in the original space. By default `None`.
-    bounded_transform_type : str, optional
+        The plausible upper bounds such that ``lb_orig <= plb_orig < pub_orig
+        <= ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible"
+        range for each parameter, given in the original space. By default
+        `None`, which takes the hard bounds.
+    scale : np.ndarray, optional
+        Per-coordinate scale applied after transforming and rotating the
+        parameters, of shape ``(D,)`` and finite and positive throughout.
+        By default `None`.
+    rotation_matrix : np.ndarray, optional
+        A finite orthogonal matrix of shape ``(D, D)`` applied after the
+        coordinate-wise transformation. Reflections are accepted. By default
+        `None`.
+    transform_type : str, optional
         A string indicating the type of transform for bounded variables: one of
         ["logit", ("norminv" || "probit"), "student4"]. Default "logit".
     """
@@ -48,8 +60,45 @@ class ParameterTransformer:
         rotation_matrix: np.ndarray = None,
         transform_type="logit",
     ):
-        self.scale = scale
-        self.R_mat = rotation_matrix
+        if rotation_matrix is not None:
+            rotation_matrix = np.asarray(rotation_matrix)
+            if rotation_matrix.shape != (D, D):
+                raise ValueError(
+                    f"`rotation_matrix` must have shape ({D}, {D})."
+                )
+            if not np.isrealobj(rotation_matrix):
+                raise ValueError("`rotation_matrix` must be real-valued.")
+            if not np.all(np.isfinite(rotation_matrix)):
+                raise ValueError(
+                    "`rotation_matrix` must contain finite values."
+                )
+            orthogonality_tolerance = 100 * np.finfo(float).eps * max(1, D)
+            if not np.allclose(
+                rotation_matrix.T @ rotation_matrix,
+                np.eye(D),
+                rtol=orthogonality_tolerance,
+                atol=orthogonality_tolerance,
+            ):
+                raise ValueError("`rotation_matrix` must be orthogonal.")
+
+        if scale is not None:
+            scale = np.asarray(scale)
+            if scale.shape != (D,):
+                raise ValueError(f"`scale` must have shape ({D},).")
+            if not np.isrealobj(scale):
+                raise ValueError("`scale` must be real-valued.")
+            if not np.all(np.isfinite(scale)):
+                raise ValueError("`scale` must contain finite values.")
+            if not np.all(scale > 0):
+                raise ValueError("`scale` must contain positive values.")
+
+        # The transform is fixed at construction, so it keeps copies of
+        # the arrays it is given: a later change of one of them by the
+        # caller must not move it.
+        self.scale = None if scale is None else np.copy(scale)
+        self.R_mat = (
+            None if rotation_matrix is None else np.copy(rotation_matrix)
+        )
 
         # Empty LB and UB are Infs
         if lb_orig is None:
@@ -63,7 +112,7 @@ class ParameterTransformer:
         if pub_orig is None:
             pub_orig = np.copy(ub_orig)
 
-        # Convert scalar inputs to row vectors (I do not think it is necessary)
+        # Check that LB <= PLB < PUB <= UB in every variable.
         if not (
             np.all(lb_orig <= plb_orig)
             and np.all(plb_orig < pub_orig)
@@ -74,30 +123,25 @@ class ParameterTransformer:
                 for all variables."""
             )
 
-        # Transform to log coordinates
-        self.lb_orig = lb_orig
-        self.ub_orig = ub_orig
+        # A variable bounded on one side only would need a log transform,
+        # which this class does not provide: it would carry such a variable
+        # through the identity, and the inverse would then return points
+        # outside the declared support.
+        half_bounded = np.isfinite(lb_orig) != np.isfinite(ub_orig)
+        if np.any(half_bounded):
+            dimensions = np.flatnonzero(np.ravel(half_bounded)).tolist()
+            raise ValueError(
+                "Variables bounded on one side only are not supported; "
+                "give both bounds or neither. Offending dimensions: "
+                f"{dimensions}."
+            )
+
+        # Keep copies of the hard bounds, in the original space.
+        self.lb_orig = np.copy(lb_orig)
+        self.ub_orig = np.copy(ub_orig)
 
         # Select and validate the type of transform:
-        transform_types = {
-            "logit": 3,
-            "norminv": 12,
-            "probit": 12,
-            "student4": 13,
-        }
-        if type(transform_type) == str:
-            try:
-                bounded_type = transform_types[transform_type]
-            except KeyError as exc:
-                raise ValueError(
-                    f"Unrecognized bounded transform {transform_type}."
-                ) from exc
-        else:
-            if transform_type not in transform_types.values():
-                raise ValueError(
-                    f"Unrecognized bounded transform {transform_type}."
-                )
-            bounded_type = transform_type
+        bounded_type = _bounded_transform_type(transform_type)
 
         # Setup bounded transforms:
         self.bounded_types = [bounded_type]
@@ -122,8 +166,18 @@ class ParameterTransformer:
             np.all(plb_orig == self.lb_orig)
             and np.all(pub_orig == self.ub_orig)
         ):
-            plb_tran = self.__call__(plb_orig)
-            pub_tran = self.__call__(pub_orig)
+            # The centering is applied to the coordinates before they are
+            # rotated and rescaled, so it is derived from them: the
+            # rotation and the rescaling are held back for the two calls
+            # that measure the plausible box.
+            rotation, rescaling = self.R_mat, self.scale
+            self.R_mat = None
+            self.scale = None
+            try:
+                plb_tran = self.__call__(plb_orig)
+                pub_tran = self.__call__(pub_orig)
+            finally:
+                self.R_mat, self.scale = rotation, rescaling
 
             # Center in transformed space
             for i in range(D):
@@ -221,9 +275,9 @@ class ParameterTransformer:
     )
     def log_abs_det_jacobian(self, u: np.ndarray):
         r"""
-        ``log_abs_det_jacobian(u)`` returns the log absolute value of the
-        determinant of the Jacobian of the parameter transformation evaluated
-        at ``u``, that is :math: `log \|D \du(g^-1(u))\|`.
+        The log absolute determinant of the Jacobian of the inverse
+        transform at ``u``, :math:`\log |\det J_{g^{-1}}(u)|`, where
+        :math:`g` maps the original space to the transformed space.
 
         Parameters
         ----------
@@ -312,15 +366,20 @@ class ParameterTransformer:
                 def bounded_jacobian(self, u, mask):
                     j1 = np.log(self.ub_orig[:, mask] - self.lb_orig[:, mask])
                     y = _uncenter(u[:, mask], self.mu[mask], self.delta[mask])
-                    z = -np.log1p(np.exp(-y))
-                    j2 = -y + 2 * z
+                    tail = y < -np.log(np.finfo(float).max)
+                    j2 = np.empty_like(y)
+                    ordinary = ~tail
+                    z = -np.log1p(np.exp(-y[ordinary]))
+                    j2[ordinary] = -y[ordinary] + 2 * z
+                    j2[tail] = y[tail] - 2 * np.log1p(np.exp(y[tail]))
                     j3 = np.log(self.delta[mask])
                     return j1 + j2 + j3
 
                 self._bounded_transforms[t]["jacobian"] = bounded_jacobian
 
             elif t == 12:
-                # probit: inverse normal CDF (probit) transform (default)
+                # probit: inverse normal CDF transform (the default of
+                # VBMC's option bounded_transform; the class defaults to logit)
 
                 def bounded_transform(self, x, mask):
                     return _center(
@@ -402,20 +461,51 @@ class ParameterTransformer:
             else:
                 raise NotImplementedError
 
+    def __getstate__(self):
+        """The state to pickle or copy: everything but the bounded transforms.
+
+        They are functions that ``_set_bounded_transforms`` builds from
+        ``bounded_types``. A pickle would hold them by value, as bytecode of
+        the Python version that writes the file, and calling such a function
+        under another Python version brings the interpreter down.
+        """
+        state = self.__dict__.copy()
+        state.pop("_bounded_transforms", None)
+        return state
+
+    def __setstate__(self, state):
+        """Restore the state and build the bounded transforms afresh.
+
+        A file written by a version that stored the functions still holds
+        them; they are dropped here, never called, so such a file can be
+        used under any Python version too.
+        """
+        state = dict(state)
+        state.pop("_bounded_transforms", None)
+        self.__dict__.update(state)
+        self._bounded_transforms = {}
+        self._set_bounded_transforms()
+
     def __eq__(self, other):
+        if not isinstance(other, ParameterTransformer):
+            return False
+
+        def equal_optional_arrays(first, second):
+            if first is None or second is None:
+                return first is second
+            return np.array_equal(first, second)
+
         return (
-            np.all(self.scale == self.scale)
-            and np.all(self.R_mat == other.R_mat)
-            and np.all(self.lb_orig == other.lb_orig)
-            and np.all(self.ub_orig == other.ub_orig)
-            and np.all(self.bounded_types == other.bounded_types)
-            and np.all(
-                self._bounded_transforms.keys()
-                == other._bounded_transforms.keys()
-            )
-            and np.all(self.type == other.type)
-            and np.all(self.mu == other.mu)
-            and np.all(self.delta == other.delta)
+            equal_optional_arrays(self.scale, other.scale)
+            and equal_optional_arrays(self.R_mat, other.R_mat)
+            and np.array_equal(self.lb_orig, other.lb_orig)
+            and np.array_equal(self.ub_orig, other.ub_orig)
+            and self.bounded_types == other.bounded_types
+            and self._bounded_transforms.keys()
+            == other._bounded_transforms.keys()
+            and np.array_equal(self.type, other.type)
+            and np.array_equal(self.mu, other.mu)
+            and np.array_equal(self.delta, other.delta)
         )
 
     def __str__(self):
@@ -471,6 +561,39 @@ bounded transform type(s) = {transforms}""",
             expand=expand,
             arr_size_thresh=arr_size_thresh,
         )
+
+
+#: The bounded transforms by name, and the number of each.
+_BOUNDED_TRANSFORM_TYPES = {
+    "logit": 3,
+    "norminv": 12,
+    "probit": 12,
+    "student4": 13,
+}
+
+
+def _bounded_transform_type(transform_type):
+    """
+    The number of the bounded transform that ``transform_type`` names.
+
+    A string (of the type ``str`` itself) is read as the name of a
+    transform, and any other value has to be one of the numbers.
+
+    Raises
+    ------
+    ValueError
+        When the value names no transform.
+    """
+    if type(transform_type) == str:
+        try:
+            return _BOUNDED_TRANSFORM_TYPES[transform_type]
+        except KeyError as exc:
+            raise ValueError(
+                f"Unrecognized bounded transform {transform_type}."
+            ) from exc
+    if transform_type not in _BOUNDED_TRANSFORM_TYPES.values():
+        raise ValueError(f"Unrecognized bounded transform {transform_type}.")
+    return transform_type
 
 
 def _to_unit_interval(x, lb, ub, safe=True):

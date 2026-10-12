@@ -1,7 +1,29 @@
+include CHANGELOG.md
+include pyvbmc/testing/entropy/*.npz
+include pyvbmc/testing/entropy/FIXTURES.md
 include pyvbmc/testing/variational_posterior/*.txt
-include pyvbmc/testing/variational_posterior/*.mat
+include pyvbmc/testing/variational_posterior/*.npz
+include pyvbmc/testing/variational_posterior/FIXTURES.md
 include pyvbmc/testing/variational_posterior/test_vp_save_static.pkl
+include pyvbmc/testing/variational_posterior/test_vp_save_bounded_py311.pkl
+include pyvbmc/testing/variational_posterior/test_vp_save_bounded_py312.pkl
 include pyvbmc/testing/vbmc/*.txt
+include pyvbmc/testing/whitening/*.txt
 include pyvbmc/testing/vbmc/compare_MATLAB/*
 include pyvbmc/testing/vbmc/test_vbmc_save_static.pkl
+include pyvbmc/testing/oracles/fixtures/*.npz
+include pyvbmc/testing/oracles/fixtures/*.json
+include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.npz
+include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.json
+recursive-include pyvbmc/testing/calibration *.py
+include pyvbmc/testing/svbmc/fixtures/*.npz
+include pyvbmc/testing/svbmc/fixtures/*.json
+include pyvbmc/testing/svbmc/fixtures/saved/*.pkl
+include pyvbmc/testing/svbmc/fixtures/saved/*.json
+include pyvbmc/testing/svbmc/FIXTURES.md
+include pyvbmc/svbmc/LICENSE.txt
 prune docsrc
+# setuptools_scm puts every tracked file in the sdist; the development
+# records and the paper transcriptions stay out of it.
+prune dev
+prune papers

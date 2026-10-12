@@ -1,0 +1,127 @@
+{
+  "authorization": "User decision of 2026-09-18 (evening, UTC) to proceed to Stage 2 of the F2 amendment after the Stage 1 report and its two null controls, accepting the floor-based reading of the screening gate.",
+  "created_utc": "2026-09-18T21:24:29.637696+00:00",
+  "design": {
+    "arms": {
+      "baseline": {},
+      "treatment": {
+        "active_importance_sampling_qmc": true,
+        "active_importance_sampling_qmc_samples": 96
+      }
+    },
+    "fits": 160,
+    "outputs": {
+      "baseline": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\golden\\production_noisy_20260918",
+      "treatment": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_stage2_treatment"
+    },
+    "pairs": 80,
+    "seeds": {
+      "logreg_D5_noise3_production": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "multisensory_s1_D6_noise1.3_production": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "rosenbrock_D2_noise1_production": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "rosenbrock_D2_noise3_production": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "student_D8_noise3_production": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "timing_D5_noise2.2_production": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    }
+  },
+  "kind": "f2_stage2_launch_clearance",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_stage2_manifest.json",
+  "manifest_sha256": "10e03ced979d84922c0e3297a805a4075b752a9c6ccb835aa516a8f6c988cd0d",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "a1dfa9659d17a69421699d6c95fac0516dc851fdc130b727b27b86b5e585f742",
+  "relaunch": {
+    "created_utc": "2026-09-18T21:56:54.689591+00:00",
+    "first_batch_manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_stage2_manifest_first_batch_2271f25.json",
+    "manifest_sha256": "4171687378c90f48b7007ce405614f8a3e8d961877f1be972520be1646a26814",
+    "reason": "The first batch's treatment fits failed at start-up because the launcher embedded the arm's options as a JSON object in Python source; twelve baseline fits completed at commit 2271f25 and are reused. The fix changes only the launcher script; the numerical sources are identical, and every sidecar records its own commit.",
+    "source_commit": "f1e6ff3ddd90b958a718e109cf6231fc42c4e33e"
+  },
+  "schema_version": 1,
+  "source_commit": "2271f258bd9b5037b5315e6bcbb19cae54c035d1"
+}

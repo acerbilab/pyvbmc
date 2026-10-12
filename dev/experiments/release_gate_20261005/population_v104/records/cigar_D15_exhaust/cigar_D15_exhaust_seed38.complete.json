@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "cigar_D15_exhaust/cigar_D15_exhaust_seed38",
+  "case": "cigar_D15_exhaust/cigar_D15_exhaust_seed38 cigar_D15_exhaust 38",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "b196402b4e72dd0b17cf369becf128228402dc8f",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "0bb8b8f5b48c05eafaaa790bd1432a5ea681e25d",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "3b1300a9eeda2c05bb024de1b4d905a7c4716beb",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$PYVBMC_SOURCE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$PYVBMC_SOURCE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          32,
+          96
+        ],
+        "physical_cores": [
+          "1:0"
+        ],
+        "core_threads": {
+          "1:0": [
+            32,
+            96
+          ]
+        },
+        "job_cpuset": [
+          32,
+          96
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2359448",
+        "array_job_id": "2359174",
+        "array_task_id": "1539",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-05T17:53:43+0000",
+  "finished": "2026-10-05T19:04:02+0000",
+  "elapsed_seconds": 4218.663411140442,
+  "artifacts": {
+    "cigar_D15_exhaust/cigar_D15_exhaust_seed38.npz": {
+      "sha256": "b32a23f7cbb32151f6ef8661ea1cdbc5e15d541eb599f861cc0c6e45c20973f1",
+      "bytes": 729473
+    },
+    "cigar_D15_exhaust/cigar_D15_exhaust_seed38.json": {
+      "sha256": "b01c71b1fe03562fa9350e2c8fd06ecf9dbb0edaebc2c3d25b7fb18e6ce5883a",
+      "bytes": 11504
+    },
+    "cigar_D15_exhaust/cigar_D15_exhaust_seed38.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/cigar_D15_exhaust/cigar_D15_exhaust_seed38.boost.pkl": {
+      "sha256": "78a404ca2c96c76e18639dd3c76bedd714d54606667803e5944779e7cfa17e3e",
+      "bytes": 105775
+    },
+    "boost/cigar_D15_exhaust/cigar_D15_exhaust_seed38.boost.json": {
+      "sha256": "b0e9d2f2aacd46caf9ddf0964522d4af469eaf04058885fc28865f5f16543b02",
+      "bytes": 31418
+    }
+  },
+  "harness": "population_run",
+  "label": "cigar_D15_exhaust",
+  "seed": 38,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

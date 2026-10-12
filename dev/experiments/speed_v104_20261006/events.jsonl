@@ -1,0 +1,218 @@
+{"kind": "start", "hours": 6.9, "groups": 70, "t": 1791232764.6447577}
+{"kind": "probe", "group": 0, "seconds": 0.9327524000545964, "t": 1791232765.593141}
+{"kind": "case", "arm": "v104", "label": "normal_D5", "seed": 0, "exit": 0, "seconds": 66.70965933799744, "wall_s": null, "group": 0, "t": 1791232832.3048437}
+{"kind": "case", "arm": "release", "label": "normal_D5", "seed": 0, "exit": 0, "seconds": 23.264939069747925, "wall_s": null, "group": 0, "t": 1791232855.5712743}
+{"kind": "probe", "group": 1, "seconds": 0.9779199999757111, "t": 1791232856.5518854}
+{"kind": "case", "arm": "release", "label": "corr_D5", "seed": 0, "exit": 0, "seconds": 28.63738250732422, "wall_s": null, "group": 1, "t": 1791232885.1902766}
+{"kind": "case", "arm": "v104", "label": "corr_D5", "seed": 0, "exit": 0, "seconds": 83.28980422019958, "wall_s": null, "group": 1, "t": 1791232968.481082}
+{"kind": "probe", "group": 2, "seconds": 0.9083275999873877, "t": 1791232969.3928597}
+{"kind": "case", "arm": "v104", "label": "halfnormal_D2", "seed": 0, "exit": 0, "seconds": 37.716655015945435, "wall_s": null, "group": 2, "t": 1791233007.1095147}
+{"kind": "case", "arm": "release", "label": "halfnormal_D2", "seed": 0, "exit": 0, "seconds": 11.991204977035522, "wall_s": null, "group": 2, "t": 1791233019.1027195}
+{"kind": "probe", "group": 3, "seconds": 0.8816351999994367, "t": 1791233019.986242}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2", "seed": 0, "exit": 0, "seconds": 13.464907884597778, "wall_s": null, "group": 3, "t": 1791233033.4531503}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2", "seed": 0, "exit": 0, "seconds": 43.763575315475464, "wall_s": null, "group": 3, "t": 1791233077.2167256}
+{"kind": "probe", "group": 4, "seconds": 0.8838536000112072, "t": 1791233078.1032832}
+{"kind": "case", "arm": "v104", "label": "banana_D2", "seed": 0, "exit": 0, "seconds": 41.183627128601074, "wall_s": null, "group": 4, "t": 1791233119.2899113}
+{"kind": "case", "arm": "release", "label": "banana_D2", "seed": 0, "exit": 0, "seconds": 13.687352657318115, "wall_s": null, "group": 4, "t": 1791233132.9782646}
+{"kind": "probe", "group": 5, "seconds": 0.8201925999019295, "t": 1791233133.8008642}
+{"kind": "case", "arm": "release", "label": "banana_D6", "seed": 0, "exit": 0, "seconds": 24.818620920181274, "wall_s": null, "group": 5, "t": 1791233158.6204865}
+{"kind": "case", "arm": "v104", "label": "banana_D6", "seed": 0, "exit": 0, "seconds": 94.01550197601318, "wall_s": null, "group": 5, "t": 1791233252.6369867}
+{"kind": "probe", "group": 6, "seconds": 0.7782222999958321, "t": 1791233253.4179542}
+{"kind": "case", "arm": "v104", "label": "banana_D10", "seed": 0, "exit": 0, "seconds": 176.80937123298645, "wall_s": null, "group": 6, "t": 1791233430.228335}
+{"kind": "case", "arm": "release", "label": "banana_D10", "seed": 0, "exit": 0, "seconds": 43.04741668701172, "wall_s": null, "group": 6, "t": 1791233473.2767525}
+{"kind": "probe", "group": 7, "seconds": 0.7750738000031561, "t": 1791233474.0535529}
+{"kind": "case", "arm": "release", "label": "cigar_D4", "seed": 0, "exit": 0, "seconds": 34.12958884239197, "wall_s": null, "group": 7, "t": 1791233508.1841419}
+{"kind": "case", "arm": "v104", "label": "cigar_D4", "seed": 0, "exit": 0, "seconds": 169.5670244693756, "wall_s": null, "group": 7, "t": 1791233677.7521672}
+{"kind": "probe", "group": 8, "seconds": 0.8117582999402657, "t": 1791233678.566593}
+{"kind": "case", "arm": "v104", "label": "lumpy_D4", "seed": 0, "exit": 0, "seconds": 62.23523688316345, "wall_s": null, "group": 8, "t": 1791233740.8018298}
+{"kind": "case", "arm": "release", "label": "lumpy_D4", "seed": 0, "exit": 0, "seconds": 21.305949449539185, "wall_s": null, "group": 8, "t": 1791233762.1077793}
+{"kind": "probe", "group": 9, "seconds": 0.8197662000311539, "t": 1791233762.930011}
+{"kind": "case", "arm": "release", "label": "lumpy_D10", "seed": 0, "exit": 0, "seconds": 181.23343896865845, "wall_s": null, "group": 9, "t": 1791233944.164451}
+{"kind": "case", "arm": "v104", "label": "lumpy_D10", "seed": 0, "exit": 0, "seconds": 453.1543824672699, "wall_s": null, "group": 9, "t": 1791234397.3203373}
+{"kind": "probe", "group": 10, "seconds": 0.8207908000331372, "t": 1791234398.144395}
+{"kind": "case", "arm": "v104", "label": "student_D4", "seed": 0, "exit": 0, "seconds": 74.25528144836426, "wall_s": null, "group": 10, "t": 1791234472.3996766}
+{"kind": "case", "arm": "release", "label": "student_D4", "seed": 0, "exit": 0, "seconds": 34.85716891288757, "wall_s": null, "group": 10, "t": 1791234507.2578554}
+{"kind": "probe", "group": 11, "seconds": 0.8259210999822244, "t": 1791234508.0865703}
+{"kind": "case", "arm": "release", "label": "logreg_D5", "seed": 0, "exit": 0, "seconds": 32.96359920501709, "wall_s": null, "group": 11, "t": 1791234541.0528312}
+{"kind": "case", "arm": "v104", "label": "logreg_D5", "seed": 0, "exit": 0, "seconds": 160.07022857666016, "wall_s": null, "group": 11, "t": 1791234701.1230597}
+{"kind": "probe", "group": 12, "seconds": 0.8329624000471085, "t": 1791234701.959592}
+{"kind": "case", "arm": "v104", "label": "cigar_D8", "seed": 0, "exit": 0, "seconds": 264.8980288505554, "wall_s": null, "group": 12, "t": 1791234966.857621}
+{"kind": "case", "arm": "release", "label": "cigar_D8", "seed": 0, "exit": 0, "seconds": 61.08445072174072, "wall_s": null, "group": 12, "t": 1791235027.9443364}
+{"kind": "probe", "group": 13, "seconds": 0.8717545000836253, "t": 1791235028.8184285}
+{"kind": "case", "arm": "release", "label": "student_D8", "seed": 0, "exit": 0, "seconds": 70.39501810073853, "wall_s": null, "group": 13, "t": 1791235099.2154512}
+{"kind": "case", "arm": "v104", "label": "student_D8", "seed": 0, "exit": 0, "seconds": 228.12406706809998, "wall_s": null, "group": 13, "t": 1791235327.3405187}
+{"kind": "probe", "group": 14, "seconds": 0.8431955999694765, "t": 1791235328.1859229}
+{"kind": "case", "arm": "v104", "label": "multisensory_s1_D6", "seed": 0, "exit": 0, "seconds": 208.40297484397888, "wall_s": null, "group": 14, "t": 1791235536.5909004}
+{"kind": "case", "arm": "release", "label": "multisensory_s1_D6", "seed": 0, "exit": 0, "seconds": 59.149216413497925, "wall_s": null, "group": 14, "t": 1791235595.7421165}
+{"kind": "probe", "group": 15, "seconds": 0.8093411999288946, "t": 1791235596.5566094}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2_noise1_production", "seed": 0, "exit": 0, "seconds": 139.45446300506592, "wall_s": null, "group": 15, "t": 1791235736.0110724}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2_noise1_production", "seed": 0, "exit": 0, "seconds": 61.7058207988739, "wall_s": null, "group": 15, "t": 1791235797.7191575}
+{"kind": "case", "arm": "arm3", "label": "rosenbrock_D2_noise1_production", "seed": 0, "exit": 0, "seconds": 66.21044564247131, "wall_s": null, "group": 15, "t": 1791235863.929603}
+{"kind": "probe", "group": 16, "seconds": 0.9149215000215918, "t": 1791235864.8483002}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2_noise3_production", "seed": 0, "exit": 0, "seconds": 92.041024684906, "wall_s": null, "group": 16, "t": 1791235956.8908334}
+{"kind": "case", "arm": "arm3", "label": "rosenbrock_D2_noise3_production", "seed": 0, "exit": 0, "seconds": 72.50706839561462, "wall_s": null, "group": 16, "t": 1791236029.3999076}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2_noise3_production", "seed": 0, "exit": 0, "seconds": 215.17546916007996, "wall_s": null, "group": 16, "t": 1791236244.5753767}
+{"kind": "probe", "group": 17, "seconds": 0.8259545000037178, "t": 1791236245.4051304}
+{"kind": "case", "arm": "arm3", "label": "logreg_D5_noise3_production", "seed": 0, "exit": 0, "seconds": 173.78320574760437, "wall_s": null, "group": 17, "t": 1791236419.1893432}
+{"kind": "case", "arm": "v104", "label": "logreg_D5_noise3_production", "seed": 0, "exit": 0, "seconds": 401.71253275871277, "wall_s": null, "group": 17, "t": 1791236820.901876}
+{"kind": "case", "arm": "release", "label": "logreg_D5_noise3_production", "seed": 0, "exit": 0, "seconds": 171.9946665763855, "wall_s": null, "group": 17, "t": 1791236992.8977478}
+{"kind": "probe", "group": 18, "seconds": 0.8466776999412104, "t": 1791236993.7474124}
+{"kind": "case", "arm": "v104", "label": "student_D8_noise3_production", "seed": 0, "exit": 0, "seconds": 560.1610264778137, "wall_s": null, "group": 18, "t": 1791237553.908439}
+{"kind": "case", "arm": "release", "label": "student_D8_noise3_production", "seed": 0, "exit": 0, "seconds": 248.36097049713135, "wall_s": null, "group": 18, "t": 1791237802.2714248}
+{"kind": "case", "arm": "arm3", "label": "student_D8_noise3_production", "seed": 0, "exit": 0, "seconds": 281.9545567035675, "wall_s": null, "group": 18, "t": 1791238084.2269804}
+{"kind": "probe", "group": 19, "seconds": 0.8521205999422818, "t": 1791238085.0814986}
+{"kind": "case", "arm": "release", "label": "lumpy_D10_noise3_production", "seed": 0, "exit": 0, "seconds": 445.397168636322, "wall_s": null, "group": 19, "t": 1791238530.4796634}
+{"kind": "case", "arm": "arm3", "label": "lumpy_D10_noise3_production", "seed": 0, "exit": 0, "seconds": 384.25012493133545, "wall_s": null, "group": 19, "t": 1791238914.730789}
+{"kind": "case", "arm": "v104", "label": "lumpy_D10_noise3_production", "seed": 0, "exit": 0, "seconds": 807.4537763595581, "wall_s": null, "group": 19, "t": 1791239722.185566}
+{"kind": "probe", "group": 20, "seconds": 0.8451395001029596, "t": 1791239723.0353732}
+{"kind": "case", "arm": "arm3", "label": "timing_D5_noise2.2_production", "seed": 0, "exit": 0, "seconds": 160.9078085422516, "wall_s": null, "group": 20, "t": 1791239883.9452477}
+{"kind": "case", "arm": "v104", "label": "timing_D5_noise2.2_production", "seed": 0, "exit": 0, "seconds": 292.3903570175171, "wall_s": null, "group": 20, "t": 1791240176.3356047}
+{"kind": "case", "arm": "release", "label": "timing_D5_noise2.2_production", "seed": 0, "exit": 0, "seconds": 140.30892610549927, "wall_s": null, "group": 20, "t": 1791240316.6465316}
+{"kind": "probe", "group": 21, "seconds": 0.8844086000462994, "t": 1791240317.5337014}
+{"kind": "case", "arm": "v104", "label": "multisensory_s1_D6_noise1.3_production", "seed": 0, "exit": 0, "seconds": 393.59944772720337, "wall_s": null, "group": 21, "t": 1791240711.1331491}
+{"kind": "case", "arm": "release", "label": "multisensory_s1_D6_noise1.3_production", "seed": 0, "exit": 0, "seconds": 145.96438908576965, "wall_s": null, "group": 21, "t": 1791240857.098806}
+{"kind": "case", "arm": "arm3", "label": "multisensory_s1_D6_noise1.3_production", "seed": 0, "exit": 0, "seconds": 170.00875306129456, "wall_s": null, "group": 21, "t": 1791241027.108567}
+{"kind": "probe", "group": 22, "seconds": 0.8673809000756592, "t": 1791241027.9806876}
+{"kind": "case", "arm": "release", "label": "multisensory_s2_D6_noise1.3_production", "seed": 0, "exit": 0, "seconds": 138.09911632537842, "wall_s": null, "group": 22, "t": 1791241166.0818043}
+{"kind": "case", "arm": "arm3", "label": "multisensory_s2_D6_noise1.3_production", "seed": 0, "exit": 0, "seconds": 161.90352535247803, "wall_s": null, "group": 22, "t": 1791241327.98633}
+{"kind": "case", "arm": "v104", "label": "multisensory_s2_D6_noise1.3_production", "seed": 0, "exit": 0, "seconds": 323.1136200428009, "wall_s": null, "group": 22, "t": 1791241651.1009636}
+{"kind": "probe", "group": 23, "seconds": 0.7970132000045851, "t": 1791241651.901958}
+{"kind": "case", "arm": "release", "label": "cigar_D15_exhaust", "seed": 0, "exit": 0, "seconds": 598.228892326355, "wall_s": null, "group": 23, "t": 1791242250.1318557}
+{"kind": "case", "arm": "v104", "label": "cigar_D15_exhaust", "seed": 0, "exit": 0, "seconds": 2058.342819213867, "wall_s": null, "group": 23, "t": 1791244308.4756727}
+{"kind": "probe", "group": 24, "seconds": 0.8374074000166729, "t": 1791244309.3186667}
+{"kind": "case", "arm": "v104", "label": "normal_D5", "seed": 1, "exit": 0, "seconds": 71.29359340667725, "wall_s": null, "group": 24, "t": 1791244380.6142645}
+{"kind": "case", "arm": "release", "label": "normal_D5", "seed": 1, "exit": 0, "seconds": 22.93634057044983, "wall_s": null, "group": 24, "t": 1791244403.5526013}
+{"kind": "probe", "group": 25, "seconds": 0.7967082998948172, "t": 1791244404.3537362}
+{"kind": "case", "arm": "release", "label": "corr_D5", "seed": 1, "exit": 0, "seconds": 29.61458730697632, "wall_s": null, "group": 25, "t": 1791244433.9693236}
+{"kind": "case", "arm": "v104", "label": "corr_D5", "seed": 1, "exit": 0, "seconds": 84.67157697677612, "wall_s": null, "group": 25, "t": 1791244518.6434646}
+{"kind": "probe", "group": 26, "seconds": 0.8421041999245062, "t": 1791244519.4901595}
+{"kind": "case", "arm": "v104", "label": "halfnormal_D2", "seed": 1, "exit": 0, "seconds": 37.03961634635925, "wall_s": null, "group": 26, "t": 1791244556.5297759}
+{"kind": "case", "arm": "release", "label": "halfnormal_D2", "seed": 1, "exit": 0, "seconds": 13.884581565856934, "wall_s": null, "group": 26, "t": 1791244570.4168417}
+{"kind": "probe", "group": 27, "seconds": 0.8933071999344975, "t": 1791244571.3133032}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2", "seed": 1, "exit": 0, "seconds": 18.77316665649414, "wall_s": null, "group": 27, "t": 1791244590.0874717}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2", "seed": 1, "exit": 0, "seconds": 47.579018115997314, "wall_s": null, "group": 27, "t": 1791244637.667976}
+{"kind": "probe", "group": 28, "seconds": 0.8749188000801951, "t": 1791244638.5469813}
+{"kind": "case", "arm": "v104", "label": "banana_D2", "seed": 1, "exit": 0, "seconds": 44.81495761871338, "wall_s": null, "group": 28, "t": 1791244683.3634067}
+{"kind": "case", "arm": "release", "label": "banana_D2", "seed": 1, "exit": 0, "seconds": 15.288321256637573, "wall_s": null, "group": 28, "t": 1791244698.6532652}
+{"kind": "probe", "group": 29, "seconds": 0.828906099894084, "t": 1791244699.4869218}
+{"kind": "case", "arm": "release", "label": "banana_D6", "seed": 1, "exit": 0, "seconds": 33.0779333114624, "wall_s": null, "group": 29, "t": 1791244732.5668492}
+{"kind": "case", "arm": "v104", "label": "banana_D6", "seed": 1, "exit": 0, "seconds": 163.43204259872437, "wall_s": null, "group": 29, "t": 1791244895.999895}
+{"kind": "probe", "group": 30, "seconds": 0.8877424000529572, "t": 1791244896.8917596}
+{"kind": "case", "arm": "v104", "label": "banana_D10", "seed": 1, "exit": 0, "seconds": 184.4081027507782, "wall_s": null, "group": 30, "t": 1791245081.2998624}
+{"kind": "case", "arm": "release", "label": "banana_D10", "seed": 1, "exit": 0, "seconds": 56.59261465072632, "wall_s": null, "group": 30, "t": 1791245137.8939846}
+{"kind": "probe", "group": 31, "seconds": 0.8352009999798611, "t": 1791245138.7341635}
+{"kind": "case", "arm": "release", "label": "cigar_D4", "seed": 1, "exit": 0, "seconds": 35.89895963668823, "wall_s": null, "group": 31, "t": 1791245174.6336713}
+{"kind": "case", "arm": "v104", "label": "cigar_D4", "seed": 1, "exit": 0, "seconds": 196.46298003196716, "wall_s": null, "group": 31, "t": 1791245371.098166}
+{"kind": "probe", "group": 32, "seconds": 0.883797200047411, "t": 1791245371.986035}
+{"kind": "case", "arm": "v104", "label": "lumpy_D4", "seed": 1, "exit": 0, "seconds": 63.853946685791016, "wall_s": null, "group": 32, "t": 1791245435.840982}
+{"kind": "case", "arm": "release", "label": "lumpy_D4", "seed": 1, "exit": 0, "seconds": 27.539220571517944, "wall_s": null, "group": 32, "t": 1791245463.3812027}
+{"kind": "probe", "group": 33, "seconds": 0.938570800004527, "t": 1791245464.3225057}
+{"kind": "case", "arm": "release", "label": "lumpy_D10", "seed": 1, "exit": 0, "seconds": 85.62930011749268, "wall_s": null, "group": 33, "t": 1791245549.9528062}
+{"kind": "case", "arm": "v104", "label": "lumpy_D10", "seed": 1, "exit": 0, "seconds": 645.5205397605896, "wall_s": null, "group": 33, "t": 1791246195.4756029}
+{"kind": "probe", "group": 34, "seconds": 0.8355351999634877, "t": 1791246196.3165226}
+{"kind": "case", "arm": "v104", "label": "student_D4", "seed": 1, "exit": 0, "seconds": 62.95069980621338, "wall_s": null, "group": 34, "t": 1791246259.2682228}
+{"kind": "case", "arm": "release", "label": "student_D4", "seed": 1, "exit": 0, "seconds": 38.968902349472046, "wall_s": null, "group": 34, "t": 1791246298.2391286}
+{"kind": "probe", "group": 35, "seconds": 0.8327125000068918, "t": 1791246299.0779943}
+{"kind": "case", "arm": "release", "label": "logreg_D5", "seed": 1, "exit": 0, "seconds": 47.02152109146118, "wall_s": null, "group": 35, "t": 1791246346.1018984}
+{"kind": "case", "arm": "v104", "label": "logreg_D5", "seed": 1, "exit": 0, "seconds": 154.0077726840973, "wall_s": null, "group": 35, "t": 1791246500.1115131}
+{"kind": "probe", "group": 36, "seconds": 0.8762538000009954, "t": 1791246500.9898846}
+{"kind": "case", "arm": "v104", "label": "cigar_D8", "seed": 1, "exit": 0, "seconds": 260.0036070346832, "wall_s": null, "group": 36, "t": 1791246760.995009}
+{"kind": "case", "arm": "release", "label": "cigar_D8", "seed": 1, "exit": 0, "seconds": 78.09034705162048, "wall_s": null, "group": 36, "t": 1791246839.0863612}
+{"kind": "probe", "group": 37, "seconds": 0.8368305000476539, "t": 1791246839.926038}
+{"kind": "case", "arm": "release", "label": "student_D8", "seed": 1, "exit": 0, "seconds": 126.09943461418152, "wall_s": null, "group": 37, "t": 1791246966.026473}
+{"kind": "case", "arm": "v104", "label": "student_D8", "seed": 1, "exit": 0, "seconds": 310.1676239967346, "wall_s": null, "group": 37, "t": 1791247276.1961145}
+{"kind": "probe", "group": 38, "seconds": 0.8123997999355197, "t": 1791247277.0144472}
+{"kind": "case", "arm": "v104", "label": "multisensory_s1_D6", "seed": 1, "exit": 0, "seconds": 184.44444346427917, "wall_s": null, "group": 38, "t": 1791247461.4609053}
+{"kind": "case", "arm": "release", "label": "multisensory_s1_D6", "seed": 1, "exit": 0, "seconds": 53.92577528953552, "wall_s": null, "group": 38, "t": 1791247515.3866806}
+{"kind": "probe", "group": 39, "seconds": 0.7907659000484273, "t": 1791247516.1806328}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2_noise1_production", "seed": 1, "exit": 0, "seconds": 126.50591850280762, "wall_s": null, "group": 39, "t": 1791247642.6876776}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2_noise1_production", "seed": 1, "exit": 0, "seconds": 68.94211459159851, "wall_s": null, "group": 39, "t": 1791247711.6327965}
+{"kind": "case", "arm": "arm3", "label": "rosenbrock_D2_noise1_production", "seed": 1, "exit": 0, "seconds": 70.82820558547974, "wall_s": null, "group": 39, "t": 1791247782.4634597}
+{"kind": "probe", "group": 40, "seconds": 0.8142588000046089, "t": 1791247783.2796052}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2_noise3_production", "seed": 1, "exit": 0, "seconds": 130.09429669380188, "wall_s": null, "group": 40, "t": 1791247913.3759015}
+{"kind": "case", "arm": "arm3", "label": "rosenbrock_D2_noise3_production", "seed": 1, "exit": 0, "seconds": 104.85779476165771, "wall_s": null, "group": 40, "t": 1791248018.2351558}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2_noise3_production", "seed": 1, "exit": 0, "seconds": 202.5695731639862, "wall_s": null, "group": 40, "t": 1791248220.804729}
+{"kind": "probe", "group": 41, "seconds": 0.8192010000348091, "t": 1791248221.6273775}
+{"kind": "case", "arm": "arm3", "label": "logreg_D5_noise3_production", "seed": 1, "exit": 0, "seconds": 179.2334005832672, "wall_s": null, "group": 41, "t": 1791248400.8627923}
+{"kind": "case", "arm": "v104", "label": "logreg_D5_noise3_production", "seed": 1, "exit": 0, "seconds": 347.9459648132324, "wall_s": null, "group": 41, "t": 1791248748.808757}
+{"kind": "case", "arm": "release", "label": "logreg_D5_noise3_production", "seed": 1, "exit": 0, "seconds": 159.7567584514618, "wall_s": null, "group": 41, "t": 1791248908.567886}
+{"kind": "probe", "group": 42, "seconds": 0.8178722000448033, "t": 1791248909.3883877}
+{"kind": "case", "arm": "v104", "label": "student_D8_noise3_production", "seed": 1, "exit": 0, "seconds": 583.4568078517914, "wall_s": null, "group": 42, "t": 1791249492.8451955}
+{"kind": "case", "arm": "release", "label": "student_D8_noise3_production", "seed": 1, "exit": 0, "seconds": 252.91604948043823, "wall_s": null, "group": 42, "t": 1791249745.7632494}
+{"kind": "case", "arm": "arm3", "label": "student_D8_noise3_production", "seed": 1, "exit": 0, "seconds": 250.58726000785828, "wall_s": null, "group": 42, "t": 1791249996.3505094}
+{"kind": "probe", "group": 43, "seconds": 0.8220834999810904, "t": 1791249997.1758683}
+{"kind": "case", "arm": "release", "label": "lumpy_D10_noise3_production", "seed": 1, "exit": 0, "seconds": 444.9876925945282, "wall_s": null, "group": 43, "t": 1791250442.1645687}
+{"kind": "case", "arm": "arm3", "label": "lumpy_D10_noise3_production", "seed": 1, "exit": 0, "seconds": 458.3434507846832, "wall_s": null, "group": 43, "t": 1791250900.5100195}
+{"kind": "case", "arm": "v104", "label": "lumpy_D10_noise3_production", "seed": 1, "exit": 0, "seconds": 381.2326993942261, "wall_s": null, "group": 43, "t": 1791251281.742719}
+{"kind": "probe", "group": 44, "seconds": 0.806288400082849, "t": 1791251282.5518293}
+{"kind": "case", "arm": "arm3", "label": "timing_D5_noise2.2_production", "seed": 1, "exit": 0, "seconds": 150.48024988174438, "wall_s": null, "group": 44, "t": 1791251433.0320792}
+{"kind": "case", "arm": "v104", "label": "timing_D5_noise2.2_production", "seed": 1, "exit": 0, "seconds": 361.3072097301483, "wall_s": null, "group": 44, "t": 1791251794.3412943}
+{"kind": "case", "arm": "release", "label": "timing_D5_noise2.2_production", "seed": 1, "exit": 0, "seconds": 136.4516990184784, "wall_s": null, "group": 44, "t": 1791251930.7943122}
+{"kind": "probe", "group": 45, "seconds": 0.876757699996233, "t": 1791251931.6734529}
+{"kind": "case", "arm": "v104", "label": "multisensory_s1_D6_noise1.3_production", "seed": 1, "exit": 0, "seconds": 383.95094299316406, "wall_s": null, "group": 45, "t": 1791252315.6263938}
+{"kind": "case", "arm": "release", "label": "multisensory_s1_D6_noise1.3_production", "seed": 1, "exit": 0, "seconds": 146.2666153907776, "wall_s": null, "group": 45, "t": 1791252461.8950176}
+{"kind": "case", "arm": "arm3", "label": "multisensory_s1_D6_noise1.3_production", "seed": 1, "exit": 0, "seconds": 152.14777278900146, "wall_s": null, "group": 45, "t": 1791252614.043792}
+{"kind": "probe", "group": 46, "seconds": 0.8142008000286296, "t": 1791252614.8611238}
+{"kind": "case", "arm": "release", "label": "multisensory_s2_D6_noise1.3_production", "seed": 1, "exit": 0, "seconds": 121.53545260429382, "wall_s": null, "group": 46, "t": 1791252736.397578}
+{"kind": "case", "arm": "arm3", "label": "multisensory_s2_D6_noise1.3_production", "seed": 1, "exit": 0, "seconds": 142.13142728805542, "wall_s": null, "group": 46, "t": 1791252878.5300055}
+{"kind": "case", "arm": "v104", "label": "multisensory_s2_D6_noise1.3_production", "seed": 1, "exit": 0, "seconds": 444.5785870552063, "wall_s": null, "group": 46, "t": 1791253323.1095927}
+{"kind": "probe", "group": 47, "seconds": 0.8008870999328792, "t": 1791253323.912825}
+{"kind": "case", "arm": "release", "label": "normal_D5", "seed": 2, "exit": 0, "seconds": 23.71931505203247, "wall_s": null, "group": 47, "t": 1791253347.6342576}
+{"kind": "case", "arm": "v104", "label": "normal_D5", "seed": 2, "exit": 0, "seconds": 70.2030417919159, "wall_s": null, "group": 47, "t": 1791253417.8372993}
+{"kind": "probe", "group": 48, "seconds": 0.7983295999001712, "t": 1791253418.6394246}
+{"kind": "case", "arm": "v104", "label": "corr_D5", "seed": 2, "exit": 0, "seconds": 80.04784893989563, "wall_s": null, "group": 48, "t": 1791253498.6878517}
+{"kind": "case", "arm": "release", "label": "corr_D5", "seed": 2, "exit": 0, "seconds": 28.31606364250183, "wall_s": null, "group": 48, "t": 1791253527.005915}
+{"kind": "probe", "group": 49, "seconds": 0.8001545999431983, "t": 1791253527.810043}
+{"kind": "case", "arm": "release", "label": "halfnormal_D2", "seed": 2, "exit": 0, "seconds": 11.891368389129639, "wall_s": null, "group": 49, "t": 1791253539.702412}
+{"kind": "case", "arm": "v104", "label": "halfnormal_D2", "seed": 2, "exit": 0, "seconds": 37.935922622680664, "wall_s": null, "group": 49, "t": 1791253577.6403358}
+{"kind": "probe", "group": 50, "seconds": 0.848925199941732, "t": 1791253578.492029}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2", "seed": 2, "exit": 0, "seconds": 71.99113821983337, "wall_s": null, "group": 50, "t": 1791253650.4841838}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2", "seed": 2, "exit": 0, "seconds": 14.745798349380493, "wall_s": null, "group": 50, "t": 1791253665.2319307}
+{"kind": "probe", "group": 51, "seconds": 0.8203290000092238, "t": 1791253666.0554328}
+{"kind": "case", "arm": "release", "label": "banana_D2", "seed": 2, "exit": 0, "seconds": 15.118151903152466, "wall_s": null, "group": 51, "t": 1791253681.1747406}
+{"kind": "case", "arm": "v104", "label": "banana_D2", "seed": 2, "exit": 0, "seconds": 53.9047417640686, "wall_s": null, "group": 51, "t": 1791253735.0804842}
+{"kind": "probe", "group": 52, "seconds": 0.8019825000083074, "t": 1791253735.8857212}
+{"kind": "case", "arm": "v104", "label": "banana_D6", "seed": 2, "exit": 0, "seconds": 110.84697818756104, "wall_s": null, "group": 52, "t": 1791253846.7326994}
+{"kind": "case", "arm": "release", "label": "banana_D6", "seed": 2, "exit": 0, "seconds": 30.3957839012146, "wall_s": null, "group": 52, "t": 1791253877.130493}
+{"kind": "probe", "group": 53, "seconds": 0.8465349999023601, "t": 1791253877.9820237}
+{"kind": "case", "arm": "release", "label": "banana_D10", "seed": 2, "exit": 0, "seconds": 48.06352663040161, "wall_s": null, "group": 53, "t": 1791253926.0478897}
+{"kind": "case", "arm": "v104", "label": "banana_D10", "seed": 2, "exit": 0, "seconds": 174.7258927822113, "wall_s": null, "group": 53, "t": 1791254100.7757888}
+{"kind": "probe", "group": 54, "seconds": 0.8854377999668941, "t": 1791254101.6658916}
+{"kind": "case", "arm": "v104", "label": "cigar_D4", "seed": 2, "exit": 0, "seconds": 141.4692087173462, "wall_s": null, "group": 54, "t": 1791254243.1371021}
+{"kind": "case", "arm": "release", "label": "cigar_D4", "seed": 2, "exit": 0, "seconds": 37.14029788970947, "wall_s": null, "group": 54, "t": 1791254280.2787187}
+{"kind": "probe", "group": 55, "seconds": 0.9055597999831662, "t": 1791254281.187163}
+{"kind": "case", "arm": "release", "label": "lumpy_D4", "seed": 2, "exit": 0, "seconds": 22.791648149490356, "wall_s": null, "group": 55, "t": 1791254303.980814}
+{"kind": "case", "arm": "v104", "label": "lumpy_D4", "seed": 2, "exit": 0, "seconds": 74.88905787467957, "wall_s": null, "group": 55, "t": 1791254378.8708706}
+{"kind": "probe", "group": 56, "seconds": 0.8254931999836117, "t": 1791254379.69999}
+{"kind": "case", "arm": "v104", "label": "lumpy_D10", "seed": 2, "exit": 0, "seconds": 357.31180930137634, "wall_s": null, "group": 56, "t": 1791254737.0117993}
+{"kind": "case", "arm": "release", "label": "lumpy_D10", "seed": 2, "exit": 0, "seconds": 131.32834339141846, "wall_s": null, "group": 56, "t": 1791254868.342141}
+{"kind": "probe", "group": 57, "seconds": 0.810659300070256, "t": 1791254869.1556354}
+{"kind": "case", "arm": "release", "label": "student_D4", "seed": 2, "exit": 0, "seconds": 37.7729926109314, "wall_s": null, "group": 57, "t": 1791254906.9296284}
+{"kind": "case", "arm": "v104", "label": "student_D4", "seed": 2, "exit": 0, "seconds": 81.77694058418274, "wall_s": null, "group": 57, "t": 1791254988.70857}
+{"kind": "probe", "group": 58, "seconds": 0.8074903999222443, "t": 1791254989.5181134}
+{"kind": "case", "arm": "v104", "label": "logreg_D5", "seed": 2, "exit": 0, "seconds": 122.42468523979187, "wall_s": null, "group": 58, "t": 1791255111.9438012}
+{"kind": "case", "arm": "release", "label": "logreg_D5", "seed": 2, "exit": 0, "seconds": 36.66490840911865, "wall_s": null, "group": 58, "t": 1791255148.6107118}
+{"kind": "probe", "group": 59, "seconds": 0.8343842999311164, "t": 1791255149.4469638}
+{"kind": "case", "arm": "release", "label": "cigar_D8", "seed": 2, "exit": 0, "seconds": 60.20719766616821, "wall_s": null, "group": 59, "t": 1791255209.6561577}
+{"kind": "case", "arm": "v104", "label": "cigar_D8", "seed": 2, "exit": 0, "seconds": 267.42462968826294, "wall_s": null, "group": 59, "t": 1791255477.0817842}
+{"kind": "probe", "group": 60, "seconds": 0.8459883999312297, "t": 1791255477.931889}
+{"kind": "case", "arm": "v104", "label": "student_D8", "seed": 2, "exit": 0, "seconds": 297.4079079627991, "wall_s": null, "group": 60, "t": 1791255775.3407953}
+{"kind": "case", "arm": "release", "label": "student_D8", "seed": 2, "exit": 0, "seconds": 73.15782308578491, "wall_s": null, "group": 60, "t": 1791255848.4996214}
+{"kind": "probe", "group": 61, "seconds": 0.8576147999847308, "t": 1791255849.3596303}
+{"kind": "case", "arm": "release", "label": "multisensory_s1_D6", "seed": 2, "exit": 0, "seconds": 57.900856494903564, "wall_s": null, "group": 61, "t": 1791255907.261489}
+{"kind": "case", "arm": "v104", "label": "multisensory_s1_D6", "seed": 2, "exit": 0, "seconds": 198.07254815101624, "wall_s": null, "group": 61, "t": 1791256105.3350542}
+{"kind": "probe", "group": 62, "seconds": 0.8722495000110939, "t": 1791256106.2101347}
+{"kind": "case", "arm": "arm3", "label": "rosenbrock_D2_noise1_production", "seed": 2, "exit": 0, "seconds": 77.28955674171448, "wall_s": null, "group": 62, "t": 1791256183.4996915}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2_noise1_production", "seed": 2, "exit": 0, "seconds": 136.82749819755554, "wall_s": null, "group": 62, "t": 1791256320.3291914}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2_noise1_production", "seed": 2, "exit": 0, "seconds": 81.80462718009949, "wall_s": null, "group": 62, "t": 1791256402.1338186}
+{"kind": "probe", "group": 63, "seconds": 0.878499099984765, "t": 1791256403.0160813}
+{"kind": "case", "arm": "v104", "label": "rosenbrock_D2_noise3_production", "seed": 2, "exit": 0, "seconds": 233.67076015472412, "wall_s": null, "group": 63, "t": 1791256636.687843}
+{"kind": "case", "arm": "release", "label": "rosenbrock_D2_noise3_production", "seed": 2, "exit": 0, "seconds": 100.32664012908936, "wall_s": null, "group": 63, "t": 1791256737.0158513}
+{"kind": "case", "arm": "arm3", "label": "rosenbrock_D2_noise3_production", "seed": 2, "exit": 0, "seconds": 123.31231760978699, "wall_s": null, "group": 63, "t": 1791256860.3291602}
+{"kind": "skip", "label": "logreg_D5_noise3_production", "seed": 2, "estimate": 978.8227798938751, "t": 1791256860.3301623}
+{"kind": "skip", "label": "student_D8_noise3_production", "seed": 2, "estimate": 1453.8256382465363, "t": 1791256860.3311613}
+{"kind": "skip", "label": "lumpy_D10_noise3_production", "seed": 2, "estimate": 2224.5527145147325, "t": 1791256860.3321612}
+{"kind": "skip", "label": "timing_D5_noise2.2_production", "seed": 2, "estimate": 861.2811276912689, "t": 1791256860.3321612}
+{"kind": "skip", "label": "multisensory_s1_D6_noise1.3_production", "seed": 2, "estimate": 922.8372610330582, "t": 1791256860.3331618}
+{"kind": "skip", "label": "multisensory_s2_D6_noise1.3_production", "seed": 2, "estimate": 967.9555973529816, "t": 1791256860.3341608}
+{"kind": "done", "t": 1791256860.3341608}

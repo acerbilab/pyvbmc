@@ -1,0 +1,27 @@
+{
+  "allocation_overhead_seconds": 2.3173455500000273,
+  "allocation_range_seconds": [
+    2.3474026499998217,
+    3.0236171999986254
+  ],
+  "basis": "Per-state/arm medians from all 384 selection reports, calibrated to the three fresh-worker v2 pilot outer walls including imports.",
+  "combined_conservative_2x_seconds": 777.9462458554617,
+  "combined_remaining_105_predicted_seconds": 388.97312292773086,
+  "kind": "noisy_acq_search_measurement_v2_remaining_forecast",
+  "manifest_sha256": "ca307bd6077eb2542cfedaf349c64c1af6fc369572da8f4cc401a3c7ba15a0a5",
+  "pilot_allocation_sha256": "91ca935a747e2a7b8dd146cc8e0bdcecbca8749feb1743ca22bc247d3de46765",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "cfcc25561005d791fe6519fe659d464c692549dd55e97166f55f8eb3a38b3a37",
+  "remaining_allocation_70_predicted_seconds": 183.04605470001297,
+  "remaining_allocation_cells": 70,
+  "remaining_timing_35_predicted_seconds": 205.92706822771788,
+  "remaining_timing_cells": 35,
+  "schema_version": 1,
+  "successful_pilot_cells_reused": 3,
+  "timing_factor": 1.2356494267638425,
+  "timing_range_seconds": [
+    2.1472665961934516,
+    11.65963148577688
+  ]
+}

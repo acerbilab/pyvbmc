@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 import dill
@@ -16,10 +17,10 @@ def wrap_with_test(method, vbmc):
         To be run at the end of every iteration:
         """
         assert vbmc.vp.K == vbmc.optim_state["vp_K"]
-        assert vbmc.parameter_transformer == vbmc.vp.parameter_transformer
+        assert vbmc.parameter_transformer is vbmc.vp.parameter_transformer
         assert (
             vbmc.parameter_transformer
-            == vbmc.function_logger.parameter_transformer
+            is vbmc.function_logger.parameter_transformer
         )
         return method(*args, **kwargs)
 
@@ -226,7 +227,7 @@ def test_vbmc_uniform(return_results=False):
     mu_bar = 0.5 * np.ones((1, D))
     f = lambda x: 0
 
-    options = {"search_optimizer": "Nelder-Mead"}
+    options = {}
     err_1, err_2 = run_optim_block(
         f,
         x0,
@@ -284,10 +285,6 @@ def test_vbmc_multivariate_half_normal_noisy(return_results=False):
     assert err_2 < 0.5
     if return_results:
         return err_1, err_2
-
-
-def noisy_cigar(x, noise_scale=0.4):
-    return cigar(x) + noise_scale * np.random.normal(), noise_scale
 
 
 def cigar(x):
@@ -514,7 +511,14 @@ def test_optimize_results(mocker):
     assert results["r_index"] == 2
     assert results["convergence_status"] == "no"
     assert np.isnan(results["overhead"])
-    assert "rng_state" in results
+    assert set(results["rng_state"]) == {"generator"}
+    returned_state = copy.deepcopy(results["rng_state"]["generator"])
+    expected_rng = np.random.default_rng()
+    expected_rng.bit_generator.state = returned_state
+    live_rng = copy.deepcopy(vbmc.rng)
+    assert expected_rng.random() == live_rng.random()
+    results["rng_state"]["generator"]["state"]["state"] += 1
+    assert vbmc.rng.bit_generator.state == returned_state
     assert results["algorithm"] == "Variational Bayesian Monte Carlo"
     assert "version" in results
     assert results["message"] == "test message"
@@ -523,7 +527,7 @@ def test_optimize_results(mocker):
 
 
 def _test_optimize_reproducibility():
-    # 1D case with Nelder-Mead optimizer
+    # 1D case, where the acquisition is searched by a bounded scalar method
     result = {"err_1": [], "err_2": []}
     for i in range(2):
         np.random.seed(42)
@@ -627,5 +631,19 @@ def test_vbmc_resume_optimization():
     success_flag_2 = results_2["success_flag"]
 
     assert success_flag_1 == success_flag_2
-    assert elbo_1 == elbo_1
+    assert elbo_1 == elbo_2
     assert elbo_sd_1 == elbo_sd_2
+
+    # Every history entry describes its own iteration, including the ones
+    # recorded before the round trip (the continued run works on copies of
+    # them, not on the entries themselves).
+    for i, optim_state in enumerate(vbmc_2.iteration_history["optim_state"]):
+        assert optim_state["iter"] == i
+    # The GP records hold data and hyperparameters only; get_gp restores the
+    # factors, and so does load, whose GP a continued run predicts with.
+    assert vbmc_2.iteration_history["gp"][0].posteriors[0].alpha is None
+    assert vbmc_2.get_gp(0).posteriors[0].alpha is not None
+    vbmc_3 = VBMC.load(file_path, iteration=2)
+    assert vbmc_3.gp.posteriors[0].alpha is not None
+    assert vbmc_3.gp is not vbmc_3.iteration_history["gp"][2]
+    assert np.array_equal(vbmc_3.gp.X, vbmc_3.iteration_history["gp"][2].X)

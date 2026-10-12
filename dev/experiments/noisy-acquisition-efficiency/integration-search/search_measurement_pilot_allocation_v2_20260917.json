@@ -1,0 +1,56 @@
+{
+  "created_utc": "2026-09-17T12:12:48.184406+00:00",
+  "hard_compute_cutoff_utc": "2026-09-17T14:09:00+00:00",
+  "kind": "noisy_acq_search_measurement_v2_pilot_allocation",
+  "manifest_sha256": "ca307bd6077eb2542cfedaf349c64c1af6fc369572da8f4cc401a3c7ba15a0a5",
+  "output_root": "search_timing_v2",
+  "per_cell_timeout_seconds": 120,
+  "pilot_count": 3,
+  "pilots": [
+    {
+      "cell": {
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 15108013424671789913,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "tag": "logreg_D5_noise3_seed0_late__S3__timing"
+    },
+    {
+      "cell": {
+        "allocation_seed": 6504860464358627166,
+        "role": "baseline",
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 15108013424671789913,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "tag": "logreg_D5_noise3_seed0_late__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 7519280767524878221,
+        "role": "treatment",
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 15108013424671789913,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "tag": "logreg_D5_noise3_seed0_late__S3__allocation_treatment"
+    }
+  ],
+  "preflight_validation_sha256": "7133b01e6a0378114ffc043b82b46aea24f3b12c5481ac64ec8f374c372be095",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "91ca935a747e2a7b8dd146cc8e0bdcecbca8749feb1743ca22bc247d3de46765",
+  "remaining_unallocated": {
+    "adaptive_confirmation": 0,
+    "allocation_cells": 70,
+    "e5": 0,
+    "holdout": 0,
+    "timing_cells": 35
+  },
+  "schema_version": 1,
+  "soft_stop_new_launches_utc": "2026-09-17T14:04:00+00:00",
+  "wrapper_sha256": "f59d51afffbb866f4589cf64580bb4c72c9f85e05125a6a8885ee9f2358efdb3"
+}

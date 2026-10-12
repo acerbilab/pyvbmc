@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "rosenbrock_D2/rosenbrock_D2_seed31",
+  "case": "rosenbrock_D2/rosenbrock_D2_seed31 rosenbrock_D2 31",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "f91fdf00894653f63a0be6b06cceb59ee373c283",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$PYVBMC_SOURCE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$PYVBMC_SOURCE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          19,
+          83
+        ],
+        "physical_cores": [
+          "0:19"
+        ],
+        "core_threads": {
+          "0:19": [
+            19,
+            83
+          ]
+        },
+        "job_cpuset": [
+          19,
+          83
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2295795",
+        "array_job_id": "2295445",
+        "array_task_id": "332",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-02T11:19:25+0000",
+  "finished": "2026-10-02T11:19:57+0000",
+  "elapsed_seconds": 31.77383852005005,
+  "artifacts": {
+    "rosenbrock_D2/rosenbrock_D2_seed31.npz": {
+      "sha256": "f768409515df252de0bd38da19486a8fe6fef0310464e09518eec9b27aa74846",
+      "bytes": 23950
+    },
+    "rosenbrock_D2/rosenbrock_D2_seed31.json": {
+      "sha256": "0a97a93ecc4d97c7b550459d9e8934f10a5d75f4435470dec5bc3d5ad8a8507e",
+      "bytes": 4740
+    },
+    "rosenbrock_D2/rosenbrock_D2_seed31.vp.npz": {
+      "sha256": "e13306a10615e5f18de7d4da85d89fb711ff02ee0013b238d69f69118dc5d41d",
+      "bytes": 812
+    },
+    "boost/rosenbrock_D2/rosenbrock_D2_seed31.boost.pkl": {
+      "sha256": "590e5edeef2ed0168b36943b7d6a6f315b1bac84f7d4bc93b9fafc3f11e33191",
+      "bytes": 418565
+    },
+    "boost/rosenbrock_D2/rosenbrock_D2_seed31.boost.json": {
+      "sha256": "4d95493d914591719b4c398c9371ff0f27d2d607973c1fb44e9ff25e655d9a65",
+      "bytes": 7972
+    }
+  },
+  "harness": "population_run",
+  "label": "rosenbrock_D2",
+  "seed": 31,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

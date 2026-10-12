@@ -1,0 +1,18 @@
+{
+  "device": "cpu",
+  "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "msvc": {
+    "VCToolsVersion": "14.44.35207",
+    "WindowsSDKVersion": "10.0.26100.0\\"
+  },
+  "cl": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.EXE",
+  "torch_import_seconds": 1.755337500013411,
+  "torch": "2.14.0+cpu",
+  "torch_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
+  "cold_forward_backward_seconds": 44.22431880002841,
+  "backward_type": "CompiledFunctionBackward",
+  "value_error": 0.0,
+  "gradient_max_error": 5.551115123125783e-17,
+  "status": "passed",
+  "child_wall_seconds": 48.198666400043294
+}

@@ -1,0 +1,22 @@
+{
+  "accurate_rule": {
+    "budget": 1600,
+    "method": "mc",
+    "provenance": "Unused: both arms are the production search. The field satisfies the record schema shared with E3."
+  },
+  "control_rule": {
+    "kind": "search_stream_offset",
+    "offset": 1
+  },
+  "created_utc": "2026-09-18T19:41:22.594487+00:00",
+  "declared_after": "The control was declared after the development ladder's second budget had been read (pooled counts only) and before any per-contrast or holdout result; it changes nothing about the treatments and is not merged with them.",
+  "frozen": true,
+  "kind": "noisy_acq_search_selection",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Null control for the F2 frozen-state judge: the production selection (S0) against itself with one extra generator draw after the importance nodes (S0_reseeded), so that sieve and nodes are identical and only the local search's randomness differs, on the twelve development states. Its verdict rates are the floor against which the F2 treatment contrasts are read.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "6398af91fde0bb16cc5afe742ba12b4383b3ea5caec7f7fb4326dc69569e7cb9",
+  "schema_version": 1,
+  "source_commit": "059420b13bd8ed85e1ccb6c15bc320ef4eaf44bd",
+  "stage": "f2_control_development"
+}

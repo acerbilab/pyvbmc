@@ -1,0 +1,164 @@
+# S-VBMC fixtures
+
+Fitted posteriors and regression references for the tests of
+`pyvbmc.svbmc`, stored as plain arrays. Every posterior is one
+`VariationalPosterior` written with the oracle snapshot codec of
+`pyvbmc/testing/oracles/_state.py`: `<name>.npz` holds the arrays (loaded
+with `np.load(path, allow_pickle=False)`), `<name>.json` the tree, the
+scalars and a `meta` block with the provenance. `_fixtures.py` next to
+this file rebuilds them through the public constructors (`load_vp`,
+`load_group`), so no posterior file depends on the layout of any class;
+the saved stack under `saved/` depends on it by design (below). Everything
+here is written by `dev/scripts/make_svbmc_fixtures.py`; regenerate only to
+set a new baseline on purpose.
+
+Each posterior snapshot stores the transformer (`lb_orig`, `ub_orig`, `mu`,
+`delta`, `type`, `R_mat`, `scale`) and the posterior (`w`, `eta`, `mu`,
+`sigma`, `lambd`, the `optimize_*` flags, `bounds` and the complete `stats`
+dictionary, including the `stable`, `elbo`, `elbo_sd`, `I_sk` and `J_sjk`
+entries that stacking reads). The plausible bounds in the `pt` block are
+placeholders that only make the rebuilt transformer's constructor valid;
+the stored `mu`, `delta` and `type` overwrite what the constructor derives
+from them. `transform_type` holds the bounded transform's numeric code
+(12 for probit), so the rebuilt transformer dispatches the same transform
+as the original. Every file is rebuilt and compared with its source before
+the generator returns.
+
+## Upstream corpus (`upstream_*`, 30 files)
+
+The thirty posteriors shipped with S-VBMC 0.1.1 (`acerbilab/svbmc` at
+`13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01`, `vbmc_runs/`), converted from
+their pickles on 2026-09-11 (`make_svbmc_fixtures.py convert`). Every
+rebuilt posterior matches its pickle exactly: component parameters,
+statistics, transform outputs and `pdf` values. The `meta` block of each
+file records the source path and the SHA-256 of the pickle.
+
+| group | files | D | K | transform | target (upstream description) |
+| --- | ---: | ---: | ---: | --- | --- |
+| `upstream_GMM` | `upstream_GMM_00` to `_09` | 2 | 50 | unbounded; `_01`, `_03`, `_05` warped | `svbmc.targets.GMM`, noiseless |
+| `upstream_GMM_noisy` | `upstream_GMM_noisy_00` to `_09` | 2 | 50 | unbounded, unwarped | `svbmc.targets.GMM`, noisy log-likelihood |
+| `upstream_Ring` | `upstream_Ring_00` to `_09` | 2 | 50 | unbounded; `_04`, `_08` warped | `svbmc.targets.Ring` |
+
+All thirty runs are `stable`. The corpus is entirely two-dimensional and
+unbounded (no bounded transform in any run); five runs end with a rotoscale
+warp in place (`R_mat` and `scale` set). The supplementary set below adds
+what it lacks: one dimension, bounded parameters with different transforms
+across runs, and three dimensions.
+
+## Supplementary posteriors (9 files)
+
+Short seeded VBMC runs on inline targets (`make_svbmc_fixtures.py generate`,
+2026-09-11, PyVBMC `8c2412d`, options `{"display": "off"}`, otherwise the
+defaults; the starting point is drawn uniformly in the run's plausible box
+from `np.random.default_rng(seed)`). Three runs per group, seeds 100, 101
+and 102; every run ended `stable` with finite statistics and K = 50 after
+the final boost. The `meta` block records the seed, the plausible box, the
+ELBO and its standard deviation, the number of function evaluations and
+whether a warp was in place.
+
+| group | D | bounds | plausible boxes (per run) | warp | target |
+| --- | ---: | --- | --- | --- | --- |
+| `normal_D1` | 1 | none | `[-3, 4]` for all runs | no | `log N(x; 0.5, 1.2^2)` |
+| `bounded_D2` | 2 | `[-3, 3]^2` (probit) | `[-2, 2]^2`; `[-1.5, 1.5]^2`; `[-1, 2.5] x [-2.5, 1]` | no | `log N(x; (0.5, -0.5), diag(0.8^2, 0.6^2))` on the box |
+| `corr_D3` | 3 | none | `[-4, 4]^3` for all runs | seed 100 no; seeds 101 and 102 yes | `log N(x; 0, S R S)`, sd `(1, 2, 0.5)`, all correlations 0.85 |
+
+`bounded_D2` gives three runs of one problem with three different
+transforms (different `mu` and `delta`); `corr_D3` mixes an unwarped run
+with two warped ones (`R_mat` and `scale` set, `delta` reset to one).
+
+## Regression references (`references.npz` / `references.json`)
+
+`make_svbmc_fixtures.py references` (2026-09-12, Torch 2.14.0 CPU with one
+thread, NumPy 2.5.2; the PyVBMC commit is in `meta`): for every group
+above and every optimization mode,
+`SVBMC(vps, seed=0).optimize(n_samples=20, n_samples_final=100, lr=0.1,
+max_steps=3, version=mode)`
+with `vps = load_group(group, rng=0)[0]`. The tree holds, under
+`groups/<group>/<mode>`, the optimized weights `w` (an array of shape
+`(1, K_total)`), scalar `elbo`, `elbo_sd`, the complete `elbo_details`
+report (raw, both capped estimates, naive baseline, headline method,
+uncertainty contributions, cap amount and noise provenance), `entropy`,
+`M` and `K`. `meta` records the environment, S-VBMC source hashes and
+every numerical argument of the recipe, which
+the test passes explicitly. The references pin the numerics of the
+integrated class (the Monte Carlo draws come from the object's generator,
+so they cannot be compared with the upstream package draw for draw) and
+are the gate for later performance changes to the entropy computation.
+
+The regression file predates the report's `shrunk_two_level` and
+`shrinkage_noise_share` keys. `test_svbmc_references.py` therefore requires
+the current report to contain exactly the stored keys plus these two, then
+compares every stored value against its fixed reference, except as the next
+paragraph describes. The two added values are covered by algebra,
+integration and historical-reference parity tests, and in the noisy cells
+`shrunk_two_level` by the literals the next paragraph describes; they do not
+require a fixture rebaseline.
+
+The file also predates the shrinkage headline of noisy stacks. In the three
+`upstream_GMM_noisy` cells, the only noisy ones, the stored `elbo` is the
+capped estimate, `headline_method` is `capped_I_median` and `cap_amount` is
+the reduction the cap made. The test compares the stored `elbo` with the
+current `capped_I_median` and requires `headline_method` to be
+`shrunk_two_level`, `cap_amount` to be zero and `elbo` to equal
+`shrunk_two_level`. In the other cells the stored headline is `raw` and is
+compared as stored. The file holds no value of `shrunk_two_level`, so the
+test pins the noisy cells' headline with literals of its own
+(`SHRUNK_TWO_LEVEL`), at the same tolerance and with a check that every
+noisy cell has one. They were computed on 2026-10-05 by the same recipe at
+`39bc986d` (Python 3.12.6 on Windows, NumPy 2.5.3, Torch 2.14.0 CPU, one
+thread); the same run reproduced the stored weights. No generator writes
+them: to move them on purpose, run the recipe above on each noisy cell, take
+`stacked.elbo_details["shrunk_two_level"]` with `repr`, replace the
+literals, and update this paragraph with the date, the commit, the
+environment and the reason. A regeneration of `references.npz` would store
+the shrinkage headline as `elbo` itself, and the test's mapping of the
+stored capped headline and its literals are then to be removed. The
+estimator itself is checked by `test_elbo_shrinkage.py` and by
+`dev/scripts/test_svbmc_shrinkage_parity.py`, which runs only when named and
+compares it with its historical reference on four of the fixture groups,
+`upstream_GMM_noisy` among them.
+
+The 2026-09-12 rebaseline is intentional and implements the PI-approved
+[ELBO reporting plan](../../../dev/plans/svbmc-elbo-reporting.md): Jacobian
+expectations are deterministic, final estimates use fresh samples at the
+returned weights, and the report includes uncertainty and the naive
+baseline. Both reported values and bounded-target optimization weights can
+therefore change. The 39 posterior snapshots remain unchanged. The plan
+records plausibility checks against the previous code's sampling variation.
+
+## Saved stack (`saved/bounded_D2.pkl` / `saved/bounded_D2.json`)
+
+`make_svbmc_fixtures.py saved-stack` (2026-09-24, Python 3.12.6 on Windows,
+NumPy 2.5.3, dill 0.4.1, Torch 2.14.0 CPU; the sidecar's `meta` records
+these, the PyVBMC commit and the S-VBMC source hashes):
+`SVBMC(vps, seed=0).optimize(n_samples=5, n_samples_final=5, max_steps=3)`
+with `vps = load_group("bounded_D2", rng=0)[0]`, written with
+`SVBMC.save`. It is the one pickle among these fixtures, a file as a user's
+`stacked.save` writes it. Loaded in every CI cell, under other Python
+versions and platforms and without torch, it tests that such a file holds
+no bytecode and needs no torch to load; and it holds the class layout that
+`SVBMC.load` reads, so a change that renames or removes an attribute of the
+stack or of the objects it holds fails `test_svbmc_saved_stack.py`. The
+sidecar holds the stack's `D`, `M`, `K`, weights, `elbo`, `elbo_sd`,
+`entropy` and `elbo_details`, the names of the retained posteriors (the
+three `bounded_D2` snapshots, in order), the SHA-256 of the file, and
+`sample(16)` of the loaded stack after its generator is set to
+`default_rng(1)`. Regenerate it only for a deliberate change of that layout
+made before PyVBMC 1.5 is released. Users hold files written by a released
+version, so after the release this file stays, and `SVBMC.load` back-fills
+what an older file lacks instead (`AGENTS.md`, "Saved objects are pickles
+of the classes as they are").
+
+## Tests
+
+| test module | reads | tolerance |
+| --- | --- | --- |
+| `test_svbmc.py` | `upstream_GMM`, `normal_D1`, `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | shapes, dtypes and reproducibility exact; sample statistics loose (means within 0.25 or 0.5, standard deviations at `rtol=0.25`) |
+| `test_svbmc_save_and_load.py` | `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | exact: every attribute of the loaded object, generator states included, its draws and a later optimization |
+| `test_svbmc_saved_stack.py` | `saved/bounded_D2.pkl` and its sidecar; the `bounded_D2` snapshots | state exact; draws at `rtol=1e-12`, `atol=1e-12`; runs without torch |
+| `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
+| `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references`; its own `SHRUNK_TWO_LEVEL` for the noisy cells | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
+| `test_entropy.py` | `normal_D1`, `bounded_D2`, `corr_D3` and the first three `upstream_GMM` posteriors via `load_group(group, rng=0)` | the per-run entropy preparation and vectorized reduction against literal per-component transcriptions of the same estimator, at 1 and 3 draws per component: density matrix, entropy, weight gradient and stratified variance at `rtol=1e-12`, `atol=1e-12`; generator state and chunking exact. The reduction by chunks of rows against the whole matrix, at 1, 2 and 100 draws per component and chunks from one row to more than the matrix has: generator calls and state, rows, mixture log densities, entropy and variance exact. The checks of the density matrix and its chunks run without torch |
+| `test_elbo_reporting.py` | synthetic posteriors, `bounded_D2`, `corr_D3` and `upstream_GMM` via `load_group(group, rng=0)`, and `upstream_GMM_00`, `upstream_GMM_noisy_00` via `load_vp` | covariance and stratified variance algebra; noise inference, headline selection, final evaluation and tips contracts |
+| `test_jacobian.py` | synthetic posteriors | analytic affine/probit expectations, independent integration, seeded broad/warped Monte Carlo checks and explicit nonconvergence |
+| `test_elbo_shrinkage.py`, `test_svbmc_imports.py`, `test_svbmc_utils.py` | none | run without torch |

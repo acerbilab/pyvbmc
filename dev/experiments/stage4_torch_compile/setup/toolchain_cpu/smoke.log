@@ -1,0 +1,7 @@
+{
+  "device": "cpu",
+  "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "status": "failed",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\torch_compile_toolchain.py\", line 59, in main\n    report[\"msvc\"] = msvc_environment()\n                     ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\torch_compile_toolchain.py\", line 18, in msvc_environment\n    from setuptools._distutils._msvccompiler import _get_vc_env\nModuleNotFoundError: No module named 'setuptools'\n",
+  "child_wall_seconds": 0.001942100003361702
+}

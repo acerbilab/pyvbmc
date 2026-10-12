@@ -1,0 +1,6 @@
+Collecting triton-windows==3.8.0.post28
+  Downloading triton_windows-3.8.0.post28-cp312-cp312-win_amd64.whl.metadata (1.1 kB)
+Downloading triton_windows-3.8.0.post28-cp312-cp312-win_amd64.whl (52.8 MB)
+   ---------------------------------------- 52.8/52.8 MB 26.1 MB/s  0:00:02
+Installing collected packages: triton-windows
+Successfully installed triton-windows-3.8.0.post28

@@ -1,0 +1,241 @@
+{
+ "label": "banana_D6",
+ "seed": 90,
+ "problem": "banana",
+ "D": 6,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 400,
+  "max_iter": 400,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": 0.0,
+ "true_mean": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   4.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   9.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ ],
+ "plb": [
+  -6.0,
+  -9.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0
+ ],
+ "pub": [
+  6.0,
+  9.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0
+ ],
+ "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
+ "final": {
+  "elbo": -0.04319650866870761,
+  "elbo_sd": 0.004653255084034976,
+  "best_iter": 21,
+  "iterations": 22,
+  "func_count": 115,
+  "final_K": 50,
+  "final_N": 115,
+  "min_Ns_gp": 7,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 65.52267031208612,
+  "target_eval_s": 0.003412008285522461,
+  "elbo_err": 0.04319650866870761,
+  "gskl": 0.12542250001403987,
+  "mmtv": 0.017332916970167072,
+  "rmse": 0.1569111579164449,
+  "moment_method": "affine",
+  "peak_rss_mb": 180.109375,
+  "max_rss_mb": 195.421875
+ },
+ "meta": {
+  "git": {
+   "sha": "ad63dd5a",
+   "dirty": false
+  },
+  "python": "3.12.14",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "cma": "4.4.4",
+  "pyvbmc_source": {
+   "path": "$HARNESS_TREE/pyvbmc",
+   "git": {
+    "sha": "ad63dd5a",
+    "dirty": false
+   }
+  },
+  "gpyreg_source": {
+   "path": "$PYVBMC_GPYREG_SOURCE/gpyreg",
+   "git": {
+    "sha": "682585f",
+    "dirty": false
+   }
+  },
+  "installed_metadata_versions": {
+   "pyvbmc": null,
+   "gpyreg": null
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-10-05 17:42:42",
+  "finished": "2026-10-05 17:43:49",
+  "pid": 2267667
+ },
+ "provenance": {
+  "source": {
+   "trees": {
+    "harness": {
+     "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+     "clean": true
+    },
+    "pyvbmc": {
+     "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+     "clean": true
+    },
+    "gpyreg": {
+     "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+     "clean": true
+    }
+   },
+   "files": {
+    "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+    "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+    "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+    "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+    "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+    "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+   },
+   "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "torch": null
+   }
+  },
+  "imports": {
+   "trees": {
+    "harness": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "pyvbmc": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "gpyreg": {
+     "path": "$PYVBMC_GPYREG_SOURCE",
+     "dirty": []
+    }
+   },
+   "modules": {
+    "pyvbmc": "$HARNESS_TREE/pyvbmc",
+    "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+   },
+   "installed_metadata_versions": {
+    "pyvbmc": null,
+    "gpyreg": null
+   },
+   "harness_modules": {
+    "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+    "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+    "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+   }
+  }
+ }
+}

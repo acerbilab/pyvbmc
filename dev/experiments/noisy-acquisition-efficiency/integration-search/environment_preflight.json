@@ -1,0 +1,107 @@
+{
+  "created_utc": "2026-09-16T18:39:51.963467+00:00",
+  "data_files": {
+    "dev\\scripts\\data\\multisensory.npz": "caf62b205a67bbb3a53d2650c0cf98ddcd4dc1c15da72e31d3c1f97256db982f",
+    "dev\\scripts\\data\\timing.npz": "9fb1c08afa2b52810dafb04d62ac0166c502ae60b0b18a2741f89efd75e5a9cc",
+    "dev\\scripts\\data\\truths\\multisensory_s1.npz": "f11bc97cef7fe5820cd43d4b7fed6b6885f323abb1892241bfb16cf6e4707c04",
+    "dev\\scripts\\data\\truths\\multisensory_s2.npz": "975ec0b6a8c5b6676bcc01eb478863adc9cde45b30dfdcfe63771dee913638ff",
+    "dev\\scripts\\data\\truths\\timing.npz": "1366987f73dd30de1f3cfa0c0940e2113fd34f9283c6aa367779d50b3d245a0d"
+  },
+  "deadline_utc": "2026-09-17T05:34:41Z",
+  "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+  "gpyreg_source_version": null,
+  "imports": {
+    "gpyreg": "<USER_HOME>/Documents/GitHub/pyvbmc-stage3/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1/gpyreg/__init__.py",
+    "pyvbmc": "<USER_HOME>/Documents/GitHub/pyvbmc-stage3/pyvbmc/__init__.py"
+  },
+  "numpy_build": {
+    "Build Dependencies": {
+      "blas": {
+        "detection method": "pkgconfig",
+        "found": true,
+        "include directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+        "lib directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+        "name": "scipy-openblas",
+        "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+        "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+        "version": "0.3.34.0.0"
+      },
+      "lapack": {
+        "detection method": "pkgconfig",
+        "found": true,
+        "include directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+        "lib directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+        "name": "scipy-openblas",
+        "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+        "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+        "version": "0.3.34.0.0"
+      }
+    },
+    "Compilers": {
+      "c": {
+        "commands": "cl",
+        "linker": "link",
+        "name": "msvc",
+        "version": "19.44.35228"
+      },
+      "c++": {
+        "commands": "cl",
+        "linker": "link",
+        "name": "msvc",
+        "version": "19.44.35228"
+      },
+      "cython": {
+        "commands": "cython",
+        "linker": "cython",
+        "name": "cython",
+        "version": "3.2.9"
+      }
+    },
+    "Machine Information": {
+      "build": {
+        "cpu": "x86_64",
+        "endian": "little",
+        "family": "x86_64",
+        "system": "windows"
+      },
+      "host": {
+        "cpu": "x86_64",
+        "endian": "little",
+        "family": "x86_64",
+        "system": "windows"
+      }
+    },
+    "Python Information": {
+      "path": "<USER_HOME>/AppData/Local/Temp/build-env-03ol50fu/Scripts/python.exe",
+      "version": "3.12"
+    },
+    "SIMD Extensions": {
+      "baseline": [
+        "X86_V2"
+      ],
+      "found": [
+        "X86_V3"
+      ]
+    }
+  },
+  "planning_commit": "eaf64b4",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "production_base": "9cc6882",
+  "publication_note": "Local user-directory paths are redacted in this review copy. Run the experiment with the original local manifests; recorded artifact hashes identify the unmodified originals.",
+  "python": "3.12.6",
+  "record_type": "environment_preflight",
+  "threadpoolctl_available": false,
+  "threads": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "version_note": "Distribution metadata reports installed gpyreg 1.2.0; PYTHONPATH imports the pinned v1.2.1 source at the recorded commit. The imported source path and SHA identify experiment numerics.",
+  "versions": {
+    "cma": "4.4.4",
+    "gpyreg": "1.2.0",
+    "numpy": "2.5.2",
+    "pytest": "9.1.1",
+    "scipy": "1.18.1"
+  }
+}

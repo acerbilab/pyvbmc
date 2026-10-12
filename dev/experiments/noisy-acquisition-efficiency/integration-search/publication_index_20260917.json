@@ -1,0 +1,95 @@
+{
+  "artifacts": [
+    {
+      "local_artifact_relative_to_run_root": "panel_evidence.json",
+      "published_copy": "panel_evidence_20260917.json",
+      "published_copy_lf_bytes_sha256": "a4a3912eb970e1507e2cc3dba92cae2f438ec1bf93ef2455982989d2908cd3d9",
+      "raw_artifact_sha256": "abb51a2780ba26544333e231809a371a2743a22f708ab876944ba22a384acda2"
+    },
+    {
+      "local_artifact_relative_to_run_root": "full_selection.json",
+      "published_copy": "full_cost_selection_20260917.json",
+      "published_copy_lf_bytes_sha256": "07ce8395025a42dd952a522c8e8419e22a2cbc4ab87650e529643b50f4b3934f",
+      "raw_artifact_sha256": "a751aee8b4e0d0817f411d3ec0cf0841b2f87321ea4e4a7f4b7001e95aea15a3"
+    },
+    {
+      "local_artifact_relative_to_run_root": "full_manifest.json",
+      "published_copy": "full_cost_manifest_20260917.json",
+      "published_copy_lf_bytes_sha256": "fefaa77e77cb86efac54d93a1bb543cda1c163dfa4ed22e8d69f26b018429191",
+      "raw_artifact_sha256": "4e0f5679e98aefe00aa22c54e092f06366eb5e9470708c664d18ea4a767533c9"
+    },
+    {
+      "local_artifact_relative_to_run_root": "full_cost_screen.json",
+      "published_copy": "full_cost_screen_20260917.json",
+      "published_copy_lf_bytes_sha256": "00b9b8ff1b088b2cd11829bd7e03d7afa200ce182adc7cb55b29d75dbee4801d",
+      "raw_artifact_sha256": "cfd98533d6c32246b261b32cd2b69dadf4e0dc01320163e5cfc64c673a071e06"
+    },
+    {
+      "local_artifact_relative_to_run_root": "continuation_20260917_final.json",
+      "published_copy": "continuation_20260917_final.json",
+      "published_copy_lf_bytes_sha256": "50e1ce3415364aa0b87641862021af2caa82296905b987bca59507a414799a9f",
+      "raw_artifact_sha256": "7058cb3be3891819a0c894c21a94f962ec12f1ec56156818f6484d8c9a4f6f1d"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_selection.json",
+      "published_copy": "search_selection_20260917.json",
+      "published_copy_lf_bytes_sha256": "add424f39880133c9edd117d450eebd11aa154cd00a476acb55e39539c672ec8",
+      "raw_artifact_sha256": "6dfd2e6f772edce9d9cc642e3a7159e69e70b6dfcd369d3cb04fb2fae8998d42"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_manifest.json",
+      "published_copy": "search_manifest_20260917.json",
+      "published_copy_lf_bytes_sha256": "1d922e51d6bf7fc73474fc9d5fabbc87436c2d871463c5e1a751fe97bcaf009b",
+      "raw_artifact_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_pilot/allocation.json",
+      "published_copy": "search_pilot_allocation_20260917.json",
+      "published_copy_lf_bytes_sha256": "986a8ca50f61aeb20999df3f8bf122fc3dc3cc461b16748b05f0f820e9ad2987",
+      "raw_artifact_sha256": "a502911e14089fa21023469b9df083d3d11bfd879654bb60780bc7ea5247406a"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_pilot/launch_clearance.json",
+      "published_copy": "search_pilot_clearance_20260917.json",
+      "published_copy_lf_bytes_sha256": "80d5d3cea10f738fa9d3bc3658c43437cc01b68c8cee19fb7e0580b3a43f7914",
+      "raw_artifact_sha256": "7dd496949b3dd15af3106d211879b30abdbbe603f9dd8893a926113be2b8eb94"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_pilot/outcome.json",
+      "published_copy": "search_pilot_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "11c2ba77122625d97a1d01005f268f34a1c0e1286f45cfacd3e7ce6e2c0a4909",
+      "raw_artifact_sha256": "3f4a794a533c558c172214cca76fdcbdb482473b61a325e40b10b7db7e60ed6a"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_pilot/remaining_rep0_allocation.json",
+      "published_copy": "search_rep0_allocation_20260917.json",
+      "published_copy_lf_bytes_sha256": "e87995095455da7fc077578aa8d55cfa1f9ccc84b5a49e5b1bf26e9278f0cfb4",
+      "raw_artifact_sha256": "3c931132deda6af148c0f13583624f976060bb09fb72581e6df5f5cf31a98a48"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_pilot/remaining_rep0_launch_clearance.json",
+      "published_copy": "search_rep0_clearance_20260917.json",
+      "published_copy_lf_bytes_sha256": "ae1fd648649e468797ac560961de38401983985413437da926023e8e1d8626dd",
+      "raw_artifact_sha256": "2c180a774437ec07e09a3634f42ab00442ae39001d75a2ed9f90fb41f10fc84b"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_pilot/preflight_validation.json",
+      "published_copy": "search_validation_20260917.json",
+      "published_copy_lf_bytes_sha256": "c4206062db92c0eb52e70daa25eb399e3726d4cbddf6caf8921f061d99f65b2d",
+      "raw_artifact_sha256": "acf15a279b5c4e7d08cf0d96716bdc38cac93b0880beabee58986559bb383069"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_rep0_outcome.json",
+      "published_copy": "search_rep0_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "a9124b16ca81e883e737dd3e66d4e1b1c8c924035944eb8797e23106fbbbc74a",
+      "raw_artifact_sha256": "b087afbe33d5fa06352c2674a71818dc489ea3ee504b4378bc3e21b5fa695ac7"
+    }
+  ],
+  "created_utc": "2026-09-17T10:59:18.874263+00:00",
+  "hash_convention": "Raw hashes bind the original local bytes. Published-copy hashes bind UTF-8 bytes with LF line endings, as stored in Git; normalize CRLF before checking a Windows working copy. Redacted copies are for review, not execution.",
+  "kind": "noisy_acquisition_continuation_publication_index",
+  "local_run_root": "dev/scripts/runs/noisy_acq_efficiency_20260916",
+  "schema_version": 1,
+  "selection_field_clarification": "full_cost_selection_20260917.json tracked_review_copy_raw_sha256 equals panel_evidence_20260917.json raw_artifact_sha256, not the published-copy byte hash.",
+  "updated_utc": "2026-09-17T11:12:53.616241+00:00"
+}

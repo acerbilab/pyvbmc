@@ -28,9 +28,10 @@ class UserFunction(Prior):
         log_prior : callable, optional
             The user-provided function. Should take a one-dimensional array as
             a single argument, and return the log-density of the prior
-            evaluated at that point.
+            evaluated at that point as one value: a float, or an array of
+            one element.
         sample_prior : callable, optional
-            An optional user-provided function for sampling form the prior.
+            An optional user-provided function for sampling from the prior.
             Should take an integer `n` as a single argument, and return `n`
             samples from the prior distribution as an `(n, D)` array.
         D : int, optional
@@ -56,8 +57,14 @@ class UserFunction(Prior):
         log_prior = lambda x: multivariate_normal(np.zeros(D)).logpdf(x)
         return cls(log_prior, D=D)
 
-    def sample(self, n):
-        """Unused"""
+    def sample(self, n, rng=None):
+        """Unused.
+
+        A `UserFunction` prior samples with the user-provided
+        ``sample_prior`` callable, which is bound to ``self.sample`` at
+        initialization (and takes only ``n``), so ``rng`` is accepted for
+        interface compatibility with the other priors but ignored.
+        """
         pass
 
     def _log_pdf(self):

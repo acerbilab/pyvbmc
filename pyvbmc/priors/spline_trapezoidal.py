@@ -4,6 +4,8 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.priors.prior import _check_finite
+from pyvbmc.rng import get_rng
 
 
 class SplineTrapezoidal(Prior):
@@ -11,10 +13,11 @@ class SplineTrapezoidal(Prior):
 
     A prior distribution represented by a density with external bounds ``a``
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
-    has a spline-trapezoidalal density which is uniform between ``u[i]`` and
-    ``v[i]`` and falls of as a cubic spline to zero ``a[i]`` and ``b[i]``, such
-    that the pdf is continuous and its derivatives at ``a[i]``, ``u[i]``,
-    ``v[i]``, and ``b[i]`` are zero (so the derivatives are also continuous)::
+    has a spline-trapezoidal density which is uniform between ``u[i]`` and
+    ``v[i]`` and falls off as a cubic spline to zero at ``a[i]`` and
+    ``b[i]``, such that the pdf is continuous and its derivatives at
+    ``a[i]``, ``u[i]``, ``v[i]``, and ``b[i]`` are zero (so the derivatives
+    are also continuous)::
 
                  ______________________
                 |      __________      |
@@ -32,13 +35,13 @@ class SplineTrapezoidal(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower bound(s), shape `(1, D)`.
+        The lower bound(s), shape `(D,)`.
     u : np.ndarray
-        The lower pivot(s), shape `(1, D)`.
+        The lower pivot(s), shape `(D,)`.
     v : np.ndarray
-        The upper pivot(s), shape `(1, D)`.
+        The upper pivot(s), shape `(D,)`.
     b : np.ndarray
-        The upper bound(s), shape `(1, D)`.
+        The upper bound(s), shape `(D,)`.
     """
 
     def __init__(self, a, u, v, b, D=None):
@@ -65,8 +68,11 @@ class SplineTrapezoidal(Prior):
         Raises
         ------
         ValueError
-            If the order ``a[i] < u[i] < v[i] < b[i]`` is not respected, for any `i`.
+            If any bound or pivot is not finite, if an array argument does not
+            agree in shape with the other arguments or with `D`, or if the
+            order ``a[i] < u[i] < v[i] < b[i]`` is not respected, for any `i`.
         """
+        _check_finite({"a": a, "u": u, "v": v, "b": b})
         self.a, self.u, self.v, self.b = tile_inputs(
             a, u, v, b, size=D, squeeze=True
         )
@@ -97,46 +103,50 @@ class SplineTrapezoidal(Prior):
         log_pdf = np.full_like(x, -np.inf)
         # a b c d
         # a u v b
-        # norm_factor = u - v + 0.5 * (b - v + u - a)
+        # norm_factor = v - u + 0.5 * (b - v + u - a)
         log_norm_factor = np.log(0.5 * (self.v - self.u + self.b - self.a))
 
-        # ignore log(0) warnings here
-        old_settings = np.seterr(divide="ignore")
-        for d in range(D):
-            # Left tail
-            mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
-            z = (x[mask, d] - self.a[d]) / (self.u[d] - self.a[d])
-            log_pdf[mask, d] = (
-                np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
-            )
+        # The density is zero at the bounds, so the logarithm of zero at a
+        # point on one of them is the answer and not a mishap.
+        with np.errstate(divide="ignore"):
+            for d in range(D):
+                # Left tail
+                mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
+                z = (x[mask, d] - self.a[d]) / (self.u[d] - self.a[d])
+                log_pdf[mask, d] = (
+                    np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
+                )
 
-            # Plateau
-            mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
-            log_pdf[mask, d] = -log_norm_factor[d]
+                # Plateau
+                mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
+                log_pdf[mask, d] = -log_norm_factor[d]
 
-            # Right tail
-            mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
-            z = 1 - (x[mask, d] - self.v[d]) / (self.b[d] - self.v[d])
-            log_pdf[mask, d] = (
-                np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
-            )
-        np.seterr(**old_settings)
+                # Right tail
+                mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
+                z = 1 - (x[mask, d] - self.v[d]) / (self.b[d] - self.v[d])
+                log_pdf[mask, d] = (
+                    np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
+                )
 
         return np.sum(log_pdf, axis=1, keepdims=True)
 
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the trapezoidal distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state.
 
         Returns
         -------
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
+        rng = get_rng(rng)
         rvs = np.zeros((n, self.D))
 
         # Sample one dimension at a time
@@ -155,10 +165,10 @@ class SplineTrapezoidal(Prior):
             # Rejection sampling
             while n1 > 0:
                 # Uniform sampling in the bounding box
-                r1[mask] = np.random.uniform(self.a[d], self.b[d], size=n1)
+                r1[mask] = rng.uniform(self.a[d], self.b[d], size=n1)
 
                 # Rejection sampling
-                z1 = np.random.uniform(0.0, y_max, size=n1)
+                z1 = rng.uniform(0.0, y_max, size=n1)
                 y1 = one_d_dist.pdf(r1[mask].reshape(-1, 1), keepdims=False)
 
                 mask_new = np.full(n, False)
@@ -183,11 +193,7 @@ class SplineTrapezoidal(Prior):
         )
 
     def _support(self):
-        """Returns the support of the distribution.
-
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        """The box of the support, as ``support()`` returns it.
 
         Returns
         -------

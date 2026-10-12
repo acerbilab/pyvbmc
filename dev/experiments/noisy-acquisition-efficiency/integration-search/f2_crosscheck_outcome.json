@@ -1,0 +1,117 @@
+{
+  "created_utc": "2026-09-18T20:03:50.491552+00:00",
+  "kind": "f2_crosscheck_outcome",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "2c9d2d988962df906ef582e40763cb94f841cea295edfd3a1a785a6436dc0b6c",
+  "schema_version": 1,
+  "stages": {
+    "control": {
+      "completed_ladder_sha256": "180d1764561cc14c3f82478f3e632d704a61f54e54cc7fc1d7466570e498a18c",
+      "final_judge_summary_sha256": "5c5e40d0707cbbd42cedb12b5dbc3d18d7b2a9a46528ada1b0c85acf44078f4f"
+    },
+    "development": {
+      "32768": {
+        "counts": {
+          "observed": 80,
+          "raw": {
+            "agree": 0,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "not_applicable_penalty_active": 0,
+            "unresolved": 80
+          },
+          "scheduled": 80,
+          "score": {
+            "agree": 0,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "unresolved": 80
+          }
+        },
+        "failed_pairs": [],
+        "failed_states": [],
+        "manifest_sha256": "43ad45e9baa91ba7cb38143078ec6291b712f09ad6f789c0f62b186da8cfd6cf",
+        "summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_development_crosscheck_32768\\summary.json",
+        "summary_sha256": "e8025648f77ee2e8ec3b1b8fb9bc9c17593d7d634d0f517398b3d051c38323f0"
+      },
+      "65536": {
+        "counts": {
+          "observed": 80,
+          "raw": {
+            "agree": 66,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "not_applicable_penalty_active": 0,
+            "unresolved": 14
+          },
+          "scheduled": 80,
+          "score": {
+            "agree": 72,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "unresolved": 8
+          }
+        },
+        "failed_pairs": [],
+        "failed_states": [],
+        "manifest_sha256": "5357b3ec31cce6486134522cbf2e3f65d13aa0161a7f36d7c4febf5d25556a1f",
+        "summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_development_crosscheck_65536\\summary.json",
+        "summary_sha256": "2f923e13e86d275d4b5687bb8c1b87a7efed6a57521f0be7cf7cbdccf19593c3"
+      },
+      "completed_ladder_sha256": "abd263f87c6587bd7c21a59ff425a1e994aeb307e6b7c2830f95cfc898357674",
+      "final_judge_summary_sha256": "c22c6a2a15983652209d9bac8d7d78e06a07b2fa2fd83acc243309246d825987"
+    },
+    "holdout": {
+      "32768": {
+        "counts": {
+          "observed": 75,
+          "raw": {
+            "agree": 0,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "not_applicable_penalty_active": 0,
+            "unresolved": 75
+          },
+          "scheduled": 75,
+          "score": {
+            "agree": 0,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "unresolved": 75
+          }
+        },
+        "failed_pairs": [],
+        "failed_states": [],
+        "manifest_sha256": "5cd132ed9b533a51cfeddd89568189e24fd5814614ec4797d9e4840886c31f3f",
+        "summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_holdout_crosscheck_32768\\summary.json",
+        "summary_sha256": "a02b201a2fdd5e8c29b9ce73c077ecb1f21795bcc71520df6101433d92f913ba"
+      },
+      "65536": {
+        "counts": {
+          "observed": 75,
+          "raw": {
+            "agree": 62,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "not_applicable_penalty_active": 0,
+            "unresolved": 13
+          },
+          "scheduled": 75,
+          "score": {
+            "agree": 67,
+            "disagree": 0,
+            "failed_or_missing": 0,
+            "unresolved": 8
+          }
+        },
+        "failed_pairs": [],
+        "failed_states": [],
+        "manifest_sha256": "1c782da48c94cd90c40e1f7e56d73b4953e0f620878000adf5c09fc7eafc4c9a",
+        "summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_holdout_crosscheck_65536\\summary.json",
+        "summary_sha256": "e31422ed0679750cb8c1a01113aea2803af8d3bd473b43ec58cc0f10196bea98"
+      },
+      "completed_ladder_sha256": "f3103ebaadf3798fd3a2c532acd00d7418ee185c7833d4752a03aaacb6b633de",
+      "final_judge_summary_sha256": "fac95ae8f28b637b5eb47401f42a669733f1454f7fd8ef12fcd082f9fafd8294"
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "automatic_override": false,
+  "created_utc": "2026-09-17T14:19:11.111221+00:00",
+  "e5_allocated": false,
+  "final_artifacts": {
+    "development_judge": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_judge_outcome.json",
+      "sha256": "ed5793221a094b6271b09f3a8f775b64d838495477e9f796ab722ee4caae47b8"
+    },
+    "holdout_judge": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\holdout_judge_outcome.json",
+      "sha256": "942721d156f691b9b5291a474c030eb8db22294ff0062d3110499c9267ad5dfe"
+    },
+    "holdout_selection": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\holdout_selection_outcome.json",
+      "sha256": "66334e5583dbc353cc0405625593af7926f544059de08831776e9f1703640cd1"
+    },
+    "loss_diagnostic": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_outcome.json",
+      "sha256": "7ef74fc9e12e5e71ccff24809a3193feafd426ff30852c8166d39b273dd571ad"
+    },
+    "loss_ladder": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\completed_ladder.json",
+      "sha256": "585e397bf3d2d20b63840029e0a017bff781b9615ef0382368de91a58bb82adf"
+    },
+    "measurements": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_measurement_outcome.json",
+      "sha256": "d7e3171f9c5c4a5774085d1a9638ebb84b4b6713a56180e0c4e4fa4307a44fce"
+    },
+    "ordinary_mc": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_outcome.json",
+      "sha256": "6f81991ccf4d66c6eff57f9a35e9ebe979230bc0cb676e1608ec12c0fa8a13c1"
+    },
+    "ordinary_mc_development": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development_outcome.json",
+      "sha256": "96b1a10e8d8ecf5479adb803249eb3c12555f326c5b1fc13176bb09db26d1b5a"
+    },
+    "ordinary_mc_holdout": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_holdout_outcome.json",
+      "sha256": "847d52db4704206647e6522fedbc0ce872f5c6416f8648938eaac430a4dc52d9"
+    },
+    "selection": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_selection_outcome.json",
+      "sha256": "d27ce5089864ab46b38fc33fbcd1f7d94573c18cbd9bb0be529c45c5162342e5"
+    }
+  },
+  "kind": "e3_search_final_compute_closure",
+  "local_inventory": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\LOCAL.md",
+    "sha256": "a7adc7e905c6e7f94e01e1ab5fd5d95d1597446fa75e679099e9586cb2bf4907"
+  },
+  "numerical_status": "complete",
+  "operational_archives": {
+    "tmp_bind_e3_loss_wrapper_clearance.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_bind_e3_loss_wrapper_clearance.py",
+      "sha256": "87bc85773a26513f53993ce3105edff335d281c628948aeeb3bdce8b80cd7cfd"
+    },
+    "tmp_close_e3_compute.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_close_e3_compute.py",
+      "sha256": "2b48534af9d165c2769a53e4e824db2423ab39895b97cc5be9c7424aced2a10c"
+    },
+    "tmp_finalize_e3_search_loss_outcome.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_finalize_e3_search_loss_outcome.py",
+      "sha256": "dad13a822c0f5d676e5fc9e7e1bf845af79aaede0f54c83b2d57d9924e6e29c4"
+    },
+    "tmp_finalize_e3_search_mc_outcomes.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_finalize_e3_search_mc_outcomes.py",
+      "sha256": "dc559bfd4fc468e76e74b0de90ff48ecfd9a1414562db62c7b0fa62622126bc0"
+    },
+    "tmp_freeze_e3_mc_holdout65536.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_freeze_e3_mc_holdout65536.py",
+      "sha256": "00e2c01fdaaea9307b7a452c494f1009efcbd60c9e8dc18c9842955c7c386cfc"
+    },
+    "tmp_freeze_e3_search_loss32768.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_freeze_e3_search_loss32768.py",
+      "sha256": "009431c68cca45a06015a27eba02608725e432dca38a2938a40da9266ca5d486"
+    },
+    "tmp_freeze_e3_search_loss65536.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_freeze_e3_search_loss65536.py",
+      "sha256": "dbe5a2a39ee8b2894fc5566ebf4f2817d36da4188e33fee6f5effc3df27120af"
+    },
+    "tmp_publish_e3_holdout.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_publish_e3_holdout.py",
+      "sha256": "df8cc3a97fec4aa19a1158ab7814337c3c11fb7c0c9c75fb31e281c7b4528cc7"
+    },
+    "tmp_update_local_noisy_acq_final.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_update_local_noisy_acq_final.py",
+      "sha256": "e7355f8007d6fa773d72083784552fe764ee08132a96f4de3eb98bfa9081b166"
+    }
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "6c1d292e664f8de171ffc6ec58162dfb5397a8b4df762b2c5468f97e32157999",
+  "schema_version": 1,
+  "source_hashes": {
+    "crosscheck": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_search_crosscheck.py",
+      "sha256": "7473acfcbc6272843acff8f99a5455f66a1bb0bd2837d1cee14ffbe86534059f"
+    },
+    "experiment": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_search_experiment.py",
+      "sha256": "40bcc2e144e583e19b85cba0dbcfb9bc129c5c11d725e7bc68604d0339de24f0"
+    },
+    "loss_diagnostic": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_search_loss_diagnostic.py",
+      "sha256": "4e816a9ce90871b2ee0d4740f853b154a6b6c51d4385f33dbfacd4ccf4642c5c"
+    },
+    "loss_diagnostic_test": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\test_noisy_acq_search_loss_diagnostic.py",
+      "sha256": "9f6d0b218b2754c3ba8da5ddc0cc61e1e8cb5a2f41bbc51a3c2046ed7e8a26af"
+    },
+    "search": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_search.py",
+      "sha256": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf"
+    }
+  },
+  "validation": {
+    "loss_diagnostic_focused_tests": "12 passed in 1.46 s",
+    "loss_diagnostic_format_checks": [
+      "Black API unchanged",
+      "isort --check-only passed",
+      "Pycln cached hook passed",
+      "py_compile passed",
+      "git diff --check passed",
+      "CRLF source and test hashes verified"
+    ],
+    "process_check_before_closure": "Eight owned hung Black formatter processes were identified by exact command line and stopped; a subsequent elevated Win32_Process query returned an empty list for noisy-acquisition or pyvbmc-stage3 Python processes."
+  },
+  "wrapper_archives": {
+    "loss_adapter_final": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\noisy_acq_search_loss_diagnostic_v2.py",
+      "sha256": "4e816a9ce90871b2ee0d4740f853b154a6b6c51d4385f33dbfacd4ccf4642c5c"
+    },
+    "loss_adapter_preflight_version": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\noisy_acq_search_loss_diagnostic.py",
+      "sha256": "c69c94894813fafed072a016b0467b9377392d32bf76af745463c719d8b88aa5"
+    },
+    "loss_diagnostic": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_run_e3_search_loss.py",
+      "sha256": "18c07a9c26624e7dad04eb5de56331f7c524ca22cabe9295f0532bb080ae199e"
+    },
+    "ordinary_mc": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_run_e3_search_mc.py",
+      "sha256": "9c449dee1171ce7e2a4b9da1d829eda74d829fb31e3dd155a035a01125343e5b"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "created_utc": "2026-09-17T11:42:45.842392+00:00",
+  "deadlines": {
+    "hard_compute_cutoff_utc": "2026-09-17T11:54:00+00:00",
+    "per_pilot_timeout_seconds": 120,
+    "soft_stop_new_launches_utc": "2026-09-17T11:51:00+00:00"
+  },
+  "head": "250460bad7b20d7fc3590d3229823f4f44082894",
+  "kind": "noisy_acq_search_followup_pilot_allocation",
+  "manifest_path": "search_manifest.json",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "output_path": "search_development",
+  "pilots": [
+    {
+      "band_pilot_seeds": [
+        9898362273358888663,
+        6930643190862090789,
+        12331079873064518113,
+        11944417774308027836,
+        10856858357553209800,
+        8462820359526183172,
+        2976466500040232632,
+        8424295365846219073
+      ],
+      "budget": 4096,
+      "comparison_seeds": [
+        15704741337746561525,
+        12202284273373772183,
+        11886004279490723310,
+        7062984630358352919,
+        558937052782488920,
+        16480988040636073966,
+        5686258385921181253,
+        7759270335255728370
+      ],
+      "kind": "judge-cell",
+      "previous_summary": null,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "tag": "logreg_D5_noise3_seed0_late__judge_b4096"
+    },
+    {
+      "kind": "timing-cell",
+      "paired_rounds": 7,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "tag": "logreg_D5_noise3_seed0_late__S3__timing",
+      "timing_seed": 15108013424671789913,
+      "treatment_tag": "S3"
+    }
+  ],
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "bf9e7fe6c2ca640d3093772d9fc510bb0a7debbba2faa6c951cd8ebc8955cfa6",
+  "rules": [
+    "Run only these two pilots sequentially in fresh workers.",
+    "Do not launch a pilot after the soft stop; cap each at 120 seconds and before the hard cutoff.",
+    "Preserve completed evidence and stop on failure, timeout, or identity mismatch.",
+    "No full timing or judge matrix is allocated by this record."
+  ],
+  "schema_version": 1,
+  "selection_snapshot_path": "search_remaining/selection_completion_snapshot.json",
+  "selection_snapshot_sha256": "e7d132a3f1902b4ee2e75eaf2769fd769b48b14c4dab4a9009f1705b75ae9b13",
+  "source_sha256": {
+    "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+    "dev/scripts/noisy_acq_integration.py": "d9d186d4f5c4e1e9f9733726d660116dd18fab7499d2bb4d234259a13dfc7bbb",
+    "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+    "dev/scripts/noisy_acq_search.py": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf",
+    "dev/scripts/noisy_acq_search_experiment.py": "40bcc2e144e583e19b85cba0dbcfb9bc129c5c11d725e7bc68604d0339de24f0",
+    "dev/scripts/noisy_acq_timing.py": "1b1f7f8365c8c36cef3bc6bc047498c183b0ddc34061aeee58d68160b2f0e72a"
+  },
+  "window_amendment_sha256": "046a285153214b652e313fdf8a1616df22d18868d57ed19bd8066e6d06789f40"
+}

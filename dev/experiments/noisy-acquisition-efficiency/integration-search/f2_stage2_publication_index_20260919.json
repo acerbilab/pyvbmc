@@ -1,0 +1,50 @@
+{
+  "created_utc": "2026-09-19T05:14:28.797013+00:00",
+  "entries": [
+    {
+      "published": "f2_stage2_manifest.json",
+      "published_sha256": "15ba6113076c47cdd889ba6d0ac4a68e1c4a66ea1f76fb06a705dbb87f8d256d",
+      "raw_artifact_sha256": "4171687378c90f48b7007ce405614f8a3e8d961877f1be972520be1646a26814",
+      "raw_name": "f2_stage2_manifest.json"
+    },
+    {
+      "published": "f2_stage2_manifest_first_batch_2271f25.json",
+      "published_sha256": "8c564d6b28cea932143f367e122d340e34fa7710eb99f8f7026bba88cfc3ffd2",
+      "raw_artifact_sha256": "10e03ced979d84922c0e3297a805a4075b752a9c6ccb835aa516a8f6c988cd0d",
+      "raw_name": "f2_stage2_manifest_first_batch_2271f25.json"
+    },
+    {
+      "published": "f2_stage2_launch_clearance.json",
+      "published_sha256": "98cce5c9375acd8d19781be74984f5aacae7d17a51088aba6aef60fb55f489ee",
+      "raw_artifact_sha256": "a1dfa9659d17a69421699d6c95fac0516dc851fdc130b727b27b86b5e585f742",
+      "raw_name": "f2_stage2_launch_clearance.json"
+    },
+    {
+      "published": "f2_stage2_stop_decision.json",
+      "published_sha256": "f6691135e20f7a5ce13248fb8ac725bcfcc250f154cee5a294c1cd7b0dc51bc0",
+      "raw_artifact_sha256": "ff92d88f22baf40de7b7eee4b6fe08ade86510a5ad2b0b3c82d077cf5e4e3783",
+      "raw_name": "f2_stage2_stop_decision.json"
+    },
+    {
+      "published": "f2_stage2_summary.json",
+      "published_sha256": "e2043f37a7144301bf16a0b97cfaa88c0419ad382018ff2bcdcb54cb23e4f9a5",
+      "raw_artifact_sha256": "9e2ddf5d1375a13184bb7beb4d9ddff5863a7136c3f8f295042282c4d98023a1",
+      "raw_name": "f2_stage2_summary.json"
+    },
+    {
+      "published": "f2_stage2_timing_by_order.json",
+      "published_sha256": "e17d5a130f3959fd88cdcd6679cb5ad5c3d62bd514ccb552c900f2bef4e0b979",
+      "raw_artifact_sha256": "9f4000477df7026d7a7aacba777d382df6896cff1153ba25cfc335013800fa35",
+      "raw_name": "f2_stage2_timing_by_order.json"
+    },
+    {
+      "published": "f2_stage2_batch_1789768615.json",
+      "published_sha256": "5a249f57289ec22636123d1c5798fee94707645f50e40f3c7e60d4982ab2fa8c",
+      "raw_artifact_sha256": "c68805af19e3d0ef28a6f6d73f9a5d6a447255caf756ae4234ee37313eb202ed",
+      "raw_name": "f2_stage2_batch_1789768615.json"
+    }
+  ],
+  "kind": "publication_index",
+  "schema_version": 1,
+  "source_dir": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916"
+}

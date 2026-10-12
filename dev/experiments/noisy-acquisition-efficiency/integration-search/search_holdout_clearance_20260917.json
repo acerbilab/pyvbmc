@@ -1,0 +1,11 @@
+{
+  "allocation_sha256": "3ea9c6243680ff8a20c4aaf92321b2bb7198a2fb12432e6cba7f4da40c248e7a",
+  "cell_count": 192,
+  "created_utc": "2026-09-17T12:53:00.843737+00:00",
+  "decision": "authorized_exact_192_holdout_selections",
+  "kind": "noisy_acq_search_holdout_selection_launch_clearance",
+  "manifest_sha256": "c39a838411efe47102007a0e4c9ef15d86b0079aeee5e36fca5cc436aa3211fd",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "3c1804c7b4a4d04bdbcb6360bd33199731481369fce259fa6599f7f02bf2b3f5",
+  "schema_version": 1
+}

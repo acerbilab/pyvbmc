@@ -1,0 +1,430 @@
+{
+  "sources": {
+    "python": "3.12.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "versions": {
+      "pymc": "6.3.2",
+      "pytensor": "3.3.1",
+      "arviz": "1.3.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "gpyreg": "1.2.1"
+    },
+    "pyvbmc_commit": "741d635bd11431d800e70a50f56cfe5dafa31119",
+    "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+    "gpyreg_dirty": "",
+    "linker": "NumbaLinker",
+    "floatX": "float64",
+    "blas_thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "sha256": {
+      "dev\\scripts\\pymc_setup_probe.py": "d2f677a362063141dff3515033fd3533cd37da2277db332d28d494965636868a",
+      "dev\\scripts\\pymc_feasibility.py": "a7f0f12520b4bde78a72ca35ae226416faf19f2f216c53fdc8023cf63fca3bb2",
+      "pyvbmc\\vbmc\\vbmc.py": "7c9b9715c1a307a8533123103c8c57905acc32108ab105fd2e1c737f9a03e6bc",
+      "pyvbmc\\vbmc\\active_sample.py": "1175ffe230b3e634c69e2837a2e3c217bf6d23223cf0d67dc4572810ba29416b",
+      "pyvbmc\\function_logger\\function_logger.py": "5ef869c2d877307c296fe0829d115e6c0e831f00ba8e1c47ba4540dea3c9ec18"
+    }
+  },
+  "filter": "log_density",
+  "filter_audit": [
+    {
+      "name": "schools_noncentered",
+      "D": 10,
+      "all_rows": 14,
+      "density_threshold": 100,
+      "density_rows": 13,
+      "box_rows": 13,
+      "same_masks": true,
+      "relative_log_densities": [
+        2.423546508777939,
+        1.6783276602717407,
+        1.0390858380389858,
+        1606.8669532612948,
+        2.216399127325701,
+        0.8207691743167658,
+        0.45163732794441813,
+        0.48621265353107646,
+        0.11362307028601748,
+        0.04452871815737325,
+        0.00784222850921168,
+        0.004361494046001724,
+        0.00018945680630366724,
+        0.0
+      ],
+      "box_mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "density_mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "ill_conditioned",
+      "D": 5,
+      "all_rows": 27,
+      "density_threshold": 50,
+      "density_rows": 24,
+      "box_rows": 15,
+      "same_masks": false,
+      "relative_log_densities": [
+        80.6309238490125,
+        3416187.5403049216,
+        16.12005148871252,
+        16.11640899367538,
+        16.101857332502618,
+        16.04394379142323,
+        15.81697928489254,
+        14.984155783359341,
+        12.358906956386406,
+        12.217071353238723,
+        11.697516275561384,
+        7.187051331917374,
+        3.856117818410226,
+        2.0798560721328556,
+        2.0559020002472437,
+        2.04155341274722,
+        1.9747820635337519,
+        1.8402954179109656,
+        1.5159554138865445,
+        0.9631432873718211,
+        90.75671193649814,
+        0.9609134925701568,
+        0.35266233043090267,
+        0.05482211296593675,
+        0.0027904971708778703,
+        4.698825038929044e-05,
+        0.0
+      ],
+      "box_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "density_mask": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "name": "schools_noncentered",
+      "arm": "logger",
+      "completed": 5,
+      "failures": [],
+      "median_w1": 0.13023339232507258,
+      "w1_range": [
+        0.12126001106057996,
+        0.2366826198969721
+      ],
+      "median_abs_elbo_error": 0.5764788837461055,
+      "elbo_error_range": [
+        -0.873463499365613,
+        -0.1837558033404889
+      ],
+      "median_gaussian_kl": 0.6358151711269864,
+      "stable_cases": 0,
+      "median_seconds": 165.1507653000299
+    },
+    {
+      "name": "schools_noncentered",
+      "arm": "filtered_full",
+      "completed": 3,
+      "failures": [
+        {
+          "seed": 2,
+          "error": "LinAlgError: Singular matrix for L Cholesky decomposition"
+        },
+        {
+          "seed": 3,
+          "error": "LinAlgError: Singular matrix for L Cholesky decomposition"
+        }
+      ],
+      "median_w1": 0.13845064451204916,
+      "w1_range": [
+        0.09856317394120984,
+        0.18327115341799635
+      ],
+      "median_abs_elbo_error": 0.7012864939104944,
+      "elbo_error_range": [
+        -0.7147353607571958,
+        -0.42679308451386433
+      ],
+      "median_gaussian_kl": 0.5473234732716867,
+      "stable_cases": 0,
+      "median_seconds": 77.00180950004142
+    },
+    {
+      "name": "schools_noncentered",
+      "arm": "filtered_short",
+      "completed": 5,
+      "failures": [],
+      "median_w1": 0.19187200373709926,
+      "w1_range": [
+        0.14487634121634313,
+        0.268854971689254
+      ],
+      "median_abs_elbo_error": 0.7721681792923505,
+      "elbo_error_range": [
+        -1.1875329482896646,
+        1.1539807401312991
+      ],
+      "median_gaussian_kl": 1.0076526952468674,
+      "stable_cases": 0,
+      "median_seconds": 79.87190829997417
+    },
+    {
+      "name": "ill_conditioned",
+      "arm": "logger",
+      "completed": 5,
+      "failures": [],
+      "median_w1": 0.37576408032300906,
+      "w1_range": [
+        0.17107707239357464,
+        0.3907905888292205
+      ],
+      "median_abs_elbo_error": 2.945164923657927,
+      "elbo_error_range": [
+        -3.1414364459133424,
+        -0.893541933502064
+      ],
+      "median_gaussian_kl": 3.0531285789061373,
+      "stable_cases": 0,
+      "median_seconds": 29.075352500076406
+    },
+    {
+      "name": "ill_conditioned",
+      "arm": "filtered_full",
+      "completed": 5,
+      "failures": [],
+      "median_w1": 0.397217042719883,
+      "w1_range": [
+        0.37695991814556906,
+        0.42050829233670184
+      ],
+      "median_abs_elbo_error": 3.104831862199404,
+      "elbo_error_range": [
+        -3.5141266848703054,
+        -2.8896829093651633
+      ],
+      "median_gaussian_kl": 3.4243380069132616,
+      "stable_cases": 0,
+      "median_seconds": 32.50701780000236
+    },
+    {
+      "name": "ill_conditioned",
+      "arm": "filtered_short",
+      "completed": 5,
+      "failures": [],
+      "median_w1": 0.4128816576665855,
+      "w1_range": [
+        0.39597905203933526,
+        0.5461533154901111
+      ],
+      "median_abs_elbo_error": 3.5577892594184846,
+      "elbo_error_range": [
+        -3.5577892594184846,
+        3.998500660746714
+      ],
+      "median_gaussian_kl": 3.792425678389236,
+      "stable_cases": 0,
+      "median_seconds": 28.508148699998856
+    }
+  ],
+  "paired": [
+    {
+      "name": "schools_noncentered",
+      "seed": 0,
+      "filtering_delta": 0.008420017566250076,
+      "full_coverage_delta": -0.05342135922505009
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 1,
+      "filtering_delta": 0.05303776109292377,
+      "full_coverage_delta": 0.03839481220165322
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 4,
+      "filtering_delta": -0.03748214759243623,
+      "full_coverage_delta": -0.12802390106250344
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 0,
+      "filtering_delta": 0.0011958378225599975,
+      "full_coverage_delta": -0.03592173952101646
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 1,
+      "filtering_delta": 0.2494312199431272,
+      "full_coverage_delta": 0.024529240297366584
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 2,
+      "filtering_delta": -0.010050116940027498,
+      "full_coverage_delta": -0.16541284360091812
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 3,
+      "filtering_delta": 0.023412279352305276,
+      "full_coverage_delta": -0.013796171458343054
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 4,
+      "filtering_delta": 0.016184638428488773,
+      "full_coverage_delta": -0.042867329405396226
+    }
+  ],
+  "checks": [
+    {
+      "name": "schools_noncentered",
+      "seed": 0,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 1,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 2,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 3,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 4,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 0,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 1,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 2,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 3,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 4,
+      "full_design_calls_identical": true,
+      "filtered_initial_vp_and_rng_identical": true
+    }
+  ],
+  "input_sha256": {
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\coverage_density\\coverage.json": "204cb67afdc6a799f566f9cf88d3fdac7010ea26810d7a975b994ee79f0fd6bc",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\b_final\\part_b.json": "fec5fb2bab6641336e484c6922cd4e323d8f17f84adbc64da6a1ddcb71f0b1a4",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\coverage_density\\probe_source.py": "5308fcf3bc1cb67acc7411654d8e286b7c75360addbce2478bfd50b33964ade1",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\b_final\\probe_source.py": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+  }
+}

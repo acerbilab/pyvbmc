@@ -1,0 +1,13 @@
+{
+  "part": "coverage_summary",
+  "out": "dev\\experiments\\pymc_setup_probe\\coverage",
+  "models": null,
+  "setup": null,
+  "references": null,
+  "results": "dev\\scripts\\runs\\pymc_setup_probe_20260916\\coverage_density",
+  "baseline": "dev\\scripts\\runs\\pymc_setup_probe_20260916\\b_final",
+  "filter": "log_density",
+  "draws": 4000,
+  "tune": 2000,
+  "seeds": 5
+}

@@ -1,0 +1,1496 @@
+{
+ "git": {
+  "sha": "dce4e18c",
+  "dirty": false
+ },
+ "package": {
+  "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+  "git": {
+   "sha": "dce4e18c",
+   "dirty": false
+  }
+ },
+ "threads": 1,
+ "calibration_budget": null,
+ "minutes": 43.148829694588976,
+ "rows": [
+  {
+   "label": "normal_D5",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.004240319763010536,
+    "gskl": 4.8230006710170414e-05,
+    "mmtv": 0.007049736791138435,
+    "func_count": 75,
+    "iterations": 14,
+    "final_K": 50,
+    "wall_s": 18.801434600027278,
+    "elbo": -0.004240319763010536,
+    "elbo_sd": 0.00035669145899329863,
+    "best_iter": 13,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 75,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.00013602467331308432,
+    "gskl": 0.00031425556224218276,
+    "mmtv": 0.007641536155523132,
+    "func_count": 75,
+    "iterations": 14,
+    "final_K": 50,
+    "wall_s": 41.39542726799846,
+    "elbo": -0.00013602467331308432,
+    "elbo_sd": 0.00035405119474598895,
+    "best_iter": 13,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 75,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.02498358228169384,
+    "gskl": 0.0007988048205829212,
+    "mmtv": 0.01289689775145525
+   },
+   "pop_evals": [
+    65,
+    80
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "corr_D5",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.04825960991380995,
+    "gskl": 0.012290802693906588,
+    "mmtv": 0.017838547244927044,
+    "func_count": 105,
+    "iterations": 21,
+    "final_K": 50,
+    "wall_s": 23.947934000054374,
+    "elbo": -0.04825960991380995,
+    "elbo_sd": 0.0004935739392295116,
+    "best_iter": 20,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 105,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.0030686433553244186,
+    "gskl": 0.0009101064252343694,
+    "mmtv": 0.007652778903577169,
+    "func_count": 100,
+    "iterations": 20,
+    "final_K": 50,
+    "wall_s": 55.658117729006335,
+    "elbo": -0.0030686433553244186,
+    "elbo_sd": 0.000504855709644164,
+    "best_iter": 19,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 100,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.03260663573432421,
+    "gskl": 0.005016716132260568,
+    "mmtv": 0.01277364326214172
+   },
+   "pop_evals": [
+    90,
+    135
+   ],
+   "outside": [
+    "elbo_err",
+    "gskl",
+    "mmtv"
+   ],
+   "flagged": true,
+   "verdict": "finals only; OUTSIDE envelope: elbo_err, gskl, mmtv"
+  },
+  {
+   "label": "halfnormal_D2",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.009073606509449217,
+    "gskl": 0.00011868664636760506,
+    "mmtv": 0.020115002329817618,
+    "func_count": 65,
+    "iterations": 12,
+    "final_K": 50,
+    "wall_s": 8.685656099929474,
+    "elbo": -1.3953679676293398,
+    "elbo_sd": 0.0007098789289921869,
+    "best_iter": 11,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 65,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.00907360782381339,
+    "gskl": 0.0001373725873852205,
+    "mmtv": 0.01860992382985279,
+    "func_count": 65,
+    "iterations": 12,
+    "final_K": 50,
+    "wall_s": 22.288689992856234,
+    "elbo": -1.395367968943704,
+    "elbo_sd": 0.0007098787541919065,
+    "best_iter": 11,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 65,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.017330746584849677,
+    "gskl": 0.0010738919422255966,
+    "mmtv": 0.030250069244147165
+   },
+   "pop_evals": [
+    65,
+    75
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "rosenbrock_D2",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.024381904899113405,
+    "gskl": 0.014877383479957262,
+    "mmtv": 0.020847613222071293,
+    "func_count": 75,
+    "iterations": 14,
+    "final_K": 50,
+    "wall_s": 10.18250839994289,
+    "elbo": -2.284229029071498,
+    "elbo_sd": 0.0006169545171011425,
+    "best_iter": 13,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 75,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.020969810857101034,
+    "gskl": 0.017193821629226114,
+    "mmtv": 0.020377412618351798,
+    "func_count": 75,
+    "iterations": 14,
+    "final_K": 50,
+    "wall_s": 27.631007615011185,
+    "elbo": -2.2808169350294856,
+    "elbo_sd": 0.0006217348016971293,
+    "best_iter": 13,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 75,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.06673306430495396,
+    "gskl": 0.08921598030762813,
+    "mmtv": 0.06357822312765954
+   },
+   "pop_evals": [
+    70,
+    120
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "banana_D2",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.03612432014136213,
+    "gskl": 0.12100888887127503,
+    "mmtv": 0.03345110376814388,
+    "func_count": 80,
+    "iterations": 15,
+    "final_K": 50,
+    "wall_s": 10.696338199893944,
+    "elbo": -0.03612432014136213,
+    "elbo_sd": 0.0006633105413889613,
+    "best_iter": 14,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 80,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.04557746572817334,
+    "gskl": 0.16868096309072195,
+    "mmtv": 0.046110683517604806,
+    "func_count": 80,
+    "iterations": 15,
+    "final_K": 50,
+    "wall_s": 28.21741610299796,
+    "elbo": -0.04557746572817334,
+    "elbo_sd": 0.0006566732235492143,
+    "best_iter": 14,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 80,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.11696119517403447,
+    "gskl": 0.39063425187533674,
+    "mmtv": 0.08561750626499509
+   },
+   "pop_evals": [
+    75,
+    115
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "banana_D6",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.06948547965882579,
+    "gskl": 0.24745301304684242,
+    "mmtv": 0.025594833210805194,
+    "func_count": 90,
+    "iterations": 17,
+    "final_K": 50,
+    "wall_s": 21.000388899934478,
+    "elbo": -0.06948547965882579,
+    "elbo_sd": 0.003988569268010424,
+    "best_iter": 16,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 90,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.08846561203734149,
+    "gskl": 0.27175506722411025,
+    "mmtv": 0.025825626873086826,
+    "func_count": 90,
+    "iterations": 17,
+    "final_K": 50,
+    "wall_s": 45.310989205027,
+    "elbo": -0.08846561203734149,
+    "elbo_sd": 0.005797504135865077,
+    "best_iter": 16,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 90,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.19592079512919358,
+    "gskl": 0.7035063958986344,
+    "mmtv": 0.05078412559530179
+   },
+   "pop_evals": [
+    85,
+    155
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "banana_D10",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.06471586203993862,
+    "gskl": 0.22836141257654097,
+    "mmtv": 0.01601272349445139,
+    "func_count": 120,
+    "iterations": 21,
+    "final_K": 50,
+    "wall_s": 47.33236400003079,
+    "elbo": -0.06471586203993862,
+    "elbo_sd": 0.00960385519919935,
+    "best_iter": 20,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 120,
+    "min_Ns_gp": 7,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.19363384739918033,
+    "gskl": 0.7510928048697636,
+    "mmtv": 0.03229960337435789,
+    "func_count": 110,
+    "iterations": 19,
+    "final_K": 50,
+    "wall_s": 77.07173425517976,
+    "elbo": -0.19363384739918033,
+    "elbo_sd": 0.011593456789626366,
+    "best_iter": 18,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 110,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "min_Ns_gp": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.2081763900065272,
+    "gskl": 0.817791989624368,
+    "mmtv": 0.036684833661584614
+   },
+   "pop_evals": [
+    110,
+    165
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "cigar_D4",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.004014833057056855,
+    "gskl": 0.0004470494842766515,
+    "mmtv": 0.00987147423244707,
+    "func_count": 125,
+    "iterations": 25,
+    "final_K": 50,
+    "wall_s": 48.32375750003848,
+    "elbo": -3.516764493358414,
+    "elbo_sd": 0.0003707162920216007,
+    "best_iter": 24,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 125,
+    "min_Ns_gp": 7,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.005904672035859093,
+    "gskl": 0.00012647005313481952,
+    "mmtv": 0.007648214690299796,
+    "func_count": 130,
+    "iterations": 27,
+    "final_K": 50,
+    "wall_s": 77.15504186204635,
+    "elbo": -3.518654332337216,
+    "elbo_sd": 0.0003760800694387948,
+    "best_iter": 26,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 130,
+    "min_Ns_gp": 7,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.024227986535604096,
+    "gskl": 0.0064059837211408455,
+    "mmtv": 0.04200116112557841
+   },
+   "pop_evals": [
+    115,
+    155
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "lumpy_D4",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.07746830672897254,
+    "gskl": 0.022188534073361854,
+    "mmtv": 0.02651329258830319,
+    "func_count": 90,
+    "iterations": 17,
+    "final_K": 50,
+    "wall_s": 16.78030649991706,
+    "elbo": -5.396164410808069,
+    "elbo_sd": 0.015718271644705677,
+    "best_iter": 16,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 90,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "final_ref": {
+    "elbo_err": 0.06846071086309813,
+    "gskl": 0.024009934019174062,
+    "mmtv": 0.0285102497793489,
+    "func_count": 90,
+    "iterations": 17,
+    "final_K": 50,
+    "wall_s": 45.28651810111478,
+    "elbo": -5.387156814942195,
+    "elbo_sd": 0.018948052489528387,
+    "best_iter": 16,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 90,
+    "min_Ns_gp": 8,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.18606926219480546,
+    "gskl": 0.04633897306491877,
+    "mmtv": 0.04333893754025893
+   },
+   "pop_evals": [
+    70,
+    110
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "lumpy_D10",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.8173199308656507,
+    "gskl": 0.5894989615281774,
+    "mmtv": 0.10053317581052848,
+    "func_count": 310,
+    "iterations": 61,
+    "final_K": 50,
+    "wall_s": 170.4275591999758,
+    "elbo": -14.529242504338946,
+    "elbo_sd": 0.046729337342914276,
+    "best_iter": 60,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 310,
+    "min_Ns_gp": 0,
+    "n_warps": 3
+   },
+   "final_ref": {
+    "elbo_err": 0.46219392195819253,
+    "gskl": 0.33274162376815486,
+    "mmtv": 0.07084010333148705,
+    "func_count": 325,
+    "iterations": 64,
+    "final_K": 50,
+    "wall_s": 481.2058370891027,
+    "elbo": -14.174116495431488,
+    "elbo_sd": 0.03748259347943101,
+    "best_iter": 63,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 325,
+    "min_Ns_gp": 0,
+    "n_warps": 4
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.2104471001109585,
+    "gskl": 1.1145889090852354,
+    "mmtv": 0.17041240547164363
+   },
+   "pop_evals": [
+    125,
+    350
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "student_D4",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.00040383416098954683,
+    "gskl": 0.011521218794022015,
+    "mmtv": 0.03325871477080232,
+    "func_count": 130,
+    "iterations": 25,
+    "final_K": 50,
+    "wall_s": 29.061897699953988,
+    "elbo": -10.357705384483747,
+    "elbo_sd": 0.02185099657268682,
+    "best_iter": 24,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 130,
+    "min_Ns_gp": 7,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.009222419514534508,
+    "gskl": 0.015821840942239596,
+    "mmtv": 0.029569150510657755,
+    "func_count": 135,
+    "iterations": 26,
+    "final_K": 50,
+    "wall_s": 73.14837493607774,
+    "elbo": -10.348886799130202,
+    "elbo_sd": 0.013366776279261486,
+    "best_iter": 25,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 135,
+    "min_Ns_gp": 7,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.10345272975114383,
+    "gskl": 0.16076340059281682,
+    "mmtv": 0.07565105261996984
+   },
+   "pop_evals": [
+    80,
+    160
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "logreg_D5",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.08548318696070112,
+    "gskl": 0.01971883037986455,
+    "mmtv": 0.03881727779063764,
+    "func_count": 105,
+    "iterations": 21,
+    "final_K": 50,
+    "wall_s": 27.125271699973382,
+    "elbo": -34.9789731869607,
+    "elbo_sd": 0.022590203875463732,
+    "best_iter": 20,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 105,
+    "min_Ns_gp": 8,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.0910851542400195,
+    "gskl": 0.015007574050115435,
+    "mmtv": 0.03239297119931665,
+    "func_count": 130,
+    "iterations": 26,
+    "final_K": 50,
+    "wall_s": 75.2817184550222,
+    "elbo": -34.98457515424002,
+    "elbo_sd": 0.016861816416314325,
+    "best_iter": 25,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 130,
+    "min_Ns_gp": 7,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "min_Ns_gp": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.2543803257521571,
+    "gskl": 0.08696772633216732,
+    "mmtv": 0.0779282419172177
+   },
+   "pop_evals": [
+    110,
+    185
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "cigar_D8",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.002657263755063255,
+    "gskl": 0.005833258732492075,
+    "mmtv": 0.025921658073422074,
+    "func_count": 160,
+    "iterations": 32,
+    "final_K": 50,
+    "wall_s": 53.81845190003514,
+    "elbo": -5.348975703500219,
+    "elbo_sd": 0.0015572583012197023,
+    "best_iter": 31,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 160,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.013742677067858367,
+    "gskl": 0.0007636812082423283,
+    "mmtv": 0.005033556807009272,
+    "func_count": 160,
+    "iterations": 33,
+    "final_K": 50,
+    "wall_s": 111.78660587407649,
+    "elbo": -5.360061116813014,
+    "elbo_sd": 0.0012364615694516678,
+    "best_iter": 32,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 160,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.05114532285246831,
+    "gskl": 0.013942016991834227,
+    "mmtv": 0.03512657880317957
+   },
+   "pop_evals": [
+    140,
+    195
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "student_D8",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.0027778132883256035,
+    "gskl": 0.12911464189584,
+    "mmtv": 0.05922285980785243,
+    "func_count": 160,
+    "iterations": 32,
+    "final_K": 15,
+    "wall_s": 70.66920799994841,
+    "elbo": -19.60074234490973,
+    "elbo_sd": 0.04529840844411575,
+    "best_iter": 31,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 160,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.08678163440682951,
+    "gskl": 0.2982753009865218,
+    "mmtv": 0.08083480511946003,
+    "func_count": 290,
+    "iterations": 57,
+    "final_K": 50,
+    "wall_s": 353.3579562420491,
+    "elbo": -19.516738523791226,
+    "elbo_sd": 0.02107380235137442,
+    "best_iter": 56,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 290,
+    "min_Ns_gp": 0,
+    "n_warps": 3
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "final_K": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "min_Ns_gp": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.4747944137498017,
+    "gskl": 0.921678719191862,
+    "mmtv": 0.11514033685853209
+   },
+   "pop_evals": [
+    110,
+    335
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "multisensory_s1_D6",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.41658618456278873,
+    "gskl": 0.5482545725380803,
+    "mmtv": 0.11393623106212725,
+    "func_count": 175,
+    "iterations": 35,
+    "final_K": 50,
+    "wall_s": 65.50723860005382,
+    "elbo": -502.6024959596349,
+    "elbo_sd": 0.0382687673870299,
+    "best_iter": 34,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 175,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.48490505027575637,
+    "gskl": 1.1106436429257591,
+    "mmtv": 0.14451827250598287,
+    "func_count": 175,
+    "iterations": 34,
+    "final_K": 50,
+    "wall_s": 116.33057400281541,
+    "elbo": -502.67081482534786,
+    "elbo_sd": 0.031489808166598986,
+    "best_iter": 33,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 175,
+    "min_Ns_gp": 6,
+    "n_warps": 1
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.8251747201413338,
+    "gskl": 2.0448124404725574,
+    "mmtv": 0.23892644556662795
+   },
+   "pop_evals": [
+    130,
+    225
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "cigar_D15_exhaust",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.0031661818526689256,
+    "gskl": 0.0021422939558566334,
+    "mmtv": 0.006544219019882245,
+    "func_count": 750,
+    "iterations": 149,
+    "final_K": 50,
+    "wall_s": 545.7801900000777,
+    "elbo": 0.030098812999185043,
+    "elbo_sd": 0.0006014345668688442,
+    "best_iter": 147,
+    "success_flag": false,
+    "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+    "final_N": 750,
+    "min_Ns_gp": 0,
+    "n_warps": 6
+   },
+   "final_ref": {
+    "elbo_err": 0.011545705752740387,
+    "gskl": 0.0018327022079596134,
+    "mmtv": 0.009482531110932868,
+    "func_count": 750,
+    "iterations": 150,
+    "final_K": 50,
+    "wall_s": 1303.7070145909674,
+    "elbo": 0.02171928909912424,
+    "elbo_sd": 0.0016715205238507593,
+    "best_iter": 149,
+    "success_flag": false,
+    "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+    "final_N": 750,
+    "min_Ns_gp": 0,
+    "n_warps": 6
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.06556651012458858,
+    "gskl": 0.008770393682011601,
+    "mmtv": 0.01335210532912711
+   },
+   "pop_evals": [
+    750,
+    750
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "rosenbrock_D2_noise1_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.07118758307822182,
+    "gskl": 0.08404498957465156,
+    "mmtv": 0.0533243510779875,
+    "func_count": 120,
+    "iterations": 23,
+    "final_K": 50,
+    "wall_s": 55.24029410001822,
+    "elbo": -2.1886595410941627,
+    "elbo_sd": 0.1133642739852157,
+    "best_iter": 22,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 120,
+    "min_Ns_gp": 7,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.28703020440353333,
+    "gskl": 0.3008991457025535,
+    "mmtv": 0.17044987539297254,
+    "func_count": 300,
+    "iterations": 61,
+    "final_K": 16,
+    "wall_s": 391.5453687850386,
+    "elbo": -1.9728169197688512,
+    "elbo_sd": 1.4901161193847656e-08,
+    "best_iter": 57,
+    "success_flag": false,
+    "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+    "final_N": 300,
+    "min_Ns_gp": 0,
+    "n_warps": 4
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "final_K": "value",
+    "best_iter": "value",
+    "success_flag": "value",
+    "message": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "min_Ns_gp": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 0.42895834063691063,
+    "gskl": 0.1633660906253671,
+    "mmtv": 0.1242664294650067
+   },
+   "pop_evals": [
+    105,
+    300
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "rosenbrock_D2_noise3_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.1331729997452249,
+    "gskl": 0.0774833994326321,
+    "mmtv": 0.08978771512219405,
+    "func_count": 170,
+    "iterations": 33,
+    "final_K": 50,
+    "wall_s": 82.36747940001078,
+    "elbo": -2.1266741244271596,
+    "elbo_sd": 0.28121516154546466,
+    "best_iter": 32,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 170,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.20396670819755736,
+    "gskl": 0.04851146490153202,
+    "mmtv": 0.06883826519819902,
+    "func_count": 160,
+    "iterations": 31,
+    "final_K": 50,
+    "wall_s": 158.79863155004568,
+    "elbo": -2.055880415974827,
+    "elbo_sd": 0.288920354950669,
+    "best_iter": 30,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 160,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.2213640653778781,
+    "gskl": 2.8234129755585347,
+    "mmtv": 0.5559092458787885
+   },
+   "pop_evals": [
+    130,
+    245
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "logreg_D5_noise3_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.07513832961163303,
+    "gskl": 0.24381360402946362,
+    "mmtv": 0.09285604862961673,
+    "func_count": 260,
+    "iterations": 55,
+    "final_K": 50,
+    "wall_s": 160.22096619999502,
+    "elbo": -34.96862832961163,
+    "elbo_sd": 0.3078983470614145,
+    "best_iter": 54,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 260,
+    "min_Ns_gp": 0,
+    "n_warps": 4
+   },
+   "final_ref": {
+    "elbo_err": 0.2962294239224903,
+    "gskl": 0.38914351667028724,
+    "mmtv": 0.17880383284301976,
+    "func_count": 240,
+    "iterations": 47,
+    "final_K": 50,
+    "wall_s": 324.8941698339768,
+    "elbo": -35.18971942392249,
+    "elbo_sd": 0.32124787184576975,
+    "best_iter": 46,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 240,
+    "min_Ns_gp": 5,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "min_Ns_gp": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.4755384614156686,
+    "gskl": 1.0075502985155937,
+    "mmtv": 0.3139502003377822
+   },
+   "pop_evals": [
+    190,
+    320
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "student_D8_noise3_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.9140078354705707,
+    "gskl": 0.44422929994847293,
+    "mmtv": 0.14041997259935562,
+    "func_count": 315,
+    "iterations": 63,
+    "final_K": 50,
+    "wall_s": 240.48803030001,
+    "elbo": -20.517527993668626,
+    "elbo_sd": 0.2607284456074494,
+    "best_iter": 62,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 315,
+    "min_Ns_gp": 0,
+    "n_warps": 3
+   },
+   "final_ref": {
+    "elbo_err": 1.1161045602413644,
+    "gskl": 0.6450951215277017,
+    "mmtv": 0.15350548578425657,
+    "func_count": 340,
+    "iterations": 68,
+    "final_K": 50,
+    "wall_s": 561.9495758099947,
+    "elbo": -20.71962471843942,
+    "elbo_sd": 0.27103119799758235,
+    "best_iter": 67,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 340,
+    "min_Ns_gp": 0,
+    "n_warps": 3
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 3.3659123287097747,
+    "gskl": 1.593562598222511,
+    "mmtv": 0.25672926408497554
+   },
+   "pop_evals": [
+    235,
+    400
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "lumpy_D10_noise3_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.994042513472948,
+    "gskl": 1.0196632989846943,
+    "mmtv": 0.1315532700251675,
+    "func_count": 430,
+    "iterations": 84,
+    "final_K": 50,
+    "wall_s": 478.2704136999091,
+    "elbo": -12.717880060000347,
+    "elbo_sd": 0.0002877919250527858,
+    "best_iter": 83,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 430,
+    "min_Ns_gp": 0,
+    "n_warps": 4
+   },
+   "final_ref": {
+    "elbo_err": 0.5401681471547626,
+    "gskl": 0.7849762907443263,
+    "mmtv": 0.11636629362649349,
+    "func_count": 395,
+    "iterations": 77,
+    "final_K": 50,
+    "wall_s": 656.0657322169282,
+    "elbo": -14.252090720628058,
+    "elbo_sd": 0.19379357139259973,
+    "best_iter": 76,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 395,
+    "min_Ns_gp": 0,
+    "n_warps": 4
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.782683464372834,
+    "gskl": 1.2765077853624929,
+    "mmtv": 0.17892883195546022
+   },
+   "pop_evals": [
+    230,
+    525
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "timing_D5_noise2.2_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.07181226836291899,
+    "gskl": 0.44151863231433053,
+    "mmtv": 0.15037329393841553,
+    "func_count": 195,
+    "iterations": 39,
+    "final_K": 50,
+    "wall_s": 123.11504449998029,
+    "elbo": -3861.237533870156,
+    "elbo_sd": 0.2707494285413476,
+    "best_iter": 38,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 195,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.0916282063849394,
+    "gskl": 0.2751934351020864,
+    "mmtv": 0.10188080136970401,
+    "func_count": 210,
+    "iterations": 42,
+    "final_K": 50,
+    "wall_s": 263.6113055071328,
+    "elbo": -3861.217717932134,
+    "elbo_sd": 0.28464356402088975,
+    "best_iter": 41,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 210,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.0253976071272746,
+    "gskl": 1.4271047751909913,
+    "mmtv": 0.2839221466233691
+   },
+   "pop_evals": [
+    170,
+    455
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "multisensory_s1_D6_noise1.3_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.3856997091460812,
+    "gskl": 4.273842055754566,
+    "mmtv": 0.25402419175329444,
+    "func_count": 205,
+    "iterations": 40,
+    "final_K": 50,
+    "wall_s": 137.27528669999447,
+    "elbo": -502.5716094842182,
+    "elbo_sd": 0.19462230884732493,
+    "best_iter": 39,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 205,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "final_ref": {
+    "elbo_err": 0.27844599139018555,
+    "gskl": 4.645375001905759,
+    "mmtv": 0.23122342776014557,
+    "func_count": 170,
+    "iterations": 34,
+    "final_K": 50,
+    "wall_s": 196.65379539504647,
+    "elbo": -502.4643557664623,
+    "elbo_sd": 0.22722424387543674,
+    "best_iter": 33,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 170,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.4691801198209475,
+    "gskl": 8.560528306335723,
+    "mmtv": 0.37500336071325224
+   },
+   "pop_evals": [
+    165,
+    280
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  },
+  {
+   "label": "multisensory_s2_D6_noise1.3_production",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.5546758950890762,
+    "gskl": 1.7140707299130806,
+    "mmtv": 0.1910958727588572,
+    "func_count": 185,
+    "iterations": 38,
+    "final_K": 50,
+    "wall_s": 125.84472930000629,
+    "elbo": -445.04361083142857,
+    "elbo_sd": 0.20169782904355235,
+    "best_iter": 37,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 185,
+    "min_Ns_gp": 6,
+    "n_warps": 3
+   },
+   "final_ref": {
+    "elbo_err": 0.3658045077128236,
+    "gskl": 0.5333405558010804,
+    "mmtv": 0.13288527805163852,
+    "func_count": 205,
+    "iterations": 42,
+    "final_K": 50,
+    "wall_s": 295.0713993648533,
+    "elbo": -444.8547394440523,
+    "elbo_sd": 0.2008475031578582,
+    "best_iter": 41,
+    "success_flag": true,
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "final_N": 205,
+    "min_Ns_gp": 6,
+    "n_warps": 2
+   },
+   "semantic_final_certifiable": true,
+   "semantic_final_differences": {
+    "elbo": "value",
+    "elbo_sd": "value",
+    "best_iter": "value",
+    "iterations": "value",
+    "func_count": "value",
+    "final_N": "value",
+    "n_warps": "value"
+   },
+   "semantic_final_identical": false,
+   "final_validity_issues": {},
+   "pop_fence": {
+    "elbo_err": 1.4148359229717613,
+    "gskl": 2.225502307143389,
+    "mmtv": 0.2943964489740931
+   },
+   "pop_evals": [
+    170,
+    255
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "finals only"
+  }
+ ]
+}

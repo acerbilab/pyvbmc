@@ -1,0 +1,37 @@
+{
+  "imports_seconds": 1.2985344000626355,
+  "cold_cached_lookup_seconds": 0.1407199000241235,
+  "repeated_lookup_seconds": [
+    0.006152000045403838,
+    0.006142499973066151,
+    0.00677089998498559,
+    0.0063575999811291695,
+    0.006039300002157688,
+    0.006498200003989041,
+    0.00608490000013262,
+    0.006407800014130771,
+    0.006302400026470423,
+    0.007034699898213148,
+    0.006682900013402104,
+    0.006260300055146217
+  ],
+  "profile": {
+    "schema_version": 1,
+    "settings": {
+      "pdf_chunk_elements": 65536,
+      "entropy_grad_chunk_elements": 65536,
+      "entropy_value_chunk_elements": 65536
+    },
+    "source": "cache",
+    "status": "complete",
+    "fingerprint": "6dc859500f54e503a8b097b1b51fea5545cc95629e4be26ee8511ce01a7d2354",
+    "provenance": {
+      "calibrated_at_utc": "2026-09-09T19:06:51.228248+00:00",
+      "elapsed_seconds": 43.42200000002049,
+      "kernel_revision": "chunk-kernels-v1",
+      "pyvbmc_version": "1.0.5.dev159+g4bff1a5b9",
+      "workload_revision": "machine-calibration-v1"
+    },
+    "cache_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\calibration_integration_20260909\\campaign_cache\\calibration\\v1\\6dc859500f54e503a8b097b1b51fea5545cc95629e4be26ee8511ce01a7d2354.json"
+  }
+}

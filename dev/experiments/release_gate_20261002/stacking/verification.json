@@ -1,0 +1,1419 @@
+{
+  "campaign": "svbmc_pool_stack",
+  "contract": 1,
+  "generated": "2026-10-02T15:45:07+0000",
+  "counts": {
+    "verified": 200,
+    "verify_failed": 0,
+    "failed": 0,
+    "in_flight": 0,
+    "interrupted": 0,
+    "partial": 0,
+    "missing": 0,
+    "stray": 0
+  },
+  "cases": [
+    {
+      "index": 1,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M2",
+      "case": "multisensory_s1_D6_noise3_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 2,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M3",
+      "case": "multisensory_s1_D6_noise3_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 3,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M4",
+      "case": "multisensory_s1_D6_noise3_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 4,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M5",
+      "case": "multisensory_s1_D6_noise3_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 5,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M8",
+      "case": "multisensory_s1_D6_noise3_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 6,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r0",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 7,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r1",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 8,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r2",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 9,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r3",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 10,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r4",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 11,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r5",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 12,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r6",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 13,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r7",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 14,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r8",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 15,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M16_r9",
+      "case": "multisensory_s1_D6_noise3_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 16,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r0",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 17,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r1",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 18,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r2",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 19,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r3",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 20,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r4",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 21,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r5",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 22,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r6",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 23,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r7",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 24,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r8",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 25,
+      "tag": "multisensory_s1_D6_noise3_svbmc/M32_r9",
+      "case": "multisensory_s1_D6_noise3_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 26,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M2",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 27,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M3",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 28,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M4",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 29,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M5",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 30,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M8",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 31,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r0",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 32,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r1",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 33,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r2",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 34,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r3",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 35,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r4",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 36,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r5",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 37,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r6",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 38,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r7",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 39,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r8",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 40,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M16_r9",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 41,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r0",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 42,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r1",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 43,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r2",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 44,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r3",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 45,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r4",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 46,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r5",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 47,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r6",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 48,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r7",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 49,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r8",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 50,
+      "tag": "multisensory_s1_D6_noise1.3_svbmc/M32_r9",
+      "case": "multisensory_s1_D6_noise1.3_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 51,
+      "tag": "rosenbrock_D2_noise3_svbmc/M2",
+      "case": "rosenbrock_D2_noise3_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 52,
+      "tag": "rosenbrock_D2_noise3_svbmc/M3",
+      "case": "rosenbrock_D2_noise3_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 53,
+      "tag": "rosenbrock_D2_noise3_svbmc/M4",
+      "case": "rosenbrock_D2_noise3_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 54,
+      "tag": "rosenbrock_D2_noise3_svbmc/M5",
+      "case": "rosenbrock_D2_noise3_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 55,
+      "tag": "rosenbrock_D2_noise3_svbmc/M8",
+      "case": "rosenbrock_D2_noise3_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 56,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r0",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 57,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r1",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 58,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r2",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 59,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r3",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 60,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r4",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 61,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r5",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 62,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r6",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 63,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r7",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 64,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r8",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 65,
+      "tag": "rosenbrock_D2_noise3_svbmc/M16_r9",
+      "case": "rosenbrock_D2_noise3_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 66,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r0",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 67,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r1",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 68,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r2",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 69,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r3",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 70,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r4",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 71,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r5",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 72,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r6",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 73,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r7",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 74,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r8",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 75,
+      "tag": "rosenbrock_D2_noise3_svbmc/M32_r9",
+      "case": "rosenbrock_D2_noise3_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 76,
+      "tag": "gmm_D2_noise3_svbmc/M2",
+      "case": "gmm_D2_noise3_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 77,
+      "tag": "gmm_D2_noise3_svbmc/M3",
+      "case": "gmm_D2_noise3_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 78,
+      "tag": "gmm_D2_noise3_svbmc/M4",
+      "case": "gmm_D2_noise3_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 79,
+      "tag": "gmm_D2_noise3_svbmc/M5",
+      "case": "gmm_D2_noise3_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 80,
+      "tag": "gmm_D2_noise3_svbmc/M8",
+      "case": "gmm_D2_noise3_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 81,
+      "tag": "gmm_D2_noise3_svbmc/M16_r0",
+      "case": "gmm_D2_noise3_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 82,
+      "tag": "gmm_D2_noise3_svbmc/M16_r1",
+      "case": "gmm_D2_noise3_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 83,
+      "tag": "gmm_D2_noise3_svbmc/M16_r2",
+      "case": "gmm_D2_noise3_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 84,
+      "tag": "gmm_D2_noise3_svbmc/M16_r3",
+      "case": "gmm_D2_noise3_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 85,
+      "tag": "gmm_D2_noise3_svbmc/M16_r4",
+      "case": "gmm_D2_noise3_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 86,
+      "tag": "gmm_D2_noise3_svbmc/M16_r5",
+      "case": "gmm_D2_noise3_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 87,
+      "tag": "gmm_D2_noise3_svbmc/M16_r6",
+      "case": "gmm_D2_noise3_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 88,
+      "tag": "gmm_D2_noise3_svbmc/M16_r7",
+      "case": "gmm_D2_noise3_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 89,
+      "tag": "gmm_D2_noise3_svbmc/M16_r8",
+      "case": "gmm_D2_noise3_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 90,
+      "tag": "gmm_D2_noise3_svbmc/M16_r9",
+      "case": "gmm_D2_noise3_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 91,
+      "tag": "gmm_D2_noise3_svbmc/M32_r0",
+      "case": "gmm_D2_noise3_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 92,
+      "tag": "gmm_D2_noise3_svbmc/M32_r1",
+      "case": "gmm_D2_noise3_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 93,
+      "tag": "gmm_D2_noise3_svbmc/M32_r2",
+      "case": "gmm_D2_noise3_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 94,
+      "tag": "gmm_D2_noise3_svbmc/M32_r3",
+      "case": "gmm_D2_noise3_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 95,
+      "tag": "gmm_D2_noise3_svbmc/M32_r4",
+      "case": "gmm_D2_noise3_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 96,
+      "tag": "gmm_D2_noise3_svbmc/M32_r5",
+      "case": "gmm_D2_noise3_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 97,
+      "tag": "gmm_D2_noise3_svbmc/M32_r6",
+      "case": "gmm_D2_noise3_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 98,
+      "tag": "gmm_D2_noise3_svbmc/M32_r7",
+      "case": "gmm_D2_noise3_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 99,
+      "tag": "gmm_D2_noise3_svbmc/M32_r8",
+      "case": "gmm_D2_noise3_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 100,
+      "tag": "gmm_D2_noise3_svbmc/M32_r9",
+      "case": "gmm_D2_noise3_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 101,
+      "tag": "ring_D2_noise3_svbmc/M2",
+      "case": "ring_D2_noise3_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 102,
+      "tag": "ring_D2_noise3_svbmc/M3",
+      "case": "ring_D2_noise3_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 103,
+      "tag": "ring_D2_noise3_svbmc/M4",
+      "case": "ring_D2_noise3_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 104,
+      "tag": "ring_D2_noise3_svbmc/M5",
+      "case": "ring_D2_noise3_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 105,
+      "tag": "ring_D2_noise3_svbmc/M8",
+      "case": "ring_D2_noise3_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 106,
+      "tag": "ring_D2_noise3_svbmc/M16_r0",
+      "case": "ring_D2_noise3_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 107,
+      "tag": "ring_D2_noise3_svbmc/M16_r1",
+      "case": "ring_D2_noise3_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 108,
+      "tag": "ring_D2_noise3_svbmc/M16_r2",
+      "case": "ring_D2_noise3_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 109,
+      "tag": "ring_D2_noise3_svbmc/M16_r3",
+      "case": "ring_D2_noise3_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 110,
+      "tag": "ring_D2_noise3_svbmc/M16_r4",
+      "case": "ring_D2_noise3_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 111,
+      "tag": "ring_D2_noise3_svbmc/M16_r5",
+      "case": "ring_D2_noise3_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 112,
+      "tag": "ring_D2_noise3_svbmc/M16_r6",
+      "case": "ring_D2_noise3_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 113,
+      "tag": "ring_D2_noise3_svbmc/M16_r7",
+      "case": "ring_D2_noise3_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 114,
+      "tag": "ring_D2_noise3_svbmc/M16_r8",
+      "case": "ring_D2_noise3_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 115,
+      "tag": "ring_D2_noise3_svbmc/M16_r9",
+      "case": "ring_D2_noise3_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 116,
+      "tag": "ring_D2_noise3_svbmc/M32_r0",
+      "case": "ring_D2_noise3_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 117,
+      "tag": "ring_D2_noise3_svbmc/M32_r1",
+      "case": "ring_D2_noise3_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 118,
+      "tag": "ring_D2_noise3_svbmc/M32_r2",
+      "case": "ring_D2_noise3_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 119,
+      "tag": "ring_D2_noise3_svbmc/M32_r3",
+      "case": "ring_D2_noise3_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 120,
+      "tag": "ring_D2_noise3_svbmc/M32_r4",
+      "case": "ring_D2_noise3_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 121,
+      "tag": "ring_D2_noise3_svbmc/M32_r5",
+      "case": "ring_D2_noise3_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 122,
+      "tag": "ring_D2_noise3_svbmc/M32_r6",
+      "case": "ring_D2_noise3_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 123,
+      "tag": "ring_D2_noise3_svbmc/M32_r7",
+      "case": "ring_D2_noise3_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 124,
+      "tag": "ring_D2_noise3_svbmc/M32_r8",
+      "case": "ring_D2_noise3_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 125,
+      "tag": "ring_D2_noise3_svbmc/M32_r9",
+      "case": "ring_D2_noise3_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 126,
+      "tag": "student_D8_noise3_svbmc/M2",
+      "case": "student_D8_noise3_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 127,
+      "tag": "student_D8_noise3_svbmc/M3",
+      "case": "student_D8_noise3_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 128,
+      "tag": "student_D8_noise3_svbmc/M4",
+      "case": "student_D8_noise3_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 129,
+      "tag": "student_D8_noise3_svbmc/M5",
+      "case": "student_D8_noise3_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 130,
+      "tag": "student_D8_noise3_svbmc/M8",
+      "case": "student_D8_noise3_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 131,
+      "tag": "student_D8_noise3_svbmc/M16_r0",
+      "case": "student_D8_noise3_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 132,
+      "tag": "student_D8_noise3_svbmc/M16_r1",
+      "case": "student_D8_noise3_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 133,
+      "tag": "student_D8_noise3_svbmc/M16_r2",
+      "case": "student_D8_noise3_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 134,
+      "tag": "student_D8_noise3_svbmc/M16_r3",
+      "case": "student_D8_noise3_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 135,
+      "tag": "student_D8_noise3_svbmc/M16_r4",
+      "case": "student_D8_noise3_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 136,
+      "tag": "student_D8_noise3_svbmc/M16_r5",
+      "case": "student_D8_noise3_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 137,
+      "tag": "student_D8_noise3_svbmc/M16_r6",
+      "case": "student_D8_noise3_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 138,
+      "tag": "student_D8_noise3_svbmc/M16_r7",
+      "case": "student_D8_noise3_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 139,
+      "tag": "student_D8_noise3_svbmc/M16_r8",
+      "case": "student_D8_noise3_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 140,
+      "tag": "student_D8_noise3_svbmc/M16_r9",
+      "case": "student_D8_noise3_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 141,
+      "tag": "student_D8_noise3_svbmc/M32_r0",
+      "case": "student_D8_noise3_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 142,
+      "tag": "student_D8_noise3_svbmc/M32_r1",
+      "case": "student_D8_noise3_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 143,
+      "tag": "student_D8_noise3_svbmc/M32_r2",
+      "case": "student_D8_noise3_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 144,
+      "tag": "student_D8_noise3_svbmc/M32_r3",
+      "case": "student_D8_noise3_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 145,
+      "tag": "student_D8_noise3_svbmc/M32_r4",
+      "case": "student_D8_noise3_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 146,
+      "tag": "student_D8_noise3_svbmc/M32_r5",
+      "case": "student_D8_noise3_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 147,
+      "tag": "student_D8_noise3_svbmc/M32_r6",
+      "case": "student_D8_noise3_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 148,
+      "tag": "student_D8_noise3_svbmc/M32_r7",
+      "case": "student_D8_noise3_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 149,
+      "tag": "student_D8_noise3_svbmc/M32_r8",
+      "case": "student_D8_noise3_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 150,
+      "tag": "student_D8_noise3_svbmc/M32_r9",
+      "case": "student_D8_noise3_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 151,
+      "tag": "gmm_D2_svbmc/M2",
+      "case": "gmm_D2_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 152,
+      "tag": "gmm_D2_svbmc/M3",
+      "case": "gmm_D2_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 153,
+      "tag": "gmm_D2_svbmc/M4",
+      "case": "gmm_D2_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 154,
+      "tag": "gmm_D2_svbmc/M5",
+      "case": "gmm_D2_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 155,
+      "tag": "gmm_D2_svbmc/M8",
+      "case": "gmm_D2_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 156,
+      "tag": "gmm_D2_svbmc/M16_r0",
+      "case": "gmm_D2_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 157,
+      "tag": "gmm_D2_svbmc/M16_r1",
+      "case": "gmm_D2_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 158,
+      "tag": "gmm_D2_svbmc/M16_r2",
+      "case": "gmm_D2_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 159,
+      "tag": "gmm_D2_svbmc/M16_r3",
+      "case": "gmm_D2_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 160,
+      "tag": "gmm_D2_svbmc/M16_r4",
+      "case": "gmm_D2_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 161,
+      "tag": "gmm_D2_svbmc/M16_r5",
+      "case": "gmm_D2_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 162,
+      "tag": "gmm_D2_svbmc/M16_r6",
+      "case": "gmm_D2_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 163,
+      "tag": "gmm_D2_svbmc/M16_r7",
+      "case": "gmm_D2_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 164,
+      "tag": "gmm_D2_svbmc/M16_r8",
+      "case": "gmm_D2_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 165,
+      "tag": "gmm_D2_svbmc/M16_r9",
+      "case": "gmm_D2_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 166,
+      "tag": "gmm_D2_svbmc/M32_r0",
+      "case": "gmm_D2_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 167,
+      "tag": "gmm_D2_svbmc/M32_r1",
+      "case": "gmm_D2_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 168,
+      "tag": "gmm_D2_svbmc/M32_r2",
+      "case": "gmm_D2_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 169,
+      "tag": "gmm_D2_svbmc/M32_r3",
+      "case": "gmm_D2_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 170,
+      "tag": "gmm_D2_svbmc/M32_r4",
+      "case": "gmm_D2_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 171,
+      "tag": "gmm_D2_svbmc/M32_r5",
+      "case": "gmm_D2_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 172,
+      "tag": "gmm_D2_svbmc/M32_r6",
+      "case": "gmm_D2_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 173,
+      "tag": "gmm_D2_svbmc/M32_r7",
+      "case": "gmm_D2_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 174,
+      "tag": "gmm_D2_svbmc/M32_r8",
+      "case": "gmm_D2_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 175,
+      "tag": "gmm_D2_svbmc/M32_r9",
+      "case": "gmm_D2_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 176,
+      "tag": "multisensory_s1_D6_svbmc/M2",
+      "case": "multisensory_s1_D6_svbmc/M2 M=2 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 177,
+      "tag": "multisensory_s1_D6_svbmc/M3",
+      "case": "multisensory_s1_D6_svbmc/M3 M=3 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 178,
+      "tag": "multisensory_s1_D6_svbmc/M4",
+      "case": "multisensory_s1_D6_svbmc/M4 M=4 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 179,
+      "tag": "multisensory_s1_D6_svbmc/M5",
+      "case": "multisensory_s1_D6_svbmc/M5 M=5 repetitions=0-19 arms=integrated",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 180,
+      "tag": "multisensory_s1_D6_svbmc/M8",
+      "case": "multisensory_s1_D6_svbmc/M8 M=8 repetitions=0-19 arms=integrated+original",
+      "cells": 20,
+      "status": "verified"
+    },
+    {
+      "index": 181,
+      "tag": "multisensory_s1_D6_svbmc/M16_r0",
+      "case": "multisensory_s1_D6_svbmc/M16_r0 M=16 repetitions=0 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 182,
+      "tag": "multisensory_s1_D6_svbmc/M16_r1",
+      "case": "multisensory_s1_D6_svbmc/M16_r1 M=16 repetitions=1 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 183,
+      "tag": "multisensory_s1_D6_svbmc/M16_r2",
+      "case": "multisensory_s1_D6_svbmc/M16_r2 M=16 repetitions=2 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 184,
+      "tag": "multisensory_s1_D6_svbmc/M16_r3",
+      "case": "multisensory_s1_D6_svbmc/M16_r3 M=16 repetitions=3 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 185,
+      "tag": "multisensory_s1_D6_svbmc/M16_r4",
+      "case": "multisensory_s1_D6_svbmc/M16_r4 M=16 repetitions=4 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 186,
+      "tag": "multisensory_s1_D6_svbmc/M16_r5",
+      "case": "multisensory_s1_D6_svbmc/M16_r5 M=16 repetitions=5 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 187,
+      "tag": "multisensory_s1_D6_svbmc/M16_r6",
+      "case": "multisensory_s1_D6_svbmc/M16_r6 M=16 repetitions=6 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 188,
+      "tag": "multisensory_s1_D6_svbmc/M16_r7",
+      "case": "multisensory_s1_D6_svbmc/M16_r7 M=16 repetitions=7 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 189,
+      "tag": "multisensory_s1_D6_svbmc/M16_r8",
+      "case": "multisensory_s1_D6_svbmc/M16_r8 M=16 repetitions=8 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 190,
+      "tag": "multisensory_s1_D6_svbmc/M16_r9",
+      "case": "multisensory_s1_D6_svbmc/M16_r9 M=16 repetitions=9 arms=integrated+original",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 191,
+      "tag": "multisensory_s1_D6_svbmc/M32_r0",
+      "case": "multisensory_s1_D6_svbmc/M32_r0 M=32 repetitions=0 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 192,
+      "tag": "multisensory_s1_D6_svbmc/M32_r1",
+      "case": "multisensory_s1_D6_svbmc/M32_r1 M=32 repetitions=1 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 193,
+      "tag": "multisensory_s1_D6_svbmc/M32_r2",
+      "case": "multisensory_s1_D6_svbmc/M32_r2 M=32 repetitions=2 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 194,
+      "tag": "multisensory_s1_D6_svbmc/M32_r3",
+      "case": "multisensory_s1_D6_svbmc/M32_r3 M=32 repetitions=3 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 195,
+      "tag": "multisensory_s1_D6_svbmc/M32_r4",
+      "case": "multisensory_s1_D6_svbmc/M32_r4 M=32 repetitions=4 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 196,
+      "tag": "multisensory_s1_D6_svbmc/M32_r5",
+      "case": "multisensory_s1_D6_svbmc/M32_r5 M=32 repetitions=5 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 197,
+      "tag": "multisensory_s1_D6_svbmc/M32_r6",
+      "case": "multisensory_s1_D6_svbmc/M32_r6 M=32 repetitions=6 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 198,
+      "tag": "multisensory_s1_D6_svbmc/M32_r7",
+      "case": "multisensory_s1_D6_svbmc/M32_r7 M=32 repetitions=7 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 199,
+      "tag": "multisensory_s1_D6_svbmc/M32_r8",
+      "case": "multisensory_s1_D6_svbmc/M32_r8 M=32 repetitions=8 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    },
+    {
+      "index": 200,
+      "tag": "multisensory_s1_D6_svbmc/M32_r9",
+      "case": "multisensory_s1_D6_svbmc/M32_r9 M=32 repetitions=9 arms=integrated",
+      "cells": 1,
+      "status": "verified"
+    }
+  ],
+  "stray": [],
+  "exit_code": 0
+}

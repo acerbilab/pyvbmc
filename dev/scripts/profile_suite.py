@@ -1,0 +1,309 @@
+"""Run ``profile_run.py`` over a benchmark suite and aggregate the results.
+
+Developer tooling; see ``dev/plans/benchmark-suite-and-golden-traces.md``.
+Each config of a suite (``benchmark_targets.SUITES``) is run in its own
+subprocess, sequentially, plain and/or under cProfile, each streaming to its
+own log under the campaign directory. Finished runs (``summary.json``
+present) are skipped, so an interrupted campaign can be resumed with the
+same ``--out``.
+
+Examples::
+
+    python -u dev/scripts/profile_suite.py --suite profile --mode plain
+    python -u dev/scripts/profile_suite.py --suite profile --mode cprof \
+        --out dev/scripts/runs/profile_1756850000
+    python dev/scripts/profile_suite.py --aggregate dev/scripts/runs/profile_1756850000
+
+``--aggregate`` writes ``aggregate.md`` (two tables: wall time and stage
+balance from the plain runs; cProfile attribution from the cprof runs) and
+``aggregate.json`` next to the run directories. ``--probe CONFIG`` runs a
+short reference config plain before and after the campaign (rows
+``probe_start_…`` / ``probe_end_…`` in the aggregate) and prints the ratio
+of the two walls: a speed probe that shows whether the machine slowed
+down under sustained load, which a laptop did on 2026-09-04.
+"""
+
+import argparse
+import json
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+from benchmark_targets import SUITES, find_config, suite_configs
+
+HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parents[1]
+DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs"
+PROFILE_RUN = HERE / "profile_run.py"
+
+STAGES = (
+    "active_sampling",
+    "gp_train",
+    "variational_fit",
+    "finalize",
+    "warping",
+)
+
+# Attribution labels reported in the aggregate (must match profile_run.py).
+BUCKETS = [
+    "active_sample",
+    "cma.fmin",
+    "acquisition __call__",
+    "GP.predict",
+    "vp.pdf",
+    "active_importance_sampling",
+    "train_gp",
+    "SliceSampler.sample",
+    "scipy.optimize.minimize",
+    "optimize_vp",
+    "_gp_log_joint",
+    "_eval_full_elcbo",
+    "entmc_vbmc",
+    "final_boost",
+    "determine_best_vp (incl. in-loop warping calls)",
+    "copy.deepcopy",
+]
+
+
+def run_one(cfg, mode, out_dir, seed, extra, tag=None):
+    tag = tag or f"{cfg.label}_{mode}"
+    run_dir = out_dir / tag
+    if (run_dir / "summary.json").exists():
+        print(f"[suite] skip {tag} (summary.json exists)", flush=True)
+        return True
+    log = out_dir / f"{tag}.log"
+    cmd = [
+        sys.executable,
+        "-u",
+        str(PROFILE_RUN),
+        "--config",
+        cfg.label,
+        "--seed",
+        str(seed),
+        "--out",
+        str(out_dir),
+        "--tag",
+        tag,
+    ]
+    if mode == "cprof":
+        cmd.append("--cprofile")
+    cmd += extra
+    print(
+        f"[suite] start {tag} at {time.strftime('%H:%M:%S')} -> {log.name}",
+        flush=True,
+    )
+    t0 = time.time()
+    with open(log, "w", encoding="utf-8") as fh:
+        rc = subprocess.call(
+            cmd, stdout=fh, stderr=subprocess.STDOUT, cwd=REPO_ROOT
+        )
+    dt = time.time() - t0
+    status = "done" if rc == 0 else f"FAILED rc={rc}"
+    print(f"[suite] {status} {tag} in {dt / 60:.1f} min", flush=True)
+    return rc == 0
+
+
+def run_probe(cfg, when, out_dir, seed, extra):
+    """Plain run of a short reference config before (``when="start"``) or
+    after (``"end"``) a campaign: a speed probe. Comparing the two walls
+    (and either with the same config's wall in an earlier campaign) tells
+    whether the machine slowed down during the campaign, e.g. a laptop
+    throttling after sustained load (`dev/plans/stage2-batched-acquisition.md`
+    §Results, 2026-09-04). Returns the wall time in seconds, or ``None``."""
+    tag = f"probe_{when}_{cfg.label}"
+    ok = run_one(cfg, "plain", out_dir, seed, extra, tag=tag)
+    summ = out_dir / tag / "summary.json"
+    if not (ok and summ.exists()):
+        return None
+    return float(json.loads(summ.read_text())["result"]["wall_s"])
+
+
+def _row_order(summ):
+    """Configs alphabetically, the start probe first and the end probe
+    last, so the two probes frame the table."""
+    tag = summ.parent.name
+    if tag.startswith("probe_start_"):
+        return (0, tag)
+    if tag.startswith("probe_end_"):
+        return (2, tag)
+    return (1, tag)
+
+
+def aggregate(out_dir):
+    rows = []
+    for summ in sorted(out_dir.glob("*/summary.json"), key=_row_order):
+        s = json.loads(summ.read_text())
+        r = s["result"]
+        wall = r["wall_s"]
+        tag = summ.parent.name
+        row = {
+            "tag": tag,
+            # Probe rows keep their tag as the label so the start and end
+            # probes of one config are distinguishable in the table.
+            "config": (
+                tag if tag.startswith("probe_") else s["meta"].get("config")
+            ),
+            "mode": "cprof" if s["meta"].get("cprofile") else "plain",
+            "wall_s": wall,
+            "untimed_s": r.get("untimed_s"),
+            "iterations": r["recorded_iterations"],
+            "evals": r["func_count"],
+            "final_N": r.get("final_N"),
+            "final_K": r["final_K"],
+            "min_Ns_gp": r.get("min_Ns_gp"),
+            "elbo_err": r.get("elbo_err"),
+            "gskl": r.get("gskl"),
+            "mmtv": r.get("mmtv"),
+            "rmse": r.get("posterior_mean_rmse"),
+            "message": r.get("message"),
+        }
+        for st in STAGES:
+            v = s["stage_totals_s"].get(st, 0.0)
+            row[f"{st}_s"] = v
+            row[f"{st}_pct"] = 100 * v / wall if wall else float("nan")
+        if "attribution" in s:
+            att = {a["label"]: a for a in s["attribution"]}
+            opt = att["VBMC.optimize"]["cumtime"]
+            for b in BUCKETS:
+                a = att.get(b)
+                row[f"attr:{b}"] = (
+                    100 * a["cumtime"] / opt if a and opt else None
+                )
+                row[f"calls:{b}"] = a["ncalls"] if a else None
+        rows.append(row)
+    (out_dir / "aggregate.json").write_text(json.dumps(rows, indent=2))
+
+    def fmt(v, nd=1):
+        if v is None:
+            return "-"
+        if isinstance(v, float):
+            return f"{v:.{nd}f}"
+        return str(v)
+
+    lines = [f"# Profile campaign {out_dir.name}", ""]
+    plain = [r for r in rows if r["mode"] == "plain"]
+    if plain:
+        lines += [
+            "## Plain runs (true wall time; stages nest, untimed = wall - sum)",
+            "",
+            "| config | wall s | untimed s | iters | evals | N | K | min Ns | "
+            "act.samp % | gp_train % | var.fit % | finalize % | warping % | "
+            "elbo_err | gskl | mmtv | rmse | termination |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for r in plain:
+            lines.append(
+                f"| {r['config']} | {fmt(r['wall_s'])} | {fmt(r['untimed_s'])} |"
+                f" {r['iterations']} | {r['evals']} | {fmt(r['final_N'])} |"
+                f" {r['final_K']} | {fmt(r['min_Ns_gp'])} |"
+                + "".join(f" {fmt(r[f'{st}_pct'])} |" for st in STAGES)
+                + f" {fmt(r['elbo_err'], 3)} | {fmt(r['gskl'], 3)} |"
+                f" {fmt(r['mmtv'], 3)} | {fmt(r['rmse'], 3)} |"
+                f" {(r['message'] or '')[:40]} |"
+            )
+        lines.append("")
+    cprof = [r for r in rows if r["mode"] == "cprof"]
+    if cprof:
+        lines += [
+            "## cProfile attribution (% of profiled VBMC.optimize; calls in"
+            " parentheses)",
+            "",
+            "| bucket | " + " | ".join(r["config"] for r in cprof) + " |",
+            "|---|" + "---|" * len(cprof),
+        ]
+        for b in BUCKETS:
+            cells = []
+            for r in cprof:
+                v = r.get(f"attr:{b}")
+                c = r.get(f"calls:{b}")
+                cells.append("-" if v is None else f"{v:.1f} ({c})")
+            lines.append(f"| {b} | " + " | ".join(cells) + " |")
+        lines += [
+            "",
+            "| profiled wall s | "
+            + " | ".join(fmt(r["wall_s"]) for r in cprof)
+            + " |",
+        ]
+        lines.append("")
+    (out_dir / "aggregate.md").write_text("\n".join(lines), encoding="utf-8")
+    print("\n".join(lines))
+    print(f"[suite] wrote {out_dir / 'aggregate.md'}", flush=True)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument(
+        "--suite", default="profile", choices=list(SUITES) + ["all"]
+    )
+    ap.add_argument(
+        "--mode", default="plain", choices=["plain", "cprof", "both"]
+    )
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument(
+        "--only", default=None, help="comma-separated config labels"
+    )
+    ap.add_argument(
+        "--out", type=Path, default=None, help="campaign directory"
+    )
+    ap.add_argument("--aggregate", type=Path, default=None)
+    ap.add_argument(
+        "--probe",
+        default=None,
+        metavar="CONFIG",
+        help="run this config plain before and after the campaign as a"
+        " speed probe (e.g. banana_D4, ~45 s) and report the two walls",
+    )
+    ap.add_argument(
+        "extra", nargs="*", help="extra args passed to profile_run"
+    )
+    args = ap.parse_args(argv)
+
+    if args.aggregate:
+        aggregate(args.aggregate)
+        return 0
+
+    out_dir = args.out or (DEFAULT_RUNS / f"profile_{int(time.time())}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    cfgs = suite_configs(args.suite)
+    if args.only:
+        wanted = set(args.only.split(","))
+        cfgs = [c for c in cfgs if c.label in wanted]
+    modes = ["plain", "cprof"] if args.mode == "both" else [args.mode]
+    probe_cfg = find_config(args.probe) if args.probe else None
+    print(f"[suite] {len(cfgs)} configs x {modes} -> {out_dir}", flush=True)
+    t0 = time.time()
+    ok = True
+    probe = {}
+    if probe_cfg is not None:
+        probe["start"] = run_probe(
+            probe_cfg, "start", out_dir, args.seed, args.extra
+        )
+    for mode in modes:
+        for cfg in cfgs:
+            ok &= run_one(cfg, mode, out_dir, args.seed, args.extra)
+    if probe_cfg is not None:
+        probe["end"] = run_probe(
+            probe_cfg, "end", out_dir, args.seed, args.extra
+        )
+    print(
+        f"[suite] campaign finished in {(time.time() - t0) / 60:.1f} min",
+        flush=True,
+    )
+    if probe_cfg is not None:
+        a, b = probe.get("start"), probe.get("end")
+        if a is not None and b is not None:
+            print(
+                f"[suite] speed probe {probe_cfg.label}: {a:.1f} s at start,"
+                f" {b:.1f} s at end (end/start {b / a:.2f}); much above 1"
+                " means the machine slowed down during the campaign",
+                flush=True,
+            )
+        else:
+            print(f"[suite] speed probe incomplete: {probe}", flush=True)
+    aggregate(out_dir)
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

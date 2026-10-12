@@ -1,0 +1,133 @@
+{
+  "counts": {
+    "failed": 0,
+    "missing": 0,
+    "partial": 0,
+    "succeeded": 864
+  },
+  "manifest_file_sha256": "6b64b1eebbc19e3a6131167a1a0f36d4e07cec1a21d1d603ea3ab79eafa0df8b",
+  "manifest_sha256": "add0fdfd8576b6727b51312f79dca8c7b984e11af30130f9538aa9b5f460a7bf",
+  "production_baseline_counts": {
+    "failed": 0,
+    "missing": 0,
+    "partial": 0,
+    "succeeded": 96
+  },
+  "publication_note": "Local user-directory paths are redacted in this review copy. Run the experiment with the original local manifests; recorded artifact hashes identify the unmodified originals.",
+  "quality_conclusion": null,
+  "raw_directory": "<USER_HOME>/Documents/GitHub/pyvbmc/dev/scripts/runs/noisy_acq_efficiency_20260916",
+  "raw_inventory_sha256": "b27e25e9cfabd4356003c3daeed4358a36e58acebe82843244aabe679b5aadf7",
+  "raw_summary_sha256": "947fde54c1add6c997cf564bcc28b80bce203ee8b46c8354cdc114547884a2cb",
+  "states": [
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatments": {
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 72
+      }
+    }
+  ],
+  "status": "selection_complete_judging_pending",
+  "verification": "All terminal records and bound payload hashes validated against the frozen manifest and current source identity."
+}

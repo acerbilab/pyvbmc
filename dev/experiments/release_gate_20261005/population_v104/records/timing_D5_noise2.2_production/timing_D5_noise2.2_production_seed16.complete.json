@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16",
+  "case": "timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16 timing_D5_noise2.2_production 16",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "b196402b4e72dd0b17cf369becf128228402dc8f",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "0bb8b8f5b48c05eafaaa790bd1432a5ea681e25d",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "3b1300a9eeda2c05bb024de1b4d905a7c4716beb",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$PYVBMC_SOURCE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$PYVBMC_SOURCE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          4,
+          68
+        ],
+        "physical_cores": [
+          "0:4"
+        ],
+        "core_threads": {
+          "0:4": [
+            4,
+            68
+          ]
+        },
+        "job_cpuset": [
+          4,
+          68
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2366546",
+        "array_job_id": "2359257",
+        "array_task_id": "2117",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-05T21:09:27+0000",
+  "finished": "2026-10-05T21:18:00+0000",
+  "elapsed_seconds": 513.129552602768,
+  "artifacts": {
+    "timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16.npz": {
+      "sha256": "850abdfd04013450e881ac34cc7d22f53581c5e5f9d8ca0c5f8e16d807a9643e",
+      "bytes": 84324
+    },
+    "timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16.json": {
+      "sha256": "3517b1276a2f83d6696191d0a690e280ee38814342708e3efa30dfd6e2d5b2f0",
+      "bytes": 5602
+    },
+    "timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16.boost.pkl": {
+      "sha256": "97c2a134f5bd48e770b09b44a95bad6944c64a0f2a3f5b1b63be6982b95fbf8d",
+      "bytes": 254750
+    },
+    "boost/timing_D5_noise2.2_production/timing_D5_noise2.2_production_seed16.boost.json": {
+      "sha256": "043afb00664d5c0ba9818fa4f2e084b556237e9ae3c3177c65c03e9db20c572d",
+      "bytes": 10343
+    }
+  },
+  "harness": "population_run",
+  "label": "timing_D5_noise2.2_production",
+  "seed": 16,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

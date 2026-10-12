@@ -1,3 +1,9 @@
+import sys
+
+if "google.colab" in sys.modules:  # Colab lacks PyVBMC: install it
+    get_ipython().run_line_magic("pip", "install --upgrade pyvbmc")
+
+
 import numpy as np
 import scipy.stats as scs
 from scipy.optimize import minimize
@@ -80,7 +86,14 @@ vp, results = vbmc.optimize()
 print(results["success_flag"])
 
 
-print(format_dict(results))
+print(
+    format_dict(
+        {
+            "convergence_status": results["convergence_status"],
+            "r_index": results["r_index"],
+        }
+    )
+)
 
 
 # Here we specify `overwrite=True`, since we don't care about overwriting our
@@ -104,7 +117,14 @@ vbmc = VBMC.load(
 vp, results = vbmc.optimize()
 
 
-print(format_dict(results))
+print(
+    format_dict(
+        {
+            "convergence_status": results["convergence_status"],
+            "r_index": results["r_index"],
+        }
+    )
+)
 
 
 vbmc.save("vbmc_test_save.pkl", overwrite=True)

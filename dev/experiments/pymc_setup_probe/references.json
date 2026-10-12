@@ -1,0 +1,98 @@
+{
+  "sources": {
+    "python": "3.12.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "versions": {
+      "pymc": "6.3.2",
+      "pytensor": "3.3.1",
+      "arviz": "1.3.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "gpyreg": "1.2.1"
+    },
+    "pyvbmc_commit": "741d635bd11431d800e70a50f56cfe5dafa31119",
+    "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+    "gpyreg_dirty": "",
+    "linker": "NumbaLinker",
+    "sha256": {
+      "dev\\scripts\\pymc_setup_probe.py": "f47e6f31169bb16da157a5f0baccb80823dd4e18d4c99d1138f36eb482a34da7",
+      "dev\\scripts\\pymc_feasibility.py": "a7f0f12520b4bde78a72ca35ae226416faf19f2f216c53fdc8023cf63fca3bb2",
+      "pyvbmc\\vbmc\\vbmc.py": "7c9b9715c1a307a8533123103c8c57905acc32108ab105fd2e1c737f9a03e6bc",
+      "pyvbmc\\vbmc\\active_sample.py": "1175ffe230b3e634c69e2837a2e3c217bf6d23223cf0d67dc4572810ba29416b",
+      "pyvbmc\\function_logger\\function_logger.py": "5ef869c2d877307c296fe0829d115e6c0e831f00ba8e1c47ba4540dea3c9ec18"
+    }
+  },
+  "models": [
+    {
+      "name": "vector",
+      "draws_per_chain": 4000,
+      "tune_per_chain": 2000,
+      "chains": 4,
+      "seconds": 31.084426900022663,
+      "rhat_max": 1.0005824325794443,
+      "ess_bulk_min": 12717.139485383579,
+      "ess_tail_min": 9799.332580406877,
+      "divergences": 0,
+      "tree_depth_max": 3,
+      "accepted": true,
+      "split_chain_distance": {
+        "mean_mahalanobis": 0.04351551415698919,
+        "max_mean_sd": 0.036884796643508064,
+        "covariance_relative_frobenius": 0.06424351812585988,
+        "gaussian_symmetric_kl": 0.00393344104796019,
+        "max_marginal_w1_sd": 0.03692242477749164,
+        "mean_marginal_w1_sd": 0.028294212414525444
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "draws_per_chain": 4000,
+      "tune_per_chain": 2000,
+      "chains": 4,
+      "seconds": 40.49228570004925,
+      "rhat_max": 1.0009267984790835,
+      "ess_bulk_min": 10905.075557721671,
+      "ess_tail_min": 8084.02666705793,
+      "divergences": 0,
+      "tree_depth_max": 5,
+      "accepted": true,
+      "split_chain_distance": {
+        "mean_mahalanobis": 0.0321772827870971,
+        "max_mean_sd": 0.016927625869550888,
+        "covariance_relative_frobenius": 0.07581844713940077,
+        "gaussian_symmetric_kl": 0.015253239951931277,
+        "max_marginal_w1_sd": 0.02217417544457773,
+        "mean_marginal_w1_sd": 0.015654314342259244
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "draws_per_chain": 4000,
+      "tune_per_chain": 2000,
+      "chains": 4,
+      "seconds": 46.76402020000387,
+      "rhat_max": 1.000910814966392,
+      "ess_bulk_min": 23513.985998581844,
+      "ess_tail_min": 10815.774730800646,
+      "divergences": 0,
+      "tree_depth_max": 3,
+      "accepted": true,
+      "split_chain_distance": {
+        "mean_mahalanobis": 0.024161799202862527,
+        "max_mean_sd": 0.014980082330437638,
+        "covariance_relative_frobenius": 0.05102155548214407,
+        "gaussian_symmetric_kl": 0.0037105815006221276,
+        "max_marginal_w1_sd": 0.024649755076518155,
+        "mean_marginal_w1_sd": 0.020687323155310623
+      },
+      "analytic_max_mean_sd": 0.0070047438126193025,
+      "analytic_sd_ratio": [
+        0.9927578954785521,
+        1.0018688270762501,
+        1.005176635733559,
+        1.0077545753397794,
+        0.9967653435638644
+      ]
+    }
+  ]
+}

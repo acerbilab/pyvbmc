@@ -1,12 +1,13 @@
 # for annotating VP as input of itself in mtv
 from __future__ import annotations
 
+import copy
 import sys
+from numbers import Integral, Real
 from pathlib import Path
 from textwrap import indent
 from typing import Optional
 
-import corner
 import dill
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,10 +16,74 @@ from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 from scipy.special import gammaln
 
+from pyvbmc.calibration.profile import CalibrationProfile, default_profile
 from pyvbmc.decorators import handle_0D_1D_input
 from pyvbmc.formatting import format_dict, full_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.rng import get_rng
 from pyvbmc.stats import kde_1d, kl_div_mvn
+
+
+def _whole_number(value):
+    """Return the whole number that a scalar holds, or ``None``.
+
+    A number of samples may be written as a Python or NumPy integer, as a
+    float that holds a whole number (``1e5``), as a NumPy scalar or as a 0-D
+    array; a boolean stands for 0 or 1. Anything else gives ``None``: a
+    fractional, infinite or NaN value, a sequence, an array with an axis, a
+    string, ``None``.
+
+    Parameters
+    ----------
+    value : object
+        The value given as a count.
+
+    Returns
+    -------
+    number : int or None
+        The count as an ``int``, or ``None`` if `value` holds none.
+    """
+    try:
+        if np.ndim(value) == 0 and not isinstance(value, Real):
+            # A NumPy scalar or a 0-D array stands for the number in it.
+            value = np.asarray(value).item()
+    except ValueError:
+        # A nested sequence of uneven lengths has no number of axes.
+        return None
+    if not isinstance(value, Real) or not float(value).is_integer():
+        return None
+    return int(value)
+
+
+def _positive_draw_count(n_samples):
+    """Return the number of draws of an export as an ``int``.
+
+    The exports take the counts that ``VariationalPosterior.sample`` takes
+    (`_whole_number`), but for a boolean and a count below one. The check
+    draws nothing, so a refused count leaves the generator where it was.
+
+    Parameters
+    ----------
+    n_samples : object
+        The value given as the number of draws.
+
+    Returns
+    -------
+    n_samples : int
+        The number of draws.
+
+    Raises
+    ------
+    ValueError
+        If `n_samples` is not a positive whole number, or is a boolean.
+    """
+    count = _whole_number(n_samples)
+    is_boolean = isinstance(n_samples, (bool, np.bool_)) or (
+        isinstance(n_samples, np.ndarray) and n_samples.dtype == np.bool_
+    )
+    if is_boolean or count is None or count < 1:
+        raise ValueError("n_samples must be a positive integer.")
+    return count
 
 
 class VariationalPosterior:
@@ -38,13 +103,27 @@ class VariationalPosterior:
     K : int, optional
         The number of mixture components, default 2.
     x0 : np.ndarray, optional
-        The starting vector for the mixture components means. It can be a
-        single array or multiple rows (up to `K`); missing rows are
-        duplicated by making copies of `x0`, default ``np.zeros``.
+        The starting points for the mixture component means, one per row.
+        A single point of `D` elements, given as a flat array, a row or a
+        column, starts every component; a 1-by-1 array starts every
+        coordinate of every component; an `n0`-by-`D` matrix starts the
+        components at its rows, repeated in order where `n0` is below `K`
+        and cut after the `K`-th row where it is above. By default
+        ``np.zeros``.
     parameter_transformer : ParameterTransformer, optional
         The ``ParameterTransformer`` object specifying the transformation of
         the input space that leads to the current representation used by the
         variational posterior, by default uses an identity transform.
+    rng : None, int, SeedSequence or np.random.Generator, optional
+        The random generator, or a seed for one, used by every method that
+        draws random numbers (e.g. ``sample``, ``kl_div``, ``mtv``). A
+        ``Generator`` is used as is, so it can be shared with a ``VBMC``
+        instance. By default a generator is derived from NumPy's global random
+        state, so that ``np.random.seed`` still gives reproducible results.
+    calibration : CalibrationProfile, {"cached", "off"}, or None, optional
+        Fixed numerical chunk settings. ``None`` and ``"off"`` use the
+        historical defaults. ``"cached"`` defers a machine-local cache lookup
+        until the first density or Monte Carlo entropy evaluation.
 
     Attributes
     ----------
@@ -72,10 +151,14 @@ class VariationalPosterior:
         unbounded space.
     bounds : dict
         A dictionary containing the soft bounds for each variable to be
-        optimized.
+        optimized, as ``get_bounds`` last computed them, or ``None`` before
+        the first call.
     stats : dict
         A dictionary of statistics and other relevant info computed during
         optimization.
+    calibration_profile : CalibrationProfile or None
+        The fixed numerical chunk settings, or ``None`` while an explicitly
+        requested cache lookup remains pending.
 
     Notes
     -----
@@ -90,7 +173,7 @@ class VariationalPosterior:
     for :math:`1 \le d \le D`.
 
     Note that :math:`q({\theta})` is defined in an unconstrained space.
-    Constrained variables in the posterior are mapped to a trasformed,
+    Constrained variables in the posterior are mapped to a transformed,
     unconstrained space via a nonlinear mapping (represented by a
     ``ParameterTransformer`` object). The transformation is handled
     automatically.
@@ -101,16 +184,23 @@ class VariationalPosterior:
     """
 
     def __init__(
-        self, D: int, K: int = 2, x0=None, parameter_transformer=None
+        self,
+        D: int,
+        K: int = 2,
+        x0=None,
+        parameter_transformer=None,
+        rng=None,
+        calibration=None,
     ):
         self.D = D  # number of dimensions
         self.K = K  # number of components
+        self._rng = get_rng(rng)
 
         if x0 is None:
             x0 = np.zeros((D, K))
         elif x0.size == D:
-            x0.reshape(-1, 1)  # reshape to vertical array
-            x0 = np.tile(x0, (K, 1)).T  # copy vector
+            # One point, however it is laid out: it starts every component
+            x0 = np.tile(x0.reshape(-1, 1), (1, K))
         else:
             x0 = x0.T
             x0 = np.tile(x0, int(np.ceil(self.K / x0.shape[1])))
@@ -118,7 +208,7 @@ class VariationalPosterior:
 
         self.w = np.ones((1, K)) / K
         self.eta = np.ones((1, K)) / K
-        self.mu = x0 + 1e-6 * np.random.randn(self.D, self.K)
+        self.mu = x0 + 1e-6 * self._rng.standard_normal((self.D, self.K))
         self.sigma = 1e-3 * np.ones((1, K))
         self.lambd = np.ones((self.D, 1))
 
@@ -136,12 +226,151 @@ class VariationalPosterior:
         self.bounds = None
         self.stats = None
         self._mode = None
+        self._calibration_hint_emitted = False
+        self._set_calibration(calibration)
+
+    def _set_calibration(self, calibration):
+        """Set a resolved profile or a pending cache request."""
+        if calibration is None:
+            self._calibration_profile = default_profile()
+            self._calibration_request = None
+        elif isinstance(calibration, CalibrationProfile):
+            # Round-trip validation also protects against malformed instances
+            # reconstructed outside the normal frozen-dataclass constructor.
+            CalibrationProfile.from_dict(calibration.to_dict())
+            self._calibration_profile = calibration
+            self._calibration_request = None
+        elif isinstance(calibration, str) and calibration == "cached":
+            self._calibration_profile = None
+            self._calibration_request = "cached"
+        elif isinstance(calibration, str) and calibration == "off":
+            self._calibration_profile = default_profile(source="off")
+            self._calibration_request = None
+        else:
+            raise ValueError(
+                "calibration must be None, 'cached', 'off', or a "
+                "CalibrationProfile."
+            )
+
+    def _ensure_calibration_state(self):
+        """Migrate a posterior saved before calibration profiles existed."""
+        if "_calibration_hint_emitted" not in self.__dict__:
+            self._calibration_hint_emitted = False
+        if "_calibration_profile" not in self.__dict__:
+            self._calibration_profile = default_profile(
+                source="legacy", status="complete"
+            )
+            self._calibration_request = None
+        elif "_calibration_request" not in self.__dict__:
+            self._calibration_request = None
+
+    @property
+    def calibration_profile(self) -> Optional[CalibrationProfile]:
+        """The fixed profile, or ``None`` before a cached request resolves."""
+        self._ensure_calibration_state()
+        return self._calibration_profile
+
+    def _resolve_calibration(self, *, display=None) -> CalibrationProfile:
+        """Resolve this posterior's pending cache request at most once."""
+        profile = self.__dict__.get("_calibration_profile")
+        if profile is not None:
+            return profile
+        if "_calibration_profile" not in self.__dict__:
+            self._ensure_calibration_state()
+            return self._calibration_profile
+
+        from pyvbmc.calibration._cache import (
+            resolve_cached_profile,
+            suggest_calibration_once,
+        )
+
+        profile = resolve_cached_profile()
+        self._calibration_profile = profile
+        self._calibration_request = None
+        if display is None:
+            display = self.__dict__.get("_calibration_display", True)
+        if profile.source == "default" and profile.status != "complete":
+            reason = profile.provenance.get("reason")
+            emitted = suggest_calibration_once(reason, display=bool(display))
+            self._calibration_hint_emitted = bool(
+                getattr(self, "_calibration_hint_emitted", False) or emitted
+            )
+        return profile
+
+    def _apply_calibration_load_override(self, calibration):
+        """Apply an override without consulting the machine-local cache."""
+        self._ensure_calibration_state()
+        if calibration is None:
+            return
+        if self._calibration_profile is None:
+            self._set_calibration(calibration)
+            return
+        if isinstance(calibration, str) and calibration == "cached":
+            raise ValueError(
+                "Cannot apply 'cached' to an already resolved calibration "
+                "profile; start a new run to select new settings."
+            )
+        if isinstance(calibration, str) and calibration == "off":
+            if not self._calibration_profile.uses_historical_defaults:
+                raise ValueError(
+                    "Cannot apply 'off' to a resolved nondefault calibration "
+                    "profile; start a new run to change settings."
+                )
+            return
+        if isinstance(calibration, CalibrationProfile):
+            CalibrationProfile.from_dict(calibration.to_dict())
+            if calibration.settings != self._calibration_profile.settings:
+                raise ValueError(
+                    "Calibration override settings conflict with the saved "
+                    "resolved profile; start a new run to change settings."
+                )
+            return
+        raise ValueError(
+            "calibration must be None, 'cached', 'off', or a "
+            "CalibrationProfile."
+        )
+
+    @property
+    def rng(self) -> np.random.Generator:
+        """The random generator used by every method of this object that
+        draws random numbers (``sample``, ``kl_div``, ``mtv``, ``plot``,
+        ...). Copies made with ``copy.deepcopy`` share the same generator,
+        so that all copies of a variational posterior draw from a single
+        random stream."""
+        # Objects unpickled from before the generator existed have no `_rng`.
+        rng = self.__dict__.get("_rng")
+        if rng is None:
+            rng = self._rng = get_rng()
+        return rng
+
+    @rng.setter
+    def rng(self, rng):
+        self._rng = get_rng(rng)
+
+    def __deepcopy__(self, memo):
+        # Deep-copy everything except the random generator, which is shared so
+        # that every copy of the posterior draws from the same stream.
+        result = self.__class__.__new__(self.__class__)
+        memo[id(self)] = result
+        for key, value in self.__dict__.items():
+            if key == "_rng":
+                setattr(result, key, value)
+            else:
+                setattr(result, key, copy.deepcopy(value, memo))
+        return result
 
     def get_bounds(self, X: np.ndarray, options, K: int = None):
         """
         Compute soft bounds for variational posterior parameters.
 
-        These bounds are used during the variational optimization in ``VBMC``.
+        These bounds are used during the variational optimization in
+        ``VBMC``. They are a function of the training inputs given here:
+        the component means are bounded by the bounding box of those
+        inputs, and their log scale (the product of ``sigma`` and
+        ``lambd``) by the log of the width of that box, down to a fraction
+        ``tol_length`` of it. The bounds on the weight parameters span the
+        weights above half the weight tolerance. The box is also stored on
+        the posterior as ``bounds``, replacing any box of an earlier call.
 
         Parameters
         ----------
@@ -173,40 +402,19 @@ class VariationalPosterior:
             K = self.K
 
         # Soft-bound loss is computed on MU and SCALE (which is SIGMA times
-        # LAMBDA)
-
-        # Start with reversed bounds (see below)
-        if self.bounds is None:
-            self.bounds = {
-                "mu_lb": np.full((self.D,), np.inf),
-                "mu_ub": np.full((self.D,), -np.inf),
-                "lnscale_lb": np.full((self.D,), np.inf),
-                "lnscale_ub": np.full((self.D,), -np.inf),
-            }
-
-        # Set bounds for mean parameters of variational components
-        self.bounds["mu_lb"] = np.minimum(
-            np.min(X, axis=0), self.bounds["mu_lb"]
-        )
-        self.bounds["mu_ub"] = np.maximum(
-            np.max(X, axis=0), self.bounds["mu_ub"]
-        )
-
-        # Set bounds for log scale parameters of variational components.
+        # LAMBDA). Both follow the bounding box of the training inputs.
         ln_range = np.log(np.max(X, axis=0) - np.min(X, axis=0))
-        self.bounds["lnscale_lb"] = np.minimum(
-            self.bounds["lnscale_lb"], ln_range + np.log(options["tol_length"])
-        )
-        self.bounds["lnscale_ub"] = np.maximum(
-            self.bounds["lnscale_ub"], ln_range
-        )
+        self.bounds = {
+            "mu_lb": np.min(X, axis=0),
+            "mu_ub": np.max(X, axis=0),
+            "lnscale_lb": ln_range + np.log(options["tol_length"]),
+            "lnscale_ub": ln_range,
+        }
 
         # Set bounds for log weight parameters of variation components.
         if self.optimize_weights:
-            # prevent warning to be printed when doing final boost
-            if options["tol_weight"] == 0:
-                self.bounds["eta_lb"] = -np.inf
-            else:
+            with np.errstate(divide="ignore"):
+                # A zero weight tolerance leaves the lower bound at -inf.
                 self.bounds["eta_lb"] = np.log(0.5 * options["tol_weight"])
             self.bounds["eta_ub"] = 0
 
@@ -238,6 +446,194 @@ class VariationalPosterior:
 
         return theta_bnd
 
+    def to_torch(self, orig_flag=True, *, dtype=None, device=None):
+        """Export a snapshot as a torch probability distribution.
+
+        Parameters
+        ----------
+        orig_flag : bool, optional
+            Return a distribution in original parameter coordinates (default
+            True), or in the internal unconstrained coordinates if False.
+        dtype : torch.dtype, optional
+            Export precision, either ``torch.float64`` (default) or
+            ``torch.float32``. This does not change the NumPy posterior.
+        device : str or torch.device, optional
+            Device for the distribution's tensors, default CPU.
+
+        Returns
+        -------
+        distribution : torch.distributions.Distribution
+            A Gaussian mixture, transformed to original coordinates when
+            requested, with event shape ``(D,)``. Its ``log_prob`` supports
+            differentiation with respect to its input. Mixture sampling is
+            not reparameterized.
+
+        Raises
+        ------
+        ImportError
+            If torch is absent; install ``pyvbmc[torch]``.
+        ValueError
+            If the posterior or transformer cannot define the distribution.
+
+        Notes
+        -----
+        Parameters are copied; later changes to either object do not affect
+        the other. Conversion draws no random numbers. Sampling the exported
+        distribution uses torch's RNG, controlled by ``torch.manual_seed``,
+        independently of ``self.rng``. No torch objects are stored on this VP.
+        In original space, density inputs must be finite and strictly inside
+        parameter bounds. Samples rounded to a bound are moved to the nearest
+        representable interior point; the analytic density transform is not
+        clamped. Explicit float32 exports have less resolution near bounds.
+        """
+        try:
+            from ._torch import to_torch
+        except ModuleNotFoundError as exc:
+            if exc.name != "torch":
+                raise
+            raise ImportError(
+                "Torch export requires torch; install pyvbmc[torch]."
+            ) from exc
+        return to_torch(self, orig_flag=orig_flag, dtype=dtype, device=device)
+
+    def to_arviz(
+        self,
+        n_samples=1000,
+        *,
+        var_names=None,
+        orig_flag=True,
+        variables=None,
+        dims=None,
+        coords=None,
+    ):
+        """Export independent posterior draws as an ArviZ DataTree.
+
+        Parameters
+        ----------
+        n_samples : int, optional
+            Positive number of independent draws, default 1000, as any
+            scalar that holds a whole number (see `sample`); a boolean is
+            refused.
+        var_names : sequence of str, optional
+            Unique names for the D scalar parameters, default ``x_0``,
+            ``x_1``, and so on. Names must differ from ``chain`` and ``draw``.
+            Cannot be used with `variables`.
+        orig_flag : bool, optional
+            Draw in original coordinates (default True), or in the internal
+            unconstrained coordinates if False.
+        variables : mapping of str to int or sequence of int, optional
+            Structured variable layout. Mapping order assigns consecutive
+            columns of each draw to each variable. An integer defines a
+            one-dimensional shape and ``()`` defines a scalar. Variable sizes
+            must sum to ``D``.
+        dims : mapping of str to sequence of str, optional
+            Event dimension names for structured variables. Each sequence must
+            have one name per variable axis. Requires `variables`.
+        coords : mapping of str to one-dimensional array-like, optional
+            Coordinate values for structured dimensions. Each coordinate must
+            match the length of every axis using that dimension. Requires
+            `variables`.
+
+        Returns
+        -------
+        data : xarray.DataTree
+            A ``posterior`` group with one chain. Without `variables`, it has
+            one scalar variable per parameter. Structured variables retain
+            their event dimensions after ``chain`` and ``draw``.
+
+        Raises
+        ------
+        ImportError
+            If Python is older than 3.12 or ArviZ's current data API is absent;
+            use Python 3.12+ and install ``pyvbmc[arviz]``.
+        ValueError
+            If the sample count, names, structured layout, dimensions, or
+            coordinates are invalid.
+
+        Notes
+        -----
+        This method advances ``self.rng`` exactly as a call to
+        ``self.sample(n_samples, orig_flag=orig_flag)`` does. It creates no
+        likelihood or sampler-diagnostic groups. These are draws from a
+        variational approximation: MCMC diagnostics on them do not assess
+        how well the approximation represents the target posterior.
+
+        A structured layout takes consecutive sample columns in mapping order
+        and reshapes each block in C order. The exported arrays are independent
+        of the posterior's parameter arrays afterwards. The posterior group's
+        ``parameter_space`` attribute is ``"original"`` or ``"internal"``
+        according to `orig_flag`; ``"model"`` denotes exports assembled in
+        model-variable coordinates by an integration.
+        """
+        n_samples = _positive_draw_count(n_samples)
+
+        from ._arviz import (
+            _structured_layout,
+            datatree_from_arrays,
+            require_from_dict,
+        )
+
+        if variables is None:
+            if dims is not None:
+                raise ValueError("dims requires variables.")
+            if coords is not None:
+                raise ValueError("coords requires variables.")
+            if var_names is None:
+                names = [f"x_{i}" for i in range(self.D)]
+            else:
+                if isinstance(var_names, str):
+                    raise ValueError(
+                        "var_names must contain D parameter names."
+                    )
+                try:
+                    names = list(var_names)
+                except TypeError as exc:
+                    raise ValueError(
+                        "var_names must contain D parameter names."
+                    ) from exc
+                if (
+                    len(names) != self.D
+                    or any(
+                        not isinstance(n, str) or not n.strip() for n in names
+                    )
+                    or len(set(names)) != self.D
+                    or any(n in {"chain", "draw"} for n in names)
+                ):
+                    raise ValueError(
+                        "var_names must contain D unique, nonempty strings, "
+                        "excluding 'chain' and 'draw'."
+                    )
+            layout = [(name, i, (), ()) for i, name in enumerate(names)]
+        else:
+            if var_names is not None:
+                raise ValueError(
+                    "var_names and variables cannot be supplied together."
+                )
+            layout = _structured_layout(self.D, variables, dims, coords)
+
+        require_from_dict()
+        samples, _ = self.sample(n_samples, orig_flag=orig_flag)
+        arrays = {
+            name: samples[:, offset : offset + int(np.prod(shape))].reshape(
+                (1, n_samples, *shape), order="C"
+            )
+            for name, offset, shape, _ in layout
+        }
+        structured_dims = {
+            name: event_dims for name, _, _, event_dims in layout
+        }
+        return datatree_from_arrays(
+            arrays,
+            dims=structured_dims if variables is not None else None,
+            coords=coords,
+            attrs={
+                "inference_library": "pyvbmc",
+                "inference_method": "variational approximation",
+                "sample_type": "independent",
+                "parameter_space": "original" if orig_flag else "internal",
+            },
+        )
+
     def sample(
         self,
         N: int,
@@ -251,7 +647,9 @@ class VariationalPosterior:
         Parameters
         ----------
         N : int
-            Number of samples to draw.
+            Number of samples to draw, as any scalar that holds a whole
+            number: a float such as ``1e5``, a NumPy scalar or a 0-D
+            array is taken as that number of samples.
         orig_flag : bool, optional
             If `orig_flag` is ``True``, the random vectors are returned
             in the original parameter space. If ``False``, they are returned in
@@ -269,7 +667,9 @@ class VariationalPosterior:
             posterior, in which the multivariate normal components have been
             replaced by multivariate `t`-distributions with `df` degrees of
             freedom. The default is ``np.inf``, limit in which the
-            `t`-distribution becomes a multivariate normal.
+            `t`-distribution becomes a multivariate normal. A finite negative
+            `df` is refused: ``pdf`` reads it as the product of `D` univariate
+            `t` densities, a family this method cannot draw from.
 
         Returns
         -------
@@ -277,19 +677,44 @@ class VariationalPosterior:
             `X` is an `N`-by-`D` matrix of random vectors drawn from the
             variational posterior.
         I : np.ndarray
-            `I` is an `N`-by-1 array such that the `i`-th element of `I`
-            indicates the index of the variational mixture component from which
-            the `i`-th row of X has been generated.
+            `I` is an `N`-element array of integers such that the `i`-th
+            element of `I` indicates the index of the variational mixture
+            component from which the `i`-th row of X has been generated.
+
+        Raises
+        ------
+        ValueError
+            Raised if `N` is not a scalar holding a whole number of samples.
+        ValueError
+            Raised if `df` is finite and negative (the product of univariate
+            `t` densities has no sampler here).
+
+        Notes
+        -----
+        Random draws use ``self.rng``.
         """
+        count = _whole_number(N)
+        if count is None:
+            raise ValueError(f"N must be a whole number of samples, got {N}.")
+        N = count
+
+        if np.isfinite(df) and df < 0:
+            raise ValueError(
+                f"df = {df}: a negative df stands for the product of "
+                "univariate t densities, which pdf evaluates but sample "
+                "cannot draw from."
+            )
+
         # missing to sample from gp
         gp_sample = False
         if N < 1:
             x = np.zeros((0, self.D))
-            i = np.zeros((0, 1))
+            i = np.zeros(0, dtype=int)
             return x, i
         elif gp_sample:
             pass
         else:
+            rng = self.rng
             lambd_row = self.lambd.reshape(1, -1)
 
             if self.K > 1:
@@ -302,39 +727,33 @@ class VariationalPosterior:
                     if N > i.shape[0]:
                         w_extra = self.w * N - repeats
                         repeats_extra = np.ceil(np.sum(w_extra))
-                        w_extra += self.w * (repeats_extra - sum(w_extra))
+                        w_extra += self.w * (repeats_extra - np.sum(w_extra))
                         w_extra /= np.sum(w_extra)
-                        i_extra = np.random.choice(
+                        i_extra = rng.choice(
                             range(self.K),
                             size=repeats_extra.astype("int"),
                             p=w_extra.ravel(),
                         )
                         i = np.append(i, i_extra)
 
-                    np.random.shuffle(i)
+                    rng.shuffle(i)
                     i = i[:N]
                 else:
-                    i = np.random.choice(
-                        range(self.K), size=N, p=self.w.ravel()
-                    )
+                    i = rng.choice(range(self.K), size=N, p=self.w.ravel())
 
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T[i]
                         + lambd_row
-                        * np.random.randn(N, self.D)
+                        * rng.standard_normal((N, self.D))
                         * self.sigma[:, i].T
                     )
                 else:
-                    t = (
-                        df
-                        / 2
-                        / np.sqrt(np.random.gamma(df / 2, df / 2, (N, 1)))
-                    )
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T[i]
                         + lambd_row
-                        * np.random.randn(N, self.D)
+                        * rng.standard_normal((N, self.D))
                         * t
                         * self.sigma[:, i].T
                     )
@@ -342,22 +761,20 @@ class VariationalPosterior:
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T
-                        + lambd_row * np.random.randn(N, self.D) * self.sigma
+                        + lambd_row
+                        * rng.standard_normal((N, self.D))
+                        * self.sigma
                     )
                 else:
-                    t = (
-                        df
-                        / 2
-                        / np.sqrt(np.random.gamma(df / 2, df / 2, (N, 1)))
-                    )
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T
                         + lambd_row
                         * t
-                        * np.random.randn(N, self.D)
+                        * rng.standard_normal((N, self.D))
                         * self.sigma
                     )
-                i = np.zeros(N)
+                i = np.zeros(N, dtype=int)
             if orig_flag:
                 x = self.parameter_transformer.inverse(x)
         return x, i
@@ -383,7 +800,9 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the original space by default.
+            assumed to be in the original space by default. A one-dimensional
+            array is one point, so for ``D = 1`` several points go in a
+            column.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -393,16 +812,24 @@ class VariationalPosterior:
             `orig_flag` is `False`.
         log_flag : bool, optional
             If `log_flag` is ``True`` return the logarithm of the pdf,
-            by default ``False``.
+            by default ``False``. Where the density of the mixture of
+            normal components is below the smallest normal double, its
+            logarithm and the gradient of the logarithm are computed by
+            log-sum-exp over the components, so that they stay finite in
+            the far tails.
         grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
-            by default ``False``.
+            by default ``False``. Gradients are available only in transformed
+            space (``orig_flag=False``).
         df : float, optional
             Compute the pdf of a heavy-tailed version of the variational
             posterior, in which the multivariate normal components
             have been replaced by multivariate `t`-distributions with
             `df` degrees of freedom. The default is `df` = ``np.inf``, limit in
-            which the `t`-distribution becomes a multivariate normal.
+            which the `t`-distribution becomes a multivariate normal. A
+            negative `df` replaces them instead by products of `D`
+            univariate `t`-distributions with ``abs(df)`` degrees of
+            freedom; ``df = 0`` also gives the normal components.
 
         Returns
         -------
@@ -414,16 +841,57 @@ class VariationalPosterior:
 
         Raises
         ------
+        ValueError
+            Raised if the rows of `x` are not `D` wide.
         NotImplementedError
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
-            Raised if `orig_flag` = ``True`` and `log_flag` = ``True`` and
-            `grad_flag` = ``True`` (gradient computation of the log-pdf in the
-            original space is not supported yet).
+            Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``
+            (gradient computation in the original space is not supported).
         """
-        x = x.copy()
+        profile = self._resolve_calibration()
+        return self._pdf(
+            x,
+            orig_flag,
+            log_flag,
+            grad_flag,
+            df,
+            chunk_elements=profile.pdf_chunk_elements,
+        )
+
+    def _pdf(
+        self,
+        x: np.ndarray,
+        orig_flag: bool = True,
+        log_flag: bool = False,
+        grad_flag: bool = False,
+        df: float = np.inf,
+        *,
+        chunk_elements: int,
+    ):
+        """PDF implementation with an explicit temporary-array budget."""
+        if (
+            isinstance(chunk_elements, (bool, np.bool_))
+            or not isinstance(chunk_elements, Integral)
+            or chunk_elements < 1
+        ):
+            raise ValueError("chunk_elements must be a positive integer.")
+        if orig_flag and grad_flag:
+            raise NotImplementedError(
+                "Gradient computation in original space is not supported."
+            )
+
+        # The transformed coordinates are written into this copy, which
+        # therefore holds them in full precision whatever the caller gave.
+        x = np.array(x, dtype=np.float64)
         N, D = x.shape
+        if D != self.D:
+            raise ValueError(
+                f"x has {D} columns but the posterior has D = {self.D}: "
+                "each row of x is one point (for D = 1, the points form a "
+                "column, x.reshape(-1, 1))."
+            )
 
         # compute pdf only for points inside bounds in origspace
         if orig_flag:
@@ -442,31 +910,87 @@ class VariationalPosterior:
         y = np.zeros((N, 1))
         if grad_flag:
             dy = np.zeros((N, D))
+        # Rows of `y` and `dy` that hold the log density and its gradient
+        # directly (see below).
+        tail = np.zeros(N, dtype=bool)
 
         if not np.isfinite(df) or df == 0:
             # compute pdf of variational posterior
 
             # common normalization factor
             nf = 1 / (2 * np.pi) ** (D / 2) / np.prod(lamd_row)
-            for k in range(self.K):
-                d2 = np.sum(
-                    ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
-                    ** 2,
-                    axis=1,
-                )
-                nn = (
-                    nf
-                    * self.w[:, k]
-                    / self.sigma[:, k] ** D
-                    * np.exp(-0.5 * d2)[:, np.newaxis]
-                )
-                y += nn
-                if grad_flag:
-                    dy -= (
-                        nn
-                        * (x - self.mu.T[k])
-                        / ((lamd_row**2) * self.sigma[:, k] ** 2)
+            # The K components are handled together by broadcasting, in
+            # blocks of rows small enough that no (n, K, D) temporary
+            # exceeds the profile's fixed element budget (unless one row is
+            # already larger); the historical default is 2^16 elements.
+            # Rows are independent, so the block size does not affect the
+            # result.
+            # `K` is a NumPy integer in some stored VPs (uint8 in the
+            # MATLAB fixtures), and NumPy 2 refuses division of a Python
+            # integer by a uint8 here.
+            K = int(self.K)
+            mu_k = self.mu.T[np.newaxis, :, :]  # (1, K, D)
+            sigma_k = self.sigma.reshape(1, K, 1)
+            lambd_d = lamd_row.reshape(1, 1, D)
+            scale = sigma_k * lambd_d  # (1, K, D)
+            w_k = (nf * self.w / self.sigma**D).reshape(1, K)
+            if grad_flag:
+                scale2 = lambd_d**2 * sigma_k**2
+            if log_flag:
+                # Where the sum falls below the smallest normal number, its
+                # logarithm loses precision and then becomes -inf, and the
+                # gradient dy / y becomes 0 / 0. There the log density is a
+                # log-sum-exp of the components' log densities, and its
+                # gradient the components' gradients weighted by their
+                # responsibilities. Every other row is left to the linear
+                # sum.
+                tiny = np.finfo(np.float64).tiny
+                with np.errstate(divide="ignore"):
+                    log_w_k = (
+                        np.log(self.w.reshape(1, K))
+                        - 0.5 * D * np.log(2 * np.pi)
+                        - np.sum(np.log(lamd_row))
+                        - D * np.log(self.sigma.reshape(1, K))
                     )
+            # A change to how the rows are split into blocks is repeated in
+            # the calibration campaign's copy of this layout
+            # (_layout_signature in pyvbmc/calibration/_campaign.py) and
+            # bumps KERNEL_REVISION in pyvbmc/calibration/_cache.py, so that
+            # cached calibrations measured on the old blocks are not reused.
+            # A test of the campaign
+            # (test_the_campaign_layout_matches_the_blocks_the_kernels_compute)
+            # compares the copy with the blocks computed here.
+            step = max(1, int(chunk_elements) // max(1, K * D))
+            for i0 in range(0, N, step):
+                rows = slice(i0, min(N, i0 + step))
+                diff = x[rows, np.newaxis, :] - mu_k  # (n, K, D)
+                d2 = np.sum((diff / scale) ** 2, axis=2)  # (n, K)
+                nn = w_k * np.exp(-0.5 * d2)  # (n, K)
+                y[rows] = np.sum(nn, axis=1, keepdims=True)
+                if grad_flag:
+                    dy[rows] = -np.sum(
+                        nn[:, :, np.newaxis] * diff / scale2, axis=1
+                    )
+                if log_flag:
+                    low = (y[rows, 0] < tiny) & mask[rows]
+                    if np.any(low):
+                        idx = i0 + np.flatnonzero(low)
+                        log_nn = log_w_k - 0.5 * d2[low]  # (m, K)
+                        top = np.max(log_nn, axis=1, keepdims=True)
+                        # A row whose every term is -inf stays at -inf
+                        top[np.isneginf(top)] = 0.0
+                        r = np.exp(log_nn - top)
+                        r_sum = np.sum(r, axis=1, keepdims=True)
+                        with np.errstate(divide="ignore"):
+                            y[idx] = top + np.log(r_sum)
+                        if grad_flag:
+                            dy[idx] = -np.sum(
+                                (r / r_sum)[:, :, np.newaxis]
+                                * diff[low]
+                                / scale2,
+                                axis=1,
+                            )
+                        tail[idx] = True
 
         else:
             # Compute pdf of heavy-tailed variant of variational posterior
@@ -529,12 +1053,16 @@ class VariationalPosterior:
                         )
 
         if log_flag:
+            # The rows of `tail` hold the log density and its gradient already
+            head = ~tail
             if grad_flag:
-                dy = dy / y
+                dy[head] = dy[head] / y[head]
+            y_head = y[head]
             # Avoid log(0):
-            zero_mask = y == 0
-            y[zero_mask] = -np.inf
-            y[~zero_mask] = np.log(y[~zero_mask])
+            zero_mask = y_head == 0
+            y_head[zero_mask] = -np.inf
+            y_head[~zero_mask] = np.log(y_head[~zero_mask])
+            y[head] = y_head
             # PDF is 0 outside original bounds:
             y[~mask] = -np.inf
         else:
@@ -542,21 +1070,27 @@ class VariationalPosterior:
 
         # apply jacobian correction
         if orig_flag:
+            log_jacobian = self.parameter_transformer.log_abs_det_jacobian(
+                x[mask]
+            )[:, np.newaxis]
             if log_flag:
-                y[mask] -= self.parameter_transformer.log_abs_det_jacobian(
-                    x[mask]
-                )[:, np.newaxis]
-                if grad_flag:
-                    raise NotImplementedError(
-                        """vbmc_pdf:NoOriginalGrad: Gradient computation
-                         in original space not supported yet."""
-                    )
+                y[mask] -= log_jacobian
             else:
-                y[mask] /= np.exp(
-                    self.parameter_transformer.log_abs_det_jacobian(x[mask])[
-                        :, np.newaxis
-                    ]
-                )
+                y_inside = y[mask]
+                jacobian = np.exp(log_jacobian)
+                # Where the Jacobian underflows the quotient is infinite
+                # although the density has a value a double can hold:
+                # there, exponentiate the difference of the logarithms.
+                with np.errstate(
+                    divide="ignore", over="ignore", invalid="ignore"
+                ):
+                    corrected = y_inside / jacobian
+                    lost = ~np.isfinite(corrected)
+                    if np.any(lost):
+                        corrected[lost] = np.exp(
+                            np.log(y_inside[lost]) - log_jacobian[lost]
+                        )
+                y[mask] = corrected
 
         if grad_flag:
             return y, dy
@@ -583,7 +1117,9 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the original space by default.
+            assumed to be in the original space by default. A one-dimensional
+            array is one point, so for ``D = 1`` several points go in a
+            column.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -593,30 +1129,36 @@ class VariationalPosterior:
             `orig_flag` is `False`.
         grad_flag : bool, optional
             If ``True`` the gradient of the log-pdf is returned as a second
-            output, by default ``False``.
+            output, by default ``False``. Gradients are available only in
+            transformed space (``orig_flag=False``).
         df : float, optional
             Compute the log-pdf of a heavy-tailed version of the variational
             posterior, in which the multivariate normal components have been
             replaced by multivariate `t`-distributions with `df` degrees of
             freedom. The default is `df` = ``np.inf``, limit in which the
-            `t`-distribution becomes a multivariate normal.
+            `t`-distribution becomes a multivariate normal. A negative `df`
+            replaces them instead by products of `D` univariate
+            `t`-distributions with ``abs(df)`` degrees of freedom; ``df = 0``
+            also gives the normal components.
 
         Returns
         -------
         log_pdf: np.ndarray
-            The probability density of the variational posterior
+            The log probability density of the variational posterior
             evaluated at each row of `x`.
         gradient: np.ndarray
             If `grad_flag` is ``True``, the function returns the gradient as well.
 
         Raises
         ------
+        ValueError
+            Raised if the rows of `x` are not `D` wide.
         NotImplementedError
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
             Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``
-            (gradient computation in original space not supported yet).
+            (gradient computation in original space is not supported).
         """
         return self.pdf(*args, **kwargs, log_flag=True)
 
@@ -627,16 +1169,26 @@ class VariationalPosterior:
         Return all the active ``VariationalPosterior`` parameters
         flattened as a 1D (numpy) array, possibly transformed.
 
+        The parameters are first normalized in place: ``lambd`` is divided
+        by its root mean square and ``sigma`` multiplied by it, and the
+        weights are divided by their sum when they are being optimized.
+        The two scales enter the density through their product alone, so
+        rescaling does not change the distribution. Normalizing the weights
+        changes it only if they did not already sum to one. A mode cached by
+        a previous call to ``mode()`` is discarded because the parameters may
+        have changed.
+
         Parameters
         ----------
         raw_flag : bool, optional
-            Specifies whether the sigma and lambda parameters are
-            returned as raw (unconstrained) or not, by default ``True``.
+            Specifies whether the scales ``sigma`` and ``lambd`` and the
+            weights ``w`` are returned as raw (unconstrained) parameters,
+            their logarithms, or as they are, by default ``True``.
 
         Returns
         -------
         theta : np.ndarray
-            The variational posterior parameters flattenend as a 1D array.
+            The variational posterior parameters flattened as a 1D array.
         """
 
         nl = np.sqrt(np.sum(self.lambd**2) / self.D)
@@ -648,7 +1200,8 @@ class VariationalPosterior:
         if self.optimize_weights:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
 
-        # remove mode (at least this is done in Matlab)
+        # The mode may have moved.
+        self._mode = None
 
         if self.optimize_mu:
             theta = self.mu.ravel(order="F")
@@ -673,7 +1226,11 @@ class VariationalPosterior:
             )
 
         if raw_flag:
-            return np.concatenate((theta, np.log(constrained_parameters)))
+            # A zero weight has the raw parameter minus infinity, which
+            # `set_parameters` maps back to zero.
+            with np.errstate(divide="ignore"):
+                log_parameters = np.log(constrained_parameters)
+            return np.concatenate((theta, log_parameters))
         else:
             return np.concatenate((theta, constrained_parameters))
 
@@ -682,39 +1239,56 @@ class VariationalPosterior:
         Set variational posterior parameters from a single array.
 
         Takes as input a ``numpy`` array and assigns it to the
-        variational posterior parameters.
+        variational posterior parameters. ``eta``, the unbounded (softmax)
+        parametrization of the mixture weights, is set alongside ``w``, so
+        that ``softmax(eta)`` is the resulting ``w``.
+
+        When both ``sigma`` and ``lambd`` are optimized, ``lambd`` is then
+        divided by its root mean square and ``sigma`` multiplied by it. The
+        two scales enter the density through their product alone, so that
+        rescaling leaves the distribution as it was. A scale that is not
+        optimized keeps its value and the other takes the value in
+        ``theta``, so that the parameters set are a function of ``theta``
+        alone. The weights are divided by their sum when they are being
+        optimized.
 
         Parameters
         ----------
         theta : np.ndarray
             The array with the parameters that should be assigned.
         raw_flag : bool, optional
-            Specifies whether the sigma and lambda parameters are
-            passed as raw (unconstrained) or not, by default ``True``.
+            Specifies whether the scales ``sigma`` and ``lambd`` and the
+            weights are passed as raw (unconstrained) parameters or as they
+            are, by default ``True``. The raw scales are their logarithms,
+            and the raw weights are the parameters of a softmax: the weights
+            are their exponentials, normalized to sum to one.
 
         Raises
         ------
         ValueError
-            Raised if sigma, lambda and weights are not positive
-            and raw_flag = ``False``.
+            Raised if `raw_flag` is ``False`` and a scale or a weight in
+            `theta` is negative.
         """
 
         # Make sure we don't get issues with references.
         theta = theta.copy()
 
-        # check if sigma, lambda and weights are positive when raw_flag = False
+        # check that sigma, lambda and weights are not negative when
+        # raw_flag = False
+        # They occupy the tail of the vector, after the means, which are
+        # unconstrained; an empty tail leaves nothing to check.
         if not raw_flag:
-            check_idx = 0
-            if self.optimize_weights:
-                check_idx -= self.K
-            if self.optimize_lambd:
-                check_idx -= self.D
+            n_constrained = 0
             if self.optimize_sigma:
-                check_idx -= self.K
-            if np.any(theta[-check_idx:] < 0.0):
+                n_constrained += self.K
+            if self.optimize_lambd:
+                n_constrained += self.D
+            if self.optimize_weights:
+                n_constrained += self.K
+            if n_constrained > 0 and np.any(theta[-n_constrained:] < 0.0):
                 raise ValueError(
-                    """sigma, lambda and weights must be positive
-                    when raw_flag = False"""
+                    "sigma, lambda and weights must not be negative when "
+                    "raw_flag = False"
                 )
 
         if self.optimize_mu:
@@ -746,14 +1320,32 @@ class VariationalPosterior:
             else:
                 self.w = eta.T[:, np.newaxis]
 
-        nl = np.sqrt(np.sum(self.lambd**2) / self.D)
-
-        self.lambd = self.lambd.reshape(-1, 1) / nl
-        self.sigma = self.sigma.reshape(1, -1) * nl
+        # The product of sigma and lambd leaves their common scale free when
+        # both are optimized; lambd is then given unit root mean square, as
+        # `misc/rescale_params.m` gives it. A scale that is not optimized
+        # keeps its value, so that the parameters are a function of theta
+        # alone, as `misc/negelcbo_vbmc.m` assigns theta without rescaling.
+        if self.optimize_sigma and self.optimize_lambd:
+            nl = np.sqrt(np.sum(self.lambd**2) / self.D)
+            self.lambd = self.lambd.reshape(-1, 1) / nl
+            self.sigma = self.sigma.reshape(1, -1) * nl
+        else:
+            self.lambd = self.lambd.reshape(-1, 1)
+            self.sigma = self.sigma.reshape(1, -1)
 
         # Ensure that weights are normalized
         if self.optimize_weights:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
+
+        # Keep the softmax parametrization of the weights in step with them.
+        # A zero weight has an eta of minus infinity, which the softmax
+        # maps back to zero.
+        if self.optimize_weights and raw_flag:
+            eta = theta[-self.K :]
+            self.eta = np.reshape(eta - np.amax(eta), (1, -1))
+        else:
+            with np.errstate(divide="ignore"):
+                self.eta = np.log(self.w).reshape(1, -1)
 
         # remove mode
         self._mode = None
@@ -769,7 +1361,9 @@ class VariationalPosterior:
         Parameters
         ----------
         N : int, optional
-            Number of samples used to estimate the moments, by default ``int(1e6)``.
+            Number of samples used to estimate the moments in the original
+            space, as any scalar that holds a whole number (see `sample`).
+            By default ``int(1e6)``.
         orig_flag : bool, optional
             If ``True``, compute moments in the original parameter space,
             otherwise in the transformed VBMC space. By default ``True``.
@@ -780,15 +1374,24 @@ class VariationalPosterior:
         Returns
         -------
         mean: np.ndarray
-            The mean of the variational posterior.
+            The mean of the variational posterior, of shape ``(1, D)``.
         cov: np.ndarray
-            If `cov_flag` is ``True``, returns the covariance matrix as well.
+            If `cov_flag` is ``True``, returns the covariance matrix as
+            well, of shape ``(D, D)``.
+
+        Raises
+        ------
+        ValueError
+            Raised in the original space if `N` is not a scalar holding a
+            whole number of samples.
         """
         if orig_flag:
-            x, _ = self.sample(int(N), orig_flag=True, balance_flag=True)
+            x, _ = self.sample(N, orig_flag=True, balance_flag=True)
             mubar = np.mean(x, axis=0)
             if cov_flag:
-                cov = np.cov(x.T)
+                # One parameter gives a single variance, returned as the
+                # 1-by-1 covariance matrix it is.
+                cov = np.atleast_2d(np.cov(x.T))
         else:
             mubar = np.sum(self.w * self.mu, axis=1)
 
@@ -825,10 +1428,16 @@ class VariationalPosterior:
             Maximum number of optimization runs from different starting points
             to find the mode. By default `n_opts` is the square root of the
             number of mixture components K, that is
-            :math:`n\_opts = \lceil \sqrt{K} \rceil`.
+            :math:`n\_opts = \lceil \sqrt{K} \rceil`. A call in the
+            original space that leaves `n_opts` out returns the mode that
+            an earlier such call found, if the posterior still carries one,
+            and otherwise stores the mode it finds. A call in the
+            transformed space, or one that gives `n_opts`, runs the search
+            and neither reads nor replaces that stored mode.
+
         Returns
         -------
-        mode: np.ndarray
+        mode : np.ndarray
             The mode of the variational posterior.
 
         Notes
@@ -844,21 +1453,29 @@ class VariationalPosterior:
         the input space, so the mode in the original space and the mode in the
         transformed (unconstrained) space will generally be in different
         locations (even after applying the appropriate transformations).
+
+        The starting points of the optimization runs are drawn from a copy
+        of ``self.rng``, so a call leaves the posterior's random stream
+        where it found it, and two calls with nothing drawn from that
+        stream in between give the same answer.
         """
-        if orig_flag and self._mode is not None:
+        default_search = n_opts is None
+        if orig_flag and default_search and self._mode is not None:
             return self._mode
 
-        def neg_log_pdf(x0, orig_flag=orig_flag):
-            if orig_flag:
-                y = self.pdf(
-                    x0, orig_flag=True, log_flag=True, grad_flag=False
-                )
-                return -y
-            else:
+        def neg_log_pdf(x0, grad_flag=not orig_flag):
+            # The optimizer takes the gradient, which exists in the
+            # transformed space only; the screen of the starting points
+            # needs the values alone, which are the same without it.
+            if grad_flag:
                 y, dy = self.pdf(
                     x0, orig_flag=False, log_flag=True, grad_flag=True
                 )
                 return -y, -dy
+            y = self.pdf(
+                x0, orig_flag=orig_flag, log_flag=True, grad_flag=False
+            )
+            return -y
 
         if n_opts is None:
             n_opts = int(np.ceil(np.sqrt(self.K)))
@@ -867,9 +1484,15 @@ class VariationalPosterior:
         x_min = np.zeros((n_opts, self.D))
         ff = np.full((n_opts, 1), np.inf)
 
+        # The candidates are drawn from a copy of the posterior, holding a
+        # copy of the generator: the search leaves the stream of this
+        # posterior, which a run shares, where it found it.
+        candidate_source = copy.deepcopy(self)
+        candidate_source.rng = copy.deepcopy(self.rng)
+
         for k in range(n_opts):
             # Random initial set of points to choose starting point
-            x0_mat, _ = self.sample(n_samples, orig_flag)
+            x0_mat, _ = candidate_source.sample(n_samples, orig_flag)
 
             # Add centers of components to initial set for first optimization
             if k == 0:
@@ -879,28 +1502,19 @@ class VariationalPosterior:
                 x0_mat = np.concatenate([x0_mat, x0_mu])
 
             # Evaluate pdf at all points and start optimization from best
-            y0_vec = neg_log_pdf(x0_mat)
-            if not orig_flag:  # drop gradient -dy
-                y0_vec = y0_vec[0]
+            y0_vec = neg_log_pdf(x0_mat, grad_flag=False)
             idx = np.argmin(y0_vec.squeeze())
             x0 = x0_mat[idx]
 
             bounds = None
             if orig_flag:
-                bounds = np.stack(
-                    (
-                        self.parameter_transformer.lb_orig.squeeze()
-                        + np.sqrt(np.finfo(float).eps),
-                        self.parameter_transformer.ub_orig.squeeze()
-                        - np.sqrt(np.finfo(float).eps),
-                    ),
-                    axis=1,
-                )
-                x0 = np.minimum(
-                    self.parameter_transformer.ub_orig,
-                    np.maximum(x0, self.parameter_transformer.lb_orig),
-                )
-                x0 = x0.squeeze()
+                # The search box sits inside the original bounds, on which
+                # the density is zero and its logarithm infinite.
+                offset = np.sqrt(np.finfo(float).eps)
+                lb = self.parameter_transformer.lb_orig.reshape(-1) + offset
+                ub = self.parameter_transformer.ub_orig.reshape(-1) - offset
+                bounds = np.stack((lb, ub), axis=1)
+                x0 = np.minimum(ub, np.maximum(x0, lb))
 
             # fun provides gradient (jac=True) when orig_flag is False:
             res = minimize(
@@ -909,11 +1523,12 @@ class VariationalPosterior:
             x_min[k] = res.x
             ff[k] = res.fun
 
-        # Get mode and store it
+        # Get mode and store it, where the search is the one a later call
+        # without `n_opts` stands for
         idx_min = np.argmin(ff.squeeze())
         x = x_min[idx_min]
 
-        if orig_flag:
+        if orig_flag and default_search:
             self._mode = x
 
         return x
@@ -944,10 +1559,10 @@ class VariationalPosterior:
 
         Returns
         -------
-        mtv: np.ndarray
-            A `D`-element vector whose elements are the total variation distance
-            between the marginal distributions of `vp` and `vp1` or `samples`,
-            for each coordinate dimension.
+        mtv : np.ndarray
+            An array of shape ``(1, D)`` holding, for each coordinate, the
+            total variation distance between the marginal distributions of
+            this posterior and of `vp2` or `samples`.
 
         Raises
         ------
@@ -1072,6 +1687,9 @@ class VariationalPosterior:
             Raised if neither `vp2` nor `samples` are specified.
         ValueError
             Raised if `vp2` is not provided but `gauss_flag` = ``False``.
+        ValueError
+            Raised if `gauss_flag` is ``True`` and `N` is 0: the moments are
+            estimated from `N` samples in the original space.
 
         Notes
         -----
@@ -1100,7 +1718,7 @@ class VariationalPosterior:
                 if vp2 is not None:
                     q2mu, q2sigma = vp2.moments(N, True, True)
                 else:
-                    q2mu = np.mean(samples)
+                    q2mu = np.mean(samples, axis=0)
                     q2sigma = np.cov(samples.T)
 
             kls = kl_div_mvn(q1mu, q1sigma, q2mu, q2sigma)
@@ -1110,15 +1728,16 @@ class VariationalPosterior:
             xx1, _ = self.sample(N, True, True)
             q1 = self.pdf(xx1, True)
             q2 = vp2.pdf(xx1, True)
-            q1[q1 == 0 | np.isinf(q1)] = 1.0
-            q2[q2 == 0 | np.isinf(q2)] = minp
+            # Ignore the points where a density is zero or not finite
+            q1[(q1 == 0) | ~np.isfinite(q1)] = 1.0
+            q2[(q2 == 0) | ~np.isfinite(q2)] = minp
             kl1 = -np.mean(np.log(q2) - np.log(q1))
 
             xx2, _ = vp2.sample(N, True, True)
             q1 = self.pdf(xx2, True)
             q2 = vp2.pdf(xx2, True)
-            q1[q1 == 0 | np.isinf(q1)] = minp
-            q2[q2 == 0 | np.isinf(q2)] = 1.0
+            q1[(q1 == 0) | ~np.isfinite(q1)] = minp
+            q2[(q2 == 0) | ~np.isfinite(q2)] = 1.0
             kl2 = -np.mean(np.log(q1) - np.log(q2))
             kls = np.concatenate((kl1, kl2), axis=None)
 
@@ -1131,7 +1750,7 @@ class VariationalPosterior:
         n_samples: int = int(1e5),
         title: str = None,
         plot_data: bool = False,
-        highlight_data: list = None,
+        highlight_data: np.ndarray = None,
         plot_vp_centres: bool = False,
         plot_style: dict = None,
         gp: GaussianProcess = None,
@@ -1158,7 +1777,7 @@ class VariationalPosterior:
             The title of the plot, by default ``None``.
         plot_data : bool, optional
             Whether to plot the datapoints of the GP, by default ``False``.
-        highlight_data : list, optional
+        highlight_data : np.ndarray, optional
             Indices of the GP datapoints that should be plotted in a different
             way than the other datapoints, by default ``None``.
         plot_vp_centres : bool, optional
@@ -1167,7 +1786,7 @@ class VariationalPosterior:
             A dictionary of plot styling options. The possible options are:
                 **corner** : dict, optional
                     Styling options directly passed to the corner function.
-                    By default: ``{"fig": plt.figure(figsize=(8, 8)),
+                    By default: ``{"fig": plt.figure(figsize=(6, 6)),
                     "labels": labels}``. See the documentation of `corner
                     <https://corner.readthedocs.io/en/latest/index.html>`_.
                 **data** : dict, optional
@@ -1203,6 +1822,8 @@ class VariationalPosterior:
             corner_style.update(plot_style.get("corner"))
 
         # suppress warnings for small datasets with quiet=True
+        import corner
+
         fig = corner.corner(Xs, quiet=True, **corner_style)
 
         # style of the gp data
@@ -1287,6 +1908,10 @@ class VariationalPosterior:
     def save(self, file, overwrite=False):
         """Save the VP to a file.
 
+        The file holds no Python bytecode, so it can be loaded, used and
+        saved again under another minor version of Python than the one that
+        wrote it.
+
         Parameters
         ----------
         file : path-like
@@ -1315,13 +1940,22 @@ class VariationalPosterior:
             dill.dump(self, f, recurse=True)
 
     @classmethod
-    def load(cls, file):
+    def load(cls, file, *, calibration=None):
         """Load a VP from a file.
 
         Parameters
         ----------
         file : path-like
-            The file name or path to write to.
+            The file name or path to read from. Default file extension `.pkl`
+            will be added if no extension is specified.
+        calibration : CalibrationProfile, {"cached", "off"}, or None, optional
+            For a posterior saved while its calibration request
+            (``"cached"``) was still pending, the settings that replace the
+            request; ``None`` leaves it pending. For a posterior with
+            resolved settings, ``None``, a profile with the same settings,
+            and ``"off"`` where the saved settings are the historical
+            defaults keep the saved profile and its provenance; any other
+            value raises.
 
         Returns
         -------
@@ -1332,6 +1966,11 @@ class VariationalPosterior:
         ------
         OSError
             If the file cannot be found, or cannot be opened for other reasons.
+        ValueError
+            If `calibration` asks for other settings than the resolved ones
+            the file holds (``"cached"``, ``"off"`` where the saved settings
+            are not the historical defaults, or a profile with other
+            settings), or is not one of the accepted values.
         """
         filepath = Path(file)
         if filepath.suffix == "":
@@ -1340,6 +1979,8 @@ class VariationalPosterior:
         with open(filepath, mode="rb") as f:
             vp = dill.load(f)
 
+        vp._ensure_calibration_state()
+        vp._apply_calibration_load_override(calibration)
         return vp
 
     def __str__(self, arr_size_thresh=10):

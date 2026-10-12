@@ -1,0 +1,1643 @@
+# Modernization roadmap (living plan)
+
+Status tracker for the staged plan in
+`dev/2026-09-02-modernization-discussion.md` §10. That devlog holds the
+rationale and the decisions; this file holds only what is done, what is next,
+and where to pick up. Update it in place; do not add status to the devlogs.
+
+Integration branch: `main`. Changes use feature branches and pull requests.
+PyVBMC 1.5.0 is scheduled for 2026-10-12, with lab checks of the soft release
+before the public announcement, likely on 2026-10-13.
+CI on `dev*` branches: pushes that touch the package run a reduced smoke
+(Ubuntu, Python 3.14) of the `tests` workflow automatically (added
+2026-09-03); dispatch the workflow by hand for the full matrix before
+anything that changes numerics lands.
+
+## Stages
+
+**Integrated verification, 2026-09-16:** the PyMC adapter and additional
+S-VBMC two-level shrinkage estimate are integrated on `dev-next`. The full
+[CI matrix 35131582296](https://github.com/acerbilab/pyvbmc/actions/runs/35131582296)
+passes at `9cc6882`: all nine Ubuntu/Windows/macOS × Python 3.10/3.11/3.12
+jobs succeed. Ubuntu/Python 3.12 includes the optional Torch, ArviZ, PyMC
+and S-VBMC coverage; the other cells check the core installation. The
+integration left the S-VBMC headline unchanged. This verifies the
+integrated code; the headline decision followed the release gate
+(pickup 17).
+The focused teaching-material work is integrated into `dev-next` at `1be3111`:
+Example 9 fits a psychometric curve with a Torch target, checks its JAX
+counterpart and demonstrates Torch/ArviZ posterior exports. Its outputs,
+generated script, numerical reference checks and rendered-doc verification
+are recorded in the [teaching-material plan](teaching-material.md).
+
+**Population assessment, 2026-09-13:** the full 870-case candidate population
+is complete and accepted, with 837 usable runs versus 825 historical and
+no convincing evidence of meaningful degradation. The
+[promotion record](../golden/promotion_20260913/README.md) records the
+independent review and the validated `reference_990_20260913`, which retains
+120 real-data pairs. The [staged benchmark plan](final-population-benchmark.md)
+records execution. Future candidate checks may use smaller allocations;
+reference size does not prescribe their run count.
+
+**Golden reference after the port review, 2026-10-07:**
+`reference_2400_20261007`, the release gate's after arm, replaces
+`reference_990_20260913` (pickup 19; the
+[promotion record](../golden/promotion_20261007/README.md)).
+
+The noisy-acquisition efficiency work closed on 2026-09-19 without a change
+of default ([noisy-acquisition-efficiency.md](noisy-acquisition-efficiency.md)).
+The S-VBMC headline estimate was selected on 2026-10-06 (pickup 17).
+The S-VBMC preparation/entropy speedups that preserve the
+method are implemented, measured and merged into `dev-next` (2026-09-13,
+[svbmc-speedups.md](svbmc-speedups.md)).
+GP fitting, initialization and retraining policy are outside the noisy-
+acquisition efficiency work (PI decision, 2026-09-16). The
+[integration and search experiment](noisy-acquisition-efficiency.md#integration-and-search-experiment)
+defines its bounded comparisons and validation. The
+[experiment report](../results/2026-09-16-noisy-acquisition-integration-search.md)
+records its sources, coverage and outcomes: no integration or search change
+was adopted, and the F2 node rule was not promoted.
+Designing new acquisition functions or criteria is outside scope. Keep
+standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
+for numerical search is within the efficiency work and requires validation.
+PI decision 2026-09-13: VIQR's `var_reduction` and `sd_reduction`, scalar
+`AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)` are outside
+the 1.5 public interface. They are removed from the package; their
+implementation is retained on the branch
+`retain/experimental-acquisitions` (at `fa6922f`, the last commit that
+carries it). The
+[acquisition experiments](../results/2026-09-08-noisy-acquisition-experiments.md)
+record scalar EIG's poor results and per-component EIG's mixed results on
+Rosenbrock D2 at two noise levels; neither demonstrated a robust advantage
+over default VIQR.
+S-VBMC preparation and entropy optimizations are a separate performance
+task validated against the regression references;
+[svbmc-speedups.md](svbmc-speedups.md) records the implementation and
+measurement. The release that deprecates the standalone `svbmc` package,
+in favor of `pyvbmc.SVBMC`, follows PyVBMC 1.5 on PyPI.
+
+- [x] **Stage 0 — test oracle** (devlog §10)
+  - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
+    `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`,
+    `vp.pdf` (`plans/profile-and-gradient-checks.md` §6)
+  - [x] finite-difference checks: parameter transformer Jacobian, gpyreg
+    kernel/mean/noise derivatives (`compute_vargrad` no longer applies:
+    the dead path was deleted with Stage 2 item 1 on 2026-09-04; the
+    variance gradient is unimplemented and raises). Done 2026-09-06
+    (`test_parameter_transformer_jacobian_fd.py`: the full `D × D`
+    Jacobian of `inverse` by central differences against
+    `log_abs_det_jacobian`, unbounded, centered, bounded, mixed and
+    rotoscale-warped cases at D = 1, 2, 5, round trips and the sign
+    convention; `test_gpyreg_derivatives_fd.py`: gpyreg's mean, noise (the
+    six switch combinations PyVBMC selects) and SE kernel gradients; 248
+    tests, no discrepancy; three incidental findings in devlog §9)
+  - [x] fixture generator script (`dev/scripts/make_oracle_fixtures.py`,
+    2026-09-04: 8 snapshots as plain arrays under
+    `pyvbmc/testing/oracles/fixtures/`, 1.4 MB;
+    `plans/fixture-generator-and-oracles.md`). The MATLAB `.mat` fixtures
+    were converted on 2026-09-06 to plain `.npz` files with a `FIXTURES.md`
+    per directory (every array bit-identical, the readers' assertions and
+    tolerances unchanged, the orphan `whitening/vp_initialized_MATLAB.mat`
+    deleted, `MANIFEST.in` covering every fixture directory): the MATLAB
+    agreement they pin is kept, the opaque format is gone.
+  - [x] stage-level oracles (`pyvbmc/testing/oracles/`, 16 oracles × 8
+    snapshots since 2026-09-05 (`gp_nlZ`, the GP log marginal likelihood
+    and log posterior with gradients, and `gp_fit`, a whole `train_gp`
+    call, added for item 8), about 25 s; per-element tolerances with a
+    robust floor, set from measured rounding floors on three BLAS builds
+    (Windows, Ubuntu, macOS); the per-commit gate for Stage 2). Not built
+    from the devlog's Stage 0 list: `GP.quad`, `kl_div_mvn`, `kde_1d`.
+    Fixtures 1.5 MB.
+  - [x] golden-trace harness over the benchmark target suite
+    (`dev/scripts/golden_trace.py`; first reference population
+    `baseline_20260903`: 20 seeds × 14 configs (D = 2–10, two noisy) on
+    the code of `5020879`, run 2026-09-03/04 with the papers' procedure,
+    280 of 280 succeeded, null check clean over 56 KS tests;
+    `plans/benchmark-suite-and-golden-traces.md` §Results (regenerated).
+    Replaced on 2026-09-06 by `item7_20260906`, the same suite and seeds
+    on the end-of-Stage-2 code `bdaf322`, after it passed against the
+    first (pickup 5); sidecars and `summary.md` in git under
+    `dev/golden/baseline/`, traces gitignored under
+    `dev/scripts/runs/golden/item7_20260906/`. Extended 2026-09-07 on
+    frozen `7314a6a`: 810 pairs, 16 configs at 50 seeds plus the D15
+    exhaust at 10, all null checks passed and final replay identical
+    on all five cases; `dev/golden/extension_20260907/README.md`. The current
+    combined reference is `reference_870_20260907`: 60 further runs from
+    pinned source `623f5cd`, 30 each for noisy Rosenbrock D2 and Student D8,
+    giving 870 runs across 19 configurations and 160 noisy runs;
+    `dev/golden/noisy_extension_20260907/README.md`. All archives passed
+    integrity checks, the 76-test even/odd comparison had no flags, and the
+    default five-case replay matched stored loop/final values and initial
+    designs with zero flags; the historical returned transformer is explicitly
+    uncertifiable because those traces did not store it.)
+  - [x] dtype canary (`plans/stage0-dtype-canary.md`, 2026-09-06 midday;
+    tests only: every raw oracle output and every rebuilt oracle state
+    checked for float64 inside `test_oracles.py`, a walk of a live run in
+    `test_vbmc_seed.py` on a shared short run, a manifest of the
+    load-bearing arrays (`pyvbmc/testing/_dtype.py`); float32/float16
+    constructor inputs found to keep their dtype in `optim_state` and the
+    transformer, pinned as a strict `xfail` until the boundary cast lands
+    after the nights)
+- [x] **Stage 1 — `seed=` and `Generator` threading**
+  (`plans/stage1-rng-generator.md`). The remaining seam (gpyreg and the
+  cma noise handler drawing from the global state) was removed on
+  2026-09-05 with Stage 2 item 8: gpyreg's `fit` takes `rng=`
+  (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`
+  (the subclass was removed on 2026-09-19 together with the search's
+  noise handling, which the port review found unneeded on a
+  deterministic acquisition; `plans/port-correctness-review.md`),
+  and a run never reads or writes NumPy's global state; the per-iteration
+  `random_state` holds only the generator state. One call site had been
+  missed: the slice sampler of the MCMC step in
+  `active_importance_sampling` (IMIQR only) drew from the global state
+  until 2026-09-10, when it received `vp.rng` and the `acq_AcqFcnIMIQR`
+  oracle was re-baselined from the stored state
+  ([noisy-target acquisitions](../2026-09-08-noisy-acquisitions.md)).
+  On 2026-09-11 the reference was recomputed on the original Windows
+  generating machine: the Linux reference differed by at most 1.15e-14.
+  Every other stored array is unchanged; all 11 fixtures pass `--check --exact`.
+- [x] **Benchmark target suite** (`dev/scripts/benchmark_targets.py`,
+  2026-09-02/03, corrected to the papers' procedure 2026-09-03): banana,
+  cigar, lumpy, Student-t at D = 4 (lumpy and banana also at D = 10, banana
+  at D = 2 and 6), two noisy VIQR targets (Rosenbrock σ = 1, bounded logreg
+  σ = 3), a bounded logistic regression, a 15-D cigar budget-exhausting run;
+  profiled 2026-09-03 (`plans/benchmark-suite-and-golden-traces.md`
+  §Results (regenerated)). D8 cigar and Student-t and the D15 exhaust
+  are now in the golden set; their reference runs completed 2026-09-07
+  (pickup 3f).
+- [x] **Stage 2 — NumPy vectorization + memory fix.** Order measured
+  2026-09-02 on the first suite and **confirmed 2026-09-03/04 on the
+  regenerated suite** (papers' procedure; the shares below are the
+  regenerated ones, `plans/benchmark-suite-and-golden-traces.md` §Results
+  (regenerated)): (3) batched acquisition evaluation (`GP.predict` over
+  `Ns`, `vp.pdf` over `K`, the CMA-ES population; active sampling 54–69 %
+  of wall on every noiseless target, single-point `predict` 40–50 % of
+  profiled time at D ≤ 10, `vp.pdf` 15 % at D = 15 with K ≈ 25) —
+  **PyVBMC half done 2026-09-04** (`plans/stage2-batched-acquisition.md`:
+  CMA-ES evaluates each generation in one call, `vp.pdf` broadcasts over
+  K; noiseless targets 1.4–1.8× faster end to end, active sampling
+  2.1–2.5× and down to 36–47 % of wall, noisy VIQR targets +6–9 %; six of
+  the nine converging trajectories bit-identical to the baseline; gpyreg's
+  `predict` loop over `Ns` and `sW` tiling moved to item 8), (8) gpyreg
+  sampler overhead (GP training 13–20 % at D = 4, 22–28 % at D = 10, and
+  41 % of an iteration in the late sampling regime at D = 15; the Cholesky
+  is a small part of it; plus, from item 3, `predict`'s per-sample loop and
+  `sW` tiling; gpyreg PR), (1) `_gp_log_joint` einsum (variational
+  stage 9–20 % at D = 4, largest on ridged posteriors and 32 % of an
+  optimize-only iteration; PyVBMC-local, may land before (8) for
+  logistics), (2) `_eval_full_elcbo` multi-RHS solve (also shrinks
+  `final_boost`, 3–12 % of a short run) — **(1) and (2) done 2026-09-04
+  evening** (`plans/stage2-gp-log-joint-einsum.md`: `_gp_log_joint`
+  vectorized over samples and components with `einsum` contractions, its
+  variance from two multi-RHS solves per sample; per call 10–11× faster
+  at D = 4–5 and 26–62× on the variance; end to end the noiseless D ≤ 10
+  targets 1.13–1.39× faster with the variational fit 2.6–5× faster and
+  down to 3–12 % of wall, the 15-D exhaust run 1.24× with its
+  variational fit 2.2× faster; `_gp_log_joint` 18–24 % → ~2 % of a D = 4
+  run, `final_boost` 10–17 % → 4–6 %; every trajectory changed at
+  rounding level, all seed-0 finals inside the population fences; four
+  latent defects of the function fixed), then `entmc_vbmc` (item 5; now
+  the largest piece of the variational stage at 6–9 % of a D = 4 run, and
+  11 % of the 15-D exhaust run in the 2026-09-03 profile), drop
+  per-candidate deepcopy, `GP.clean()` / stop
+  retaining full GPs (memory only: deepcopy is < 1 % of time). On noisy
+  targets the active-sampling bucket is the per-sample GP refits and VP
+  re-optimizations, so (8) and (1) are what speed those up. After items
+  3, 1 and 2 the remaining time at D = 4 is active sampling (46–54 %,
+  gpyreg's `predict` overhead 31–34 %) and GP training (31–42 %, the
+  slice sampler 27–38 %): item 8. **(8) done 2026-09-05**
+  (`plans/stage2-gpyreg-predict-and-sampler.md`;
+  gpyreg branch `perf/predict-sampler-overhead`, draft PR
+  acerbilab/gpyreg#43, merged into gpyreg `main` as `a2f8ddc` on
+  2026-09-05, `GPYREG_PIN` at the merge commit): the three performance commits are identity-preserving (every
+  oracle output checked is bit-identical to a dump of the pre-change
+  code, the replay `identical` after each), `predict` 1.4–1.7× per
+  CMA-ES-sized call, the sampler's log-posterior evaluation 1.4–1.9×, one
+  `train_gp` call 2.1–2.5× (the Cholesky reused on mean-hyperparameter
+  moves); generator support in gpyreg; PyBADS's suite passes against the
+  branch (one metadata-dependent test deselected). The PyVBMC seam is
+  removed (every draw through `vbmc.rng`), which is *not*
+  identity-preserving: it shifts the stream of every existing seed, and
+  the two stream-dependent oracles were re-baselined. End to end
+  (profile campaign on the identity-preserving commit, identical
+  trajectories, ten configs): 1.14–1.49× faster (noiseless 1.19–1.49×),
+  GP training 2.0–2.6× (23–46 % of wall → 13–29 %), active sampling
+  1.11–1.20× (now 46–85 % of wall, `GP.predict` alone 30–36 % of a
+  profiled D = 4 run); the 15-D exhaust run 1041 → 777 s, 2.7× since
+  2026-09-03 over items 3, 1, 2 and 8 together. **(5) done 2026-09-05
+  (afternoon)** (`plans/stage2-entmc.md`): `entmc_vbmc` draws every
+  component's antithetic samples in one call (the same stream, in the
+  same order, so the `entmc` oracle holds without a re-baseline),
+  evaluates the mixture density once as a broadcast over a `(components,
+  samples, D, K)` tensor with `einsum` contractions and takes the
+  reparameterization gradients from the same tensors, in 2^16-element
+  blocks; per call 6.7–12.5× faster at the shape Adam sees (K = 14–50 at
+  D ≤ 15; 3.8× at D = 20, K = 60) and 0.9–1.35× at the value-only shape
+  of `_eval_full_elcbo`, which is arithmetic-bound (a GEMM expansion would
+  give 2.8–6.9× there, but its error grows without bound with the
+  components' width ratio; rejected, the plan's Open question 1); oracles
+  green with no
+  re-baseline, the exact check against a pre-change dump moves only the
+  entropy-carrying outputs at 1e-15, replay 0 flagged of 5 with the
+  design identical, full suite green. Profile campaign (17:11, idle
+  machine, gpyreg v1.1.0; every trajectory differs from item 8's because
+  the seam removal moved every stream): in situ the Adam-shape entropy
+  calls are 5× faster per call (the exhaust run's 147 → 29 s over 20k
+  calls), the value-only `_eval_full_elcbo` calls gain nothing and are now
+  the entropy's dominant cost on large-K runs; `entmc_vbmc` 9–13 % → 3–6 %
+  of a profiled D = 4 run, `final_boost` halved, the variational fit
+  0.37–0.88 of its time on nine configs; end to end within trajectory
+  noise (suite 1424 → 1384 s; the exhaust run 777 s on both, its
+  variational fit 244 → 209 s on a higher-K path). **(6) done 2026-09-05
+  (evening)** (`plans/stage2-memory.md`, shared with (7)): `_vb_init`
+  builds each sieve candidate as a shell sharing the
+  run's generator and transformer instead of `copy.deepcopy(vp)`;
+  bit-identical candidates and stream (27,936 candidates checked against
+  the old code, replay `identical` with finals equal to item 5's), the
+  `_vb_init` step 31–43 → 12–20 µs per candidate, about 0.1 % of a run
+  (cProfile had overstated the copy about 6×). **(7) done 2026-09-05
+  (night)** (`plans/stage2-memory.md`; decided with the PI: what can be rebuilt
+  from the record is never stored, what cannot is dropped by default and
+  kept under a new option): the history grows without re-copying its
+  stored past (the re-copy was quadratic, 1.3 % of the exhaust run under
+  cProfile; on the noisy logreg run alone 254 → 208 s of wall), each
+  iteration's GP is recorded without its posterior factors and the public
+  `VBMC.get_gp(iteration)` restores them bit for bit where a full GP is
+  needed (`final_boost`, `load`), and the recorded `optim_state` leaves
+  out the importance samples of the noisy acquisitions unless
+  `record_full_history_details` is set. Retained history 9.4 → 1.9 MB on
+  `cigar_D4`, 25.8 → 1.3 MB on `rosenbrock_D2_noise1`, 117 → 4.6 MB on
+  `logreg_D5_noise3` (RSS after that run 332 → 163 MB, peak 427 → 273);
+  the 15-D exhaust run's 323 MB of factors (analytic) become about 8 MB
+  of data and hyperparameters.
+  Every step replay `identical` and full suite green; the resume test
+  compares the two runs' ELBOs (it compared one with itself) and pins a
+  `load(iteration=)` round trip on a file written by the new code; two
+  latent defects fixed on the way (a continued run aliased the history's
+  last entries; the in-loop plot passed no GP). Save format: files
+  written by this code hold lean GP records, so an older PyVBMC cannot
+  resume them; old files load unchanged. **The 20-seed population after
+  items 8, 5, 6 and 7** (2026-09-06, pickup 3e): 280 of 280 succeeded, no
+  config flagged against the reference over 56 KS tests nor against the
+  item 1 population, summed run time 6.41 → 4.71 h against item 1 (9.92 h
+  for the reference), the runner's high-water mark 474 → 402 MB; one
+  descriptive shift, lumpy_D10's median evaluations 242 → 308 with its
+  quality metrics unchanged or better.
+- [x] **Latent bug fixes for 1.5** (pickup 9; PI decision 2026-09-06: 1.5
+  leaves the VBMC algorithm as designed and fixes the latent bugs of
+  devlog §9, the trajectory-moving ones included, each replayed and the
+  set checked as a population against the extended reference). Complete;
+  the population of the integrated code was accepted on 2026-09-13
+  ([promotion record](../golden/promotion_20260913/README.md)).
+- [x] **Stage 3: connect models and use posteriors downstream.** Merged
+  into `dev-next` at `4bff1a5`. Branch smoke 34043031387, all nine jobs of
+  full matrix 34043071150, and integrated smoke 34043979358 passed.
+  Integrated local checks: exact oracles 8/8, all five replay cases
+  identical, full base-install suite 858 passed (35 skipped, 2 xfailed).
+  The feature-branch suite with optional exports passed 957 tests.
+  Non-moving snapshot `reference/stage3-20260906` names the exact final
+  checkout for both reference batches; its final commit adds only
+  verification records to tested code `4bff1a5`. Keep batching off.
+  Two workflows (PI confirmed 2026-09-06): bring torch/JAX models into
+  PyVBMC through documented adapters and an opt-in batched initial design;
+  take the fitted posterior into torch as a distribution or ArviZ as
+  samples. The plan is `plans/stage3-pipeline-features.md`. Current ArviZ
+  DataTree support is agreed; the core stays Python >=3.10 and the ArviZ
+  export requires >=3.12. Stage 4 later
+  retained those version floors. Ships in 1.5 with Stages
+  0–2 (PI decision 2026-09-06: the whole body of work in one release, for
+  visibility, rather than a 1.5 followed by a 1.6 within days). Both
+  trajectory-neutral and trajectory-moving latent bug fixes were held behind
+  the reference boundary. That boundary completed on 2026-09-07 (pickup 3f).
+  The latent fixes of pickup 9 followed; they are complete (pickup 9).
+- [x] **PyMC model adapter and structured posterior export** (2026-09-16).
+  `PyMCTarget(model)` snapshots model data, handles supported continuous
+  coordinates and Jacobians, and supplies `VBMC(target)` with budgeted
+  initialization and reusable evaluations. The general
+  `precomputed_evaluations` interface also accepts independent noisy
+  repeats with precision pooling; initialization cost is explicit and
+  charged once. Structured ArviZ exports preserve variable shapes and
+  named coordinates. PyMC and ArviZ remain optional Python >=3.12 extras;
+  core PyVBMC remains Python >=3.10. Example 8 demonstrates the complete
+  regression and prediction workflow with a NUTS comparison. The
+  [adapter plan](pymc-target-adapter.md) records scope, review findings,
+  CI and local verification: 1,311 core tests, 147 optional checks,
+  11/11 exact fixtures and five exact stored optimization traces.
+- [x] **Stage 4 — PyTorch feasibility prototype, then a port decision**
+  (preferred for 1.5 if feasible;
+  PI decision, 2026-09-06). The purpose combines future method development,
+  participation in the modern ML ecosystem, and performance opportunities.
+  Comparable CPU performance can be acceptable if autodiff and the tensor
+  architecture substantially simplify extension and integration. Acceptance
+  requires numerical reliability, float64 robustness, acceptable CPU
+  performance against the modernized NumPy core, and manageable installation
+  friction. PI clarification (2026-09-07): 3× runtime was an example of
+  clearly unacceptable performance; concern starts at substantially smaller
+  slowdowns. Around 1.2× runtime may be acceptable given the other benefits,
+  but is not an agreed cutoff.
+  Immediate speedup or GPU advantage is not required. Preserve the existing
+  method for the port; richer posterior families, gradient-based acquisition
+  optimization, and larger-scale inference remain separate future work.
+  The first step is feasibility prototyping; the proposed scope is a complete
+  variational optimization
+  step (GP integrals, entropy, parameter handling, and optimizer), checked
+  for values, gradients, CPU and GPU performance, and code simplicity,
+  including final-refinement shapes. Test both devices in float64 against
+  the modernized NumPy CPU baseline, include transfer costs, and report
+  hardware and timings separately. GPU timings must synchronize completed
+  work; separate setup/warmup from repeated execution. GPU gains do not
+  remove the CPU acceptance requirement. If GPU hardware is unavailable,
+  record GPU feasibility as untested and obtain measurements before closing
+  this investigation. Use that evidence for an explicit decision before
+  committing to the full port; a stage timing alone does not establish the
+  end-to-end runtime impact. Inclusion in 1.5 remains conditional on this
+  decision and subsequent implementation and validation.
+  Settle the NumPy transition, core dependencies, and Python floor in the
+  implementation design. JAX model adapters remain part of Stage 3;
+  PyTorch is the candidate solver backend if a port is authorized. Decision
+  rationale: devlog §10 and the
+  [1.5 overview](../2026-09-06-pyvbmc-1.5-overview.md).
+  Prototype completed (2026-09-09): the bounded
+  [variational-step feasibility results](stage4-torch-feasibility.md) are in
+  that plan, run on a branch from `dev-next` at `bf43c20` and merged into
+  `dev-next`.
+  Float64 CPU/CUDA diagnostics pass. The 24 trace-disabled whole-fit controls
+  show Torch CPU at 2.12-6.26x NumPy and synchronized CUDA at 3.35-23.34x on
+  the tested laptop (one clean observation per workload/arm; 72 additional
+  instrumented fits retained). Recommendation: retain NumPy for this release.
+  **PI decision (2026-09-09): retain the modernized NumPy/SciPy solver for
+  1.5; do not undertake a full Torch solver port for this release.** Optional
+  Torch and ArviZ exports remain and the existing Python floors are unchanged.
+  No full port or final population run was launched or authorized.
+  The [compiled-Torch follow-up](../results/2026-09-09-torch-compile-follow-up.md)
+  is complete: 80 fits, fixed-input float64 gates passed, no warm recompilation.
+  CUDA gains about 1.28x/1.54x over NumPy on the two boost cases (paired warm
+  medians), while compiled CPU stays roughly 2-4x the NumPy runtime by per-arm medians.
+  Cold compilation costs and sampled-boost endpoint drift remain material.
+  The 1.5 NumPy decision stands; this did not authorize a full port.
+
+## Pickup point
+
+The open work for 1.5 is the list "In scope for 1.5" of
+[TODO.md](../TODO.md); the points below record the pickups that led here.
+
+0. ~~Regenerate the benchmark results~~ done 2026-09-03/04 in two sessions
+   (profile campaign plain + cProfile, golden population 20 × 14, null check
+   clean, sidecars published; `plans/benchmark-suite-and-golden-traces.md`
+   §Results (regenerated)). The Stage 2 order above is confirmed; committed
+   and pushed as `9206738`. The one wrong posterior in the population,
+   `student_D4` seed 19, is a final-boost failure, written up in
+   `../results/2026-09-04-final-boost-failure.md`; the guard is a 1.5 fix (pickup
+   9, PI ruling 2026-09-06).
+1. ~~Stage 0 oracles first~~ done 2026-09-04 (PI: an arithmetic-preserving
+   refactor is gated by fixed-state oracles, not by the 10-hour statistical
+   run, which is the end-of-stage check and the Stage 4 gate):
+   `pyvbmc/testing/oracles/` and `dev/scripts/make_oracle_fixtures.py`,
+   `plans/fixture-generator-and-oracles.md`; reviewed (three read-only
+   Opus reviews, all findings folded in), committed and pushed 2026-09-04.
+   Four smoke CI runs on Ubuntu each stopped at one oracle (the
+   platform-bound step oracle, then three cross-BLAS floors on the
+   ill-conditioned snapshots); each was measured and its tolerance class
+   set from the measurement (plan tracker); the fifth run is green (510
+   passed), and a full-matrix dispatch (33865996373) is green on all nine
+   jobs, macOS included: the oracles hold on three BLAS builds.
+2. ~~Stage 2 item 3~~ done 2026-09-04 for the PyVBMC half
+   (`plans/stage2-batched-acquisition.md`, commits `50c1e50`, `7a07c0b`,
+   `f441172`, `eca45ec`, `e923163`, `3033526`): the per-change gates now
+   exist and were used — the oracles on every commit (the
+   `active_sample_step` oracle re-baselined once from the stored state with
+   `make_oracle_fixtures.py --rebaseline`, every `acq_*` oracle unchanged),
+   the golden replay (`golden_replay.py`, 7 min: iteration 0 identical on
+   every config, finals inside the population envelope except one chance
+   excursion of `halfnormal_D2` seed 0's gsKL, not reproduced on seeds
+   1–4) per step, the profile suite once
+   (1.4–1.8× on noiseless targets at D ≤ 10, 1.65× on the 15-D exhaust
+   run with active sampling 3.3× faster there; a first exhaust measurement
+   on a throttling laptop was repeated on a cool one). The 20-seed
+   population
+   (`golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
+   dev/scripts/runs/golden/<label>`, then `compare dev/golden/baseline
+   dev/scripts/runs/golden/<label>`, about 7 h now) stays the once-per-stage
+   check.
+3. ~~Stage 2 items 1 and 2~~ done 2026-09-04 (evening;
+   `plans/stage2-gp-log-joint-einsum.md`, commits `9d92c7f`, `5ce1bc6`,
+   `f93ea5e`, `8943cec` and the records commit after them): `_gp_log_joint`
+   vectorized over hyperparameter samples and components (item 1) and its
+   variance from multi-RHS solves (item 2, done in the same function
+   because the pair loop lived inside the loop being removed); oracles
+   green on every commit with no re-baseline, replay 0 flagged of 5 (the
+   ELBO arithmetic changed, so every config parts at iteration 0; the
+   replay now certifies the initial design from the traces instead), full
+   suite green twice; four latent defects of the function fixed. Measured
+   speedup: the Stage 2 paragraph above and the plan's §Results. The
+   replay gate learned two things here: a change to the ELBO arithmetic
+   parts every trajectory at iteration 0 (on cigar's chaotic warm-up
+   optimization a one-ulp gradient perturbation moves the iteration-0
+   ELBO by 0.4 and can push a seed outside the population fence), so the
+   initial design is now certified from the traces (`X_init`) rather than
+   from an identical iteration-0 ELBO; and the envelope check on a single
+   seed has a visible false-alarm rate on cigar. ~~Next: item 8 as one
+   gpyreg PR~~ done 2026-09-05 except the profile, see point 3a below;
+   then item 5 (`entmc_vbmc`), then the memory items.
+   The 20-seed population against `dev/golden/baseline` (the end-of-stage
+   check of items 3, 1 and 2 together) ran 2026-09-05 00:39–07:06 on the
+   final code (`a39e5ec`): **280 of 280 succeeded, no config flagged over
+   56 KS tests (Holm α 0.05)**, median evaluation ratios 0.98–1.10, the
+   population's summed run time 9.92 → 6.41 h (noiseless configs
+   1.56–2.03× faster, noisy VIQR 1.13–1.20×); the baseline's final-boost
+   failure (`student_D4` seed 19) did not recur. Reports under
+   `dev/scripts/runs/golden/item1_20260905/` (`summary_item1.md`,
+   `compare_vs_baseline.md`; traces gitignored). The new population is
+   not promoted to the reference: `dev/golden/baseline` stays the
+   pre-Stage-2 reference until the stage ends (then re-baseline once, and
+   grow to 50 seeds, pickup point 5).
+3a. **Stage 2 item 8** (`plans/stage2-gpyreg-predict-and-sampler.md`,
+   2026-09-05): the gpyreg work is merged into `acerbilab/gpyreg` `main`
+   (PR #43, squash `a2f8ddc`, 2026-09-05; bit-identical outputs, `rng=`
+   support, four review fixes folded in before the merge), `GPYREG_PIN`
+   points at the merge commit, gpyreg v1.1.0 released to PyPI the same day
+   and required by `pyproject.toml`), PyBADS's
+   suite passes against it with one metadata-dependent test deselected,
+   PyVBMC's seam is removed, and the profile campaign is recorded (plan
+   §Results; `runs/profile_20260905_item8/`). ~~**Open:**~~ Both settled on
+   2026-09-06 (3e): (i) whether to run
+   the 20-seed population right after item 8 (the seam removal changed
+   every stream) or at the end of the stage; (ii) Open question 8 of the
+   plan: re-baseline the committed oracle references that items 3, 1, 2
+   moved within tolerance, so `--check --exact` against the fixtures becomes
+   the identity gate.
+3b. ~~Stage 2 item 5, `entmc_vbmc`~~ done 2026-09-05 (afternoon;
+   `plans/stage2-entmc.md`, commit `5a8e181` and the records commit after
+   it). The profile of one call from the stored
+   snapshots answered the pickup question: the `K × K` density loop, not
+   the draws (draws 1–9 % of a call, the density loop 56–97 %, the
+   gradient block the rest, and the gradient block recomputed the
+   density). Vectorized as in the Stage 2 bullet above; gates green
+   (`pytest pyvbmc/testing/oracles` 116 passed with no re-baseline, since
+   the draw order is preserved; `make_oracle_fixtures.py --check --exact
+   --against` a pre-change dump moves only `entmc` and the
+   entropy-carrying `neg_elcbo` outputs, by 1e-15; replay 0 flagged of 5
+   against the item 8 Step 8 traces, initial design identical on every
+   config; 541 passed). Profile campaign 17:11–17:54
+   (`runs/profile_20260905_item5/`, compared with item 8's through
+   `profile_compare.py --control gp_train`; plan §Results): the Stage 2
+   bullet above has the numbers. The GEMM expansion for the value-only
+   entropy path (2.8–6.9× there) was rejected by the PI the same day: its
+   error grows without bound with the components' width ratio (plan,
+   Open question 1). Item 5 is complete; the population run of 3c is the
+   statistical gate for items 8 and 5 together.
+3c. ~~**Next**~~ (handoff 2026-09-05 18:30, code `a0e70fe`, tree clean,
+   nothing running; track (ii) done the same night, see the Status line
+   at the end of this point and 3d; track (i) is point 3e). Two tracks,
+   the first needing the laptop free for
+   about 6.5 h and started only when the PI says so, the second light
+   enough to run beside it.
+   (i) **The 20-seed population** after the seam removal and item 5 (the
+   statistical gate for both, neither being identity-preserving):
+   `python -u dev/scripts/golden_trace.py run --suite golden --seeds 0-19
+   --workers 1 --out dev/scripts/runs/golden/item8_<date>`, then
+   `golden_trace.py summary <out>` and `golden_trace.py compare
+   dev/golden/baseline <out>` (the item 1/2 run, `runs/golden/
+   item1_20260905/` and `runs/golden_item1_20260905.log`, shows the
+   chain and the report layout). Read `compare_vs_baseline.md` first:
+   expected no rejection over the 56 KS tests (Holm α 0.05); a rejection
+   on one config's finals would be the first evidence of a change beyond
+   rounding and would reopen item 8 or 5. Not promoted to the reference
+   until the stage ends (pickup 5).
+   (ii) **Stage 2 items 6 and 7 (memory)** and two small follow-ups.
+   Item 6: `_vb_init` (`variational_optimization.py`) deep-copies the VP
+   for every sieve candidate (5k–50k per `optimize_vp`); make the copies
+   cheap or unnecessary without changing any output. It is
+   identity-preserving, so the gate is `make_oracle_fixtures.py
+   --dump-outputs DIR` before and `--check --exact --against DIR` after
+   (every oracle output bit-identical), the replay `identical` against
+   `runs/golden/replay_item5_step1` traces, and the full suite; no profile
+   campaign (`copy.deepcopy` is 1–2 % of a profiled run). Item 7 needs a
+   plan first (`plans/stage2-memory.md`, on the pattern of
+   `plans/stage2-entmc.md`): `iteration_history` deep-copies every
+   iteration's GP with all `Ns` Cholesky factors and `GP.clean()` is never
+   called, so memory grows as `Σ_i Ns_i N_i²`; readers of the stored GPs
+   are `final_boost` (the best iteration's GP), `train_gp`'s warm start
+   (`iteration_history["gp"]`), the noisy path's per-sample full update
+   in `active_sample.py`, save/load and resume (`vbmc.py`,
+   `iteration_history.py`). First step: measure (RSS per iteration on
+   `cigar_D15_exhaust` and a noisy config, `psutil`), then decide between
+   `GP.clean()` on recorded copies, storing hyperparameters and data only
+   and rebuilding on demand, or keeping only the best/last GPs; gate as
+   item 6. The follow-ups: the `gp_nlZ` oracle should call gpyreg 1.1's
+   public `log_likelihood` / `log_posterior` instead of the mangled
+   private method (`plans/stage2-gpyreg-predict-and-sampler.md`
+   §Follow-ups; references bit-identical), and Open question 8 of that
+   plan (re-baseline the committed oracle references to the current
+   numerics so `--check --exact` against the fixtures becomes the identity
+   gate) is the PI's call.
+   Reading list for a fresh session: `dev/README.md`; this file's Stage 2
+   bullet and pickup points; devlog §2 (the last two measured paragraphs),
+   §9, §10 (the item 8 and item 5 paragraphs); `plans/stage2-entmc.md`
+   §Findings, §Decisions, §Results (the current template for a
+   PyVBMC-local item and its gates); `plans/fixture-generator-and-oracles.md`
+   (oracle table, the dump gate); `pyvbmc/vbmc/variational_optimization.py`
+   (`_sieve`, `_vb_init`); for item 7 also `pyvbmc/vbmc/iteration_history.py`
+   and the `final_boost` / save / load / resume paths of `pyvbmc/vbmc/vbmc.py`.
+   Then the end-of-stage re-baseline of the golden population (pickup 5)
+   and the Stage 0 leftovers (pickup 6).
+   **Status 2026-09-05 (evening):** track (ii) done as far as it goes
+   without a decision: item 6 done (`plans/stage2-memory.md`; the gates of
+   the point above, replay `identical`, full suite green), the `gp_nlZ`
+   oracle calls gpyreg 1.1's public `log_likelihood` / `log_posterior`
+   (references bit-identical against the dump), and the item 7 plan is
+   written in the same file with the readers of the stored GPs, the
+   measurements and three identity-preserving steps. Track (i), the
+   population, has not run.
+3d. ~~**Next** (2026-09-05, late evening)~~ done the same night: item 7's
+   four steps are committed (`564f53a`, `e357216`, `1aa1933`, `ffbd4b2`)
+   with their gates (`plans/stage2-memory.md` §Verification (item 7),
+   §Results); the population run is point 3e. The text of the decision
+   stays below for the record. (i) The 20-seed population
+   exactly as in 3c (i), when the PI says the laptop is free. (ii) Item 7,
+   decided with the PI (`plans/stage2-memory.md` §Decisions): the
+   retention rule (what can be rebuilt from the record, the GP posteriors,
+   is never stored and rebuilt on demand; what cannot, the importance
+   samples of the noisy acquisitions, is dropped by default and kept under
+   the new option `record_full_history_details`), lean GP records with a
+   public `VBMC.get_gp(iteration)` restoring a copy, the warm start left
+   on the GP records (a switch to `gp_hyp_full` would move the `gp_fit`
+   oracle through its history stand-in), and the existing resume test
+   made real (`elbo_1 == elbo_2`) before any history change. Four steps in the
+   plan's §Design with their gates (`mem_history.py` before and after; the
+   replay's finals exercise what `final_boost` receives). Open question 8
+   of `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the
+   committed oracle references) is still the PI's call.
+3e. ~~**Next**~~ (2026-09-06, 00:20; code `bdaf322`, the ten commits since
+   `2dcb51a` unpushed; all three tracks done the same morning, see 3f).
+   (i) ~~**The 20-seed population is running**~~
+   **Done 2026-09-06 00:16–05:01: 280 of 280 succeeded, no config flagged
+   against the reference over the 56 KS tests (Holm α 0.05), none against
+   the item 1 population either** (`runs/golden/item7_20260906/
+   compare_vs_baseline.md`, `compare_vs_item1.md`, `summary.md`). Summed
+   run time 6.41 → 4.71 h against the item 1 population (0.74; items 8, 5,
+   6 and 7 together), 9.92 h for the reference. The runner's high-water
+   mark fell from 474 to 402 MB (`peak_rss_vs_item1.md`: in item 1 the
+   noisy logreg runs raised it from 438 to 474 MB, here nothing after the
+   lumpy_D10 runs raised it at all). One descriptive shift worth the PI's
+   eye: lumpy_D10's median evaluation count went 220 (reference) → 242
+   (item 1) → 308 here (KS p 0.012 against the reference, 0.034 against
+   item 1, neither near the Holm threshold; its quality metrics moved
+   toward the truth, median shifts −0.036 ΔLML, −0.007 gsKL), so the
+   multimodal 10-D target runs longer before the stability test is met.
+   Every other config's median evaluations are within 10 %. Promoted to
+   the reference the same morning (pickup 5). Run on the PI's
+   word, one process, code `bdaf322`
+   (`python -u dev/scripts/golden_trace.py run --suite golden --seeds
+   0-19 --workers 1 --out dev/scripts/runs/golden/item7_20260906`, then
+   `summary`, `compare dev/golden/baseline`, `compare` with the item 1
+   population and a per-config table of the sidecars' `peak_rss_mb`
+   medians against item 1's, all chained by one script into
+   `runs/golden_item7_20260906.log`; 4.75 h elapsed). Its sidecars record
+   `18a236c`, `dirty: false`: a documentation-only descendant of `bdaf322`.
+   Git metadata is captured after each run; the numerical code is unchanged. It was the statistical gate for
+   items 8, 5, 6 and 7 together (none identity-preserving against the
+   item 1 population, whose code predates the seam removal), and it
+   passed. (ii) ~~Push `dev-next` so the CI smoke runs on the package
+   commits, and dispatch the full matrix once~~ done 2026-09-06 (PI's
+   word): pushed `2dcb51a..4f77e1a` at 05:14 UTC; the smoke (run
+   34013498552, Ubuntu / 3.12) green in 11 min, the dispatched full matrix
+   (run 34014012295, three OSes × Python 3.10–3.12) green on all nine jobs
+   in 12 min, so the re-baselined oracle references hold at their
+   tolerances on three BLAS builds. (iii) Then the rest of pickup 5 (grow the reference
+   population to 50 seeds, add the exhaust config) and pickup 6 (the
+   Stage 0 leftovers). Open question 8 of
+   `plans/stage2-gpyreg-predict-and-sampler.md` was decided and done on
+   2026-09-06 (PI: option A): the eight oracle references that items 3, 1,
+   2 and 5 had moved within tolerance were re-baselined to the current
+   numerics from their stored states, so `--check --exact` against the
+   committed fixtures is the identity gate from here on
+   (`plans/fixture-generator-and-oracles.md`).
+   Reading list for a fresh session: `dev/README.md`; this file's Stage 2
+   bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
+   §Decisions, §Results, the tracker's doublecheck entry); the population
+   reports above.
+3f. **Reference extension complete, 2026-09-07.** The PI authorized both
+   batches as a sequential chain on September 6. The chain ran 20:01–08:55
+   (UTC+03), including preflight/final replays and checks, on detached
+   `7314a6a` (`reference/stage3-20260906`) and the original reference `.venv`.
+   Stage 3's prior integrated exact oracles, replay, local suite and CI
+   gates remain recorded in `plans/stage3-pipeline-features.md`.
+
+   - Batch 1: 420 new runs, original 14 configurations at seeds 20–49,
+     completed 20:04–03:26; 700 complete pairs. Summary and both null
+     checks passed (even/odd; seeds 0–19 versus 20–49), 56 KS tests each,
+     before baseline publication and batch 2 started.
+   - Batch 2: `cigar_D8` and `student_D8` at seeds 0–49, then
+     `cigar_D15_exhaust` at seeds 0–9; 110 new runs, completed 03:26–08:52.
+     Final total 810 JSON/NPZ pairs; no errors, final even/odd null check
+     passed over 68 KS tests (Holm alpha 0.05). The exhaust configuration
+     reaches its intended 750 evaluations; its 10 seeds cover that regime.
+   - Fresh preflight and final default five-case replays were identical,
+     including initial designs; the final replay used the expanded fences.
+     Completeness, NPZ integrity, finite metrics, sidecar SHA/options,
+     dependency/thread metadata and publication copies were checked.
+     SHA256 checks verified all 280 historical JSON/NPZ pairs unchanged.
+   - Historical sidecars retain `18a236c`, dirty=false (numerical `bdaf322`).
+     New records retain `7314a6a`: 420 dirty=false, 110 dirty=true because
+     first-batch baseline publication changed tracked documentation.
+     HEAD and numerical source stayed frozen; every population command
+     explicitly passed `{"vectorized_target": false}`, with one worker and
+     single-threaded BLAS. Light laptop use makes wall times observational.
+   - All 810 sidecars plus `summary.md` are published under
+     `dev/golden/baseline/`. Reports, provenance, exact command allocation,
+     validation metadata and the full file-hash manifest are under
+     `dev/golden/extension_20260907/`; traces remain local/gitignored under
+     `dev/scripts/runs/golden/item7_20260906/`. The checkout returned to
+     current `dev-next`, preserving the newer PyTorch feasibility decisions.
+     The frozen reference branch is unchanged. No campaign process remains.
+
+   Done: the latent fixes (point 9), the S-VBMC integration (point 10) and
+   the Stage 4 decision followed, and the population of the integrated code
+   was accepted on 2026-09-13
+   ([promotion record](../golden/promotion_20260913/README.md)). Neither a
+   latent fix nor a solver implementation was made as part of the reference
+   extension.
+4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
+   2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
+   run a smoke automatically.
+5. ~~Re-baseline the golden population at the end of Stage 2~~ done
+   2026-09-06 (PI: promote now, grow later): the population of that night
+   (`item7_20260906`, code `bdaf322`) replaced `baseline_20260903` as the
+   reference after passing against it (no config flagged over 56 KS
+   tests; null check clean), sidecars and `summary.md` under
+   `dev/golden/baseline/`, the comparison reports under
+   `dev/golden/promotion_20260906/`, the replay's default trace directory
+   moved to it (`golden_replay.py`), `dev/golden/README.md` updated.
+   **Extension completed 2026-09-07** after Stage 3 integration, on frozen
+   `7314a6a` (pickup 3f): 16 configurations at 50 seeds plus the D15 exhaust
+   at 10, 810 complete pairs and 811 baseline files. Original seeds 0–19
+   retain `18a236c` and unchanged traces; 530 new runs record the frozen
+   integrated SHA with explicit batching=false. Both first-batch null
+   checks and the final 68-test null check passed; both five-case replays
+   were identical. Records and commands: `dev/golden/extension_20260907/`.
+6. ~~Stage 0 remaining after the oracles: finite-difference checks for the
+   transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
+   dropped from the list: the path was deleted with Stage 2 item 1); retire
+   the `.mat` fixtures once the oracles cover what they pin.~~ Done
+   2026-09-06 by two Opus agents from written specs, tests only (the
+   reference population is unaffected): the finite-difference modules
+   (Stage 0 bullet above; no discrepancy, three incidental findings in
+   devlog §9) and the `.mat` fixtures converted to `.npz` rather than
+   deleted (PI: keep the MATLAB agreement, drop the opaque format).
+   The dtype canary, the last Stage 0 item, followed on 2026-09-06 midday
+   (`plans/stage0-dtype-canary.md`). A first draft of that plan, written
+   by an Opus orchestrator, was discarded because its verification section
+   recorded gates that had not run; it was redone with Opus agents
+   confined to read-only review.
+7. ~~gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
+   `GP.random_function`) on a gpyreg branch when convenient.~~ Done
+   2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is
+   removed on `dev-next`; gpyreg v1.1.0 released 2026-09-05 and required
+   by `pyproject.toml`.
+8. One PR `dev-next` → `main` when the work is done, Stage 3 included
+   (decided with the PI 2026-09-06: Stages 0–3 ship together as 1.5).
+   With the 1.5 release that follows it, attach as release assets the
+   traces of the population the released code was validated against, the
+   release gate's after arm (the golden reference `reference_2400_20261007`,
+   pickup 19), and the gate's S-VBMC pools, whose stacking
+   results are in git (PI decisions 2026-09-06 and 2026-09-28): each an
+   archive of the
+   campaign's numeric files and redacted copies, built apart from its draft
+   release, as the TODO's release item and the
+   [Slurm plan](slurm-benchmark-support.md), "Records and hand-back",
+   describe; `dev/golden/README.md` names the asset. The sidecars stay in
+   git and the traces out of it, and anyone working on the numerics can
+   fetch them; exact replay still needs traces made on the replaying
+   machine, the reference's replay fingerprints. The campaigns' draft
+   releases stay drafts. The fingerprints and the earlier references'
+   traces exist only on the developer's machine, and go to a draft release
+   of their own as a backup.
+9. ~~**Latent bug fixes for 1.5**~~ Done: the fixes are integrated, and the
+   population of the integrated code was accepted on 2026-09-13
+   ([promotion record](../golden/promotion_20260913/README.md)). The text
+   below records the decisions on the way. PI decision 2026-09-06: 1.5 does
+   not change the VBMC algorithm, but it fixes the latent bugs, with its own
+   plan under `plans/` before it starts. PI update (2026-09-08): the boost
+   default is unpenalized final refinement with the joint ELBO/ELCBO(beta5)
+   tolerance 0.1 guard (implemented, CI passed). The PI also selected eta treatment A:
+   remove eta bounds and caller-theta mutation, retaining the separate
+   main-loop small-weight penalty and other bounds. Production integration
+   passes 64 focused tests and all 11 exact fixtures. All six bounded paired
+   replays are usable; one Normal D5 gsKL fence flag is retained for final
+   population assessment. See [the fix note](../results/2026-09-08-eta-bound-fix.md).
+   Stopping-rule improvements are explicitly deferred research outside this
+   fix campaign. These decisions supersede the historical pending choices
+   below. The [implementation plan](latent-bug-fixes.md)
+   is partially approved (2026-09-07): D1–D5 and Q2/Q3 settled; Q1/Q4
+   comparison designs agreed, final scientific choices await evidence.
+   Compare no eta-bound penalty, MATLAB's historical formula with consistent
+   implementation, and current Python as a diagnostic only. Test a boost
+   score-loss tolerance of 0.1 and 0.2 for every b in [0,5] (the endpoints
+   suffice), with boost weight shrinkage disabled. Phase 0 and all Phase 1
+   trajectory-neutral fixes are complete and verified; CI run 135 passed
+   1,043 tests with 49 skipped. The exact oracles and five-case replay retained
+   their reference outputs. Q1 and Q4 remain open, and the boost and other
+   trajectory-moving groups have not been selected by this result. The
+   original validation sequence was neutral fixes, boost, then other moving
+   groups. PI update (2026-09-08): park the boost experiment at `764a177`
+   on `dev-final-boost` and proceed independently with weighted GP covariance,
+   acquisition regularization and GP sampling termination on
+   `dev-main-loop-fixes`. The boost restart instructions are in
+   [the pilot note](../results/2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
+   Each moving group still receives its own numerical gate; no boost batch
+   is scheduled, and final Q1/Q4 choices remain evidence-dependent.
+   The PI originally approved extending the reference itself by 150 runs: add
+   rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3, each at seeds
+   0–49, to the standard benchmark set. That proposal would have produced
+   960 runs across 20 configurations (250 noisy runs across five configs).
+   Preparation completed on 2026-09-07 with isolated reference source at
+   `623f5cd` (benchmark-only addition to `7314a6a`), verified worker imports,
+   a frozen 150-task manifest, seven passing focused tests, and independent
+   Sol review. The existing 810 pairs remain byte-identical.
+   This original preparation was superseded later that day: after timing one
+   seed each, the PI selected and authorized launching 30 seeds each of noisy
+   Rosenbrock D2 and Student D8, reusing the two timing pairs (58 new runs).
+   The reduced batch completed: 870 runs now form the combined reference across
+   19 configurations, including 160 noisy runs across four configurations,
+   with 76 KS tests. All 60 additions produced complete pairs; 53 converged
+   and seven noisy Rosenbrock runs reached their budget. No noisy lumpy runs
+   are included, and the pre-existing 810 pairs remain byte-identical. The
+   active traces are under
+   `dev/scripts/runs/golden/reference_870_20260907/`; integration evidence is
+   under `dev/golden/noisy_extension_20260907/`. All archive, allocation,
+   provenance, 76-test even/odd and default five-case replay gates passed with
+   no flags; the replay matched stored loop/final values and initial designs.
+   The historical returned transformer remains explicitly uncertifiable
+   because it was not stored. The plan owns preparation, source isolation,
+   verification, experiment and per-change gate details.
+   The original reference boundary was completed on
+   2026-09-07 (pickup 3f). The agreed boundary was:
+   Stage 3 merges first and that integrated code is frozen for both
+   reference-extension nights. No latent fix lands before or between those
+   nights, whether classified trajectory-neutral or trajectory-moving.
+   Pickup 9 fixes land only after both nights and their records are complete,
+   so that its final population night runs on the final code. The
+   candidates are the unfixed entries of devlog §9; the split below is a
+   first reading, to be confirmed in the plan. Where the line between a
+   bug and an involuntary design decision is loose, the PI rules case by
+   case: the plan lists such items as open questions, it does not decide
+   them.
+   Trajectory-moving, each replayed on its own and the set checked as a
+   population against the extended reference, which then becomes the
+   release's reference (a separately authorized population campaign): the
+   `_get_hyp_cov` slips (production slice-samples with gpyreg's default
+   widths); the misspelled `variance_regularized_acqfcn` key (the
+   variance-regularization branch of every acquisition is dead and
+   `tol_gp_var` has no effect; the dead block's batch-shape bug comes
+   with it, and `test_vbmc_init.py` asserts the misspelling); the
+   misspelled `stop_gp_sampling` key (`_is_gp_sampling_finished` and
+   `tol_gp_var_mcmc` are dead, and the method reads undeclared history
+   keys, so it is an implementation, not a one-liner); the `final_boost`
+   guard (`../results/2026-09-04-final-boost-failure.md`, option 1: keep the
+   pre-boost posterior when the boosted one's ELCBO is worse; PI ruling
+   2026-09-06, a borderline bug rather than an algorithmic decision;
+   alters one trace of the 280 in the reference). To verify against
+   MATLAB before deciding: the in-place `eta` shift in `_neg_elcbo` that
+   keeps the eta upper soft bound from firing, and `vp.pdf`'s uncorrected
+   gradient in the original space (moves a trajectory only if a run path
+   uses it).
+   Trajectory-neutral, landing with the replay `identical`: the
+   float32/float16 widening cast; the integer placeholders and the
+   `var_ss` docstring; `optimize_lambda` → `optimize_lambd`;
+   `ParameterTransformer.__eq__`'s self-comparison of `scale`; the
+   `true_mean`/`true_cov` guard; the `display`/`log_file_level` option
+   comments; `results["rng_state"]`; whether `optimize` calls
+   `FunctionLogger.finalize()`; the unreachable code behind
+   `compute_var_log_joint`, `mcmc_importance_sampling` and
+   `search_cmaes_best`; the cubic's closure variable; `kl_div_mvn`'s
+   decorator; the `_vb_init` shape at `vb_type = 3`; the logit Jacobian's
+   overflow; the `|det R| = 1` assumption of `log_abs_det_jacobian`;
+   `_compare_matlab.rand_int`; `noisy_cigar`; notebook 1's `lml_true`
+   and notebook 6's noise broadcast; the runtime dependencies in
+   `pyproject.toml`; the scipy private imports in `priors/`; gpyreg's
+   `step_out` stale coordinates (inert for current PyVBMC; PI deferred to
+   [gpyreg #44](https://github.com/acerbilab/gpyreg/issues/44) on 2026-09-08;
+   no repair or pin bump required for this release; gpyreg fixed it on
+   2026-09-13 in `f610e11`, #48, released in gpyreg 1.2.1).
+   Stays deferred as algorithmic (devlog §12): `compute_var == 2`, noise
+   shaping, log-space mixture sums.
+10. **S-VBMC integration and compatibility** (PI, 2026-09-06: part of the
+    1.5 work; delivered 2026-09-11, below). The broader goal
+    is to bring in or connect better to S-VBMC and other upcoming VBMC
+    extensions; individual extension integration details remain open
+    (PI clarification, 2026-09-06). `acerbilab/svbmc`
+    (Stacking VBMC) is the lab's own package, separate on PyPI (`svbmc` 0.1.1 at a glance on
+    2026-09-06; last commit 2025-11-10; depends on `pyvbmc>=1.0.4`,
+    `GPyReg>=1.0.2` and `torch>=2.7`) that stacks the components of
+    several `VariationalPosterior` objects, which its users pass in as
+    pickles of finished runs, and ships thirty such pickles under
+    `vbmc_runs/` for its tests and notebooks. Decide the form of the
+    integration (a separate package as today, an optional extra, or a
+    module of PyVBMC), check compatibility of `dev-next` with it (its
+    test suite against this branch; the pickled posteriors it carries
+    are instances of the current classes, so they are exposed to the same
+    attribute changes as PyVBMC's own static pickles; the shared
+    `torch` dependency meets Stage 3's `vp.to_torch()`), and release it
+    in step with 1.5: its `pyvbmc` pin bumped, its tests green against the
+    released code, its pickles regenerated if the classes changed.
+
+    **Compatibility pickup (2026-09-08):** PI authorized the compatibility
+    check first, on `dev-svbmc-compat` from `dev-next` at `feadf30`.
+    PI clarification: favor making S-VBMC directly available in PyVBMC,
+    and establish a common delivery approach for ecosystem additions rather
+    than creating a separate package for each algorithm. The concrete API,
+    dependency treatment and migration remain design questions; see
+    [the integration proposal](../2026-09-08-ecosystem-integration.md).
+    PI subsequently endorsed this direction and parked implementation for
+    later; retain it in release planning. Stage 4 feasibility is the next
+    proposed workstream, not an authorization to begin the full port.
+    - [x] Pin an isolated S-VBMC checkout, inspect its test/load contracts,
+      and verify actual PyVBMC/gpyreg/Torch imports and versions.
+      S-VBMC `13a78f6`, PyVBMC `feadf30`, gpyreg `a2f8ddc`; local
+      Python 3.12.6, NumPy 2.5.2, SciPy 1.18.1, Torch 2.14.0+cpu.
+      Torch is isolated under the ignored compatibility run directory.
+    - [x] Run its existing suite against current PyVBMC and check all 30
+      shipped posterior pickles, including the operations stacking uses.
+      Existing upstream suite: 32 passed in 3.53 s; its VP interfaces are
+      mocks. All 30 real posteriors load/sample/evaluate densities; all three
+      groups retain 10/10 inputs and pass entropy gradients, a 3-step weight
+      optimization, sampling, and input parameter/transformer preservation.
+    - [x] Distinguish compatibility regressions from upstream/environment
+      issues; independently review and record findings and next steps.
+      See [the compatibility record](../results/2026-09-08-svbmc-compatibility.md).
+      Independent Sol review found no record/checker issues. The shipped
+      D=2 corpus is compatible; a separate D=1 probe confirms an existing
+      S-VBMC draw-shape bug to fix during integration. No core or pickle
+      changes were needed. Compatibility check complete; integration API
+      and ecosystem delivery design are the next work.
+    PI follow-up (2026-09-09): inspect S-VBMC and consider a NumPy port after
+    the poor eager-Torch Stage 4 results. Static inspection finds a narrow
+    weights-only Torch boundary; NumPy/SciPy already handle sampling,
+    transforms and density construction. Compare S-VBMC itself before making
+    performance claims or choosing its backend. See the NumPy alternative in
+    [the integration proposal](../2026-09-08-ecosystem-integration.md).
+    The PI then authorized a bounded optimized NumPy prototype, now complete:
+    eighteen primary fit pairs, eighteen shared-preparation control pairs,
+    six diagnostic pairs and ten focused tests pass. NumPy is 2.47x faster
+    than unchanged upstream; with preparation improvements shared with Torch,
+    its median paired speedup is 1.06x (1.15x aggregate). Most of the original
+    gain comes from preparation, while the remaining advantage depends on
+    the workload. See the
+    [results](../results/2026-09-09-svbmc-numpy-prototype.md) and
+    [plan](svbmc-numpy-prototype.md).
+    **Integration proposal (PI, 2026-09-09):** write the proposal for a human
+    reviewer, assuming familiarity with both methods and briefly explaining
+    concrete technical seams. S-VBMC already exists in its own repository;
+    this is integration work, not algorithm implementation. The revised
+    [proposal](../2026-09-08-ecosystem-integration.md) recommends retaining
+    Torch and the current object workflow, optional imports/dependencies and
+    a legacy migration route. Targeted fixes and preparation optimizations
+    remain separate changes. PI clarification (2026-09-09): await review
+    from S-VBMC's main developer before proceeding. Integration code remains
+    parked and no production port is authorized.
+    Root owns numerical execution and tracking; Sol may inspect compatibility
+    contracts read-only in parallel. Run one heavy computation at a time.
+    **Implementation (PI, 2026-09-11):** go-ahead given. The proposal's open
+    questions are settled: Torch retained behind the optional extra;
+    `sample` draws independently from the stacked mixture, with a balanced
+    option; a `seed` argument replaces `testing`; explicit float64; the toy
+    targets stay in the standalone package; fixtures as plain-array
+    snapshots plus a generated D=1, bounded and warped set. Execution and
+    worklog: [svbmc-integration.md](svbmc-integration.md). The release that
+    deprecates the standalone `svbmc` package waits for the 1.5
+    publication.
+    **Delivered (2026-09-11, merged into `dev-next` at `0b5af29`):**
+    `pyvbmc.svbmc` with `SVBMC` and the `utils` helpers (the toy targets
+    stay in the standalone package), `pyvbmc.SVBMC` resolved lazily so
+    importing PyVBMC never imports Torch; the moved code checked bit for
+    bit against upstream 0.1.1 before the behavioral changes (`seed`
+    argument, independent multinomial sampling with a balanced option,
+    explicit float64, input validation, warnings and logging); plain-array
+    fixtures (the thirty upstream posteriors converted, plus nine generated
+    D=1, bounded and warped ones) with regression references; 133 tests
+    (Torch cell) of which 17 run without Torch; the API page, the
+    installation note and Example 7. Two further upstream defects fixed on
+    the way: `find_init_bounds` rejected `(1, D)` bounds, and
+    `stacked_ELBO` left tensor weights unnormalized. Branch smoke: run
+    34632149372. Remaining: the release that deprecates the standalone
+    `svbmc` package, after the 1.5 publication. The preparation/entropy speedups followed in
+    [svbmc-speedups.md](svbmc-speedups.md).
+11. **Stage 3 integrated before the reference extension** (PI,
+    2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
+    at `4bff1a5`. Branch smoke 34043031387, all nine full-matrix jobs
+    34043071150, and integrated smoke 34043979358 passed. Integrated
+    local checks: exact oracles 8/8, all five replay cases identical,
+    full suite 858 passed (35 skipped, 2 xfailed). Final reference snapshot:
+    `reference/stage3-20260906` (only verification records after tested
+    code `4bff1a5`). Keep every reference configuration at
+    `vectorized_target=False`. Existing `18a236c` sidecars and traces stay
+    intact; new sidecars identify the actual frozen commit. No code change,
+    including a trajectory-neutral latent fix, lands between the freeze
+    and completion of night 2. Heavy local checks do not run while either
+    night is running. The plan (`plans/stage3-pipeline-features.md`) and
+    these decisions were taken with the PI on 2026-09-06:
+    (a) torch and ArviZ are optional extras, `pyvbmc[torch]` and
+    `pyvbmc[arviz]`, imported lazily inside the methods that need them,
+    with an error naming the extra to install; their tests skip when the
+    extra is absent, and the Ubuntu newest-Python leg of CI installs both,
+    torch from the CPU wheel index; conda-forge has no extras, so the
+    install docs name the conda packages. Torch as a hard dependency of
+    the core was Stage 4's question (devlog §13); the 2026-09-09 decision
+    retains the NumPy core and keeps Torch optional for 1.5.
+    (b) `vp.to_torch()` builds and returns a torch distribution; nothing
+    torch is stored on a PyVBMC object, so the dtype canary stays as it is
+    (its Decision 5; Stage 4 revises the canary when the state itself
+    becomes tensors).
+    (c) The batched target: a boolean option `vectorized_target`, default
+    off, in the basic options. When on, the target always receives a 2-D
+    array of shape (N, D), N ≥ 1, the single-point calls of active
+    sampling included as (1, D), and returns an array of shape (N,), with
+    (N, 1) accepted and squeezed, or for a noisy target the pair of such
+    arrays that vectorizes today's pair of scalars (an (N, 2) array is
+    refused with a message saying to return a pair). The batch path is
+    the initial design only, through a `FunctionLogger.batch_call` that
+    evaluates the batch once and records each row as the sequential loop
+    does, in input order, the batch's wall time split equally across
+    rows, the evaluation count raised by N; rows with provided values keep
+    going through `add`. Every later evaluation stays sequential by
+    construction (the five points of an iteration are chosen one after
+    another with a rank-1 GP update in between), so the payoff is the
+    `fun_eval_start` evaluations in one call, plus one code path for users
+    with vectorized torch or JAX models and a path batched acquisition
+    (deferred) would reuse. Rejected: detecting batch support by probing
+    the target (costs an evaluation, misreads functions that broadcast);
+    a process pool over the initial design for non-vectorized targets
+    (pickles the user's closure, differs under Windows spawning,
+    duplicates the user's framework). The default path is unchanged, so
+    the replay reads `identical`; a unit test asserts batch and sequential
+    agree on a vectorizable target.
+
+12. **Machine-local performance calibration** (PI proposal, 2026-09-07;
+    next workstream selected 2026-09-09, outside pickup 9's latent-fix plan).
+    Implementation of the approved [package integration plan](machine-local-calibration.md)
+    is merged into `dev-next`; the feature branch is deleted. The local suite passed
+    1,140 tests (35 skips); docs/distributions and isolated wheel checks pass.
+    The [full CI matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34398191188)
+    passed all nine OS/Python jobs on `46c16b7`.
+    Two final campaigns took 42.39/43.53 s and retained all three defaults. Planning/status
+    updates stayed on `dev-next` without creating a branch.
+    Calibration is intended to ship in PyVBMC. The PI clarified that choices
+    stay fixed per run, including final boost and save/resume; about 30 seconds
+    for an occasional machine/configuration campaign is an acceptable estimate,
+    not a limit. Complete the campaign, with a generous watchdog only for
+    excessive runtime (e.g. five minutes). Users
+    receive feedback and explicitly initiate or rerun the campaign.
+
+    Implemented workflow: every `pyvbmc.calibrate()` call requests a new bounded
+    campaign, with progress and a result summary. There is no `force` flag;
+    normal optimization loads compatible cached settings or
+    uses historical defaults and suggests calibration. It never starts a
+    surprise campaign after first use, cache loss or a software upgrade.
+    This supersedes the initial automatic-first-use/few-second suggestion.
+
+    The plan specifies three fixed PDF/entropy budgets, a per-user JSON cache
+    keyed by machine and numerical environment, atomic writes, concurrency,
+    no-persistence fallback, numerical/RNG checks, conservative held-out
+    selection and run provenance. It maps the package/API/options/VP lifecycle
+    changes, docs and tests for Sol implementation with Astra orchestration.
+    The approved API, helper dependencies and campaign thresholds are implemented;
+    inclusion in 1.5 is confirmed by the PI. Another CPU/stack is useful validation,
+    but a cheaper proxy campaign is not a prerequisite for this design.
+
+    The bounded developer prototype and [first measurements](../results/2026-09-09-machine-local-calibration.md)
+    are complete: two balanced sweeps retain 65,536 in all nine regimes.
+    Discovery costs 15.01/27.14 s; full measured work 23.74/44.49 s after imports.
+    PDF checks are exact; entropy differences are rounding-level with identical
+    RNG advancement. These pre-integration results inform the package feature;
+    its own measurements and verification are recorded in the linked plan.
+
+    Starting knobs are `vp.pdf`'s `2**16` row budget and `entmc_vbmc`'s
+    `_MAX_TENSOR_ELEMENTS`. Historical PDF timings in
+    `stage2-batched-acquisition.md` favored 2^16 over 2^14 and 2^18 on this
+    laptop; `stage2-entmc.md` records component/sample tiling. Preserve
+    float64, sample counts and estimator semantics. PDF row chunks are
+    independent; entropy chunks change addition order. Check tight numerical
+    agreement and identical RNG advancement, pin settings for exact gates,
+    and preserve profiles across save/resume. Different profiles need not
+    produce identical seeded trajectories; no separate entropy policy gate
+    remains. (Superseded on 2026-09-19: since `f3ba8d3` every entropy
+    budget returns the default budget's output bit for bit, and since
+    `7c7972f` the campaign accepts a budget only on identical output, so
+    one seed gives one trajectory whatever profile is in force.)
+    Run only one heavy computation at a time.
+
+13. **Optional runtime hints — implemented and verified** (2026-09-10).
+    The [runtime-tips plan](runtime-tips.md) owns the approved policy, PI-edited
+    wording and completed acceptance checks. Focused verification passed
+    (151 tests), the full suite passed (1170 passed, 35 skipped), the docs built,
+    and independent Sol review found no issues. Occasional startup tips now
+    provide useful guidance with links.
+
+    Start with a small, curated collection drawn from the FAQ:
+    comparing multiple runs and their diagnostics,
+    interpreting `elbo_sd`, and discovering S-VBMC when available. Keep shared
+    guidance consistent across hints, documentation and the skill; link to
+    fuller explanations where useful.
+
+    A limited share (PI suggests no more than 25-30%) may introduce complementary
+    methods such as S-VBMC or PyBADS, explaining a useful task rather than promoting
+    the software. Use a factual low-frequency category, which can hold other tips
+    too. Shuffle so short sessions can encounter these tips; prefer an ordinary
+    tip after a low-frequency tip, but make progress if only low-frequency tips
+    remain. The initial catalog contains six ordinary and two low-frequency tips.
+
+    Show at most one hint per optimization start, with conservative frequency
+    and repetition suppression. PI decisions (2026-09-10): a calibration reminder
+    takes the shared hint slot, so skip the tip when it is shown; tip history
+    stays within the Python session, with no new persistent store. Reuse a small
+    shared hint-output helper for calibration and tips. Prefer relevant guidance
+    when the current configuration supplies enough context. Respect `display="off"` and
+    provide a separate way to disable hints. Selection must not consume the
+    inference RNG or change numerical results. Use the existing startup
+    output location. The approved option is `show_tips=True`, with tips on eligible
+    first starts 1/4/7 and no repeats within a Python session. Merged to `dev-next`
+    as `fc64381` after a green nine-job feature matrix and package build; the
+    post-merge full matrix and automatic smoke check both passed. The merged
+    feature branch has been removed. The final benchmark schedule remains unchanged.
+
+14. **Update reminders — implemented and merged** (2026-09-30). A run of a
+    final release more than a year old says, in an interactive session, that
+    a newer version may exist: at most once per Python session and three
+    times per installed version, 90 days apart, in the start-of-run slot
+    after the calibration reminder. `pyvbmc.check_for_updates()` asks PyPI
+    when the user calls it, the package's only network access. The
+    [update-reminders plan](version-check.md) owns the prior art, the PI's
+    rulings, the approved wording and the verification (the full suite, the
+    exact oracle check, the docs build, rounds of independent review, and
+    the nine-job matrix before the reviews and after each round of fixes). Merged into `dev-next` at `01bd00de`;
+    the feature branch has been removed.
+
+15. **The final gpyreg release — done** (2026-09-30). The PyBADS work in
+    gpyreg ends in a release that PyVBMC 1.5 and PyBADS both require (PI,
+    2026-09-27): gpyreg 1.4.0 (the annotated tag `v1.4.0` on `682585f`, on
+    PyPI). PyVBMC requires it: `pyproject.toml`'s minimum and CI's
+    `GPYREG_PIN` name it (`AGENTS.md`). On 2026-09-30, on Linux with one
+    BLAS thread, under Python 3.12 with SciPy 1.18.1 and under Python 3.10
+    with SciPy 1.15.3, PyVBMC's whole suite passed against it, and it
+    reproduced bit for bit what gpyreg 1.3.3 computes on the same machine:
+    every oracle output, the platform-bound ones included (a dump made with
+    1.3.3 by `make_oracle_fixtures.py --dump-outputs`, checked with
+    `--check --exact --against`), the three GP-fit-history captures and the
+    five default golden replays. The checks of the nine example notebooks
+    passed under Python 3.12. gpyreg `d96d0d9`, on which the notebooks'
+    stored outputs were executed on 2026-09-26 and 27, gives the same
+    oracle outputs. On the machine that generated the committed oracle
+    references (`dev/scripts/runs/LOCAL.md`), the only one where their
+    platform-bound references reproduce, the exact oracle check against
+    them (`make_oracle_fixtures.py --check --exact`, one BLAS thread)
+    passed with 1.4.0 on the same day, 12 of 12. The
+    [Slurm plan](slurm-benchmark-support.md) and its operator's guide
+    (`dev/scripts/hpc/README.md`) name `v1.4.0` for the after arm, the
+    pools and the stacking; on the cluster, the PI's source trees hold it
+    beside `v1.3.3`, with which the smoke campaigns of that plan's Phase 6
+    ran, and the environment check passed with it on 2026-10-01 (that
+    plan's worklog).
+
+16. **The end of warm-up — MATLAB's stays** (2026-10-06). Two fixes of the
+    port review, W2-1 and W2-2, end warm-up as MATLAB does, about three
+    iterations earlier than the port did, and the release gate's
+    comparison found the noisy two-dimensional Rosenbrock target worse for
+    it ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)).
+    Arm 3, the release code with the port's end of warm-up, ran the release
+    gate's population cases, pools and stacking and fresh seeds of that
+    target on the cluster on 2026-10-05/06
+    ([its plan](arm-3-warmup-comparison.md)), read with a guide fixed before
+    the runs. The port's end did not establish its gain on the fresh seeds
+    and made the noisy Student target's evidence error worse, and moved
+    nothing on the noiseless targets; the PI kept MATLAB's end for both
+    kinds of target ([the reading](../results/2026-10-06-arm-3-reading.md)).
+    The release code is unchanged, and Arm 3's branch is retained as
+    `retain/arm3-port-warmup`; a longer warm-up for noisy targets of few
+    dimensions is an item outside 1.5 (`TODO.md`).
+
+17. **The S-VBMC headline — the two-level shrinkage on noisy stacks**
+    (2026-10-06). The two-level shrinkage estimate, integrated on
+    2026-09-16 as `elbo_details["shrunk_two_level"]`
+    ([its plan](svbmc-shrinkage-estimator.md)), is the headline
+    `stacked.elbo` of a noisy stack, or the capped value with a warning
+    where it is numerically undefined; a noiseless stack keeps the raw ELBO.
+    On the release gate's pools and on Arm 3's it adds −0.23 to +0.15 nats
+    to the bias of its inputs at every noisy condition and `M` from 2 to
+    32, where the capped headline it replaces adds −1.48 to −0.71 on the
+    heavy-tailed Student target in Arm 3's pools; the
+    [reading](../results/2026-10-06-arm-3-reading.md) gives the numbers and
+    the [headline note](../2026-09-15-svbmc-headline-shrinkage.md) the
+    derivation. The switch merged into `dev-next` (PR #185, `edda2ae0`)
+    with the `SVBMC` docstring, the API page's account of the
+    headline and its caveat, the FAQ, Example 7's explanation, the tip
+    `noisy_elbo`, the changelog's entry and the tests that pin the noisy
+    headline; the stacking harness's cells record `headline_method`.
+
+18. **The release gate's pools and stacking — done** (2026-10-02 to
+    10-06). The final large-scale check: VBMC run pools of the test targets
+    made by the release code on the cluster, stacked in disjoint subsets by
+    both arms of the [campaign](svbmc-benchmark-campaign.md) at `M` = 2, 4,
+    8 and 16 and by the integrated arm alone at 3, 5 and 32, on 2026-10-02
+    ([the Slurm plan](slurm-benchmark-support.md); the tracked copies in
+    `dev/experiments/release_gate_20261002/`), and again on Arm 3's pools on
+    2026-10-05/06 (pickup 16). On the first batch's pools, against the
+    campaign's criteria (2026-10-04):
+    the median largest weight difference between the arms is 0.007 to 0.027
+    (criterion 1), no cell is flagged (criterion 2), stacking takes 0.19 to
+    0.53 of the original's time (criterion 4), and criterion 3 fails on
+    Student D8 alone, with the capped headline and, at small `M`, with the
+    two-level shrinkage (the campaign plan). The added bias of each
+    estimate and the switch of the noisy headline are pickup 17.
+
+19. **The golden reference after the port review — promoted**
+    (2026-10-07). The release gate's after arm, 2400 runs of the
+    `production` suite at seeds 0–99 made by the release code on the
+    cluster on 2026-10-02, is the golden reference
+    `reference_2400_20261007`, in place of `reference_990_20260913`, whose
+    trajectories predate the port review's fixes. The PI accepted on
+    2026-10-07 its assessment against the code at the start of the port
+    review (`f91fdf0`): none of 96 confirmatory tests rejects, and the noisy
+    Rosenbrock target is usable 72 times in 100 against 87, the cost of
+    MATLAB's end of warm-up (pickup 16). Its replay fingerprints, one run at
+    seed 0 of each configuration on the developer's machine, ran on
+    2026-10-04 and met the acceptance of the Slurm plan's Phase 9 (one of
+    24 outside its envelope, within the population's own rate), and the
+    port review's six seeded gate runs, two of them with a prior object,
+    reproduced bit for bit there. The
+    [promotion record](../golden/promotion_20261007/README.md) owns the
+    evidence, hashes and procedure; `golden_replay.py` replays the new
+    defaults against the fingerprints, and the previous references are
+    preserved.
+
+20. **1.5 against 1.0.4 — done** (2026-10-07). A user upgrades from 1.0.4,
+    so the release's claims of speed and accuracy are made against it
+    (PI, 2026-10-04; [Arm 0's plan](arm-1.0.4-comparison.md)). 1.0.4 as
+    released ran the release gate's 2400 population cases on the cluster on
+    2026-10-05/06, compared seed by seed with the after arm, and its speed
+    was measured apart on the developer's machine
+    ([results](../results/2026-10-06-speed-against-1.0.4.md)). The release
+    code's runs take 3.7 times less time on noiseless targets and 2.2 times
+    less on noisy ones, and the typical error of its estimates of the
+    evidence and of the posterior is about 10% smaller; 8 of the
+    comparison's 96 confirmatory tests reject, six favouring the release
+    ([the comparison](../experiments/release_gate_20261005_assessment_v104/comparison.md)).
+    The changelog's "Runs are faster" and "Results are slightly more
+    accurate" and the "What's new" blocks state both, in the PI's wording.
+
+## S-VBMC ELBO corrections and reporting
+
+Phase 1 completed and merged into `dev-next` at `954677a` on 2026-09-12:
+scalar headline with detailed estimates, deterministic Jacobian corrections,
+fresh final evaluation and combined uncertainty, noise-dependent capping,
+and optional runtime tips. The
+[execution plan](svbmc-elbo-reporting.md) owns status and verification;
+the [optimism note](../2026-09-12-svbmc-elbo-optimism.md) owns the rationale
+and the separate Phase 2 proposal. The regenerated S-VBMC references are
+the regression gate for the preparation and entropy speedups included in 1.5,
+implemented and measured in [svbmc-speedups.md](svbmc-speedups.md) with the
+references passing unchanged.
+After the included S-VBMC changes are settled, a benchmark campaign against
+the original standalone S-VBMC is required before release, covering their
+combined effect on posterior quality, reported evidence accuracy and runtime.
+The existing numerical fixtures and parity checks do not provide a population
+benchmark reference comparable to VBMC's golden campaign. The
+[campaign plan](svbmc-benchmark-campaign.md) owns the design (approved
+2026-09-13), the harness, the allocation, the acceptance criteria and the
+execution worklog; the requirement itself is stated in the
+[integration plan](svbmc-integration.md#benchmark-campaign-required-for-15).
+The campaign ran on 2026-09-14/15 and is assessed in
+[results/2026-09-15-svbmc-pool-comparison.md](../results/2026-09-15-svbmc-pool-comparison.md):
+posterior quality, agreement, runtime and reproducibility hold on every
+condition, and the evidence-accuracy gate failed on the heavy-tailed
+condition because of the capped headline, for which the
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md) records
+the candidate replacement; the `M = 32` extension of the integrated
+arm (2026-09-15/16) is in the same report. The release gate's pools and
+those of Arm 3 confirmed it, and it is the headline of a noisy stack since
+2026-10-06 (pickup 17), chosen on the bias that stacking adds to its
+inputs; under it the gate still fails on Student D8 at small `M` (the
+[campaign plan](svbmc-benchmark-campaign.md) says where).
+
+## Golden population acceptance
+
+The completed 870-case candidate assessment was accepted by the PI on
+2026-09-13. Independent statistical and artifact review, followed by
+Student D8 and Banana D10 trajectory investigation, found no convincing
+evidence of meaningful degradation. Existing occasional failure modes
+remain outside the correction scope. The promoted reference
+`reference_990_20260913` combines the 870 candidates with 120 unchanged
+real-data pairs. Artifact validation, the 92-test even/odd check and the
+five exact current-code default replays passed. The
+[promotion record](../golden/promotion_20260913/README.md) owns the evidence
+and provenance; the [population plan](final-population-benchmark.md) records
+the staged execution. Previous references are preserved.
+
+`reference_2400_20261007` replaced it on 2026-10-07, after the port
+correctness review's fixes moved default trajectories: the release gate's
+after arm, whose assessment against the code at the start of the review the
+PI accepted that day (pickup 19; the
+[promotion record](../golden/promotion_20261007/README.md)).
+
+## Benchmark coverage and HPC support
+
+These workstreams have no prescribed order relative to acquisition or
+S-VBMC work. Slurm support is needed for campaigns using that workflow;
+its design is in [slurm-benchmark-support.md](slurm-benchmark-support.md).
+
+- [x] Extend the core benchmark with real-data targets: the Bayesian timing
+  model and the multisensory causal-inference model on two subjects,
+  chosen on 2026-09-11 from the lab-private
+  [benchflow repository](https://github.com/acerbilab/benchflow) (the
+  Goris neuronal model deferred). Definitions, ground-truth method,
+  reference campaigns, status and evidence are in
+  [benchmark-realistic-targets.md](benchmark-realistic-targets.md).
+  Completed 2026-09-12: truths generated, the four configurations run at
+  seeds 0–29 from a certified frozen checkout and joined to the golden
+  reference as `reference_990_20260912`
+  ([record](../golden/realdata_extension_20260912/README.md)). PI decision
+  2026-09-13: these targets and datasets remain in the developer benchmark
+  suite; no additional packaged regression tests are needed for 1.5.
+- [x] Improve support for running benchmarks on Slurm HPC systems, including
+  submission, resource configuration, resumption and collection of results
+  with reproducible run provenance. The design, reviewed by the PI on
+  2026-09-25, is in [slurm-benchmark-support.md](slurm-benchmark-support.md);
+  it records the implementation, cluster validation and completed release
+  campaigns. The deferred fixes and their review fixes were merged on
+  2026-10-07 (`948bac0d`, then `2b81ecad`), and the PI closed the 1.5
+  Slurm item that day. The plan retains the execution and validation
+  record.
+- [x] Make the distinction between reference generation and candidate
+  checking explicit in benchmark workflows and documentation. A golden
+  reference may contain many traces and require a long campaign to generate.
+  Candidate checks can use a smaller allocation against that existing
+  reference; they need not repeat its full run count. Select coverage and
+  seeds for the question and compute budget, retain paired comparisons where
+  seeds overlap, and extend the candidate sample when the evidence warrants it.
+  See the [staged benchmark plan](final-population-benchmark.md). Done: the
+  "Purpose" section of that plan separates the two budgets, and the
+  [Slurm plan](slurm-benchmark-support.md) ("What runs where") separates the
+  reference populations from the replay fingerprints.
+
+## Pre-release checklist
+
+The steps before the release, with their procedure; `TODO.md` ("Release
+documentation and validation") lists those still open. Documentation
+review can proceed alongside implementation. The final validation pass
+must cover the settled release code, API and behavior before publication.
+
+- [x] Refresh the main [README.md](../../README.md), including the
+  project overview, installation, quick start, capabilities and links.
+  A focused pass was reviewed and approved by the PI (2026-09-13), alongside the docs
+  landing page, installation and quickstart: S-VBMC and exports,
+  reproducibility guidance, installation/test guidance, links and example
+  normalization.
+  Independent review, standalone RST parsing, syntax checks for nine Python
+  snippets and local link checks passed. Full Sphinx rendering and runtime
+  example checks are the last item of this list.
+- [x] Complete the 1.5 changelog and its speed figures (2026-10-07).
+  The PI read the condensed changelog on 2026-09-30; the VBMC speed and
+  accuracy entries use the PI's wording of 2026-10-06/07 (pickup 20).
+  The S-VBMC entry uses the release gate's 560 paired fits: optimization
+  was 1.9 to 5.2 times as fast as standalone `svbmc` 0.1.1 across
+  eight conditions (median paired ratios, CPU with one thread). The
+  [speed check](../results/2026-10-07-svbmc-release-speed.md) gives the
+  timing boundary, exact recomputation, provenance and limits, and why
+  the subsequent headline switch needs no new timing campaign. The
+  README and docs' "What's new" blocks summarize the changelog and are
+  kept in step with it. Dating the release remains in the final pass.
+- [x] Apply PyBADS's convention for links to the lab (2026-10-07), recorded
+  in `AGENTS.md`, "Links to the lab". The README, docs' index and FAQ
+  introductions link the lab's model-fitting software; the docs' footer,
+  package metadata, agent skill and complementary-method tip link the same
+  overview.
+  Referrals in the README, docs' index, FAQ and Example 6 pair direct method
+  links with the overview, using wording suited to each passage and omitting
+  redundant nearby repeats.
+  Links naming Luigi Acerbi use his personal page, and lab
+  links use the group's page. Individual developers link to personal
+  profiles or the People page; links labeled "members" go to the People
+  page. The `pybads` tip kept its PyBADS documentation link beside the
+  tools page until the review of the tips on 2026-10-08, which left it the
+  tools page alone; the
+  [tips plan](runtime-tips.md#review-before-the-15-release) records both.
+  The Sphinx HTML build passed with warnings treated as errors, and the
+  tip/reminder tests passed (100 tests). The five checked destinations
+  (tools page, personal page, group page, PyIBS and PyBADS documentation)
+  responded successfully. Rendered-page checks and independent review
+  passed. All nine notebooks retain their code and stored outputs; none
+  shows the changed tip.
+  The wording pass of 2026-10-08 varied the overview referrals, added a
+  prominent link in the FAQ introduction and shortened the footer.
+- [x] Review the tips and the old-release reminder with the PI (2026-10-08),
+  each shown in the output of a run. The
+  [tips plan](runtime-tips.md#review-before-the-15-release) records the
+  rulings: five tips are reworded, five relinked, and `starting_points`,
+  an S-VBMC tip, is removed. The links to the documentation of PyVBMC and
+  PyBADS in the shipped files move to acerbilab.org, where the
+  acerbilab.github.io addresses redirect; the stored outputs of Examples 4
+  and 5 keep the old addresses until the notebooks are executed again.
+- [x] Review the main documentation sources under `docsrc/`, tutorials and
+  examples for consistency with the completed 1.5 release. Check setup,
+  options, diagnostics and linked guidance against the final implementation:
+  the release-wide API, tutorial and compatibility review. The focused
+  Torch/JAX workflow and teaching consistency review is recorded in the
+  [teaching-material plan](teaching-material.md). Done on 2026-10-07 in
+  PR #186 (`675b69c7`): the FAQ and the quickstart shortened, the reference
+  pages completed with their scientific caveats kept, the low-level
+  algorithm helpers moved off the `VBMC` page, Example 3 showing the
+  diagnostics its text discusses and Example 6 computing its own noise-free
+  comparison, so that it runs alone; two independent reviews, of the API's
+  accuracy and of the reader's experience, with their findings resolved.
+  Its changes to the package are docstrings and option descriptions
+  alone (compared by syntax tree). Edits to the documentation after it fall
+  to the delta pass of the release sweep (below).
+- [x] Review references to the MATLAB VBMC wiki and assess which guidance
+  should be ported into the PyVBMC repository. Adapt retained material to
+  Python APIs, examples, defaults and terminology; update links to the
+  PyVBMC versions and make any remaining MATLAB-specific references clear.
+  Completed 2026-09-12 in `a7b7cb9`: all 40 source questions ported into
+  `docsrc/source/faq.md`, with Python save/resume and S-VBMC additions.
+  The MATLAB source attribution remains; instructional links use the PyVBMC
+  FAQ. Independent review, snippet syntax checks and standalone rendering
+  passed; the full Sphinx build and inference-example checks remain below.
+- [x] Add a thin [agent skill](../../skills/pyvbmc/SKILL.md) directing users'
+  coding agents to existing documentation (2026-09-12). Scope and maintenance
+  are recorded in the [skill note](../2026-09-02-user-agent-skill.md).
+- [x] Rewrite `AGENTS.md` as a statement of what holds (2026-09-21, PI's
+  criterion: what an agent must know before working in the repository and
+  would not meet at the point of need). Every claim of the old file was
+  first checked against the code by read-only reviewers, each dated clause
+  was traced to the plan, ledger or fixture metadata that records the same
+  history, and the new text was checked by two fresh reviewers, one against
+  the code and one against the criterion. The file opens with what it is
+  for, so that a change records itself in its plan and not there. What the
+  check found outside the file, fixed with it: `golden_replay.py`,
+  `golden_trace.py` and `profile_run.py` imported the installed checkout's
+  package from any other checkout while labelling their output with their
+  own commit, and now put their repository root first on `sys.path`, as
+  `make_oracle_fixtures.py` did; `make_oracle_fixtures.py --check` reported
+  the platform-bound oracles as failures off the generating platform and
+  now skips them as the tests do (on the generating platform `--check
+  --exact` passes on 11 of 11 after the change); the generator's docstring
+  and its entry in `dev/README.md` state the present gate and the three
+  platform-bound oracles; `Product._generic` takes a generator; `.coveragerc`
+  omits the test directory that exists; the MATLAB text fixtures and the two
+  static pickles have `FIXTURES.md` entries. Recorded and not fixed: a
+  candidate about `load(new_options=)` in the
+  [port review plan](port-correctness-review.md), fixed later as W6-37
+  (`e657eba8`), and what the sdist ships in `TODO.md` (an sdist built that
+  day holds every tracked file but `docsrc/`, so the rule of adding fixtures
+  to `MANIFEST.in` by hand had no effect and is not in the new file).
+  `known_differences.md` of the port review cites the old file by section,
+  and says so in its header.
+- [x] Sweep every tracked document and record before the release for
+  acknowledgments of a wrong value or defect that the affected file does
+  not itself carry as a correction or flag, and for statements that were
+  true when written and are stale now (branch names, counts, work
+  described as continuing or remaining): `dev/*.md`, `dev/plans/`,
+  `dev/results/`, the review copies under `dev/experiments/`,
+  `dev/README.md`, `AGENTS.md`, the README, `docsrc/` and the docstrings.
+  Fix each in place; where a record cannot change, put the flag in the
+  record or as close to it as its format allows. Read-only reviewers by
+  area; the PI triages. Done on 2026-09-27 at `05dc5dc9`, and the fixes
+  merged into `dev-next` at `46200293`: the
+  [ledger](../results/2026-09-27-release-sweep.md) holds every finding, the
+  PI's ruling and its fix. The rule (`AGENTS.md`, "Records") was set on
+  2026-09-19 after three cases surfaced in one day: a gpyreg version label
+  wrong in 252 run sidecars, upper medians quoted as medians in a report,
+  and a publication index missing four entries, each acknowledged only in a
+  note elsewhere.
+- [x] A delta pass of the sweep, under the same rule, over what changes
+  after it: the diff since `46200293`, including the merged Slurm
+  documents and the text that the open items of `TODO.md` rewrite.
+  The documentation and record findings of 2026-10-07 are corrected in
+  their source files and recorded in the ledger's dated delta section.
+  The final pass covered the settled release commit, `4d9f5942`, on
+  2026-10-08: three read-only reviewers, 25 findings, each ruled by the PI
+  and corrected in its file, two of them in code (the tips of naive
+  stacking and the conda command of `check_for_updates`) and one in the
+  changelog; the ledger's section "Final delta review, 2026-10-08"
+  records them. A further pass at `1f774c95`, approved by the PI on
+  2026-10-08, covers PR #191's prose; the ledger's "PR #191 delta review"
+  records the persistence clarification and API-link corrections.
+- [x] Verify revised examples and links, build the documentation and check
+  the rendered pages on the settled release code, and check the
+  [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On
+  2026-09-27 the Sphinx build of `dev-next` gave no warning, `linkcheck` and
+  an inspection of the rendered pages found nothing broken, and the skill
+  matched the docs. On 2026-10-07, with PR #186, the build gave 94 pages
+  with warnings treated as errors and no broken local or same-site link,
+  the launch and edit buttons of all nine notebooks pointed at their
+  sources in `examples/`, Examples 3, 4 and 6 ran with their checks, the
+  startup tips' links resolved, anchors included, and the FAQ held every
+  section the skill names. The links to `main` in the skill and the docs
+  resolve only once the release merge puts the 1.5 files there, so a
+  `linkcheck` follows that merge.
+  Repeated after PR #191 on 2026-10-08 (`1f774c95`, with documentation
+  corrections in `544224c5`): Sphinx 9.1.0 passed with `-W --keep-going
+  -E -a`; all 92 rendered HTML pages (excluding two theme templates) have
+  valid local and same-site files and anchors. Browser inspection covered
+  `PyMCTarget` and `VBMC.save`, `load` and `optimize`. The skill's 13
+  source links exist and its named sections agree with the docs.
+  `linkcheck` completed with 69 working, 6 redirected and 41 unchecked
+  links. Its 12 failures are seven unpublished 1.5 destinations, four
+  HTTP 403 responses (Wikipedia and Stack Exchange), and a GitHub wiki
+  anchor whose canonical permalink was confirmed in the browser. It also
+  reports two warnings because its builder cannot render Example 2's HTML
+  output. These are not a clean external-link gate; the post-merge pass
+  remains below. The logs and artifact inventories are indexed in
+  `dev/scripts/runs/LOCAL.md`, "Release validation after PR #191".
+- [ ] Repeat `linkcheck` after the release merge publishes the 1.5 source
+  files and documentation; recheck the blocked external sites and the
+  GitHub wiki anchor as well as the formerly unpublished destinations.
+  PyPI renders the README from the sdist and does not resolve relative
+  links, so since 2026-10-11 the README links the repository's files by
+  their address on `main`; `linkcheck` does not read the README, so check
+  those links after the merge as well.
+- [x] Re-execute every example notebook with the release code and commit
+  its outputs, which the docs build renders as stored
+  (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
+  (`dev/README.md`) runs all nine and writes back only those whose checks of
+  their text's claims pass. Reinstall `pyvbmc` in the notebooks'
+  environment at the release commit first: the run's record takes PyVBMC's
+  version from the installed metadata, which an editable install fixes when
+  it is installed. Example 7's account of the headline estimate follows
+  the headline decision (pickup 17); read each notebook's text against its new
+  outputs, and regenerate `examples/scripts/` with its Makefile. Example 7's
+  text needs at least one of its four runs to miss a mode, which its check
+  asserts; if none does, choose other seeds (on 2026-09-26, 9 of 24 single
+  runs on its target missed one; `dev/scripts/runs/LOCAL.md`, "Example
+  notebooks").
+  Done on 2026-10-08 at `4d9f5942` (`dev/scripts/runs/LOCAL.md`, "Example
+  notebooks (2026-10-08)"): all nine ran and passed their checks, the
+  outputs of Examples 2, 4, 5, 6, 7 and 8 changed, and each notebook's text
+  agrees with its new outputs, which show the tips and documentation
+  addresses of the review of 2026-10-08. Examples 4 and 6 are seeded, and
+  their new runs differ from the outputs committed on 2026-10-07
+  (`02f8fe29`), of which no execution record exists; a second execution of
+  both by the script gave the new outputs again, identical but for the
+  startup tip. The notebooks' code is unchanged, and so are the scripts in
+  `examples/scripts/`.
+  Example 8 was checked statically after PR #191 on 2026-10-08: its model
+  uses unchanged outer-graph arrays, no inner graphs and no save/load,
+  so copying its constants and checking their digest changes neither its
+  numerical results nor its warnings. It was not re-executed in that pass.
+  On 2026-10-10 all nine ran again at `89007a4e`, after PR #191, with the
+  cell that installs PyVBMC in Colab added before each one's first code
+  cell, and passed their checks (`dev/scripts/runs/LOCAL.md`, "Example
+  notebooks (2026-10-10)"). Their outputs equal those of 2026-10-08 but
+  for the startup tip of Example 5, a function's address and Plotly's
+  element ids in Example 2, and xarray's element ids in Example 8; the
+  scripts in `examples/scripts/` are regenerated.
+- [x] Prepare the 1.5.0 changelog heading and `RELEASE_DATE` in
+  `pyvbmc/_release.py` with the planned release date, 2026-10-13
+  (PI, 2026-10-08). The old-release reminder reads this date;
+  `pyvbmc/testing/vbmc/test_release_reminder.py` checks that the two agree.
+  All 71 tests in that module passed on 2026-10-08.
+- [x] Confirm the release date before tagging and publishing, updating
+  both the changelog heading and `RELEASE_DATE` if the schedule changes.
+  On 2026-10-11 the PI set the date to 2026-10-12, with publication on
+  PyPI and conda-forge on that day and not before; both carry it, and the
+  71 tests of `test_release_reminder.py` passed.
+- [x] Run the final integrated tests, the required CI matrix and the
+  package checks (2026-10-08, after PR #191). The package
+  checks include what the sdist ships: setuptools_scm puts every tracked
+  file in it, and of `MANIFEST.in` only the `prune` lines have an effect
+  (`docsrc`, `dev`, `papers`), its `include` lines naming files that the
+  sdist holds already. Built on 2026-09-25 the sdist was 11.8 MB (37.7 MB
+  before `dev` and `papers` were pruned) and the wheel unchanged; from the
+  sdist the tests that read `dev/scripts` skip, among them 7 of the oracle
+  tests.
+  At `1f774c95`, the full local extras suite first stopped at a
+  platform-bound active-sample oracle (451 passed, 8 skipped, 5 reruns):
+  its environment has NumPy 2.5.3 and cma 4.5.0, while the reference
+  environment has 2.5.2 and 4.4.4. In the latter, all 12 oracle fixtures
+  passed `--check --exact`, with BLAS single-threaded. The extras suite
+  then passed 3022 tests, with 33 skips and 28 platform-bound oracle cases
+  deselected (`-k 'not (test_oracle and (active_sample_step or gp_fit))'`).
+  The skips are inapplicable parameter/oracle cases and unavailable CUDA;
+  PyMC, ArviZ and CPU Torch tests ran. Both environments imported this
+  checkout and the sibling gpyreg 1.4.0 at `682585f7`.
+  The PI approved expanding CI to Python 3.10–3.14 in
+  [PR #192](https://github.com/acerbilab/pyvbmc/pull/192).
+  [All 15 cells passed](https://github.com/acerbilab/pyvbmc/actions/runs/37823357632)
+  at `157714ae`: 2559 tests in each core cell; 3020 in Ubuntu 3.14 with
+  PyMC 6.3.2, PyTensor 3.3.3, ArviZ 1.3.0 and Torch 2.14.1+cpu. The
+  subsequent commit `b4bf94c5` updates only the tested-version text and
+  its record; `2dadfc7c` corrects the roadmap's smoke-test Python version.
+  PR #192 merged into `dev-next` at `b5edc3e2` on 2026-10-08.
+  `python -m build` built an 8,589,003-byte sdist (441 files) and a
+  3,027,550-byte wheel (122 files), building the wheel from the sdist.
+  All 291 tracked test/fixture files ship in the sdist; none ship in the
+  wheel. The wheel contains all 88 checked runtime code/data files, all
+  nine notebooks, the option files and S-VBMC license. The pruned trees
+  are absent from the sdist. Imports and resources passed from an isolated
+  wheel installation. These are validation builds with a development
+  version, not release uploads. No fixture or numerical reference changed.
+  On 2026-10-11 a build at `ebef1366` with the version set to 1.5.0
+  passed `twine check --strict`, which renders the README as PyPI does,
+  and its wheel held the same 122 files; the `build` workflow, dispatched
+  on `dev-next` at `b61e6f7c`, built the package with the v7 checkout and
+  setup actions that the release workflow calls.
+- [x] Prepare and verify the public population and pool archives, as
+  selected by the PI's 2026-09-28 decision in the
+  [Slurm plan](slurm-benchmark-support.md), "Records and hand-back".
+  The operator rebuilt both with the corrected redaction tools at
+  `a5a4fa65` and staged them in `release-gate-public-refresh-20261009`.
+  On 2026-10-09 an independent download passed `campaign_public.py check`
+  with identical verifier modules: 2400 population cases and 2930 pool
+  cases, no exemptions, all 7212 tracked copies byte-identical to the
+  October 2 hand-back and their source hashes unchanged. The
+  [campaign record](../experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
+  holds the asset hashes; `dev/scripts/runs/LOCAL.md`, "Public release
+  archives refreshed on 2026-10-09", indexes the local checks.
+- [x] Back up the replay fingerprints and earlier reference traces in
+  draft releases. `golden-traces-backup-20261008` holds the 56 fingerprint
+  and gate-run files of `reference_2400_20261007`, verified against the
+  promotion manifest and inside the archive; the uploaded sizes and
+  SHA-256 digests matched on 2026-10-08. Earlier traces remain in
+  `golden-traces-backup-20260928`. These backups and the raw campaign
+  archives stay in drafts; the stacking's tracked records hold every cell.
+- [ ] Attach the checked public population and pool parts and their
+  checksum files to the final release, using the refreshed assets above.
+  On 2026-10-11 the four files were attached to the draft release
+  `v1.5.0` from the verified local copies; their GitHub digests and sizes
+  equal the campaign record's. They are public once the draft is
+  published.
+- [x] Prepare the branch guidance for the release merge (2026-10-08):
+  current contribution and hand-back instructions target `main`; campaign
+  setup names a pinned release commit. Historical branch names remain in
+  dated records and completed implementation plans. The agent skill's
+  source links point at `main` since 2026-09-27.
+- [ ] Open and validate the release pull request into `main`, then merge
+  it when the remaining release checks are complete. Delete
+  `origin/dev-port-review` at that merge; it is retained until then (the
+  [release sweep](../results/2026-09-27-release-sweep.md)'s ruling C-3).
+  [PR #195](https://github.com/acerbilab/pyvbmc/pull/195), from
+  `dev-next`, passed its full test matrix in all 15 cells at `b61e6f7c`
+  on 2026-10-11, with 3020 tests in the Ubuntu 3.14 cell, which installs
+  the optional integrations. `main` requires one approving review, which
+  an administrator can bypass. Merge it with a merge commit, not a squash
+  or a rebase: the records cite commits of `dev-next` by hash.
+- [ ] Publish the release on 2026-10-12, after the release merge. The
+  draft release `v1.5.0` holds the release notes and the public archives.
+  Its target, `main`, is resolved when it is published: published before
+  the merge, it would tag the old `main` and upload that code to PyPI as
+  1.5.0, a version number PyPI never accepts again. The steps:
+  1. Check that the `build` and `docs` runs of the merge's push to `main`
+     passed and that the 1.5 documentation is served.
+  2. Set the draft's target to the merge commit (`gh release edit v1.5.0
+     --target <merge commit>`), check it, and publish the draft.
+     Publishing creates the tag and runs `release.yml`, which builds from
+     the tag, so that setuptools_scm reads 1.5.0, and uploads to PyPI with
+     the `PYPI_PASSWORD` secret (set in March 2023). If the upload fails,
+     re-run the run's failed jobs, or dispatch `release.yml` with `--ref
+     v1.5.0`: a build from a branch has no tags and yields a version such
+     as `0.1.dev1+gb61e6f7c5`, which PyPI refuses.
+  3. Fast-forward `dev-next` to the merge commit, so that the tag is
+     reachable from it; a build of `dev-next` otherwise reads a
+     development version of 1.0.5.
+  4. Install the release into a fresh environment with `pip install
+     --upgrade pyvbmc` and check its version and import.
+  5. Update the conda-forge recipe (`TODO.md`, "conda-forge"), and name
+     the published release in the campaign record's "Public asset
+     refresh" section.
+
+## Post-release follow-up
+
+- [ ] After PyVBMC 1.5 is released, respond to
+  [issue #138: finer control over random variate generation](https://github.com/acerbilab/pyvbmc/issues/138)
+  with the released API/docs. The RNG modernization addresses its core request:
+  `VBMC(seed=generator)` accepts a NumPy `Generator`, shared through inference,
+  GP fitting and posterior operations; standalone VPs and built-in prior sampling
+  also accept generators. Point to the reproducibility/global-state tests and
+  saved generator state. Explain that `seed=None` derives a generator from the
+  global legacy state for compatibility, while legacy `RandomState` objects
+  are not directly accepted. User-supplied stochastic callbacks remain responsible
+  for their own RNGs, and not every statistical test is deterministic. See
+  [Stage 1 RNG work](stage1-rng-generator.md) and Stage 2 item 8 above.
+  This is a post-release response reminder; no issue comment has been posted.
+
+## Deferred (devlog §12)
+
+Variational optimizer stopping-rule improvements (PI, 2026-09-08): the
+[equal-iteration eta experiment](../results/2026-09-08-eta-equal-budget.md) found
+that longer local fits improved surrogate scores on two saved noisy states.
+Investigating broader accuracy/runtime tradeoffs is future research, outside
+the latent-fix campaign and not a release blocker. Preserve current stopping
+settings for the accepted fixes; no additional stopping experiment is scheduled.
+
+Per-component `lambd`, gradient-based acquisition optimization, batched
+acquisition (parallel target evaluations within an iteration via local
+penalization or Kriging believer, a research item; not the batched
+acquisition *evaluation* of Stage 2 item 3), multi-chain slice sampling,
+scaling to `N ≈ 2k–5k`, log-space
+mixture sums,
+porting MATLAB's diagonal approximation of the log-joint variance and its
+gradient (`compute_var == 2` in `_gp_log_joint`, which raises "not
+implemented"; it would allow the ELCBO gradient with `beta ≠ 0`, which no
+option enables today; the dead accumulators were deleted 2026-09-04).
+The guard for `final_boost` (`../results/2026-09-04-final-boost-failure.md`) left
+this list on 2026-09-06: the PI ruled it a borderline bug, and it is a
+1.5 fix (pickup 9).

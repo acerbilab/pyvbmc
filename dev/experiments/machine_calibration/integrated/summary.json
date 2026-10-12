@@ -1,0 +1,68 @@
+{
+  "campaigns": {
+    "primary": {
+      "imports_seconds": 1.4062704000389203,
+      "api_elapsed_seconds": 42.38635909999721,
+      "phases_seconds": {
+        "discovery": 28.483999999938533,
+        "heldout": 9.75,
+        "numerical": 3.922000000020489,
+        "setup": 0.0470000000204891,
+        "total": 42.20299999997951
+      },
+      "settings": {
+        "entropy_grad_chunk_elements": 65536,
+        "entropy_value_chunk_elements": 65536,
+        "pdf_chunk_elements": 65536
+      },
+      "numerical_max_abs_difference_by_group": {
+        "pdf": 0.0,
+        "entropy_grad": 3.552713678800501e-15,
+        "entropy_value": 7.105427357601002e-15
+      },
+      "numpy_global_rng_unchanged": true
+    },
+    "repeat": {
+      "imports_seconds": 1.2803090000525117,
+      "api_elapsed_seconds": 43.53168129990809,
+      "phases_seconds": {
+        "discovery": 29.92099999997299,
+        "heldout": 10.047000000020489,
+        "numerical": 3.375,
+        "setup": 0.03200000000651926,
+        "total": 43.375
+      },
+      "settings": {
+        "entropy_grad_chunk_elements": 65536,
+        "entropy_value_chunk_elements": 65536,
+        "pdf_chunk_elements": 65536
+      },
+      "numerical_max_abs_difference_by_group": {
+        "pdf": 0.0,
+        "entropy_grad": 3.552713678800501e-15,
+        "entropy_value": 7.105427357601002e-15
+      },
+      "numpy_global_rng_unchanged": true
+    }
+  },
+  "verification": {
+    "focused_calibration": "82 passed; calibration plus existing seeded-run checks 93 passed after final provenance correction",
+    "exact_oracles": "11/11 passed",
+    "default_replay": "5/5 exact stored loops, designs and finals",
+    "nondefault_replay": "4/5 within all historical accuracy fences; normal_D5 gsKL pre-existing flag unchanged within 2.22e-16",
+    "docs": "complete Sphinx build exit0 with existing Plotly MIME warning; final incremental build exit0 without warnings",
+    "full_suite": "1140 passed,35 skipped,3 warnings,337.94 seconds; before final metadata-only provenance correction and package-data exclusion",
+    "packaging": "wheel and sdist built; archive contents and isolated target wheel import/PDF/entropy checked; tests retained only in sdist",
+    "independent_review": "Sol cross-component static review; no remaining findings; thread limit prevented an additional fresh-context reviewer"
+  },
+  "cache_lookup": {
+    "cold_including_lazy_imports_seconds": 0.1407199000241235,
+    "repeated_median_seconds": 0.006330000003799796
+  },
+  "memory": {
+    "peak_traced_bytes": 25567912,
+    "maximum_estimate_bytes": 43545832,
+    "limit_bytes": 67108864
+  },
+  "final_changes_after_measured_campaigns": "Manual CalibrationProfile constructor provenance defaults to explicit; kernel settings/arithmetic and campaign unaffected. Wheel excludes test files as documented."
+}

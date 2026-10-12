@@ -1,0 +1,888 @@
+{
+  "config": "rosenbrock_D2_noise3_svbmc",
+  "seed": 1001,
+  "sources": {
+    "pyvbmc": "c9cb7328d97296203293cce6fb5af0ea3a5c93241f84f023a382c1e01a1c299b",
+    "gpyreg": "bb2b3ef6e4c533fcb42948724cf764c2a200e080d11c17da9e5712b8363a7d2a",
+    "probe": "d75872f41a7a18f4be34d066e54660f8216f6036c9d45fba563eff7d43878e17",
+    "benchmark_targets": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86"
+  },
+  "source_root": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\gp_box_20260916\\baseline_source",
+  "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1",
+  "environment": {
+    "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "blas_threads": 1
+  },
+  "options": {
+    "max_fun_evals": 300,
+    "max_iter": 200,
+    "tol_stable_count": 90,
+    "tol_stable_excpt_frac": 0.2,
+    "specify_target_noise": true,
+    "search_acq_fcn": [
+      "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x0000012D21836840>"
+    ],
+    "active_sample_gp_update": true,
+    "active_sample_vp_update": true,
+    "min_final_components": 50,
+    "do_final_boost": true,
+    "display": "off",
+    "plot": false,
+    "print_iteration_header": false,
+    "performance_calibration": "off"
+  },
+  "results": {
+    "function": "<function main.<locals>.recorded_target at 0x0000012D1C0B2CA0>",
+    "problem_type": "unconstrained",
+    "iterations": 34,
+    "func_count": 180,
+    "best_iter": 34,
+    "train_set_size": 170,
+    "components": 50,
+    "r_index": 0.8682195116615156,
+    "convergence_status": "probable",
+    "overhead": NaN,
+    "rng_state": {
+      "generator": {
+        "bit_generator": "PCG64",
+        "state": {
+          "state": 277615920137651548336266006330925270030,
+          "inc": 75832438150325598680414078138474848963
+        },
+        "has_uint32": 1,
+        "uinteger": 874387565
+      }
+    },
+    "algorithm": "Variational Bayesian Monte Carlo",
+    "performance_calibration": {
+      "schema_version": 1,
+      "settings": {
+        "pdf_chunk_elements": 65536,
+        "entropy_grad_chunk_elements": 65536,
+        "entropy_value_chunk_elements": 65536
+      },
+      "source": "off",
+      "status": "complete",
+      "fingerprint": null,
+      "provenance": {},
+      "cache_path": null
+    },
+    "version": "1.0.5.dev378+g613f2a8a8",
+    "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+    "elbo": -2.2938961286511725,
+    "elbo_sd": 0.2771140390973313,
+    "success_flag": true
+  },
+  "metrics": {
+    "elbo_err": 0.034049004478788,
+    "gskl": 0.14354870376090778,
+    "mmtv": 0.10038313746779998,
+    "rmse": 0.2824799477490886,
+    "moment_method": "affine",
+    "post_mean": [
+      [
+        -0.1632143060688486,
+        0.8965781103159092
+      ]
+    ],
+    "post_cov": [
+      [
+        0.9631177869906864,
+        -0.19462144205858345
+      ],
+      [
+        -0.19462144205858345,
+        1.610722148494618
+      ]
+    ]
+  },
+  "wall_s": 140.70578750001732,
+  "all_calls": {
+    "count": 180,
+    "y_min": -143043.42390940973,
+    "tail_count": 22,
+    "first_tail_call": 107
+  },
+  "returned_gp": {
+    "N": 170,
+    "condition": 25313691429424.758,
+    "y_min": -143039.84039047128,
+    "y_max": 6.629711761474278,
+    "tail_count": 22
+  },
+  "iterations": [
+    {
+      "iteration": 0,
+      "func_count": 10,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 10,
+      "condition": 206.29040105340272,
+      "y_min": -78.00167793598037,
+      "y_max": -1.712154100416834,
+      "tail_count": 0
+    },
+    {
+      "iteration": 1,
+      "func_count": 15,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 15,
+      "condition": 199100.42141231394,
+      "y_min": -78.00167793598037,
+      "y_max": 1.4049238332332905,
+      "tail_count": 0
+    },
+    {
+      "iteration": 2,
+      "func_count": 20,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 20,
+      "condition": 49957.09633124772,
+      "y_min": -78.00167793598037,
+      "y_max": 3.8045276923730453,
+      "tail_count": 0
+    },
+    {
+      "iteration": 3,
+      "func_count": 25,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 25,
+      "condition": 64572.314076061724,
+      "y_min": -78.00167793598037,
+      "y_max": 3.8045276923730453,
+      "tail_count": 0
+    },
+    {
+      "iteration": 4,
+      "func_count": 30,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 30,
+      "condition": 8387.000213623798,
+      "y_min": -78.00167793598037,
+      "y_max": 3.8045276923730453,
+      "tail_count": 0
+    },
+    {
+      "iteration": 5,
+      "func_count": 35,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 35,
+      "condition": 71572.37165372062,
+      "y_min": -78.00167793598037,
+      "y_max": 3.8045276923730453,
+      "tail_count": 0
+    },
+    {
+      "iteration": 6,
+      "func_count": 40,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 40,
+      "condition": 139168.1206053413,
+      "y_min": -78.00167793598037,
+      "y_max": 4.239099922155769,
+      "tail_count": 0
+    },
+    {
+      "iteration": 7,
+      "func_count": 45,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 45,
+      "condition": 76100.63666293437,
+      "y_min": -78.00167793598037,
+      "y_max": 4.239099922155769,
+      "tail_count": 0
+    },
+    {
+      "iteration": 8,
+      "func_count": 50,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 50,
+      "condition": 121041.20446249397,
+      "y_min": -78.00167793598037,
+      "y_max": 4.239099922155769,
+      "tail_count": 0
+    },
+    {
+      "iteration": 9,
+      "func_count": 55,
+      "warmup": true,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 55,
+      "condition": 14980.775044245634,
+      "y_min": -78.00167793598037,
+      "y_max": 4.239099922155769,
+      "tail_count": 0
+    },
+    {
+      "iteration": 10,
+      "func_count": 60,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 60,
+      "condition": 575457.6542426889,
+      "y_min": -78.86204010149298,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 11,
+      "func_count": 65,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 55,
+      "condition": 4281.865920239717,
+      "y_min": -35.87158381667231,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 12,
+      "func_count": 70,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 60,
+      "condition": 59144.037740677835,
+      "y_min": -52.52962944820492,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 13,
+      "func_count": 75,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 65,
+      "condition": 96037.36032518352,
+      "y_min": -52.52962944820492,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 14,
+      "func_count": 80,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 70,
+      "condition": 37647.88835327309,
+      "y_min": -52.52962944820492,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 15,
+      "func_count": 85,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 75,
+      "condition": 210630.67369607757,
+      "y_min": -52.52962944820492,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 16,
+      "func_count": 90,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.5
+        ]
+      ],
+      "N": 80,
+      "condition": 1371586.8978963753,
+      "y_min": -95.06771188720666,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 17,
+      "func_count": 95,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.5
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          2.75
+        ]
+      ],
+      "N": 85,
+      "condition": 8689916.261010658,
+      "y_min": -258.8013360265276,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 18,
+      "func_count": 100,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -2.7625
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.025625
+        ]
+      ],
+      "N": 90,
+      "condition": 3355478.985091356,
+      "y_min": -293.06531143089506,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 19,
+      "func_count": 105,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -3.05190625
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.025625
+        ]
+      ],
+      "N": 95,
+      "condition": 150933737.5537578,
+      "y_min": -426.70851465976017,
+      "y_max": 6.629711761474278,
+      "tail_count": 0
+    },
+    {
+      "iteration": 20,
+      "func_count": 110,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -3.05190625
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.025625
+        ]
+      ],
+      "N": 100,
+      "condition": 653404191.3671166,
+      "y_min": -1747.3012607105418,
+      "y_max": 6.629711761474278,
+      "tail_count": 1
+    },
+    {
+      "iteration": 21,
+      "func_count": 115,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -3.3557828125
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.025625
+        ]
+      ],
+      "N": 105,
+      "condition": 16720988144.919973,
+      "y_min": -7492.895948821125,
+      "y_max": 6.629711761474278,
+      "tail_count": 5
+    },
+    {
+      "iteration": 22,
+      "func_count": 120,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -4.379240974228516
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.377400105664062
+        ]
+      ],
+      "N": 110,
+      "condition": 282322711061.76556,
+      "y_min": -16551.331060393542,
+      "y_max": 6.629711761474278,
+      "tail_count": 8
+    },
+    {
+      "iteration": 23,
+      "func_count": 125,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -5.174296684917505
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.377400105664062
+        ]
+      ],
+      "N": 115,
+      "condition": 381270090569.7731,
+      "y_min": -24307.417718590412,
+      "y_max": 6.629711761474278,
+      "tail_count": 9
+    },
+    {
+      "iteration": 24,
+      "func_count": 130,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -5.174296684917505
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.8049849451931403
+        ]
+      ],
+      "N": 120,
+      "condition": 248638754678.84335,
+      "y_min": -24307.417718590412,
+      "y_max": 6.629711761474278,
+      "tail_count": 9
+    },
+    {
+      "iteration": 25,
+      "func_count": 135,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -5.623260766423037
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.8049849451931403
+        ]
+      ],
+      "N": 125,
+      "condition": 624641856593.6489,
+      "y_min": -24307.417718590412,
+      "y_max": 6.629711761474278,
+      "tail_count": 10
+    },
+    {
+      "iteration": 26,
+      "func_count": 140,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -6.094673052003846
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.8049849451931403
+        ]
+      ],
+      "N": 130,
+      "condition": 124482863785.84178,
+      "y_min": -24307.417718590412,
+      "y_max": 6.629711761474278,
+      "tail_count": 11
+    },
+    {
+      "iteration": 27,
+      "func_count": 145,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -6.094673052003846
+        ]
+      ],
+      "ub_search": [
+        [
+          2.5,
+          3.8049849451931403
+        ]
+      ],
+      "N": 135,
+      "condition": 514731387137.50745,
+      "y_min": -24307.417718590412,
+      "y_max": 6.629711761474278,
+      "tail_count": 11
+    },
+    {
+      "iteration": 28,
+      "func_count": 150,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -7.109387996716537
+        ]
+      ],
+      "ub_search": [
+        [
+          2.75,
+          3.8049849451931403
+        ]
+      ],
+      "N": 140,
+      "condition": 2110499705479.2085,
+      "y_min": -60780.41298440633,
+      "y_max": 6.629711761474278,
+      "tail_count": 13
+    },
+    {
+      "iteration": 29,
+      "func_count": 155,
+      "warmup": false,
+      "lb_search": [
+        [
+          -2.5,
+          -7.741125545560447
+        ]
+      ],
+      "ub_search": [
+        [
+          2.75,
+          5.5253629801616535
+        ]
+      ],
+      "N": 145,
+      "condition": 1538380725548.2866,
+      "y_min": -60780.41298440633,
+      "y_max": 6.629711761474278,
+      "tail_count": 14
+    },
+    {
+      "iteration": 30,
+      "func_count": 160,
+      "warmup": false,
+      "lb_search": [
+        [
+          -3.038125,
+          -7.741125545560447
+        ]
+      ],
+      "ub_search": [
+        [
+          2.75,
+          5.5253629801616535
+        ]
+      ],
+      "N": 150,
+      "condition": 10485442834972.635,
+      "y_min": -85343.8721724972,
+      "y_max": 6.629711761474278,
+      "tail_count": 18
+    },
+    {
+      "iteration": 31,
+      "func_count": 165,
+      "warmup": false,
+      "lb_search": [
+        [
+          -3.038125,
+          -8.437616193160856
+        ]
+      ],
+      "ub_search": [
+        [
+          2.75,
+          6.188687406447759
+        ]
+      ],
+      "N": 155,
+      "condition": 12215898644273.54,
+      "y_min": -85343.8721724972,
+      "y_max": 6.629711761474278,
+      "tail_count": 19
+    },
+    {
+      "iteration": 32,
+      "func_count": 170,
+      "warmup": false,
+      "lb_search": [
+        [
+          -3.038125,
+          -9.93681231212074
+        ]
+      ],
+      "ub_search": [
+        [
+          3.3432828125,
+          6.188687406447759
+        ]
+      ],
+      "N": 160,
+      "condition": 27138390452901.582,
+      "y_min": -143039.84039047128,
+      "y_max": 6.629711761474278,
+      "tail_count": 21
+    },
+    {
+      "iteration": 33,
+      "func_count": 175,
+      "warmup": false,
+      "lb_search": [
+        [
+          -3.038125,
+          -10.743087298049165
+        ]
+      ],
+      "ub_search": [
+        [
+          3.3432828125,
+          6.188687406447759
+        ]
+      ],
+      "N": 165,
+      "condition": 31071658362613.746,
+      "y_min": -143039.84039047128,
+      "y_max": 6.629711761474278,
+      "tail_count": 22
+    },
+    {
+      "iteration": 34,
+      "func_count": 180,
+      "warmup": false,
+      "lb_search": [
+        [
+          -3.038125,
+          -10.743087298049165
+        ]
+      ],
+      "ub_search": [
+        [
+          3.3432828125,
+          6.188687406447759
+        ]
+      ],
+      "N": 170,
+      "condition": 25313691429424.758,
+      "y_min": -143039.84039047128,
+      "y_max": 6.629711761474278,
+      "tail_count": 22
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "case": "banana_D10_seed15",
+  "identity_matches_preparation": true,
+  "artifact_hashes_verified": {
+    ".npz": "14121bfc2ac674a9434f0c6e3e00e2d3505a717a88dbe62c491f544a1eb25a25",
+    ".json": "a2845e9b0e613076d3c6b6b2fe1fd8a6ff4dfe6aed862adce1d22209d8d578ce",
+    ".boost.pkl": "9de7b65e373e7d29edf8282ee7d2c4619111046dfa3677682be037fa97d4f823",
+    ".boost.json": "ae45c7ae9d9097317a3cac3cb4aeb1676967ffbb93cd6dd5cf34a4e982940a0c"
+  },
+  "supervisor_completed": true,
+  "active_case_at_check": "banana_D10_seed17",
+  "completed_at_check": 2
+}

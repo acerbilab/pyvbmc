@@ -1,0 +1,880 @@
+{
+  "acceptance_branch": "improved independently judged choices at comparable cost",
+  "cost_threshold": 1.1,
+  "created_utc": "2026-09-17T12:23:07.112014+00:00",
+  "development_manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "development_selection_snapshot_sha256": "e7d132a3f1902b4ee2e75eaf2769fd769b48b14c4dab4a9009f1705b75ae9b13",
+  "e4": {
+    "accepted_harmful_refinement_trajectories": 1,
+    "entry_gate_established": false,
+    "reason": "Multiple-budget full-sieve quality evidence is unavailable after E2 cost screening; accepted harmful refinement occurs only on the timing trajectory. The ten other harmful component outcomes are row-cap fallbacks."
+  },
+  "e5_authorized": false,
+  "eligible_for_holdout": true,
+  "faster_branch_failure": "5/96 harmful exceeds its 5% ceiling; the improved-choice branch has a separate cost/quality test.",
+  "faster_branch_passes": false,
+  "freeze_script_sha256": "698b34c8de75618377cced409291b949bd8e2aebdef6abec80842c850db61710",
+  "holdout_inspected_before_freeze": false,
+  "judge_summary_sha256": "bfd675b51614bda2fc87ed24e523722d46b469966bf6efb69e564b295250e560",
+  "kind": "noisy_acq_search_development_gate",
+  "limitations": [
+    "Student early has two material raw losses and a timing ratio of 1.1548742186489562.",
+    "Repetitions and checkpoints are clustered within six development trajectories.",
+    "This screen establishes neither noninferiority nor inference performance."
+  ],
+  "maximum_unresolved_fraction": 0.2,
+  "measurement_manifest_sha256": "ca307bd6077eb2542cfedaf349c64c1af6fc369572da8f4cc401a3c7ba15a0a5",
+  "primary_quality_by_arm": [
+    {
+      "arm_tag": "S1",
+      "contrast": "S1_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.2604166666666667,
+        "raw_material_loss": 0.041666666666666664,
+        "raw_unresolved": 0.19791666666666666,
+        "unresolved": 0.13541666666666666
+      },
+      "kind": "primary_vs_s0",
+      "observed": 96,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 4,
+        "no_material_loss": 73,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 19
+      },
+      "reference_tag": "S0",
+      "scheduled": 96,
+      "score_counts": {
+        "beneficial": 38,
+        "failed_or_missing": 0,
+        "harmful": 25,
+        "practical_tie": 20,
+        "unresolved": 13
+      }
+    },
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.052083333333333336,
+        "raw_material_loss": 0.020833333333333332,
+        "raw_unresolved": 0.16666666666666666,
+        "unresolved": 0.1875
+      },
+      "kind": "primary_vs_s0",
+      "observed": 96,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 2,
+        "no_material_loss": 78,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 16
+      },
+      "reference_tag": "S0",
+      "scheduled": 96,
+      "score_counts": {
+        "beneficial": 54,
+        "failed_or_missing": 0,
+        "harmful": 5,
+        "practical_tie": 19,
+        "unresolved": 18
+      }
+    },
+    {
+      "arm_tag": "S3",
+      "contrast": "S3_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.08333333333333333,
+        "raw_material_loss": 0.020833333333333332,
+        "raw_unresolved": 0.16666666666666666,
+        "unresolved": 0.17708333333333334
+      },
+      "kind": "primary_vs_s0",
+      "observed": 96,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 2,
+        "no_material_loss": 78,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 16
+      },
+      "reference_tag": "S0",
+      "scheduled": 96,
+      "score_counts": {
+        "beneficial": 53,
+        "failed_or_missing": 0,
+        "harmful": 8,
+        "practical_tie": 18,
+        "unresolved": 17
+      }
+    }
+  ],
+  "production_adoption": false,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "6a5971a23bfbf414cd6c82841d7659fabec03ff09640e1c5b594d3c2ccf7cfd7",
+  "raw_loss_investigation": {
+    "cells": [
+      {
+        "accurate_candidate_rows": 994,
+        "arm_to_baseline_raw_reduction_ratio": 0.8563225736136209,
+        "cell": {
+          "arm_tag": "S2",
+          "contrast": "S2_minus_S0",
+          "kind": "primary_vs_s0",
+          "reference_tag": "S0",
+          "replicate": 1,
+          "state_id": "student_D8_noise3_seed0_early"
+        },
+        "fallback_reason": "candidate_row_budget",
+        "local_iterations": 40,
+        "s1_report_sha256": "73756b6e1be7d5ebb1602b70d3040a5bc63d5b8fc77c611bd52bb4d541589919",
+        "same_selected_point_as_s1": true,
+        "selected_shortlist_index": 0,
+        "selection_report_sha256": "87d6f3d9ce7aa925dd75ad7eb55e3a4ca98b0029943cb7ad87dac9c08e1f7430"
+      },
+      {
+        "accurate_candidate_rows": 994,
+        "arm_to_baseline_raw_reduction_ratio": 0.8597428974170855,
+        "cell": {
+          "arm_tag": "S2",
+          "contrast": "S2_minus_S0",
+          "kind": "primary_vs_s0",
+          "reference_tag": "S0",
+          "replicate": 4,
+          "state_id": "student_D8_noise3_seed0_early"
+        },
+        "fallback_reason": "candidate_row_budget",
+        "local_iterations": 40,
+        "s1_report_sha256": "3aac32e3d914d097924e98829f0029eec6de1dd4bf58e23bf8fb5443a24f4a7d",
+        "same_selected_point_as_s1": true,
+        "selected_shortlist_index": 2,
+        "selection_report_sha256": "17e97beada8dbb13d4de524c511e048a3c80c3e9cb0b0913eb44837c011aa453"
+      }
+    ],
+    "independent_review": "Sol independently verified the exact fallback mechanism and literal investigation gate before finalist freeze.",
+    "mechanism": "The shared row cap interrupts refinement and returns the accurately re-scored shortlist fallback. These losses remain in all denominators and are not accepted harmful refinements or numerical failures.",
+    "status": "explained_retained_regression"
+  },
+  "s2_quality_by_trajectory": [
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0625,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 16,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 13,
+        "failed_or_missing": 0,
+        "harmful": 1,
+        "practical_tie": 2,
+        "unresolved": 0
+      },
+      "trajectory": "logreg_D5_noise3_seed0"
+    },
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.5,
+        "unresolved": 0.5
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 8,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 8
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 8,
+        "failed_or_missing": 0,
+        "harmful": 0,
+        "practical_tie": 0,
+        "unresolved": 8
+      },
+      "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+    },
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0625,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 16,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 8,
+        "failed_or_missing": 0,
+        "harmful": 1,
+        "practical_tie": 7,
+        "unresolved": 0
+      },
+      "trajectory": "rosenbrock_D2_noise1_seed0"
+    },
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.1875
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 16,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 4,
+        "failed_or_missing": 0,
+        "harmful": 0,
+        "practical_tie": 9,
+        "unresolved": 3
+      },
+      "trajectory": "rosenbrock_D2_noise3_seed0"
+    },
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.1875,
+        "raw_material_loss": 0.125,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 2,
+        "no_material_loss": 14,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 13,
+        "failed_or_missing": 0,
+        "harmful": 3,
+        "practical_tie": 0,
+        "unresolved": 0
+      },
+      "trajectory": "student_D8_noise3_seed0"
+    },
+    {
+      "arm_tag": "S2",
+      "contrast": "S2_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.5,
+        "unresolved": 0.4375
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 8,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 8
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 8,
+        "failed_or_missing": 0,
+        "harmful": 0,
+        "practical_tie": 1,
+        "unresolved": 7
+      },
+      "trajectory": "timing_D5_noise2.2_seed0"
+    }
+  ],
+  "schema_version": 1,
+  "selected_arm": "S2",
+  "selection_reason": "S2 has a majority of independently beneficial comparisons, fewer harmful selections than S1 or S3, and lower median selection cost than S3. Its unresolved fraction is below the prespecified ceiling.",
+  "timing_by_arm": {
+    "S1": {
+      "median_of_state_median_ratios": 0.18844974703131753,
+      "state_ratio_range": [
+        0.0609359529858341,
+        0.3333772645786857
+      ],
+      "states": [
+        {
+          "baseline_median_seconds": 0.28168300000106683,
+          "median_paired_ratio": 0.10056126196363913,
+          "paired_ratio_range": [
+            0.08764006352850875,
+            0.10314931863127542
+          ],
+          "payload_sha256": "70efa282e7482663d64a6eec54a86bb54efb4bc99984516a2caacaed3a8b2074",
+          "state_id": "rosenbrock_D2_noise1_seed0_early",
+          "terminal_sha256": "a8ff0e78805be10793da323c8d22a4f50233a12b50e8414ee2e34b6fe521289a",
+          "timing_seed": 11706027593928152208,
+          "treatment_median_seconds": 0.02782139999908395,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.47262169999885373,
+          "median_paired_ratio": 0.24477188288493146,
+          "paired_ratio_range": [
+            0.19733848549608554,
+            0.30169494455565204
+          ],
+          "payload_sha256": "813a2cbe523f52c74696c8ebfffd77bbe15a2ac8186e59349ba7b3a568028019",
+          "state_id": "rosenbrock_D2_noise1_seed0_late",
+          "terminal_sha256": "90ee0c24e2dcff116323c972caf9af53946c5521760cf86cb902925cc462bbcc",
+          "timing_seed": 12779988714776286027,
+          "treatment_median_seconds": 0.11035260000062408,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.2878633999971498,
+          "median_paired_ratio": 0.10671415679520932,
+          "paired_ratio_range": [
+            0.08778941335618348,
+            0.12152329492610152
+          ],
+          "payload_sha256": "7bd1291cef8b5ed9c509774faf84f5ce557b4956e8f106c989617763f29e32ba",
+          "state_id": "rosenbrock_D2_noise3_seed0_early",
+          "terminal_sha256": "6ec1d5fb7288d30a25494cb7d82bae392300d24e19318a34049a54796bd12a1b",
+          "timing_seed": 4986347041840376306,
+          "treatment_median_seconds": 0.030719100002897903,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.41803599999911967,
+          "median_paired_ratio": 0.24639090652038015,
+          "paired_ratio_range": [
+            0.23949869830454326,
+            0.26234883484373267
+          ],
+          "payload_sha256": "8604c5f435470ce83be653232e70620826742fcba0f73729dba208b4cfe802cc",
+          "state_id": "rosenbrock_D2_noise3_seed0_late",
+          "terminal_sha256": "d09ba612c835236de1691117257109496e8d87061caa5101f38cf6b4f187af50",
+          "timing_seed": 6799548003299985269,
+          "treatment_median_seconds": 0.10380850000001374,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.39340769999762415,
+          "median_paired_ratio": 0.07509181950874778,
+          "paired_ratio_range": [
+            0.07111602493086808,
+            0.08887337803574896
+          ],
+          "payload_sha256": "2b4031fa81898f4859fcd14d3e47c1a241a611a63affe2c0c5846fd7574517c9",
+          "state_id": "logreg_D5_noise3_seed0_early",
+          "terminal_sha256": "15a7e70f02555cebe1c1000665695678d34d9c7d3583470ce434de84a8a51279",
+          "timing_seed": 2697164094075780154,
+          "treatment_median_seconds": 0.030398999999306398,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.5594030000029306,
+          "median_paired_ratio": 0.3193341511484508,
+          "paired_ratio_range": [
+            0.30620685866275077,
+            0.32556971915877453
+          ],
+          "payload_sha256": "5e86db4a787a6ebe993641a670ca0a0dd7769c44ec9ed644e3657d934fae3193",
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "terminal_sha256": "6a411a4569c63348a6a30906baa9ff0b1941b6334063bef62356a87e90e6bdec",
+          "timing_seed": 17794814708887548882,
+          "treatment_median_seconds": 0.1792094000011275,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.3689360999997007,
+          "median_paired_ratio": 0.1321276111777036,
+          "paired_ratio_range": [
+            0.12341184030139214,
+            0.14165664279511941
+          ],
+          "payload_sha256": "1a49994c999d2c1d5e9268db7b4ac577cfdb08945779cb05943aff3c0f673f84",
+          "state_id": "student_D8_noise3_seed0_early",
+          "terminal_sha256": "9c39c7b2978ed8c35a997d3a3ab37a05e31770c24837ec4a97cbde08553a1a69",
+          "timing_seed": 8368367248371917808,
+          "treatment_median_seconds": 0.0486215999990236,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.16359989999909885,
+          "median_paired_ratio": 0.3333772645786857,
+          "paired_ratio_range": [
+            0.29817545023457,
+            0.3575188855711181
+          ],
+          "payload_sha256": "97ea5ca12aef1fbc8860720e4c9962220cf3e522afdb82dd65f359dcfd567ab9",
+          "state_id": "student_D8_noise3_seed0_late",
+          "terminal_sha256": "1d6605bb349b16650a8ab1d448742875a47daaa564d2c60abc4ef393d7c08bb8",
+          "timing_seed": 8894973568537496929,
+          "treatment_median_seconds": 0.05362619999868912,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.5365778999985196,
+          "median_paired_ratio": 0.0609359529858341,
+          "paired_ratio_range": [
+            0.05406220023205355,
+            0.06377128081626722
+          ],
+          "payload_sha256": "b9c80599b3d44245a8889d6d5889a003ece5b56cd90d16331464892b0842d634",
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+          "terminal_sha256": "05b37370aa167c3d60dee7d3c01f7c9b5951487c52da8210ad0fe66a136ab145",
+          "timing_seed": 17563772072030037529,
+          "treatment_median_seconds": 0.032381100001657614,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.4959636999992654,
+          "median_paired_ratio": 0.30087048915874015,
+          "paired_ratio_range": [
+            0.26106898022840436,
+            0.3076014715860068
+          ],
+          "payload_sha256": "6f98e63fba62bc5d6926191e78118699145d3f1727af6653341a25a420ceca8d",
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+          "terminal_sha256": "f593e46b9a53e7b39a4421025600c8a966898a997e5dbbdf00f20c04059cdb2f",
+          "timing_seed": 10720689804352417212,
+          "treatment_median_seconds": 0.14922740000110934,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.3928352000002633,
+          "median_paired_ratio": 0.08780755899358261,
+          "paired_ratio_range": [
+            0.06868772164332052,
+            0.09459665997195345
+          ],
+          "payload_sha256": "85d390356c5cdfeff2cefb47c07c2aa30da4ad7ce21eb89244489cab4b6bc580",
+          "state_id": "timing_D5_noise2.2_seed0_early",
+          "terminal_sha256": "7e3cc90870b9e517aa43fc64133b1ed41a5213c79ec1620f77afcc08ac67b5d3",
+          "timing_seed": 17553064904989652522,
+          "treatment_median_seconds": 0.03417759999865666,
+          "treatment_tag": "S1"
+        },
+        {
+          "baseline_median_seconds": 0.48308990000077756,
+          "median_paired_ratio": 0.2811441509279152,
+          "paired_ratio_range": [
+            0.21271630538468184,
+            0.30674781651794003
+          ],
+          "payload_sha256": "845e073187390e6bc708763f7cd78b626d557c92b39461849e7f123cf6b77576",
+          "state_id": "timing_D5_noise2.2_seed0_late",
+          "terminal_sha256": "37da4dd856f2d7bd78760e92dcbcf9058d18a2a286071bbaeca6856b07eb4d41",
+          "timing_seed": 6926974955185360031,
+          "treatment_median_seconds": 0.13580199999705656,
+          "treatment_tag": "S1"
+        }
+      ]
+    },
+    "S2": {
+      "median_of_state_median_ratios": 0.43387114765700374,
+      "state_ratio_range": [
+        0.17199645189485988,
+        1.1548742186489562
+      ],
+      "states": [
+        {
+          "baseline_median_seconds": 0.2784910999980639,
+          "median_paired_ratio": 0.17344602961516312,
+          "paired_ratio_range": [
+            0.16521270718663594,
+            0.19849061165398676
+          ],
+          "payload_sha256": "8cdad42d56c10a23137e30259a71393b26060a1452b6544d35510c94dae4aef4",
+          "state_id": "rosenbrock_D2_noise1_seed0_early",
+          "terminal_sha256": "16c61593c42731f42520e23461ea5d60630945d449ed9f2f9c5e214e6a7b0421",
+          "timing_seed": 5491220916388944790,
+          "treatment_median_seconds": 0.049394800000300165,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.45360689999870374,
+          "median_paired_ratio": 0.6386536448167836,
+          "paired_ratio_range": [
+            0.566509096587582,
+            0.8227068272677782
+          ],
+          "payload_sha256": "8b2fd7552fa19b5c494e783ef0666c410f3d99b2599e73d30dd30592965310d1",
+          "state_id": "rosenbrock_D2_noise1_seed0_late",
+          "terminal_sha256": "3175f5dadce900211e7366a8c5d4b612845d5e98ba43cfce558f32665ce62aed",
+          "timing_seed": 17622776442889287517,
+          "treatment_median_seconds": 0.2896976999982144,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.28150380000079167,
+          "median_paired_ratio": 0.17199645189485988,
+          "paired_ratio_range": [
+            0.1562186657298863,
+            0.2040705526149315
+          ],
+          "payload_sha256": "65995eda172fcffbbee0e1d31b3e2d8cab4799664ac3f7ef860a3f5d9c3d25d7",
+          "state_id": "rosenbrock_D2_noise3_seed0_early",
+          "terminal_sha256": "356c05b351b76d67ef84000042dc3d3a29c530fab6060906cd5b0f0a31017995",
+          "timing_seed": 2872318536356162359,
+          "treatment_median_seconds": 0.04865129999961937,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.4176091000008455,
+          "median_paired_ratio": 0.3354865690959812,
+          "paired_ratio_range": [
+            0.3105054463550177,
+            0.4545741085460401
+          ],
+          "payload_sha256": "ee0033c2decdd2b454b81368807fabbbcea0237e1b1c3f0aae40906a632b94ac",
+          "state_id": "rosenbrock_D2_noise3_seed0_late",
+          "terminal_sha256": "6d0edd362ca8481105917b7eb8e3dcf54d628276a1f0dec3b4d7c763448dacc6",
+          "timing_seed": 9536049191036101514,
+          "treatment_median_seconds": 0.1400307999974757,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.39355719999730354,
+          "median_paired_ratio": 0.17521137969522005,
+          "paired_ratio_range": [
+            0.16295832993507062,
+            0.18104375857135485
+          ],
+          "payload_sha256": "0b025180e5e85f503fe7453c4c0eb56087215b640c2dc18413fcf91371477b21",
+          "state_id": "logreg_D5_noise3_seed0_early",
+          "terminal_sha256": "bf9190a5552ab913951fbaf36e9ac2e5d1924b7309a5b270e22b8d1a8297d2f8",
+          "timing_seed": 12424624361826191321,
+          "treatment_median_seconds": 0.06895570000051521,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.568588500002079,
+          "median_paired_ratio": 0.44128057037626855,
+          "paired_ratio_range": [
+            0.4357307843234985,
+            0.6102894687609771
+          ],
+          "payload_sha256": "264ca41787a1b510370191859626544ad4f628d4724160d51c4a3191a72c0f24",
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "terminal_sha256": "0641a1d62fbde02a2df8c540d2b04dbd38fb6e8fa406116c5f3cd8cec867906b",
+          "timing_seed": 6909061148505111473,
+          "treatment_median_seconds": 0.2530756999985897,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.36182429999826127,
+          "median_paired_ratio": 1.1548742186489562,
+          "paired_ratio_range": [
+            1.1370747372968066,
+            1.8415053537993475
+          ],
+          "payload_sha256": "b963f9ff87ff754ff7dae8ba2afb9e6a5eca03c3ede727526d281fbe2f597733",
+          "state_id": "student_D8_noise3_seed0_early",
+          "terminal_sha256": "1aceb90e0ed70c8ebe87b7ba737e1b7f25ce0ddb609ff52f77984192cb62fc3d",
+          "timing_seed": 15934981614925544601,
+          "treatment_median_seconds": 0.42020119999870076,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.16027509999912581,
+          "median_paired_ratio": 0.5460311676689485,
+          "paired_ratio_range": [
+            0.4930459876104337,
+            0.5816894678044321
+          ],
+          "payload_sha256": "c966383d8a37d917d79edfbb0fdd5ea4aabeb3d6210e79c235b14852df1416cc",
+          "state_id": "student_D8_noise3_seed0_late",
+          "terminal_sha256": "37d0622a0711693b93e020638562e37b109e478e2a2f329475625ac2785a46dd",
+          "timing_seed": 7916015476480896999,
+          "treatment_median_seconds": 0.08710179999980028,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.5360356999990472,
+          "median_paired_ratio": 0.29302780150950086,
+          "paired_ratio_range": [
+            0.2618060029122137,
+            0.4300779132368879
+          ],
+          "payload_sha256": "cf48f4c6ce32d7b9090d11e98260e210a385966b883481469f0134b97687b450",
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+          "terminal_sha256": "f1ff6842aa082448829b7be0f38457b2fdf998321f828c50de060328c967759e",
+          "timing_seed": 7658412347176330315,
+          "treatment_median_seconds": 0.16409510000084992,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.48971679999885964,
+          "median_paired_ratio": 0.4642789104619855,
+          "paired_ratio_range": [
+            0.42517826701086864,
+            0.6192731811809137
+          ],
+          "payload_sha256": "8f39d856e9a47935607b38f6040261a07a6d11664d28c32f2de6fa06defe62f2",
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+          "terminal_sha256": "203056d32f9e1f71a4f660ef43e4e895220318120b1347449ac9e5b3a29f9c00",
+          "timing_seed": 5192787094235733533,
+          "treatment_median_seconds": 0.22549090000029537,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.40275089999704505,
+          "median_paired_ratio": 0.7157566044724514,
+          "paired_ratio_range": [
+            0.5571472243258847,
+            0.8404608457624252
+          ],
+          "payload_sha256": "a5d5d9a8f4f70daf22258c50a072edf5c66463c049193de2e7654c2d28fca2d3",
+          "state_id": "timing_D5_noise2.2_seed0_early",
+          "terminal_sha256": "b9f1e7ce199051df3972971cdfc5cdaed77a09c8b58a0b4984a5f28786733234",
+          "timing_seed": 17601085141178270382,
+          "treatment_median_seconds": 0.3038769000013417,
+          "treatment_tag": "S2"
+        },
+        {
+          "baseline_median_seconds": 0.4490088000020478,
+          "median_paired_ratio": 0.42646172493773893,
+          "paired_ratio_range": [
+            0.40236466586056924,
+            0.4374478734135839
+          ],
+          "payload_sha256": "09641e1ab1c5891fcde24a28d6ff171cd6d145a4518ea68735536b37cba3ccb5",
+          "state_id": "timing_D5_noise2.2_seed0_late",
+          "terminal_sha256": "19b388b905c4713c3e29a4410880ccf97a527ebcc1e55e8297e7b9ae7267a95d",
+          "timing_seed": 6459070990370335992,
+          "treatment_median_seconds": 0.18637949999902048,
+          "treatment_tag": "S2"
+        }
+      ]
+    },
+    "S3": {
+      "median_of_state_median_ratios": 0.8399089313503907,
+      "state_ratio_range": [
+        0.16310388355451216,
+        1.5036628917622659
+      ],
+      "states": [
+        {
+          "baseline_median_seconds": 0.2847333999998227,
+          "median_paired_ratio": 0.18410670870902074,
+          "paired_ratio_range": [
+            0.1503849477340227,
+            0.26086965682360475
+          ],
+          "payload_sha256": "59cdf09fd18099247233305ca257df473c7487ca463a7854ec97df89e4db3833",
+          "state_id": "rosenbrock_D2_noise1_seed0_early",
+          "terminal_sha256": "209f4c997751d05f326c6068427bec785a69fd206720f154caeedb0f4a335c3c",
+          "timing_seed": 127023280503823583,
+          "treatment_median_seconds": 0.0513483000031556,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.4620340000001306,
+          "median_paired_ratio": 1.5036628917622659,
+          "paired_ratio_range": [
+            0.25313768910502843,
+            1.533619167544586
+          ],
+          "payload_sha256": "0d000547867805819c89050821f249c84d2b6cd80923767dd4405cf461a83f9c",
+          "state_id": "rosenbrock_D2_noise1_seed0_late",
+          "terminal_sha256": "030bf7a81296c55ba2e3b650e2e00bfa5040fc0810a7664a0ed2ef185df795f7",
+          "timing_seed": 17327168332127250577,
+          "treatment_median_seconds": 0.6989385999986553,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.28819360000125016,
+          "median_paired_ratio": 0.16310388355451216,
+          "paired_ratio_range": [
+            0.15037555867390542,
+            0.2547043081231279
+          ],
+          "payload_sha256": "83f8ab2d0a084f8525fe2bf2d55b11977e5c4518f944ceb005a69a4fcea6a2dc",
+          "state_id": "rosenbrock_D2_noise3_seed0_early",
+          "terminal_sha256": "e0f1340e60f47551745dd3371f402493513faecef9ef2f9d7af56d7096ca16d6",
+          "timing_seed": 4605356808754947806,
+          "treatment_median_seconds": 0.04909310000221012,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.4174574000026041,
+          "median_paired_ratio": 0.8834561322774312,
+          "paired_ratio_range": [
+            0.5537908720915459,
+            1.0589710669564185
+          ],
+          "payload_sha256": "78f241396f4e5977adcaf35a4a7c5336457286e53a7929ddb04b47dddd069722",
+          "state_id": "rosenbrock_D2_noise3_seed0_late",
+          "terminal_sha256": "86c3b11aeca5b8b2142930f665aae97e988a58b490443adf3fe2de77812373cf",
+          "timing_seed": 167343459978890856,
+          "treatment_median_seconds": 0.36880529999689315,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.39374080000197864,
+          "median_paired_ratio": 0.482775724533987,
+          "paired_ratio_range": [
+            0.4291795481135241,
+            0.5432836560791765
+          ],
+          "payload_sha256": "98aa3c5bd02e9e243193ce471b043b79d24adb13df3b4915973f3f7f02aece5a",
+          "state_id": "logreg_D5_noise3_seed0_early",
+          "terminal_sha256": "9a0cb830b86e10694b3302be121bd1f17130aac6b4d78f480cb40b362c02b3b5",
+          "timing_seed": 17294676794260366486,
+          "treatment_median_seconds": 0.18854259999716305,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.5468806999997469,
+          "median_paired_ratio": 0.8688849653803865,
+          "paired_ratio_range": [
+            0.8061841343071608,
+            0.9327026689485084
+          ],
+          "payload_sha256": "b9fb35a433c06882bb53aafc91c91fb58c2396a3d0ed20b7e7cdc54e725790ee",
+          "state_id": "logreg_D5_noise3_seed0_late",
+          "terminal_sha256": "b5da27d0a9efebff0110e9cfff2c4ff4473d168a444faaae63b7683df9cc83b5",
+          "timing_seed": 15108013424671789913,
+          "treatment_median_seconds": 0.47720769999796175,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.3644499000001815,
+          "median_paired_ratio": 1.1539127874623594,
+          "paired_ratio_range": [
+            1.114065311139468,
+            1.2378817772568025
+          ],
+          "payload_sha256": "39cb1652ffa1b62b42323123c5fb722adf98cbb37e6419f7903165c66fb690d2",
+          "state_id": "student_D8_noise3_seed0_early",
+          "terminal_sha256": "491726c2312f2a8edfeed8b88c509de5bc0efd16fb22c5e71c561486d1d5db8f",
+          "timing_seed": 13959724936867232102,
+          "treatment_median_seconds": 0.42054339999958756,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.16128679999746964,
+          "median_paired_ratio": 0.8881016296248819,
+          "paired_ratio_range": [
+            0.8120062711951362,
+            0.9195945014753791
+          ],
+          "payload_sha256": "3c426464e7de7df3a93f1f05fb83b32b68da99aae2995f24362fc2c1da20f019",
+          "state_id": "student_D8_noise3_seed0_late",
+          "terminal_sha256": "07466a6499e6943a024f1a3d96735b88e01ce6be65c631c9537d8f69c72c24b4",
+          "timing_seed": 10604365628142694106,
+          "treatment_median_seconds": 0.14186049999989336,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.5423802000004798,
+          "median_paired_ratio": 0.5114416959660989,
+          "paired_ratio_range": [
+            0.4673375777089173,
+            0.5826710951049171
+          ],
+          "payload_sha256": "e87d675ca3d31e86d97031281f4424379d9ddd60fd46a2b31558b14431e397e2",
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+          "terminal_sha256": "cb33503af5730f8203ad8f4edbe4c269e7ef89c565762df5481f13777ef830a2",
+          "timing_seed": 15510699540582912123,
+          "treatment_median_seconds": 0.28470050000032643,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.48773399999845424,
+          "median_paired_ratio": 0.9081609817172418,
+          "paired_ratio_range": [
+            0.8737457302523494,
+            1.0684999498895424
+          ],
+          "payload_sha256": "079f9dfce770aaa8ae252228191718d733eb47e062965183e3e105ff18fb45bf",
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+          "terminal_sha256": "39a5dee23a3225178e457ea71681de67a0c968f83ed7ebc41ed3921c2d8bbdb7",
+          "timing_seed": 10342642402151068481,
+          "treatment_median_seconds": 0.4493177000003925,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.3964343999978155,
+          "median_paired_ratio": 0.7751522769124878,
+          "paired_ratio_range": [
+            0.6238902271740823,
+            0.9271251435327166
+          ],
+          "payload_sha256": "35788bb93791c85301a2c41f5a779e04918e1597ee820c0ce939f4325475a795",
+          "state_id": "timing_D5_noise2.2_seed0_early",
+          "terminal_sha256": "20576e205e462802c3d7918c07c6ba4d4cede35fa814cf90abbb632c41f00647",
+          "timing_seed": 15326876456200718192,
+          "treatment_median_seconds": 0.3197550999975647,
+          "treatment_tag": "S3"
+        },
+        {
+          "baseline_median_seconds": 0.44026769999982207,
+          "median_paired_ratio": 0.8109328973203949,
+          "paired_ratio_range": [
+            0.7683169363734539,
+            0.8889567720474154
+          ],
+          "payload_sha256": "fc57ae6f9e6b95fd452fb25fb865f52d3261453fd1d03cbae0e0290ee85242a6",
+          "state_id": "timing_D5_noise2.2_seed0_late",
+          "terminal_sha256": "6e1423352f36d9088812c9139c3d49c596544c4f4f2a7de6b8a895944b236925",
+          "timing_seed": 104148735866491897,
+          "treatment_median_seconds": 0.3615949000013643,
+          "treatment_tag": "S3"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"config":"exporter","seed":68,"exporter_gskl":0.08195843,"raised":false,"func_count":105,"iterations":20,"gskl":0.08201416,"mmtv":0.02845728,"elbo":-0.02751436,"elbo_sd":0.0005242898,"elbo_err":0.02751436,"moment_method":"affine","success_flag":true,"message":"Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.","wall_s":23.88}

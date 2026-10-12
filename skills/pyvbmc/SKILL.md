@@ -1,0 +1,54 @@
+---
+name: pyvbmc
+description: Find and apply PyVBMC documentation when fitting callable or PyMC models, troubleshooting a run, or interpreting posterior and model-evidence estimates.
+---
+
+# PyVBMC
+
+Use the documentation below to answer the user's question or work on their
+analysis. Read the sections relevant to the task; follow links for details
+as needed.
+
+Check the installed PyVBMC version before using version-specific features.
+This skill accompanies PyVBMC 1.5. Prefer documentation from the user's
+checkout when available. The source links below point to the
+[`main` branch](https://github.com/acerbilab/pyvbmc/tree/main), from which
+the published [documentation](https://acerbilab.org/pyvbmc/) is built.
+For another version, use the corresponding Git tag or branch and check API
+signatures and docstrings in that version.
+
+When the user reports a problem with PyVBMC, run `pyvbmc.check_for_updates()`
+(available from PyVBMC 1.5; an earlier version is not the latest release),
+which asks PyPI for the latest release: the fix may be released already. See
+the [`check_for_updates` API](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/api/functions/check_for_updates.rst).
+
+## What to read
+
+Paths are relative to the PyVBMC repository root. The links also work when
+this skill folder has been copied elsewhere.
+
+| Task | Read |
+| --- | --- |
+| Fit a model written in Torch or JAX; export the posterior to Torch or ArviZ | [Torch and JAX quickstart](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/quickstart.rst#bring-a-torch-or-jax-model-into-pyvbmc), its section “Use a fitted posterior downstream”, and [Example 9](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_9_torch_jax.ipynb). |
+| Fit a PyMC model | [PyMC quickstart](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/quickstart.rst#bring-a-pymc-model-into-pyvbmc), [`PyMCTarget` API](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/api/classes/pymc_target.rst), and [Example 8](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_8_pymc.ipynb). |
+| Decide whether PyVBMC fits the problem; install it | [README.md](https://github.com/acerbilab/pyvbmc/blob/main/README.md): “When should I use PyVBMC?” and “Installation”. |
+| Set up or adapt an analysis | [docsrc/source/quickstart.rst](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/quickstart.rst); consult the FAQ's “Input arguments” sections for target functions, priors, starting points and bounds. |
+| Handle noisy likelihoods | The FAQ's “Noisy target function” section and [Example 6](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_6_noisy_likelihoods.ipynb). |
+| Interpret results, compare runs, or troubleshoot | The FAQ's “Output arguments”, “Display” and “Troubleshooting” sections; [Example 4](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_4_validation.ipynb) for validation. |
+| Save or resume; combine posteriors | The FAQ's “How do I save and continue a run?” and “Can I combine the posteriors of several runs?”; [Example 7](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_7_stacking.ipynb) for S-VBMC. |
+| Migrate code that imports the standalone `svbmc` package | It is deprecated in favor of `pyvbmc.SVBMC`: the [`SVBMC` API page](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/api/classes/svbmc.rst), section “Differences from the standalone `svbmc` package”, with its migration table. |
+| Look up exact arguments, options or posterior methods | The [API reference](https://acerbilab.org/pyvbmc/documentation.html), with sources under `docsrc/source/api/` and implementation docstrings under `pyvbmc/`. The quickstart also covers vectorized targets and optional exports; the FAQ's “Troubleshooting” section covers reproducibility. |
+
+The FAQ is [docsrc/source/faq.md](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/faq.md).
+
+The lab's [model-fitting software](https://acerbilab.org/model-fitting/)
+also includes [PyBADS](https://acerbilab.org/pybads/) for point
+estimates or a starting point for PyVBMC, and
+[PyIBS](https://github.com/acerbilab/pyibs) for likelihood estimates from
+simulations.
+
+Before executing model evaluations or additional fits, establish the user's
+evaluation budget and account for any diagnostic calls within it. When
+working on an existing analysis, inspect its setup and saved results before
+deciding whether another run is needed. Link the relevant documentation in
+your explanation so the user can check the reasoning.

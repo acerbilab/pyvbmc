@@ -6,9 +6,7 @@ from scipy.stats import (
     multivariate_normal,
     multivariate_t,
     norm,
-)
-from scipy.stats._distn_infrastructure import (
-    rv_continuous_frozen as scipy_univariate,
+    rv_continuous,
 )
 
 from pyvbmc.priors import (
@@ -62,9 +60,9 @@ def test_convert_to_prior():
     prior_out = convert_to_prior(prior_in)
     assert isinstance(prior_out, Product)
     assert prior_out.D == 3
-    for (m, marginal) in enumerate(prior_out.marginals):
+    for m, marginal in enumerate(prior_out.marginals):
         assert isinstance(marginal, SciPy)
-        assert isinstance(marginal.distribution, scipy_univariate)
+        assert isinstance(marginal.distribution.dist, rv_continuous)
         assert marginal.distribution is scipy_univariate_priors[m]
         assert marginal.D == 1
 

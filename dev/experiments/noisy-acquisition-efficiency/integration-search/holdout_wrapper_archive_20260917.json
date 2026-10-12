@@ -1,0 +1,29 @@
+{
+  "authorization_sha256": "6a3febdd28be0cd648c1de318329e925c1b8c74e9b0538d3ce6b474faf0547b2",
+  "created_utc": "2026-09-17T13:01:05.071374+00:00",
+  "kind": "noisy_acq_search_e3_holdout_orchestration_archive",
+  "manifest_sha256": "c39a838411efe47102007a0e4c9ef15d86b0079aeee5e36fca5cc436aa3211fd",
+  "prior_archive_index_sha256": "4eb436d86b8118058e3dfe5a762007edcf63bdf947fdee68661b20531b7bac90",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "2b61c71992b2a1ac9dfac09bc6523fbd611467d3baa3c52852df018da26c9025",
+  "schema_version": 1,
+  "scripts": [
+    {
+      "name": "tmp_prepare_e3_holdout_resume.py",
+      "sha256": "6dffa9b7b488f82d108c9d88b515294daebeb89d4e5927f05046dbaf28f141f0"
+    },
+    {
+      "name": "tmp_update_local_holdout.py",
+      "sha256": "e847759aca53594e326a09c8ecc87e32b83b3823d81373392f6e475de65b48e5"
+    },
+    {
+      "name": "tmp_run_e3_holdout_judge_pilot.py",
+      "sha256": "6dd4f537836990f6a7cd60cc2db5e48bf89169fea8512a5268782a3170ddff48"
+    },
+    {
+      "name": "tmp_run_e3_holdout_judge_round.py",
+      "sha256": "e0a12afd28f9e74616184a82f00d1c6482fe11a3cbe28ac8fa130460e8fd8837"
+    }
+  ],
+  "selection_allocation_sha256": "3ea9c6243680ff8a20c4aaf92321b2bb7198a2fb12432e6cba7f4da40c248e7a"
+}

@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-16",
+  "numerical_source_commit": "e1ed79f57c5ba20fe73e8d54ab25838978e2fa9e",
+  "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+  "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "mpmath": "1.3.0",
+  "precision_digits": 50,
+  "blas_threads": 1,
+  "script": "dev/scripts/gp_tail_probe.py",
+  "script_sha256": "7e3c66b2eb57133c4c3b4c901ded4da09e4f8b10163f1aced7b9c37101ca8fed",
+  "pyvbmc_source_sha256": "9ab2e0c2c9ed71730756d4b4cc7b36164eee1092c249e6216d87b4f2c06c5fc3",
+  "gpyreg_source_sha256": "bb2b3ef6e4c533fcb42948724cf764c2a200e080d11c17da9e5712b8363a7d2a",
+  "input_sha256": {
+    "dev/scripts/runs/gp_box_20260916/uniform/rosenbrock_D2_noise3_svbmc_seed1000.npz": "9f2eb8555986825203bce0bce9ccb6c90994205c40cdcd73dd963d8b1c80c29e",
+    "dev/scripts/runs/gp_box_20260916/uniform/rosenbrock_D2_noise3_svbmc_seed1000.vbmc.pkl": "a97b6a91468c88e77c80ed28000c4b38ea3c4072b487760ba139e66e42c34e62",
+    "dev/scripts/runs/gp_box_20260916/uniform/rosenbrock_D2_noise3_svbmc_seed1001.npz": "496880b8fa33909d8d671a4769cd2a688b10776516f9fb45989e31d00925d702",
+    "dev/scripts/runs/gp_box_20260916/uniform/rosenbrock_D2_noise3_svbmc_seed1001.vbmc.pkl": "7f41e6bbdb64ff1019a2b48e6c298ea929bfcbcb4c4860d84e2ba90edf941405",
+    "dev/scripts/runs/gp_box_20260916/uniform/rosenbrock_D2_noise3_svbmc_seed1002.npz": "e48f48065d5a01e98b2e5b9ca364ae9b9f36827898e9888b1902a2ee67512c30",
+    "dev/scripts/runs/gp_box_20260916/uniform/rosenbrock_D2_noise3_svbmc_seed1002.vbmc.pkl": "9039c0abbb2dfefe2e3f424965143a3cccb9913db3dcce1938a5da612b79732f"
+  },
+  "output_sha256": {
+    "summary.json": "d171912d241d507d46c0eaf452dea9221cf4bca2b2ab4ddb06203cbcb9a234ee",
+    "refit.json": "ba26b70d69179948c5fdc9134b2f03947c533e03fe04e7cbea4886bf7b719444",
+    "1000/replay.json": "7ac27fe477c3f172062cf240bb0994b446f95675fbcdcf5f40c2426d452731e7",
+    "1000/precision.json": "494f257ae207d0313c2e1017b1772584e350d3d3e508baa8e6500629a6f30334",
+    "1001/replay.json": "d2195d4c5d181f1384d05ab83cd846d35cfc87abfae3012a8f74fea1cee9f71b",
+    "1001/precision.json": "636901ce2cdf5cbbd6f9d2ad52eae90585e31cbb7a2f1b5f51ad3d7272ba4982",
+    "1002/replay.json": "1812c96753e6e2c8a44e9592a78bd9f39f00bbcf02b05917d9f615d5b6c3f2c9",
+    "1002/precision.json": "2b193ebce79d81708d79867a142d503b17dfffd95f99be8147f6565bb9d6a73c"
+  },
+  "raw_captures": "dev/scripts/runs/gp_tail_20260916/final (see dev/scripts/runs/LOCAL.md)",
+  "validation": "All three five-call replays, next-iteration GP X/y/hyperparameters, VP mixture arrays and generator state agree exactly. All four final-script modes exercised. The final subsequent analysis-only edit adds original-coordinate GP means."
+}

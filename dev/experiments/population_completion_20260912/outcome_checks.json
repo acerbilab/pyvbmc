@@ -1,0 +1,24 @@
+{
+  "boost_decisions_independently_checked": 870,
+  "usable_gains": 33,
+  "usable_losses": 21,
+  "boost_usable_gains": 8,
+  "boost_usable_losses": 0,
+  "nonconverged": [
+    "cigar_D15_exhaust_seed0",
+    "cigar_D15_exhaust_seed1",
+    "cigar_D15_exhaust_seed2",
+    "cigar_D15_exhaust_seed3",
+    "cigar_D15_exhaust_seed4",
+    "cigar_D15_exhaust_seed5",
+    "cigar_D15_exhaust_seed6",
+    "cigar_D15_exhaust_seed7",
+    "cigar_D15_exhaust_seed8",
+    "cigar_D15_exhaust_seed9",
+    "rosenbrock_D2_noise3_seed13",
+    "rosenbrock_D2_noise3_seed25",
+    "rosenbrock_D2_noise3_seed3",
+    "rosenbrock_D2_noise3_seed5",
+    "rosenbrock_D2_noise3_seed8"
+  ]
+}

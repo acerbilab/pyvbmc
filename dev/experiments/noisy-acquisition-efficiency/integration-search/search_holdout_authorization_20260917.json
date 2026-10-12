@@ -1,0 +1,34 @@
+{
+  "approval_state": "fresh_explicit_user_authorization_supersedes_interrupted_request",
+  "archive_index_sha256": "4eb436d86b8118058e3dfe5a762007edcf63bdf947fdee68661b20531b7bac90",
+  "authorized_scope": {
+    "followed_by": "independent_judging_with_cost_gates",
+    "gp_fits": 0,
+    "selection_cells": 192,
+    "stage": "E3",
+    "target_evaluations": 0,
+    "treatments": [
+      "S0",
+      "S2"
+    ]
+  },
+  "created_utc": "2026-09-17T12:52:18.580274+00:00",
+  "development_gate_sha256": "6a5971a23bfbf414cd6c82841d7659fabec03ff09640e1c5b594d3c2ccf7cfd7",
+  "excluded_scope": [
+    "holdout_timing",
+    "holdout_memory",
+    "E4",
+    "E5"
+  ],
+  "finalist_selection_sha256": "98c5d773bd83c6b1954e7d5d5f79b83a47d196c6916925f335897350d66aab40",
+  "freezer_sha256": "d0a1fadd32243260f64135bd6c8400ecfc67029135edb8c5ceb3847846838e92",
+  "fresh_user_authorization_verbatim": "Run the E3 holdout",
+  "head": "9aefe1e780184174d5f241ce3a771cc945f1321e",
+  "kind": "noisy_acq_search_e3_holdout_authorization_successor",
+  "prior_pause_sha256": "272011e1f6e5b36d2bf654cff86ebd95a8e4998979d1cff3f2a565106cfa6ce6",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "6a3febdd28be0cd648c1de318329e925c1b8c74e9b0538d3ce6b474faf0547b2",
+  "reviewed_draft_sha256": "5755e0a6994a2c3d967b9b661daae7e3df7adcdb6eae6391dd51e96db291fecc",
+  "schema_version": 1,
+  "selection_runner_sha256": "5700e78243b06727f06040881bfc1a243197f44d6a856a1b3c548e351c9fbfec"
+}

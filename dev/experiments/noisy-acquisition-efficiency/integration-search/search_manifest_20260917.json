@@ -1,0 +1,4711 @@
+{
+  "allocation_cell_count": 72,
+  "allocation_cells": [
+    {
+      "allocation_seed": 15527502566419185565,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 11706027593928152208,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 2618717273546217298,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 11706027593928152208,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 14163362130964170148,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 5491220916388944790,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 17090638763402573625,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 5491220916388944790,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 11702196320552395177,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 127023280503823583,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 12335831698443104559,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 127023280503823583,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 16414800581718126524,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 12779988714776286027,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 2127369206638716026,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 12779988714776286027,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 18418678630913690142,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 17622776442889287517,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 15240569680091177177,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 17622776442889287517,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 12579823158471901439,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 17327168332127250577,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 6163426232018944272,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 17327168332127250577,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 1422850791875676414,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 4986347041840376306,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 6861585442822928421,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 4986347041840376306,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 16344093971052566003,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 2872318536356162359,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 787789919546371682,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 2872318536356162359,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 608292834765782900,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 4605356808754947806,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 2607567318024043764,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 4605356808754947806,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 17147015837769793469,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 6799548003299985269,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 9686978708933314668,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 6799548003299985269,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 7409470801540233392,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 9536049191036101514,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 15853313279317236114,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 9536049191036101514,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 13273046282984048825,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 167343459978890856,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 4247259054854753064,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 167343459978890856,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 7906674428680595489,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 2697164094075780154,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 6343174275130416469,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 2697164094075780154,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 546919782447787239,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 12424624361826191321,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 11811688051855904148,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 12424624361826191321,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 8850938942302666914,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 17294676794260366486,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 11226535558550899718,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 17294676794260366486,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 16833190796325009714,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 17794814708887548882,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 12975972777568735746,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 17794814708887548882,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 3668016361753069562,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 6909061148505111473,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 11867415856654920205,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 6909061148505111473,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 6504860464358627166,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 15108013424671789913,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 7519280767524878221,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 15108013424671789913,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 2151111527956225170,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 8368367248371917808,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 5025329754805209469,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 8368367248371917808,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 9731270407626854377,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 15934981614925544601,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 13718549681852713601,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 15934981614925544601,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 9124077512573663553,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 13959724936867232102,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 11829474211293637025,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 13959724936867232102,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 11701225705176005856,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 8894973568537496929,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 2756927880343014574,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 8894973568537496929,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 651750094737590156,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 7916015476480896999,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 17696007570158429827,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 7916015476480896999,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 9196227583599700110,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 10604365628142694106,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 12251863707552448058,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 10604365628142694106,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 9844923281283063200,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 17563772072030037529,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 538820458563811567,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 17563772072030037529,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 3883755062849713737,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 7658412347176330315,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 5199972699509799625,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 7658412347176330315,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 9975644977192359252,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 15510699540582912123,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 8591027946712201796,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 15510699540582912123,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 11148423287164735289,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 10720689804352417212,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 12705493676480393716,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 10720689804352417212,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 8111707525327922804,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 5192787094235733533,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 2622387149762411282,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 5192787094235733533,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 7836264860321146066,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 10342642402151068481,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 14821926229959229964,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 10342642402151068481,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 14396791692895419972,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17553064904989652522,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 8279728009043378935,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17553064904989652522,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 1999997505029327895,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17601085141178270382,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 16603590094421554166,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17601085141178270382,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 5291815290147385695,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 15326876456200718192,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 8723859749633020949,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 15326876456200718192,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 14370484234180871507,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 6926974955185360031,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 13664505768695570060,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 6926974955185360031,
+      "treatment_tag": "S1"
+    },
+    {
+      "allocation_seed": 4431243495820619325,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 6459070990370335992,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 2944855743751636825,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 6459070990370335992,
+      "treatment_tag": "S2"
+    },
+    {
+      "allocation_seed": 10651757293340139382,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 104148735866491897,
+      "treatment_tag": "S3"
+    },
+    {
+      "allocation_seed": 1476555873945824466,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 104148735866491897,
+      "treatment_tag": "S3"
+    }
+  ],
+  "capture_manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\manifest.json",
+  "capture_manifest_sha256": "964cf24b7307739e79e7861637c6b72145bfa0ee7cd4de06f862b8dc11a220b8",
+  "captures": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures",
+  "cell_count": 384,
+  "cells": [
+    {
+      "accurate_seed": 4155862097468283975,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4155862097468283975,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 4155862097468283975,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 4155862097468283975,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10638300587209189852,
+      "replicate": 1,
+      "search_seed": 9961867126105999725,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10638300587209189852,
+      "replicate": 1,
+      "search_seed": 9961867126105999725,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10638300587209189852,
+      "replicate": 1,
+      "search_seed": 9961867126105999725,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10638300587209189852,
+      "replicate": 1,
+      "search_seed": 9961867126105999725,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 865872704186443717,
+      "replicate": 2,
+      "search_seed": 18349589609960559203,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 865872704186443717,
+      "replicate": 2,
+      "search_seed": 18349589609960559203,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 865872704186443717,
+      "replicate": 2,
+      "search_seed": 18349589609960559203,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 865872704186443717,
+      "replicate": 2,
+      "search_seed": 18349589609960559203,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 929251964338425547,
+      "replicate": 3,
+      "search_seed": 7198537529138368266,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 929251964338425547,
+      "replicate": 3,
+      "search_seed": 7198537529138368266,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 929251964338425547,
+      "replicate": 3,
+      "search_seed": 7198537529138368266,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 929251964338425547,
+      "replicate": 3,
+      "search_seed": 7198537529138368266,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11203869121621678045,
+      "replicate": 4,
+      "search_seed": 16982183651319909007,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11203869121621678045,
+      "replicate": 4,
+      "search_seed": 16982183651319909007,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11203869121621678045,
+      "replicate": 4,
+      "search_seed": 16982183651319909007,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11203869121621678045,
+      "replicate": 4,
+      "search_seed": 16982183651319909007,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9302506743232119081,
+      "replicate": 5,
+      "search_seed": 1735860194718590247,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9302506743232119081,
+      "replicate": 5,
+      "search_seed": 1735860194718590247,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9302506743232119081,
+      "replicate": 5,
+      "search_seed": 1735860194718590247,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9302506743232119081,
+      "replicate": 5,
+      "search_seed": 1735860194718590247,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 14676025416465989729,
+      "replicate": 6,
+      "search_seed": 17489054092638055758,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14676025416465989729,
+      "replicate": 6,
+      "search_seed": 17489054092638055758,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 14676025416465989729,
+      "replicate": 6,
+      "search_seed": 17489054092638055758,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 14676025416465989729,
+      "replicate": 6,
+      "search_seed": 17489054092638055758,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11038413975773873507,
+      "replicate": 7,
+      "search_seed": 16310120593462205362,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11038413975773873507,
+      "replicate": 7,
+      "search_seed": 16310120593462205362,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11038413975773873507,
+      "replicate": 7,
+      "search_seed": 16310120593462205362,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11038413975773873507,
+      "replicate": 7,
+      "search_seed": 16310120593462205362,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 2072825956090741646,
+      "replicate": 1,
+      "search_seed": 9622386286717932042,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2072825956090741646,
+      "replicate": 1,
+      "search_seed": 9622386286717932042,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 2072825956090741646,
+      "replicate": 1,
+      "search_seed": 9622386286717932042,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 2072825956090741646,
+      "replicate": 1,
+      "search_seed": 9622386286717932042,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9033723614576593305,
+      "replicate": 2,
+      "search_seed": 7921038465677167227,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9033723614576593305,
+      "replicate": 2,
+      "search_seed": 7921038465677167227,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9033723614576593305,
+      "replicate": 2,
+      "search_seed": 7921038465677167227,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9033723614576593305,
+      "replicate": 2,
+      "search_seed": 7921038465677167227,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 4869191322608775222,
+      "replicate": 3,
+      "search_seed": 10666864834001992663,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4869191322608775222,
+      "replicate": 3,
+      "search_seed": 10666864834001992663,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 4869191322608775222,
+      "replicate": 3,
+      "search_seed": 10666864834001992663,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 4869191322608775222,
+      "replicate": 3,
+      "search_seed": 10666864834001992663,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 2171252290503712618,
+      "replicate": 4,
+      "search_seed": 11547720013932479351,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2171252290503712618,
+      "replicate": 4,
+      "search_seed": 11547720013932479351,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 2171252290503712618,
+      "replicate": 4,
+      "search_seed": 11547720013932479351,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 2171252290503712618,
+      "replicate": 4,
+      "search_seed": 11547720013932479351,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10450844563095371818,
+      "replicate": 5,
+      "search_seed": 209631291263124584,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10450844563095371818,
+      "replicate": 5,
+      "search_seed": 209631291263124584,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10450844563095371818,
+      "replicate": 5,
+      "search_seed": 209631291263124584,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10450844563095371818,
+      "replicate": 5,
+      "search_seed": 209631291263124584,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12334459358623443797,
+      "replicate": 6,
+      "search_seed": 2840888232625740249,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12334459358623443797,
+      "replicate": 6,
+      "search_seed": 2840888232625740249,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12334459358623443797,
+      "replicate": 6,
+      "search_seed": 2840888232625740249,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12334459358623443797,
+      "replicate": 6,
+      "search_seed": 2840888232625740249,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 1097101510714541943,
+      "replicate": 7,
+      "search_seed": 8002844855635427591,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1097101510714541943,
+      "replicate": 7,
+      "search_seed": 8002844855635427591,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 1097101510714541943,
+      "replicate": 7,
+      "search_seed": 8002844855635427591,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 1097101510714541943,
+      "replicate": 7,
+      "search_seed": 8002844855635427591,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 16584509763626366837,
+      "replicate": 1,
+      "search_seed": 8989403935189163300,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16584509763626366837,
+      "replicate": 1,
+      "search_seed": 8989403935189163300,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 16584509763626366837,
+      "replicate": 1,
+      "search_seed": 8989403935189163300,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 16584509763626366837,
+      "replicate": 1,
+      "search_seed": 8989403935189163300,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11878860576791141979,
+      "replicate": 2,
+      "search_seed": 17815864246472363559,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11878860576791141979,
+      "replicate": 2,
+      "search_seed": 17815864246472363559,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11878860576791141979,
+      "replicate": 2,
+      "search_seed": 17815864246472363559,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11878860576791141979,
+      "replicate": 2,
+      "search_seed": 17815864246472363559,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9010026238270650964,
+      "replicate": 3,
+      "search_seed": 16069590122726475154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9010026238270650964,
+      "replicate": 3,
+      "search_seed": 16069590122726475154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9010026238270650964,
+      "replicate": 3,
+      "search_seed": 16069590122726475154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9010026238270650964,
+      "replicate": 3,
+      "search_seed": 16069590122726475154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 17287773598556100982,
+      "replicate": 4,
+      "search_seed": 17716982168687563378,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17287773598556100982,
+      "replicate": 4,
+      "search_seed": 17716982168687563378,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 17287773598556100982,
+      "replicate": 4,
+      "search_seed": 17716982168687563378,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 17287773598556100982,
+      "replicate": 4,
+      "search_seed": 17716982168687563378,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 14661835145555827041,
+      "replicate": 5,
+      "search_seed": 17471879924701671326,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14661835145555827041,
+      "replicate": 5,
+      "search_seed": 17471879924701671326,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 14661835145555827041,
+      "replicate": 5,
+      "search_seed": 17471879924701671326,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 14661835145555827041,
+      "replicate": 5,
+      "search_seed": 17471879924701671326,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 2331014245929571365,
+      "replicate": 6,
+      "search_seed": 9186453488390080852,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2331014245929571365,
+      "replicate": 6,
+      "search_seed": 9186453488390080852,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 2331014245929571365,
+      "replicate": 6,
+      "search_seed": 9186453488390080852,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 2331014245929571365,
+      "replicate": 6,
+      "search_seed": 9186453488390080852,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15294478203672490934,
+      "replicate": 7,
+      "search_seed": 12705110517357148154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15294478203672490934,
+      "replicate": 7,
+      "search_seed": 12705110517357148154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15294478203672490934,
+      "replicate": 7,
+      "search_seed": 12705110517357148154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15294478203672490934,
+      "replicate": 7,
+      "search_seed": 12705110517357148154,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12747534038747758543,
+      "replicate": 1,
+      "search_seed": 13127537615480962700,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12747534038747758543,
+      "replicate": 1,
+      "search_seed": 13127537615480962700,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12747534038747758543,
+      "replicate": 1,
+      "search_seed": 13127537615480962700,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12747534038747758543,
+      "replicate": 1,
+      "search_seed": 13127537615480962700,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 825176314826583313,
+      "replicate": 2,
+      "search_seed": 16132805621279185171,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 825176314826583313,
+      "replicate": 2,
+      "search_seed": 16132805621279185171,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 825176314826583313,
+      "replicate": 2,
+      "search_seed": 16132805621279185171,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 825176314826583313,
+      "replicate": 2,
+      "search_seed": 16132805621279185171,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15282381825454461773,
+      "replicate": 3,
+      "search_seed": 5614415770932842284,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15282381825454461773,
+      "replicate": 3,
+      "search_seed": 5614415770932842284,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15282381825454461773,
+      "replicate": 3,
+      "search_seed": 5614415770932842284,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15282381825454461773,
+      "replicate": 3,
+      "search_seed": 5614415770932842284,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 13930910213642658166,
+      "replicate": 4,
+      "search_seed": 9182118203211765488,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13930910213642658166,
+      "replicate": 4,
+      "search_seed": 9182118203211765488,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 13930910213642658166,
+      "replicate": 4,
+      "search_seed": 9182118203211765488,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 13930910213642658166,
+      "replicate": 4,
+      "search_seed": 9182118203211765488,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9709971186024893420,
+      "replicate": 5,
+      "search_seed": 9521696792975560158,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9709971186024893420,
+      "replicate": 5,
+      "search_seed": 9521696792975560158,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9709971186024893420,
+      "replicate": 5,
+      "search_seed": 9521696792975560158,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9709971186024893420,
+      "replicate": 5,
+      "search_seed": 9521696792975560158,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 3821813582248739249,
+      "replicate": 6,
+      "search_seed": 12275804298114454705,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3821813582248739249,
+      "replicate": 6,
+      "search_seed": 12275804298114454705,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 3821813582248739249,
+      "replicate": 6,
+      "search_seed": 12275804298114454705,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 3821813582248739249,
+      "replicate": 6,
+      "search_seed": 12275804298114454705,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 684223372040192564,
+      "replicate": 7,
+      "search_seed": 2064683360133059658,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 684223372040192564,
+      "replicate": 7,
+      "search_seed": 2064683360133059658,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 684223372040192564,
+      "replicate": 7,
+      "search_seed": 2064683360133059658,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 684223372040192564,
+      "replicate": 7,
+      "search_seed": 2064683360133059658,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10276548731385118059,
+      "replicate": 1,
+      "search_seed": 4385475585746295707,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10276548731385118059,
+      "replicate": 1,
+      "search_seed": 4385475585746295707,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10276548731385118059,
+      "replicate": 1,
+      "search_seed": 4385475585746295707,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10276548731385118059,
+      "replicate": 1,
+      "search_seed": 4385475585746295707,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15911472064678482181,
+      "replicate": 2,
+      "search_seed": 4966840746020764306,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15911472064678482181,
+      "replicate": 2,
+      "search_seed": 4966840746020764306,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15911472064678482181,
+      "replicate": 2,
+      "search_seed": 4966840746020764306,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15911472064678482181,
+      "replicate": 2,
+      "search_seed": 4966840746020764306,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 17214248429238440505,
+      "replicate": 3,
+      "search_seed": 13262439130486540879,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17214248429238440505,
+      "replicate": 3,
+      "search_seed": 13262439130486540879,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 17214248429238440505,
+      "replicate": 3,
+      "search_seed": 13262439130486540879,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 17214248429238440505,
+      "replicate": 3,
+      "search_seed": 13262439130486540879,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 101724190912463607,
+      "replicate": 4,
+      "search_seed": 7343640234364497633,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 101724190912463607,
+      "replicate": 4,
+      "search_seed": 7343640234364497633,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 101724190912463607,
+      "replicate": 4,
+      "search_seed": 7343640234364497633,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 101724190912463607,
+      "replicate": 4,
+      "search_seed": 7343640234364497633,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5713071932143845626,
+      "replicate": 5,
+      "search_seed": 4305332176994614771,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5713071932143845626,
+      "replicate": 5,
+      "search_seed": 4305332176994614771,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5713071932143845626,
+      "replicate": 5,
+      "search_seed": 4305332176994614771,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5713071932143845626,
+      "replicate": 5,
+      "search_seed": 4305332176994614771,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5342290508358308919,
+      "replicate": 6,
+      "search_seed": 12799774025514744016,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5342290508358308919,
+      "replicate": 6,
+      "search_seed": 12799774025514744016,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5342290508358308919,
+      "replicate": 6,
+      "search_seed": 12799774025514744016,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5342290508358308919,
+      "replicate": 6,
+      "search_seed": 12799774025514744016,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15963735777613011531,
+      "replicate": 7,
+      "search_seed": 14399310165621945370,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15963735777613011531,
+      "replicate": 7,
+      "search_seed": 14399310165621945370,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15963735777613011531,
+      "replicate": 7,
+      "search_seed": 14399310165621945370,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15963735777613011531,
+      "replicate": 7,
+      "search_seed": 14399310165621945370,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10152359192679583835,
+      "replicate": 1,
+      "search_seed": 12517676481334214722,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10152359192679583835,
+      "replicate": 1,
+      "search_seed": 12517676481334214722,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10152359192679583835,
+      "replicate": 1,
+      "search_seed": 12517676481334214722,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10152359192679583835,
+      "replicate": 1,
+      "search_seed": 12517676481334214722,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 3583031507863575973,
+      "replicate": 2,
+      "search_seed": 1916780336369787844,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3583031507863575973,
+      "replicate": 2,
+      "search_seed": 1916780336369787844,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 3583031507863575973,
+      "replicate": 2,
+      "search_seed": 1916780336369787844,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 3583031507863575973,
+      "replicate": 2,
+      "search_seed": 1916780336369787844,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12948297153288511553,
+      "replicate": 3,
+      "search_seed": 16220246143613734089,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12948297153288511553,
+      "replicate": 3,
+      "search_seed": 16220246143613734089,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12948297153288511553,
+      "replicate": 3,
+      "search_seed": 16220246143613734089,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12948297153288511553,
+      "replicate": 3,
+      "search_seed": 16220246143613734089,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 13104863178135310431,
+      "replicate": 4,
+      "search_seed": 1117869970345116428,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13104863178135310431,
+      "replicate": 4,
+      "search_seed": 1117869970345116428,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 13104863178135310431,
+      "replicate": 4,
+      "search_seed": 1117869970345116428,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 13104863178135310431,
+      "replicate": 4,
+      "search_seed": 1117869970345116428,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9476623262436300282,
+      "replicate": 5,
+      "search_seed": 2037484304768747835,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9476623262436300282,
+      "replicate": 5,
+      "search_seed": 2037484304768747835,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9476623262436300282,
+      "replicate": 5,
+      "search_seed": 2037484304768747835,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9476623262436300282,
+      "replicate": 5,
+      "search_seed": 2037484304768747835,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5845685952805664768,
+      "replicate": 6,
+      "search_seed": 9472657567367322579,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5845685952805664768,
+      "replicate": 6,
+      "search_seed": 9472657567367322579,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5845685952805664768,
+      "replicate": 6,
+      "search_seed": 9472657567367322579,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5845685952805664768,
+      "replicate": 6,
+      "search_seed": 9472657567367322579,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 2194229790638888654,
+      "replicate": 7,
+      "search_seed": 13190896942814604487,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2194229790638888654,
+      "replicate": 7,
+      "search_seed": 13190896942814604487,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 2194229790638888654,
+      "replicate": 7,
+      "search_seed": 13190896942814604487,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 2194229790638888654,
+      "replicate": 7,
+      "search_seed": 13190896942814604487,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6583026281623056010,
+      "replicate": 1,
+      "search_seed": 14869720532996049416,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6583026281623056010,
+      "replicate": 1,
+      "search_seed": 14869720532996049416,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6583026281623056010,
+      "replicate": 1,
+      "search_seed": 14869720532996049416,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6583026281623056010,
+      "replicate": 1,
+      "search_seed": 14869720532996049416,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7703322534212641633,
+      "replicate": 2,
+      "search_seed": 3546223676316803159,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7703322534212641633,
+      "replicate": 2,
+      "search_seed": 3546223676316803159,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7703322534212641633,
+      "replicate": 2,
+      "search_seed": 3546223676316803159,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7703322534212641633,
+      "replicate": 2,
+      "search_seed": 3546223676316803159,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 4553424411476341640,
+      "replicate": 3,
+      "search_seed": 4451136836313141427,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4553424411476341640,
+      "replicate": 3,
+      "search_seed": 4451136836313141427,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 4553424411476341640,
+      "replicate": 3,
+      "search_seed": 4451136836313141427,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 4553424411476341640,
+      "replicate": 3,
+      "search_seed": 4451136836313141427,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6690808301592783183,
+      "replicate": 4,
+      "search_seed": 15551115960892852376,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6690808301592783183,
+      "replicate": 4,
+      "search_seed": 15551115960892852376,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6690808301592783183,
+      "replicate": 4,
+      "search_seed": 15551115960892852376,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6690808301592783183,
+      "replicate": 4,
+      "search_seed": 15551115960892852376,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9559016528259348751,
+      "replicate": 5,
+      "search_seed": 10756088259462582566,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9559016528259348751,
+      "replicate": 5,
+      "search_seed": 10756088259462582566,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9559016528259348751,
+      "replicate": 5,
+      "search_seed": 10756088259462582566,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9559016528259348751,
+      "replicate": 5,
+      "search_seed": 10756088259462582566,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5971792832214357640,
+      "replicate": 6,
+      "search_seed": 2793234870363731148,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5971792832214357640,
+      "replicate": 6,
+      "search_seed": 2793234870363731148,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5971792832214357640,
+      "replicate": 6,
+      "search_seed": 2793234870363731148,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5971792832214357640,
+      "replicate": 6,
+      "search_seed": 2793234870363731148,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5345876792279286302,
+      "replicate": 7,
+      "search_seed": 12518905475608248931,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5345876792279286302,
+      "replicate": 7,
+      "search_seed": 12518905475608248931,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5345876792279286302,
+      "replicate": 7,
+      "search_seed": 12518905475608248931,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5345876792279286302,
+      "replicate": 7,
+      "search_seed": 12518905475608248931,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15940923218228579604,
+      "replicate": 1,
+      "search_seed": 3727505602449262443,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15940923218228579604,
+      "replicate": 1,
+      "search_seed": 3727505602449262443,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15940923218228579604,
+      "replicate": 1,
+      "search_seed": 3727505602449262443,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15940923218228579604,
+      "replicate": 1,
+      "search_seed": 3727505602449262443,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6184563708736959546,
+      "replicate": 2,
+      "search_seed": 14205124891262635377,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6184563708736959546,
+      "replicate": 2,
+      "search_seed": 14205124891262635377,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6184563708736959546,
+      "replicate": 2,
+      "search_seed": 14205124891262635377,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6184563708736959546,
+      "replicate": 2,
+      "search_seed": 14205124891262635377,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10972852537388967939,
+      "replicate": 3,
+      "search_seed": 6985180436186278942,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10972852537388967939,
+      "replicate": 3,
+      "search_seed": 6985180436186278942,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10972852537388967939,
+      "replicate": 3,
+      "search_seed": 6985180436186278942,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10972852537388967939,
+      "replicate": 3,
+      "search_seed": 6985180436186278942,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9905522401016288229,
+      "replicate": 4,
+      "search_seed": 4896889699531212754,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9905522401016288229,
+      "replicate": 4,
+      "search_seed": 4896889699531212754,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9905522401016288229,
+      "replicate": 4,
+      "search_seed": 4896889699531212754,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9905522401016288229,
+      "replicate": 4,
+      "search_seed": 4896889699531212754,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 9414777350485979259,
+      "replicate": 5,
+      "search_seed": 15182836689573381190,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9414777350485979259,
+      "replicate": 5,
+      "search_seed": 15182836689573381190,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 9414777350485979259,
+      "replicate": 5,
+      "search_seed": 15182836689573381190,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 9414777350485979259,
+      "replicate": 5,
+      "search_seed": 15182836689573381190,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6649166646177526427,
+      "replicate": 6,
+      "search_seed": 4074015572015305495,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6649166646177526427,
+      "replicate": 6,
+      "search_seed": 4074015572015305495,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6649166646177526427,
+      "replicate": 6,
+      "search_seed": 4074015572015305495,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6649166646177526427,
+      "replicate": 6,
+      "search_seed": 4074015572015305495,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12544582541463462377,
+      "replicate": 7,
+      "search_seed": 12634800174629013409,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12544582541463462377,
+      "replicate": 7,
+      "search_seed": 12634800174629013409,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12544582541463462377,
+      "replicate": 7,
+      "search_seed": 12634800174629013409,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12544582541463462377,
+      "replicate": 7,
+      "search_seed": 12634800174629013409,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 16999149421489527946,
+      "replicate": 1,
+      "search_seed": 16180918611288694991,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16999149421489527946,
+      "replicate": 1,
+      "search_seed": 16180918611288694991,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 16999149421489527946,
+      "replicate": 1,
+      "search_seed": 16180918611288694991,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 16999149421489527946,
+      "replicate": 1,
+      "search_seed": 16180918611288694991,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 14198254854525852226,
+      "replicate": 2,
+      "search_seed": 16465445706209303110,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14198254854525852226,
+      "replicate": 2,
+      "search_seed": 16465445706209303110,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 14198254854525852226,
+      "replicate": 2,
+      "search_seed": 16465445706209303110,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 14198254854525852226,
+      "replicate": 2,
+      "search_seed": 16465445706209303110,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12000765814561704541,
+      "replicate": 3,
+      "search_seed": 689181765703428550,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12000765814561704541,
+      "replicate": 3,
+      "search_seed": 689181765703428550,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12000765814561704541,
+      "replicate": 3,
+      "search_seed": 689181765703428550,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12000765814561704541,
+      "replicate": 3,
+      "search_seed": 689181765703428550,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 16269510933081538802,
+      "replicate": 4,
+      "search_seed": 17001028524626682247,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16269510933081538802,
+      "replicate": 4,
+      "search_seed": 17001028524626682247,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 16269510933081538802,
+      "replicate": 4,
+      "search_seed": 17001028524626682247,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 16269510933081538802,
+      "replicate": 4,
+      "search_seed": 17001028524626682247,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7976602679314086566,
+      "replicate": 5,
+      "search_seed": 3120879285004808531,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7976602679314086566,
+      "replicate": 5,
+      "search_seed": 3120879285004808531,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7976602679314086566,
+      "replicate": 5,
+      "search_seed": 3120879285004808531,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7976602679314086566,
+      "replicate": 5,
+      "search_seed": 3120879285004808531,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10138739288290278130,
+      "replicate": 6,
+      "search_seed": 5190704300741961375,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10138739288290278130,
+      "replicate": 6,
+      "search_seed": 5190704300741961375,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10138739288290278130,
+      "replicate": 6,
+      "search_seed": 5190704300741961375,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10138739288290278130,
+      "replicate": 6,
+      "search_seed": 5190704300741961375,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7887009886841244643,
+      "replicate": 7,
+      "search_seed": 9177572445180218147,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7887009886841244643,
+      "replicate": 7,
+      "search_seed": 9177572445180218147,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7887009886841244643,
+      "replicate": 7,
+      "search_seed": 9177572445180218147,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7887009886841244643,
+      "replicate": 7,
+      "search_seed": 9177572445180218147,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 2004850017383603376,
+      "replicate": 1,
+      "search_seed": 2690607234943467334,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2004850017383603376,
+      "replicate": 1,
+      "search_seed": 2690607234943467334,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 2004850017383603376,
+      "replicate": 1,
+      "search_seed": 2690607234943467334,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 2004850017383603376,
+      "replicate": 1,
+      "search_seed": 2690607234943467334,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 16661396619071653369,
+      "replicate": 2,
+      "search_seed": 12877715383267818248,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16661396619071653369,
+      "replicate": 2,
+      "search_seed": 12877715383267818248,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 16661396619071653369,
+      "replicate": 2,
+      "search_seed": 12877715383267818248,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 16661396619071653369,
+      "replicate": 2,
+      "search_seed": 12877715383267818248,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 13027609209409255266,
+      "replicate": 3,
+      "search_seed": 18173175525924316316,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13027609209409255266,
+      "replicate": 3,
+      "search_seed": 18173175525924316316,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 13027609209409255266,
+      "replicate": 3,
+      "search_seed": 18173175525924316316,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 13027609209409255266,
+      "replicate": 3,
+      "search_seed": 18173175525924316316,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 2692866759927163332,
+      "replicate": 4,
+      "search_seed": 13354081234498510176,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2692866759927163332,
+      "replicate": 4,
+      "search_seed": 13354081234498510176,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 2692866759927163332,
+      "replicate": 4,
+      "search_seed": 13354081234498510176,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 2692866759927163332,
+      "replicate": 4,
+      "search_seed": 13354081234498510176,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 17783529789265968752,
+      "replicate": 5,
+      "search_seed": 15548206858387156507,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17783529789265968752,
+      "replicate": 5,
+      "search_seed": 15548206858387156507,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 17783529789265968752,
+      "replicate": 5,
+      "search_seed": 15548206858387156507,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 17783529789265968752,
+      "replicate": 5,
+      "search_seed": 15548206858387156507,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12270573686947312446,
+      "replicate": 6,
+      "search_seed": 3152755992325350386,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12270573686947312446,
+      "replicate": 6,
+      "search_seed": 3152755992325350386,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12270573686947312446,
+      "replicate": 6,
+      "search_seed": 3152755992325350386,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12270573686947312446,
+      "replicate": 6,
+      "search_seed": 3152755992325350386,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6349941675431175250,
+      "replicate": 7,
+      "search_seed": 16068354117294514557,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6349941675431175250,
+      "replicate": 7,
+      "search_seed": 16068354117294514557,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6349941675431175250,
+      "replicate": 7,
+      "search_seed": 16068354117294514557,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6349941675431175250,
+      "replicate": 7,
+      "search_seed": 16068354117294514557,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11997124645756851572,
+      "replicate": 1,
+      "search_seed": 6033890603443984354,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11997124645756851572,
+      "replicate": 1,
+      "search_seed": 6033890603443984354,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11997124645756851572,
+      "replicate": 1,
+      "search_seed": 6033890603443984354,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11997124645756851572,
+      "replicate": 1,
+      "search_seed": 6033890603443984354,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 12220694744353586503,
+      "replicate": 2,
+      "search_seed": 9379161262590119602,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12220694744353586503,
+      "replicate": 2,
+      "search_seed": 9379161262590119602,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 12220694744353586503,
+      "replicate": 2,
+      "search_seed": 9379161262590119602,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 12220694744353586503,
+      "replicate": 2,
+      "search_seed": 9379161262590119602,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 13694020307301742870,
+      "replicate": 3,
+      "search_seed": 17427613614468901292,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13694020307301742870,
+      "replicate": 3,
+      "search_seed": 17427613614468901292,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 13694020307301742870,
+      "replicate": 3,
+      "search_seed": 17427613614468901292,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 13694020307301742870,
+      "replicate": 3,
+      "search_seed": 17427613614468901292,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 16626291662309757266,
+      "replicate": 4,
+      "search_seed": 11599679422708441156,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16626291662309757266,
+      "replicate": 4,
+      "search_seed": 11599679422708441156,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 16626291662309757266,
+      "replicate": 4,
+      "search_seed": 11599679422708441156,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 16626291662309757266,
+      "replicate": 4,
+      "search_seed": 11599679422708441156,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 17980430477033181974,
+      "replicate": 5,
+      "search_seed": 14590557163475584523,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17980430477033181974,
+      "replicate": 5,
+      "search_seed": 14590557163475584523,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 17980430477033181974,
+      "replicate": 5,
+      "search_seed": 14590557163475584523,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 17980430477033181974,
+      "replicate": 5,
+      "search_seed": 14590557163475584523,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5666925274391791290,
+      "replicate": 6,
+      "search_seed": 10934791087634840652,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5666925274391791290,
+      "replicate": 6,
+      "search_seed": 10934791087634840652,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5666925274391791290,
+      "replicate": 6,
+      "search_seed": 10934791087634840652,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5666925274391791290,
+      "replicate": 6,
+      "search_seed": 10934791087634840652,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11791856789317864473,
+      "replicate": 7,
+      "search_seed": 2377583648217657930,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11791856789317864473,
+      "replicate": 7,
+      "search_seed": 2377583648217657930,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11791856789317864473,
+      "replicate": 7,
+      "search_seed": 2377583648217657930,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11791856789317864473,
+      "replicate": 7,
+      "search_seed": 2377583648217657930,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 1890923803474274724,
+      "replicate": 1,
+      "search_seed": 10858706423782822082,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1890923803474274724,
+      "replicate": 1,
+      "search_seed": 10858706423782822082,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 1890923803474274724,
+      "replicate": 1,
+      "search_seed": 10858706423782822082,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 1890923803474274724,
+      "replicate": 1,
+      "search_seed": 10858706423782822082,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5198923568040910235,
+      "replicate": 2,
+      "search_seed": 3167099749260742207,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5198923568040910235,
+      "replicate": 2,
+      "search_seed": 3167099749260742207,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5198923568040910235,
+      "replicate": 2,
+      "search_seed": 3167099749260742207,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5198923568040910235,
+      "replicate": 2,
+      "search_seed": 3167099749260742207,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15921221556853707689,
+      "replicate": 3,
+      "search_seed": 9836089193098348121,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15921221556853707689,
+      "replicate": 3,
+      "search_seed": 9836089193098348121,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15921221556853707689,
+      "replicate": 3,
+      "search_seed": 9836089193098348121,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15921221556853707689,
+      "replicate": 3,
+      "search_seed": 9836089193098348121,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 10010031577174380394,
+      "replicate": 4,
+      "search_seed": 1529078017978540435,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10010031577174380394,
+      "replicate": 4,
+      "search_seed": 1529078017978540435,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 10010031577174380394,
+      "replicate": 4,
+      "search_seed": 1529078017978540435,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 10010031577174380394,
+      "replicate": 4,
+      "search_seed": 1529078017978540435,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 15276277654301381110,
+      "replicate": 5,
+      "search_seed": 3958682337313854197,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15276277654301381110,
+      "replicate": 5,
+      "search_seed": 3958682337313854197,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 15276277654301381110,
+      "replicate": 5,
+      "search_seed": 3958682337313854197,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 15276277654301381110,
+      "replicate": 5,
+      "search_seed": 3958682337313854197,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7301100490809807963,
+      "replicate": 6,
+      "search_seed": 12079147803919777913,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7301100490809807963,
+      "replicate": 6,
+      "search_seed": 12079147803919777913,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7301100490809807963,
+      "replicate": 6,
+      "search_seed": 12079147803919777913,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7301100490809807963,
+      "replicate": 6,
+      "search_seed": 12079147803919777913,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6710525150798870635,
+      "replicate": 7,
+      "search_seed": 8525053455928116170,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6710525150798870635,
+      "replicate": 7,
+      "search_seed": 8525053455928116170,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6710525150798870635,
+      "replicate": 7,
+      "search_seed": 8525053455928116170,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6710525150798870635,
+      "replicate": 7,
+      "search_seed": 8525053455928116170,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S3"
+    }
+  ],
+  "direct_control_timing": {
+    "classification": "not_applicable_duplicate_rule",
+    "reason": "The frozen original arm already uses ordinary MC1600."
+  },
+  "expected_state_count": 12,
+  "holdout_locked": false,
+  "identity": {
+    "integration_identity": {
+      "capture_identity": {
+        "data_hashes": {
+          "dev/scripts/data/multisensory.npz": "caf62b205a67bbb3a53d2650c0cf98ddcd4dc1c15da72e31d3c1f97256db982f",
+          "dev/scripts/data/timing.npz": "9fb1c08afa2b52810dafb04d62ac0166c502ae60b0b18a2741f89efd75e5a9cc",
+          "dev/scripts/data/truths/multisensory_s1.npz": "f11bc97cef7fe5820cd43d4b7fed6b6885f323abb1892241bfb16cf6e4707c04",
+          "dev/scripts/data/truths/multisensory_s2.npz": "975ec0b6a8c5b6676bcc01eb478863adc9cde45b30dfdcfe63771dee913638ff",
+          "dev/scripts/data/truths/timing.npz": "1366987f73dd30de1f3cfa0c0940e2113fd34f9283c6aa367779d50b3d245a0d"
+        },
+        "dependencies": {
+          "cma": "4.4.4",
+          "gpyreg": "1.2.0",
+          "numpy": "2.5.2",
+          "pyvbmc": "1.0.5.dev156+g4d91a5e61",
+          "scipy": "1.18.1"
+        },
+        "gpyreg": {
+          "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "import": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg\\__init__.py",
+          "source_hashes": {
+            "gpyreg/__init__.py": "d2683e21c965713c2f68027984514e3c070eea4540c6ab0aa1acab2833976927",
+            "gpyreg/covariance_functions.py": "482e8c1690e8430c46fa88235bb34a178fc5c8fae5c0296240f50c3120a4a932",
+            "gpyreg/f_min_fill.py": "b3bc9360e3cbab518ce710d153c1fc8e3d0344aeee85391ccad22a13e30221bd",
+            "gpyreg/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+            "gpyreg/gaussian_process.py": "fd15bae3d70ef0053e5500e359f814f98655678d6690ea3905e80e2578795df8",
+            "gpyreg/isotropic_covariance_functions.py": "cd48ba78624fe971a57b4b113d530d58e2a5ba65094397c1ec6f86ed8eeb1832",
+            "gpyreg/mean_functions.py": "13ddb745485f186800440fd9aa6989ee8e78539e99fb9ed9a39e0a08f513af04",
+            "gpyreg/noise_functions.py": "f7168d6ca0e0ad54d26800bf8e1709cc980df718a7789eea97a384a8c33e94a7",
+            "gpyreg/rng.py": "cc9ca12def071d07894cfeae9dec95ccafac8643b548d06da9dfaee20dd7b5d2",
+            "gpyreg/slice_sample.py": "5e15fb79b25e19d9e9f4ae0d3f0a091e599b7da5088b6a43ba2f3dc6ad577fc2",
+            "gpyreg/testing/__init__.py": "55e1a1c093fb290c59144f3bec778dd1ca7d1475c0c009aba7909822f49e75cd",
+            "gpyreg/testing/test_covariance_functions.py": "daa93221b2271ed955aed8d4fd508da524ea17ac01bb33697ba4f663c69d6e3f",
+            "gpyreg/testing/test_gaussian_process.py": "4398b22f50fac2b1e115be8187341635ecfa3c7eada436ed7be36c5f135f44c2",
+            "gpyreg/testing/test_gaussian_process_isotropic.py": "9ab52aaa873469bc5ae7327da673c719f099ea27054d412adb3291a9733d2944",
+            "gpyreg/testing/test_isotropic_covariance_functions.py": "aae3e23a0a32f352bed2e68d0cb9d853b02ead586fe2d1d86f2b8103eb4143e1",
+            "gpyreg/testing/test_mean_functions.py": "bbb6e46e5227a171811bb4534d3bf5af414cdcb43fc9088cf66531952f22a033",
+            "gpyreg/testing/test_noise_functions.py": "57b6cbaf054e3c8212d1dd4d29d8c3a58b17cc3615f07ee7dcd0489f259b12df",
+            "gpyreg/testing/test_predict_cross_covariance.py": "9235cba829a42690529bdd6e63d0426c6d417adff670a4993a44adcd5af6ee77",
+            "gpyreg/testing/test_rng.py": "fc9f1d83e22447e4d46b2087f2dd71efd204bedf2320f12a93fe36b111662bb5",
+            "gpyreg/testing/test_slice_sample.py": "35df5309383b2d44fba25a1cbfbb060332e1a365cf5f1d82ebc3175f9f1c8b9c",
+            "gpyreg/testing/test_smoothbox.py": "3cc4d907f38d8c189f22f7ce1090b16a65858cab2cb431845100af6d3b09091a",
+            "gpyreg/testing/test_smoothbox_student_t.py": "9ca12c6f0a2e14f61bfdf836358f39a569c7141fbc28e722680ba482dcad1bc8",
+            "gpyreg/testing/test_utils.py": "494badb7633320fab1cff2d2f59f3a675d613d205ea337d3da3762c12b3d9995"
+          }
+        },
+        "manifest_sha256": "a4c49146cfb606c20f000d58599c7f096376824fa7c378d43726d77b11b2adbe",
+        "numerical_base_commit": "9cc6882768ff682ae892a6b453c42e0f2d03d5fa",
+        "numpy_build": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.34.0.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.34.0.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35228"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35228"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.9"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-03ol50fu\\Scripts\\python.exe",
+            "version": "3.12"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "platform": "Windows-11-10.0.26200-SP0",
+        "python": "3.12.6",
+        "source_hashes": {
+          "dev/scripts/benchmark_targets.py": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+          "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+          "pyvbmc/__init__.py": "4db4104c16ebc10161cc401aac7d3eafa9fc702f22a04c3f62b32ee85c57f0f6",
+          "pyvbmc/__main__.py": "68f653e43d27f08955a6dd5bd5878e784682b4c0a98b838ba3d6f6dac7a36f6d",
+          "pyvbmc/_user_hints.py": "dbda66942ef8e13b622786dd475c4b96126c94a574083af723f318feba655303",
+          "pyvbmc/acquisition_functions/__init__.py": "76109b2c4b81946bfde6f433e6c846465ffac9109eea8befe837b3319b712ae6",
+          "pyvbmc/acquisition_functions/abstract_acq_fcn.py": "84288b05c41d70a753658e377e6e83f0ba4424ffdda8fc6b04cc0b1e6bb32d9e",
+          "pyvbmc/acquisition_functions/acq_fcn.py": "f854200282c898f0e1b594f4859eb4e9a4966746531d5809d48c5d4e2e626d9d",
+          "pyvbmc/acquisition_functions/acq_fcn_imiqr.py": "f3901dd204e29e3ed0a6a248fa853a9d11f567d34f089a54c441fde668f4181f",
+          "pyvbmc/acquisition_functions/acq_fcn_log.py": "4dd1739a953c8f98260dbac9ab8ef5d944147a9734cb9aa95f807b01e0c0471b",
+          "pyvbmc/acquisition_functions/acq_fcn_noisy.py": "c2249507e66cff475a9f3b42f408ae9ad5bae8c429c883c139b1dddeb70b96d0",
+          "pyvbmc/acquisition_functions/acq_fcn_vanilla.py": "764c3a54277daa2ea7f4be8cbce75f174807fca29e4342fa7e1aba6cb13fd497",
+          "pyvbmc/acquisition_functions/acq_fcn_viqr.py": "f5dfd964eee52ddb9e746155770ad38fd361e966d0a2fbd86d3de90a57d8a2f9",
+          "pyvbmc/acquisition_functions/utilities.py": "fdab0381876e6f3e4c8d6df22bbe1cf9b8df6e5a4af32e01fd336cf31de3bd7a",
+          "pyvbmc/calibration/__init__.py": "be6cdde1fde951ceb47650b92d1dcbfdf2da1e9f640436c66b88c9d1851724d5",
+          "pyvbmc/calibration/_api.py": "1f4c54b5a92e6150dede48424ae5c4d2e00604767517fff58b0576de439a17df",
+          "pyvbmc/calibration/_cache.py": "ada64d67f04b8149821b55ad54247319a8ee7335520a52acd45ddd06552f5fb1",
+          "pyvbmc/calibration/_campaign.py": "f4ac1eaa72f5d1911aca1dd355e19e455a18bba4e4fbc3992bc4f9bf0bb7c76b",
+          "pyvbmc/calibration/profile.py": "ebea4c134f00303dcd842e240d5ad068b615346b07cc27996a5c6077303e15ef",
+          "pyvbmc/decorators/__init__.py": "da20264996abc36c1cba9182b57c07eee917e5df6e81556fbbbec9beab92d8c9",
+          "pyvbmc/decorators/handle_0D_1D_input.py": "e3299b32b1470acd9ef6527dc3bdb248ef3f2aaea3ae5f488d3f24735db4d8be",
+          "pyvbmc/entropy/__init__.py": "9e332e33254929eeb77105bb359b9fcdfd5c7e9abe81910eb7f5c9ab2d0a6612",
+          "pyvbmc/entropy/entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+          "pyvbmc/entropy/entmc_vbmc.py": "a221bec072902f340be04006938f6c913ad992ec60c69528d111f7d3672dc7a8",
+          "pyvbmc/formatting/__init__.py": "74ada912abdc570961cefe5a5d6111a82bdeff7ea369e0ceb1274fa87f592acb",
+          "pyvbmc/formatting/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+          "pyvbmc/function_logger/__init__.py": "370cb39a6e1bbbef535ee7f68e93861f1fdc162a983531161e02a8d85859cf14",
+          "pyvbmc/function_logger/function_logger.py": "8bb64c7cbbaf2864bfbfd420f4b2289fc10e2332f09dc018663d1320e2f31de3",
+          "pyvbmc/parameter_transformer/__init__.py": "a61c3059bc1032a72555133cdfe00e0de25712f9a07164550409bd70d70459d9",
+          "pyvbmc/parameter_transformer/parameter_transformer.py": "77df8fdc20aa4ae79080d152412a2e9aea165fccd8e95c653ee36a81c77b4447",
+          "pyvbmc/priors/__init__.py": "550e3dd43a27e66435ed659b2f49144b4bcfd1214f5669010dcd3d9df0641bd5",
+          "pyvbmc/priors/convert_to_prior.py": "9073b1551b0bc355ababa180a1a94e938ec65e5b17dd92c8f380e3b679e62ebd",
+          "pyvbmc/priors/prior.py": "3d32c741e1295ef084dff33647a28d95c8ef85761e125bcf80983bec373229ab",
+          "pyvbmc/priors/product.py": "8f8dda5ca0c2c5f1bb4be16d80547932b92b7be0d87e9d8a8982e06da3483399",
+          "pyvbmc/priors/scipy.py": "5ec080bd19cec99c2b23b30df5fc72e23d378236301ba8c937f8a1c8a7056d34",
+          "pyvbmc/priors/smooth_box.py": "05d8fd5745b41e30f1d0390c18737b13e9fca42decd5d5504909de9bd6a59535",
+          "pyvbmc/priors/spline_trapezoidal.py": "be7bbb39d669154b296aaca1286b13031bc1ad7775644d3dd491a21efa214bf4",
+          "pyvbmc/priors/tile_inputs.py": "0834153962c09fdfdfa6888dddbac19801b9b9f9678a5b31e5e191ae61e80944",
+          "pyvbmc/priors/trapezoidal.py": "6fb22cc083649b74fdc9e2abc52974e40e914af6849ecc62ede746bd340db115",
+          "pyvbmc/priors/uniform_box.py": "4c705acdf466272184e3686253540b88a54481bb7a8c6a2228cafb684e9f23f7",
+          "pyvbmc/priors/user_function.py": "4c2dce49f7c4aa4d04a29fa1871f8374dab8d34255977384498c562280d13029",
+          "pyvbmc/pymc/__init__.py": "f20363bc2ab03daf78fdc1e5688f6404f8ac88919a782db80343bca11b6a687e",
+          "pyvbmc/pymc/_compat.py": "ab4820d3ba1f9e5189fa06f93fa9ee5ba477bbee38993b328bb8bfdc8c1a1a4b",
+          "pyvbmc/pymc/_plausible.py": "ed7e0c9647d05e752cb3da3f4a182ecc132b2dbffe564fe9a53f141cd17fe9fd",
+          "pyvbmc/pymc/_snapshot.py": "d62b324f866ea93ef7d644c4615a2b90ce6003f118ca1aabe6f8474dd99206a8",
+          "pyvbmc/pymc/_target.py": "0882b0b0e1b7f9aa5e8043218bde0bd079155258c4594bad2eb9aaf158965a3e",
+          "pyvbmc/rng.py": "a6bd2dd386db5ed713acbf2daa400e819eaa1feb0082daa4bd20b8b3ece05fb7",
+          "pyvbmc/stats/__init__.py": "5074c0fa11e0f5ce87ab8bc69d950b4ccca3024da6c2d3796346fcf4761003eb",
+          "pyvbmc/stats/get_hpd.py": "1c685981cd236a8b4fbe566d99c02ace10082352368688489d159f2cb375a698",
+          "pyvbmc/stats/kde_1d.py": "bc5d6c91f43735eb7304cbb93e83745828ac609df66109de0d7bd58c24604934",
+          "pyvbmc/stats/kl_div_mvn.py": "f63571d2d6c88842fa2542ff0fc139e94bb35480703ca2707f0436c25ae5159f",
+          "pyvbmc/svbmc/__init__.py": "a27adf91c62e3c93a966cea6c8474725950d9bd992e30c39ac30607b6799677d",
+          "pyvbmc/svbmc/_elbo_shrinkage.py": "c749a25d65f83d029b51cf0688107505a8498bfba56a11ce610d6ece75c1f70b",
+          "pyvbmc/svbmc/_entropy.py": "702657e2dded564dad258129f1227ec520b717a93aa7d02c13616970f2a752b3",
+          "pyvbmc/svbmc/_jacobian.py": "2dd92b5305365f87f77a81a7e1100051b1388c7ad7d72fdce9229ebfdda7bc45",
+          "pyvbmc/svbmc/_runtime_tips.py": "5e505025e30095bbfcd592d9c6babc9b84e2a17d1e60505778de2167611c0d2e",
+          "pyvbmc/svbmc/_tip_catalog.py": "9b91555ce93cc4729abe3943a7c31c72971f8f07c34994142104fa58c15cda39",
+          "pyvbmc/svbmc/svbmc.py": "eefb8345d4acb8eb7f18b237b316d05aeb678bfe51827230af457796711fe0f1",
+          "pyvbmc/svbmc/utils.py": "90e5d1da900d5bbd5cec6bc053f96dec367f759dea62205003f3c1545770ed18",
+          "pyvbmc/testing/oracles/_state.py": "13abc1e5ed4f75d17dfe8c2944d37247ec0fe1295e02863416773f55632c6d37",
+          "pyvbmc/timer/__init__.py": "9cb964b08f313f5866b964a2532e9dd2ed20af51b50d5114133b85f91878934d",
+          "pyvbmc/timer/timer.py": "7bf42b79067c3156ae9bd0e3f340e054bc52a0bdd7c47126112563714169331b",
+          "pyvbmc/variational_posterior/__init__.py": "6a9a75bcc33df379d7a722786a01dc4fc84f812f822c04ea2d0cacb65b168a8a",
+          "pyvbmc/variational_posterior/_arviz.py": "a27197073091784ea59c65d14013d8bfd6f99fcdceab0cb95ba5fdc24c028a00",
+          "pyvbmc/variational_posterior/_torch.py": "da6fe5ef52c5fb44fe9e55747671bff13c00cf7f2bcd0bf0054bd8d2cf228582",
+          "pyvbmc/variational_posterior/variational_posterior.py": "a2ec7e763d4da2fa9442330f5dcc1c1ffa7c447fcb23f995f383502604ea4b41",
+          "pyvbmc/vbmc/__init__.py": "f64d3e78b3bd7a1bf88d2144b5d073eb781697693513eb9f9c69b861901a5f29",
+          "pyvbmc/vbmc/_bounds.py": "46a8249b923f187aafb6876bbbc0af746d8beef4e74572260b5984728983f1db",
+          "pyvbmc/vbmc/_runtime_tips.py": "6351c1fed0184bc943d52b473dc407c5ccc64b7669ca4167e025e3b68a06e43b",
+          "pyvbmc/vbmc/_tip_catalog.py": "fc5150c203ac76529546694e1d34df9eb821c83cadf1c900532ddae666d1ceed",
+          "pyvbmc/vbmc/active_importance_sampling.py": "8cb2bfbe2685d3098e8ed6e22d12ee581817c6dc1135b74fe01bcc8720946378",
+          "pyvbmc/vbmc/active_sample.py": "4b09254caf87b8e93582d25bcb9fa7489fbb1519aebd803617ceb40a69c751b3",
+          "pyvbmc/vbmc/create_vbmc_animation.py": "5e28759228460894eca458924d8f0e69b4d5d0cfb482fa6b0d9e3c83a6358f18",
+          "pyvbmc/vbmc/gaussian_process_train.py": "cdf52636e9a39d56200e69f2b8eb74ae00ace51564aafbfccc71b33d30d535e4",
+          "pyvbmc/vbmc/iteration_history.py": "0027271a386d7e6fcc4a3a3d85a2c14e22caeb0b2518e0e60eb4bb2df7f9a87d",
+          "pyvbmc/vbmc/minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+          "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini": "8e62e3a4bb4a63717af82255119e57845d31902fea301b79e1c3c0a9cc053eda",
+          "pyvbmc/vbmc/option_configs/basic_vbmc_options.ini": "d6cd78c909edc62708659688bdca7f7937a1efb402878e91afe5ede6d6510106",
+          "pyvbmc/vbmc/option_configs/test_options.ini": "65b1eb537c44b784803f1a027cb7427db6172da389ba53b8e85d9e73edb1a36c",
+          "pyvbmc/vbmc/option_configs/test_options2.ini": "563c9c617a5cd7a11212767843729e565c4b5800a1c2ec20454209c6b0a5eddf",
+          "pyvbmc/vbmc/options.py": "113e8fc272a2fcdeb06be32cf171e76e13f021d949e1f3d5161d9d7c8f05037a",
+          "pyvbmc/vbmc/variational_optimization.py": "542056b665d6d8d548d4ba6f1c44b57673ac6cff0cdfe9a1bf521e0aad016274",
+          "pyvbmc/vbmc/vbmc.py": "649dbb9b88e8d2c62f0b26a2f8a6ca334435d2d39230a83d42a88801c450df55",
+          "pyvbmc/whitening/__init__.py": "39ab0a0f26daaeaed1cf5100bbd56d07822f8ec562afb7a4bdb453191d6fed7f",
+          "pyvbmc/whitening/whitening.py": "d7cf3ba568fd2b0537ee3baadd422e43393c162deb979007a2584e00df200d7c"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "integration_source_hashes": {
+        "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+        "dev/scripts/noisy_acq_integration.py": "d9d186d4f5c4e1e9f9733726d660116dd18fab7499d2bb4d234259a13dfc7bbb",
+        "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+        "pyvbmc/acquisition_functions/abstract_acq_fcn.py": "84288b05c41d70a753658e377e6e83f0ba4424ffdda8fc6b04cc0b1e6bb32d9e",
+        "pyvbmc/acquisition_functions/acq_fcn_viqr.py": "f5dfd964eee52ddb9e746155770ad38fd361e966d0a2fbd86d3de90a57d8a2f9",
+        "pyvbmc/testing/oracles/_state.py": "13abc1e5ed4f75d17dfe8c2944d37247ec0fe1295e02863416773f55632c6d37",
+        "pyvbmc/vbmc/active_importance_sampling.py": "8cb2bfbe2685d3098e8ed6e22d12ee581817c6dc1135b74fe01bcc8720946378"
+      }
+    },
+    "search_source_hashes": {
+      "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+      "dev/scripts/noisy_acq_integration.py": "d9d186d4f5c4e1e9f9733726d660116dd18fab7499d2bb4d234259a13dfc7bbb",
+      "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+      "dev/scripts/noisy_acq_search.py": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf",
+      "dev/scripts/noisy_acq_search_experiment.py": "40bcc2e144e583e19b85cba0dbcfb9bc129c5c11d725e7bc68604d0339de24f0",
+      "dev/scripts/noisy_acq_timing.py": "1b1f7f8365c8c36cef3bc6bc047498c183b0ddc34061aeee58d68160b2f0e72a"
+    }
+  },
+  "initial_judge_budget": 4096,
+  "judge": {
+    "logreg_D5_noise3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        17759852346865274898,
+        4096404698930201025,
+        15466974518111879793,
+        6929341998938637626,
+        1824500421563459266,
+        6961860632859983612,
+        485334863819563863,
+        4364723901022691649
+      ],
+      "comparison_seeds": {
+        "16384": [
+          7567057515060259200,
+          7009598598778272678,
+          9869013270188377698,
+          11707015483536547674,
+          12370850729901324430,
+          11984996955186252538,
+          14877337729542572419,
+          3835484217470778827
+        ],
+        "32768": [
+          5572075080117520434,
+          13211041107478809852,
+          3243768088165938939,
+          9413938993329337011,
+          10831655515871437804,
+          11002264099978005059,
+          5595575785312360239,
+          17003436068291287327
+        ],
+        "4096": [
+          8297458349867552489,
+          10246029511159709477,
+          13222732469861336736,
+          6897247628200305462,
+          3638301718082229317,
+          17109195858057209581,
+          12270505508445367135,
+          9402685529671134711
+        ],
+        "65536": [
+          17302089448866933495,
+          4567869057651294408,
+          2905047252676622819,
+          11052373360217022041,
+          304489218201697994,
+          14348920613142517230,
+          14345532708444894865,
+          17019123796146250257
+        ],
+        "8192": [
+          3456509712268971709,
+          1485561813329167971,
+          18222396880324892293,
+          11674400358864812674,
+          15514852808708113575,
+          15444476997691431837,
+          9151880627796895384,
+          11114322459087799480
+        ]
+      }
+    },
+    "logreg_D5_noise3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        9898362273358888663,
+        6930643190862090789,
+        12331079873064518113,
+        11944417774308027836,
+        10856858357553209800,
+        8462820359526183172,
+        2976466500040232632,
+        8424295365846219073
+      ],
+      "comparison_seeds": {
+        "16384": [
+          7091304062055021904,
+          2079894995096192793,
+          321565161149547851,
+          12961337817575663225,
+          510514313150775384,
+          10857796521692240880,
+          3509251556670228879,
+          17675224948600956505
+        ],
+        "32768": [
+          10063282739397159406,
+          13102077264115020569,
+          13075753457975638788,
+          6205951419615890737,
+          9198108163707232533,
+          10915206343071076372,
+          311483302932712888,
+          12716571875042214843
+        ],
+        "4096": [
+          15704741337746561525,
+          12202284273373772183,
+          11886004279490723310,
+          7062984630358352919,
+          558937052782488920,
+          16480988040636073966,
+          5686258385921181253,
+          7759270335255728370
+        ],
+        "65536": [
+          13321989476517256029,
+          18153304335829217452,
+          10872299453461067325,
+          6316679870635815550,
+          15155300472371473676,
+          18161849582321561387,
+          14087216772255658003,
+          5455332619872027963
+        ],
+        "8192": [
+          245484854054418184,
+          1555101104027113491,
+          17501974539147823804,
+          11185092643269018939,
+          7404826567062687914,
+          16350881457440347505,
+          4103239206340795133,
+          2022813009792435838
+        ]
+      }
+    },
+    "multisensory_s1_D6_noise1.3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        13814035798910300385,
+        4363872953924591338,
+        8262571742879369076,
+        8486309825914729197,
+        12147953280816599785,
+        14522229235265547050,
+        1788081566399315597,
+        11569647629192539712
+      ],
+      "comparison_seeds": {
+        "16384": [
+          8959683488225135258,
+          7072425412825575930,
+          1192873793610127062,
+          14505153878348238735,
+          14835482020684898529,
+          304273768006708833,
+          6617596404286564887,
+          14535926915177088318
+        ],
+        "32768": [
+          13838808904396355826,
+          13009343607568135167,
+          15632843064895922385,
+          12434074390621262989,
+          12490487495169467685,
+          6090569234397606229,
+          761567663690772239,
+          15959097024040774475
+        ],
+        "4096": [
+          13705551566987471954,
+          1302425327043511423,
+          10839311302547200846,
+          8791708757699070097,
+          2584222169674667390,
+          17045754320555424572,
+          2464829089765461665,
+          2590140901864084024
+        ],
+        "65536": [
+          9000178179932308241,
+          15468175957852924642,
+          8954698910331825660,
+          15331219388768548399,
+          18296187561987170640,
+          14462025649710044727,
+          761279795567600028,
+          17713211585531089711
+        ],
+        "8192": [
+          17840807609856089104,
+          16587932712377682815,
+          6476781287062025917,
+          12720837362312883252,
+          6244975836433595950,
+          10259503612699225445,
+          4322242110454754678,
+          7834816175565527878
+        ]
+      }
+    },
+    "multisensory_s1_D6_noise1.3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        5279658070285393793,
+        10027618173690780226,
+        6605017960347852500,
+        18433310378080977935,
+        16779935125010076446,
+        11801096770058896592,
+        6767415910877157341,
+        4086142773373237119
+      ],
+      "comparison_seeds": {
+        "16384": [
+          13295254856304825310,
+          9082304216076614826,
+          6760794863003503364,
+          18162682846192582073,
+          9890047110394901117,
+          6324048974968487449,
+          15838746216150242509,
+          4218024580041290427
+        ],
+        "32768": [
+          15428250591935050581,
+          9526135807908602148,
+          10303954995745051111,
+          4905847412318187326,
+          5975663064984151392,
+          6381214854307538461,
+          5586572264580672895,
+          17785921065692918283
+        ],
+        "4096": [
+          3314545252691079174,
+          17464543359026871584,
+          5358767960844174172,
+          9007932685391248503,
+          12476818394425619850,
+          13979803320869149801,
+          7802445070427821226,
+          17960895790546919487
+        ],
+        "65536": [
+          17749523188011367387,
+          447729266941179535,
+          10742637834334438030,
+          9890272329530576699,
+          14248986077856372912,
+          7956644921466287355,
+          7042097290064830773,
+          11725389736399962487
+        ],
+        "8192": [
+          12469407752550901420,
+          1818240428422462677,
+          10837912376056966579,
+          14042860947434125820,
+          11442104963204763031,
+          14665080483998519944,
+          7757122997742761221,
+          16670321303331774427
+        ]
+      }
+    },
+    "rosenbrock_D2_noise1_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        10530264345109007090,
+        10995613962260748081,
+        5754057826599764660,
+        8981174508487033891,
+        5967360998689458027,
+        18288147108497321200,
+        5641780255839222201,
+        18172511715696517379
+      ],
+      "comparison_seeds": {
+        "16384": [
+          7313188336266570081,
+          6126215594148235251,
+          11949992787298419221,
+          12936195679039891782,
+          15721280062204410383,
+          12118245413074884177,
+          12333235171426024408,
+          11695369160010623921
+        ],
+        "32768": [
+          1840131285521554234,
+          12444385940918127129,
+          10938308360591289834,
+          15731868483691685624,
+          8515468854010203661,
+          9629203088192018243,
+          9031100219757905695,
+          10885346593558971607
+        ],
+        "4096": [
+          5195964822728886578,
+          6971938946918944707,
+          14427038074808787619,
+          14215940095134413880,
+          447317292800396230,
+          15605139090308459371,
+          4680841891325126634,
+          17852169521503300798
+        ],
+        "65536": [
+          2277635803760790456,
+          17506565061098306699,
+          3867449537463051633,
+          2690298878445447691,
+          14971886348789648112,
+          14448406976341681719,
+          14507269149762604380,
+          8906231301638733458
+        ],
+        "8192": [
+          16517031038602777069,
+          2921944956721070799,
+          3713754075443537895,
+          17695165118425808038,
+          15052418289265183965,
+          5417106280548146218,
+          12153949177019001545,
+          15538079338286364695
+        ]
+      }
+    },
+    "rosenbrock_D2_noise1_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        292577833139485299,
+        301467845472472884,
+        8913859640136726889,
+        4642480160702766729,
+        14406291693907447115,
+        17225410659561047425,
+        5075593327484514512,
+        9939351440649299035
+      ],
+      "comparison_seeds": {
+        "16384": [
+          14869860002114533586,
+          4195034137944317111,
+          15398768002016996690,
+          17295059095090618856,
+          5329666469616823657,
+          7580138097869052872,
+          15437362190919756675,
+          2039484631779844318
+        ],
+        "32768": [
+          10375412038618422717,
+          2924283805235667333,
+          230365297099753638,
+          1230716778969368951,
+          7673398684897164053,
+          7924107443395844672,
+          10540382362609843851,
+          11007737938004726433
+        ],
+        "4096": [
+          18183120268985360861,
+          11189954248511021801,
+          6661049137949987883,
+          4994642854420936193,
+          6601596576031362789,
+          1419805780321332154,
+          398634218057750979,
+          578876599161040250
+        ],
+        "65536": [
+          10732954603816154590,
+          16391152591358262559,
+          4466688309719387022,
+          15875252568504992148,
+          12343585894707858676,
+          7197329937162806085,
+          11086138799803183834,
+          146851561567233127
+        ],
+        "8192": [
+          16724124310142585318,
+          12728172535489549811,
+          46276753596157168,
+          1250429092233657273,
+          1373323905550950181,
+          10227536006417261999,
+          16295857894997232924,
+          6284614638616914580
+        ]
+      }
+    },
+    "rosenbrock_D2_noise3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        10785674959385677745,
+        13927674346336710114,
+        15621830801769313091,
+        16305463639489296716,
+        12526612333471628490,
+        5134679373072945957,
+        11664211832807494283,
+        458024981734400731
+      ],
+      "comparison_seeds": {
+        "16384": [
+          11124085964670596689,
+          15357323759319351301,
+          4330903424556425516,
+          7164235807709081134,
+          3914491269210743370,
+          10393399141421213078,
+          6559262567646610737,
+          7823609923502373212
+        ],
+        "32768": [
+          15270332114800162676,
+          10031268011535400714,
+          15444289365351237552,
+          14818800652646207021,
+          7631831150401688511,
+          3697133330782871847,
+          13921135097938225888,
+          270970239155405238
+        ],
+        "4096": [
+          11561988022646953983,
+          2130156608913778821,
+          13182600644136303304,
+          17680648115721811874,
+          11875543326594743081,
+          9458702260812620068,
+          7116164556106130784,
+          10206878945773040507
+        ],
+        "65536": [
+          5301870481004424225,
+          13878362202683854210,
+          15417655753528335935,
+          10363987480243648154,
+          10154392596077669409,
+          403941007078131897,
+          9773848474371383155,
+          13473678727078265246
+        ],
+        "8192": [
+          15105710025211541470,
+          5920425253249664803,
+          8639079585539928904,
+          6654919677600864381,
+          5102962298153957957,
+          15362065606672103433,
+          17344474840615873527,
+          17490486308268122876
+        ]
+      }
+    },
+    "rosenbrock_D2_noise3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        12945624172576059971,
+        4393408202088413764,
+        4062155818326927439,
+        11777431076319758373,
+        18343342899862046539,
+        1833686786876529888,
+        587270963549900004,
+        15695587380093147874
+      ],
+      "comparison_seeds": {
+        "16384": [
+          5704570361257205991,
+          13359436613479155203,
+          12058633241367837880,
+          5132186263400314870,
+          9083616459378634929,
+          13788436324618233749,
+          5355638385061305264,
+          114228568735149634
+        ],
+        "32768": [
+          10803362036343567762,
+          1643873026131433313,
+          9007998830364490778,
+          4955712602708174934,
+          4143605140529176258,
+          13035058701844768263,
+          5315146329195791777,
+          13667557998815250520
+        ],
+        "4096": [
+          17975853014384473061,
+          3558447297811543246,
+          15573580516735480427,
+          15783692979155072692,
+          16503923715624222295,
+          5351962952753131676,
+          1127521197519178909,
+          9793146856505566218
+        ],
+        "65536": [
+          15010631384867959106,
+          7307528362674491805,
+          4134393538913463049,
+          12440735274031913223,
+          12829483363586872183,
+          1248451923260940818,
+          14995615352518943914,
+          8101463226314660665
+        ],
+        "8192": [
+          2403749285933041963,
+          2960263732171925638,
+          8840121210633877934,
+          17039475225526810514,
+          14691852458058727158,
+          8268233353787953539,
+          12191086273731325185,
+          14659601747343284647
+        ]
+      }
+    },
+    "student_D8_noise3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        15441908274622028118,
+        11557882057525909760,
+        14529550570905604877,
+        401211803756897823,
+        4398709766277218979,
+        10890948379384561663,
+        15963196466998167440,
+        6287278270735881747
+      ],
+      "comparison_seeds": {
+        "16384": [
+          15074209456151086651,
+          8347354258165912315,
+          1980526600095307617,
+          18372873532252325471,
+          14572008330176679741,
+          3283459223485827941,
+          6632055584217350631,
+          69320390877184920
+        ],
+        "32768": [
+          9420897216625549896,
+          4398588400158524026,
+          9730119754929513299,
+          4150699432576319960,
+          4640166835148825822,
+          7392632869653571583,
+          5260897706742227636,
+          13537773606725154322
+        ],
+        "4096": [
+          941273640392388357,
+          6574950366046393875,
+          14458269924888612683,
+          2609150200539660248,
+          17149159084366473494,
+          12881050533316080840,
+          8020778194132502308,
+          16262775508132260361
+        ],
+        "65536": [
+          5612701716212712761,
+          14806032731707569301,
+          6465775330214478782,
+          13919091729946869719,
+          2230515294345131959,
+          2082959743741698414,
+          2494176830933403428,
+          16415465455886636770
+        ],
+        "8192": [
+          10477766599722180544,
+          10684587309258623459,
+          2210922357062895122,
+          14440193849125273824,
+          9124303637830935036,
+          17464341032721673089,
+          1284052244058843595,
+          15006667553917206409
+        ]
+      }
+    },
+    "student_D8_noise3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        16281426438438028591,
+        14389224718896304440,
+        8579840854129445588,
+        14327099687136950093,
+        7035838367589412238,
+        11375228655321412238,
+        16519587001148450245,
+        9309903466157281789
+      ],
+      "comparison_seeds": {
+        "16384": [
+          11040849801536761017,
+          5030994162513227983,
+          5679133951988557549,
+          8293120171352447315,
+          13829789352667915212,
+          6754237620001891054,
+          10829792402263625263,
+          9968071414226521010
+        ],
+        "32768": [
+          7794373793443426769,
+          14073173603103448677,
+          4970812599876982798,
+          17824397788097224363,
+          17338380144549516506,
+          4785659406642779184,
+          14691212296938163779,
+          2512579974862555931
+        ],
+        "4096": [
+          10311815059247036632,
+          12344838988611707508,
+          16318158592560812243,
+          9169195505829973225,
+          17685027146149630328,
+          9777263305542143296,
+          8495820808917976109,
+          5922687393397755418
+        ],
+        "65536": [
+          1812913508937819189,
+          5635214264665109486,
+          10456200364960054505,
+          8490187966955370539,
+          8526319678207990299,
+          10171731573796053575,
+          3816933769836504800,
+          854196974212146136
+        ],
+        "8192": [
+          17004028085552362764,
+          17745923880976081142,
+          18338500304702579763,
+          9343590572376274165,
+          12199769395965517999,
+          4102176125374233518,
+          15471399754426439161,
+          14433440601624590789
+        ]
+      }
+    },
+    "timing_D5_noise2.2_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        29090043289883336,
+        17110524956288174620,
+        3931792529106445404,
+        14092237845917192307,
+        9316052747053284374,
+        3920952076730807442,
+        17334043311586559631,
+        1322734555248834206
+      ],
+      "comparison_seeds": {
+        "16384": [
+          9185810174460986987,
+          5818378157990483266,
+          14131427799132147391,
+          12419248321287738158,
+          1322513732263825910,
+          4544361332805811906,
+          18096112922723451034,
+          1319884335917756790
+        ],
+        "32768": [
+          10960255557020677407,
+          6712931017812833869,
+          13010551999341857475,
+          6081981946919681469,
+          14117570961045532977,
+          4860344055414994944,
+          6459937677255505515,
+          17961323639062300700
+        ],
+        "4096": [
+          8447166114468288914,
+          9988418902408209541,
+          3365786558276711042,
+          4874163358717187219,
+          9562587209206685713,
+          13265286265237873587,
+          10203244434112087864,
+          13074254126163712040
+        ],
+        "65536": [
+          726059623280806014,
+          13315441783678914065,
+          8574950703028094554,
+          4468778704413463446,
+          404050401655976775,
+          2172382366251006270,
+          6902597465688788179,
+          18419795282784548546
+        ],
+        "8192": [
+          5166213944653882432,
+          14951935894662902722,
+          12873261033485764481,
+          15470857711337431001,
+          2339952430115298164,
+          3150814474024030780,
+          16594912724270964195,
+          14223476499394901444
+        ]
+      }
+    },
+    "timing_D5_noise2.2_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        17121879077701907370,
+        1960569493337647647,
+        7495083992696621048,
+        15204527695545507581,
+        6801755691248148501,
+        13882463214148651857,
+        5057035414575602780,
+        7212066658446926170
+      ],
+      "comparison_seeds": {
+        "16384": [
+          8977819564443551947,
+          15017978810013221474,
+          10798553442822468595,
+          8680354886998683640,
+          9590402450862163939,
+          2171933808060560258,
+          4217166690527757704,
+          3513252775293439013
+        ],
+        "32768": [
+          9842335124310971678,
+          3020820533702113697,
+          11112305809754911895,
+          12163959062833985590,
+          15727914987683764237,
+          15291880708091141756,
+          481003304305525670,
+          1501979431524824135
+        ],
+        "4096": [
+          8453130773645886199,
+          2182379672441729996,
+          8290137271328624737,
+          8695395829481201603,
+          6800424421010964655,
+          4989499060029606163,
+          9557514110405114627,
+          7891925705580133964
+        ],
+        "65536": [
+          12636333915154418804,
+          5750851699863115763,
+          11164536006566039081,
+          2224424094286209316,
+          15327294810813073324,
+          5294226829169863949,
+          18232437876677689692,
+          3942367398148009247
+        ],
+        "8192": [
+          11378391205994284609,
+          641398087034478374,
+          15183243978667009256,
+          16100869496812194403,
+          16288850332097837871,
+          5235358457941122892,
+          17155568880463757894,
+          336245674614829072
+        ]
+      }
+    }
+  },
+  "judge_budgets": [
+    4096,
+    8192,
+    16384,
+    32768,
+    65536
+  ],
+  "kind": "search",
+  "launch_ready": true,
+  "master_seed": 2026091701,
+  "missing_states": [],
+  "publication_note": "Review copy with user-home paths redacted. Execute from the original local artifacts; hashes refer to unredacted raw artifacts unless explicitly labelled published-copy hashes.",
+  "purpose": "noisy-acquisition E3 frozen-state search",
+  "raw_artifact_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "replicates": 8,
+  "scheduled_allocation_count_including_missing_states": 72,
+  "scheduled_cell_count_including_missing_states": 384,
+  "scheduled_timing_count_including_missing_states": 36,
+  "schema_version": 1,
+  "selection": {
+    "accurate_rule": {
+      "budget": 1600,
+      "method": "mc",
+      "provenance": "Prescribed ordinary-MC1600 fallback after all four retained E2 full-sieve settings failed the approved 1.10 cost threshold."
+    },
+    "created_utc": "2026-09-17T10:58:34.074899+00:00",
+    "e2_continuation_sha256": "7058cb3be3891819a0c894c21a94f962ec12f1ec56156818f6484d8c9a4f6f1d",
+    "e2_full_cost_screen_sha256": "cfd98533d6c32246b261b32cd2b69dadf4e0dc01320163e5cfc64c673a071e06",
+    "frozen": true,
+    "kind": "noisy_acq_search_selection",
+    "purpose": "Freeze E3 S0-S3 development allocation without naming a winner.",
+    "quality_claim": false,
+    "schema_version": 1,
+    "stage": "development"
+  },
+  "selection_file": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_selection.json",
+  "selection_sha256": "6dfd2e6f772edce9d9cc642e3a7159e69e70b6dfcd369d3cb04fb2fae8998d42",
+  "split": "development",
+  "stage": "development",
+  "states": [
+    {
+      "capture_completion_sha256": "3e162abcd8941a0bb3d1d760505afe470ff5c81389e74403434b626b1d619e07",
+      "checkpoint": "early",
+      "label": "rosenbrock_D2_noise1",
+      "panel_seed": 14708891611369050459,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise1_seed0_early",
+      "snapshot_hashes": {
+        ".json": "5d832cb3f0cf0e38cc28e9f0701af77d6c3becac09b6deffe9d818a736692bd0",
+        ".npz": "72272186cd093f6cb324024c51e3dc0f87eaf69ab15be632155a09eb1f3f84df"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "3e162abcd8941a0bb3d1d760505afe470ff5c81389e74403434b626b1d619e07",
+      "checkpoint": "late",
+      "label": "rosenbrock_D2_noise1",
+      "panel_seed": 4135092372141558983,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise1_seed0_late",
+      "snapshot_hashes": {
+        ".json": "20deb77b7ef0a38e4122f292f03c483bc02990a5e984b0fc928322bcbdcc40fc",
+        ".npz": "ef4caad5f285414178fbf09518e087f1e544178e6b68fc3f48f4020f21964811"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "e7cb3d943a63ce923d6779ee6990a8e37ee15cbd77f9f48f8aafd2897a9876cf",
+      "checkpoint": "early",
+      "label": "rosenbrock_D2_noise3",
+      "panel_seed": 2208245702970142589,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "ffbea63604aa1a29f79e3301b528ce061ff575a964a2b1d004a7dfc60f70f281",
+        ".npz": "6b13edea81763318f5fe3a989d0bfc62ed8b05453ca72e48f0663061b334b26c"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "e7cb3d943a63ce923d6779ee6990a8e37ee15cbd77f9f48f8aafd2897a9876cf",
+      "checkpoint": "late",
+      "label": "rosenbrock_D2_noise3",
+      "panel_seed": 8805143927798935718,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "b3695c31636511ed211593bbbcc08b863b37a5bcd0d93c74f3162a558fde235b",
+        ".npz": "8e91dfee725f484837fbd1256f740d92bc75edec5ee5053c039969da8172e261"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "aecf471a233a56981d232b5468d63bdb6143160ad3d89f988588e04189cfe543",
+      "checkpoint": "early",
+      "label": "logreg_D5_noise3",
+      "panel_seed": 14308628764918175735,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\logreg_D5_noise3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "a0bc66b527c5c636a314d0b7081e62e1a678b9156b2d6ec48f24d830522efef6",
+        ".npz": "2bbdb1d30c60ab34fba311acbc1efa5d824cf5d69df5da458225e3bb73bde028"
+      },
+      "split": "development",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "aecf471a233a56981d232b5468d63bdb6143160ad3d89f988588e04189cfe543",
+      "checkpoint": "late",
+      "label": "logreg_D5_noise3",
+      "panel_seed": 13704198449007750198,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\logreg_D5_noise3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "f1d0b1375acace98c3b8d425429d95e7183bb179e9b04aee8c0ba17c093067d1",
+        ".npz": "d0397182afbe10dda48656eb8df3307522e26416f27741597a4384fccdc7cafb"
+      },
+      "split": "development",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "d9902efb6168ca2a7883e97075cd205fa4db2bd6bec3edb0d8266f1ada5456b2",
+      "checkpoint": "early",
+      "label": "student_D8_noise3",
+      "panel_seed": 17648581979138260895,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\student_D8_noise3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "0dcdb593a9b4f10f176ebe5f1377a7a2923724e4434c03764b613fcdeafc9070",
+        ".npz": "775e80d9fc97d5f5625312c5310260b88a359f911eb289838c8ea4d3cd31bf21"
+      },
+      "split": "development",
+      "state_id": "student_D8_noise3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "d9902efb6168ca2a7883e97075cd205fa4db2bd6bec3edb0d8266f1ada5456b2",
+      "checkpoint": "late",
+      "label": "student_D8_noise3",
+      "panel_seed": 15616332593997049072,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\student_D8_noise3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "e7674eb36917dca27ff447c6d2a242ba008e6be46232325a516ee77bf8de219c",
+        ".npz": "53245df8db900fae427d55bc48b1e1e09117462d7c8c38369d85aa5fbd90bf01"
+      },
+      "split": "development",
+      "state_id": "student_D8_noise3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "bc9c6c4375de5ae67dee61047c8345d6887442eae8e1c2c9891e194a7a6c828f",
+      "checkpoint": "early",
+      "label": "multisensory_s1_D6_noise1.3",
+      "panel_seed": 6970871679400315312,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\multisensory_s1_D6_noise1.3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "a9045a8109653c29269ea11252f91643844f19767b07857d5b245e8e348279c7",
+        ".npz": "a3d4c50ac42355cc11ad8192b30fcd184dd9de5cced157bce537ebc0acc1815f"
+      },
+      "split": "development",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "bc9c6c4375de5ae67dee61047c8345d6887442eae8e1c2c9891e194a7a6c828f",
+      "checkpoint": "late",
+      "label": "multisensory_s1_D6_noise1.3",
+      "panel_seed": 4295982226733416179,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\multisensory_s1_D6_noise1.3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "dea4d034d436b75769525f587fefbdbbcbbdc52afe465859d963e6182795f7ec",
+        ".npz": "f3e01250aca78115ee63ba72a174cfb7e21fc6dfa0d73db7d5c94089f4d2cea5"
+      },
+      "split": "development",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "325c80e5456261f6966fd3bf20f3cf0301bdd037c781e25a49cc42691a3ae455",
+      "checkpoint": "early",
+      "label": "timing_D5_noise2.2",
+      "panel_seed": 7094732930044784980,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\timing_D5_noise2.2_seed0_early",
+      "snapshot_hashes": {
+        ".json": "e1f4d01139e96b4b751cf63bd96de2cd510dbc063b2f8b464706936c9298556e",
+        ".npz": "b70365ff405ccabba0f194b07ea0d2d25e13dcc4f32c6a79909002ec65f7bf34"
+      },
+      "split": "development",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "325c80e5456261f6966fd3bf20f3cf0301bdd037c781e25a49cc42691a3ae455",
+      "checkpoint": "late",
+      "label": "timing_D5_noise2.2",
+      "panel_seed": 10492501337742996606,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\timing_D5_noise2.2_seed0_late",
+      "snapshot_hashes": {
+        ".json": "b9ca7a1b21480f843a5979a60cf6cf8b57b0f7f7d6dcabf2e1130e88618d3f6e",
+        ".npz": "103b1c74d9a674352e11566277c20d77d0fb7cc677ac7bd2d2476eed997b7bd3"
+      },
+      "split": "development",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "trajectory_status": "succeeded"
+    }
+  ],
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "timing_cell_count": 36,
+  "timing_cells": [
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 11706027593928152208,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 5491220916388944790,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 127023280503823583,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 12779988714776286027,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 17622776442889287517,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 17327168332127250577,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 4986347041840376306,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 2872318536356162359,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 4605356808754947806,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 6799548003299985269,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 9536049191036101514,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 167343459978890856,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 2697164094075780154,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 12424624361826191321,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 17294676794260366486,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 17794814708887548882,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 6909061148505111473,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 15108013424671789913,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 8368367248371917808,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 15934981614925544601,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 13959724936867232102,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 8894973568537496929,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 7916015476480896999,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 10604365628142694106,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 17563772072030037529,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 7658412347176330315,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 15510699540582912123,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 10720689804352417212,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 5192787094235733533,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 10342642402151068481,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17553064904989652522,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17601085141178270382,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 15326876456200718192,
+      "treatment_tag": "S3"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 6926974955185360031,
+      "treatment_tag": "S1"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 6459070990370335992,
+      "treatment_tag": "S2"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 104148735866491897,
+      "treatment_tag": "S3"
+    }
+  ],
+  "treatments": [
+    {
+      "accurate_seed_role": "unused_baseline",
+      "config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S0",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "role": "production_baseline",
+      "tag": "S0"
+    },
+    {
+      "accurate_seed_role": "shared_primary_rule",
+      "config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S1",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "role": "search_treatment",
+      "tag": "S1"
+    },
+    {
+      "accurate_seed_role": "shared_primary_rule",
+      "config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S2",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "role": "search_treatment",
+      "tag": "S2"
+    },
+    {
+      "accurate_seed_role": "shared_primary_rule",
+      "config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S3",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "role": "search_treatment",
+      "tag": "S3"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "created_utc": "2026-09-17T11:25:46.696009+00:00",
+  "hard_compute_cutoff_utc": "2026-09-17T11:54:00+00:00",
+  "head_commit": "250460bad7b20d7fc3590d3229823f4f44082894",
+  "kind": "noisy_acq_search_operational_window_amendment",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "prior_records_unchanged": true,
+  "publication_note": "Review copy with user-home paths redacted. Execute from original local artifacts; hashes refer to raw artifacts unless labelled published-copy hashes.",
+  "raw_artifact_sha256": "046a285153214b652e313fdf8a1616df22d18868d57ed19bd8066e6d06789f40",
+  "rep0_outcome_sha256": "b087afbe33d5fa06352c2674a71818dc489ea3ee504b4378bc3e21b5fa695ac7",
+  "schema_version": 1,
+  "soft_stop_new_launches_utc": "2026-09-17T11:51:00+00:00",
+  "supersedes_deadlines_only": true,
+  "user_extension_utc": "2026-09-17T11:24:00+00:00"
+}

@@ -1,0 +1,1802 @@
+{
+  "completed_budget_cap": 65536,
+  "component_counts": {
+    "fractions_of_scheduled": {
+      "failed_or_missing": 0.0,
+      "harmful": 0.04861111111111111,
+      "raw_material_loss": 0.010416666666666666,
+      "raw_unresolved": 0.16666666666666666,
+      "unresolved": 0.09722222222222222
+    },
+    "observed": 288,
+    "raw_loss_gate_counts": {
+      "failed_or_missing": 0,
+      "material_loss": 3,
+      "no_material_loss": 237,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 48
+    },
+    "scheduled": 288,
+    "score_counts": {
+      "beneficial": 91,
+      "failed_or_missing": 0,
+      "harmful": 14,
+      "practical_tie": 155,
+      "unresolved": 28
+    }
+  },
+  "created_utc": "2026-09-17T12:24:45.035301+00:00",
+  "final_counts": {
+    "fractions_of_scheduled": {
+      "failed_or_missing": 0.0,
+      "harmful": 0.09027777777777778,
+      "raw_material_loss": 0.019097222222222224,
+      "raw_unresolved": 0.171875,
+      "unresolved": 0.13194444444444445
+    },
+    "observed": 576,
+    "raw_loss_gate_counts": {
+      "failed_or_missing": 0,
+      "material_loss": 11,
+      "no_material_loss": 466,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 99
+    },
+    "scheduled": 576,
+    "score_counts": {
+      "beneficial": 236,
+      "failed_or_missing": 0,
+      "harmful": 52,
+      "practical_tie": 212,
+      "unresolved": 76
+    }
+  },
+  "final_summary_sha256": "bfd675b51614bda2fc87ed24e523722d46b469966bf6efb69e564b295250e560",
+  "gate_assessment": "neither approved E4 benefit gate established; no adaptive confirmation, holdout, or E5 allocation",
+  "grouped": {
+    "by_arm": [
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.2604166666666667,
+          "raw_material_loss": 0.041666666666666664,
+          "raw_unresolved": 0.19791666666666666,
+          "unresolved": 0.13541666666666666
+        },
+        "kind": "primary_vs_s0",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 4,
+          "no_material_loss": 73,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 19
+        },
+        "reference_tag": "S0",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 38,
+          "failed_or_missing": 0,
+          "harmful": 25,
+          "practical_tie": 20,
+          "unresolved": 13
+        }
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.052083333333333336,
+          "raw_material_loss": 0.020833333333333332,
+          "raw_unresolved": 0.16666666666666666,
+          "unresolved": 0.1875
+        },
+        "kind": "primary_vs_s0",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 78,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 16
+        },
+        "reference_tag": "S0",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 54,
+          "failed_or_missing": 0,
+          "harmful": 5,
+          "practical_tie": 19,
+          "unresolved": 18
+        }
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.08333333333333333,
+          "raw_material_loss": 0.020833333333333332,
+          "raw_unresolved": 0.16666666666666666,
+          "unresolved": 0.17708333333333334
+        },
+        "kind": "primary_vs_s0",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 78,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 16
+        },
+        "reference_tag": "S0",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 53,
+          "failed_or_missing": 0,
+          "harmful": 8,
+          "practical_tie": 18,
+          "unresolved": 17
+        }
+      }
+    ],
+    "by_component_contrast": [
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.020833333333333332,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.16666666666666666,
+          "unresolved": 0.14583333333333334
+        },
+        "kind": "component_diagnostic",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 80,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 16
+        },
+        "reference_tag": "S1",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 50,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 30,
+          "unresolved": 14
+        }
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.10416666666666667,
+          "raw_material_loss": 0.03125,
+          "raw_unresolved": 0.16666666666666666,
+          "unresolved": 0.010416666666666666
+        },
+        "kind": "component_diagnostic",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 3,
+          "no_material_loss": 77,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 16
+        },
+        "reference_tag": "S2",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 1,
+          "failed_or_missing": 0,
+          "harmful": 10,
+          "practical_tie": 84,
+          "unresolved": 1
+        }
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.020833333333333332,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.16666666666666666,
+          "unresolved": 0.13541666666666666
+        },
+        "kind": "component_diagnostic",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 80,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 16
+        },
+        "reference_tag": "S1",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 40,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 41,
+          "unresolved": 13
+        }
+      }
+    ],
+    "by_trajectory": [
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.375,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0625
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 6,
+          "failed_or_missing": 0,
+          "harmful": 6,
+          "practical_tie": 3,
+          "unresolved": 1
+        },
+        "trajectory": "logreg_D5_noise3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 13,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 2,
+          "unresolved": 0
+        },
+        "trajectory": "logreg_D5_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 13,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 2,
+          "unresolved": 0
+        },
+        "trajectory": "logreg_D5_noise3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 12,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 4,
+          "unresolved": 0
+        },
+        "trajectory": "logreg_D5_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S2",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 16,
+          "unresolved": 0
+        },
+        "trajectory": "logreg_D5_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 12,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 4,
+          "unresolved": 0
+        },
+        "trajectory": "logreg_D5_noise3_seed0"
+      },
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.5625
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 6,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 0,
+          "unresolved": 9
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.5
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 0,
+          "unresolved": 8
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.5
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 0,
+          "unresolved": 8
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.4375
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 7
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S2",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 1,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 15,
+          "unresolved": 0
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.4375
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 7
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed0"
+      },
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.375,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0625
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 1,
+          "no_material_loss": 15,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 6,
+          "failed_or_missing": 0,
+          "harmful": 6,
+          "practical_tie": 3,
+          "unresolved": 1
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 7,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.1875,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 3,
+          "practical_tie": 5,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 9,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 7,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S2",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 14,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 7,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 9,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed0"
+      },
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.4375,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.1875,
+          "unresolved": 0.0625
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 1,
+          "no_material_loss": 12,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 3
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 1,
+          "failed_or_missing": 0,
+          "harmful": 7,
+          "practical_tie": 7,
+          "unresolved": 1
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.1875
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 4,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 9,
+          "unresolved": 3
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.1875
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 4,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 9,
+          "unresolved": 3
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 9,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 7,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S2",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 16,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 9,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 7,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed0"
+      },
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.25,
+          "raw_material_loss": 0.125,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 14,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 12,
+          "failed_or_missing": 0,
+          "harmful": 4,
+          "practical_tie": 0,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.1875,
+          "raw_material_loss": 0.125,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 14,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 13,
+          "failed_or_missing": 0,
+          "harmful": 3,
+          "practical_tie": 0,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.25,
+          "raw_material_loss": 0.125,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 14,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 12,
+          "failed_or_missing": 0,
+          "harmful": 4,
+          "practical_tie": 0,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 8,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.5,
+          "raw_material_loss": 0.1875,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 3,
+          "no_material_loss": 13,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S2",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 8,
+          "practical_tie": 8,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 16,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed0"
+      },
+      {
+        "arm_tag": "S1",
+        "contrast": "S1_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.0625
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 7,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 7,
+          "unresolved": 1
+        },
+        "trajectory": "timing_D5_noise2.2_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.4375
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 7
+        },
+        "trajectory": "timing_D5_noise2.2_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.375
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 2,
+          "unresolved": 6
+        },
+        "trajectory": "timing_D5_noise2.2_seed0"
+      },
+      {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.4375
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 4,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 3,
+          "unresolved": 7
+        },
+        "trajectory": "timing_D5_noise2.2_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S2",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.0625
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S2",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 15,
+          "unresolved": 1
+        },
+        "trajectory": "timing_D5_noise2.2_seed0"
+      },
+      {
+        "arm_tag": "S3",
+        "contrast": "S3_minus_S1",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.375
+        },
+        "kind": "component_diagnostic",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S1",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 4,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 4,
+          "unresolved": 6
+        },
+        "trajectory": "timing_D5_noise2.2_seed0"
+      }
+    ]
+  },
+  "harmful_component_origin_count": 14,
+  "harmful_component_origin_diagnostics": [
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "rosenbrock_D2_noise1_seed0_late__S3_minus_S2__r0",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 26,
+      "raw_arm_to_baseline_ratio": 0.9845222281902314,
+      "replicate": 0,
+      "score_mean_difference": 0.0001635353002241713,
+      "selected_shortlist_index": 0,
+      "selection_report_sha256": "6875482893d564a280e42ca956d9b98714ec97010bd4fb2322edf3cf9ca7e14b",
+      "selection_tag": "rosenbrock_D2_noise1_seed0_late__S3__r0",
+      "selection_terminal_sha256": "2f83802b8d3583834da656e366b66fae2351b8c6f180f3a3b398a8747835fad0",
+      "state_id": "rosenbrock_D2_noise1_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "rosenbrock_D2_noise1_seed0_late__S3_minus_S2__r2",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 33,
+      "raw_arm_to_baseline_ratio": 0.9211498981772331,
+      "replicate": 2,
+      "score_mean_difference": 0.0008328503207464255,
+      "selected_shortlist_index": 1,
+      "selection_report_sha256": "3f2210aa992fc242ae35ab3d7bdb6d069fdc5840e8accc4056f1e3bb72eb5904",
+      "selection_tag": "rosenbrock_D2_noise1_seed0_late__S3__r2",
+      "selection_terminal_sha256": "423df20e890099993e3e37a999114f1a427ae3833f5d054f4e307a943976fd78",
+      "state_id": "rosenbrock_D2_noise1_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r1",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 47,
+      "raw_arm_to_baseline_ratio": 0.883108579069524,
+      "replicate": 1,
+      "score_mean_difference": 0.0003664291813097395,
+      "selected_shortlist_index": 3,
+      "selection_report_sha256": "133e85cd2f2cf90886368143ab22d83fa2b1c21f20119f5d0b88fc7f1106f222",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r1",
+      "selection_terminal_sha256": "6c4d7d6e2a789f92454e9359d52678e0f2ac2841b7d243d0981a8785398089c1",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 995,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r3",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 40,
+      "raw_arm_to_baseline_ratio": 0.9352655754824715,
+      "replicate": 3,
+      "score_mean_difference": 0.00020359078336382175,
+      "selected_shortlist_index": 7,
+      "selection_report_sha256": "81297e0be2b80f2c80b5250fbc29388de9d5fc80c895d9b83c4f4b1aa4ae2cd7",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r3",
+      "selection_terminal_sha256": "eadcc63a862187b530bde6eee347ea79ab7860181defebca91d14540eaf773a6",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r4",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 43,
+      "raw_arm_to_baseline_ratio": 0.9399949288914289,
+      "replicate": 4,
+      "score_mean_difference": 0.00018551104979865757,
+      "selected_shortlist_index": 4,
+      "selection_report_sha256": "ef69883c1141dfbdf11049bd001f53e21ee2cb991b763bb3da2cb983d384855f",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r4",
+      "selection_terminal_sha256": "f96f4b595a001b3ef72823f0d5fac2cea6e8c51b89696266f90adc17249f0d31",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r5",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 49,
+      "raw_arm_to_baseline_ratio": 0.8485536610283309,
+      "replicate": 5,
+      "score_mean_difference": 0.0004753173342796069,
+      "selected_shortlist_index": 6,
+      "selection_report_sha256": "e5ce51fdb9ae02c34266396709799e3b4f6d9c4312eea55b645c614c40bfa0ee",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r5",
+      "selection_terminal_sha256": "b7d06f17d2366af6e24e3249edf3146cedb3719ce5006d18a8fe241b582b49d6",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r6",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 47,
+      "raw_arm_to_baseline_ratio": 0.9381340693287559,
+      "replicate": 6,
+      "score_mean_difference": 0.00019473236834717522,
+      "selected_shortlist_index": 2,
+      "selection_report_sha256": "82a856dcb17bf6fbc998f7c6693d93d57e249086cea99b71f631f36cd520ca5f",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r6",
+      "selection_terminal_sha256": "0d7623c889289bd915160fb3b0b0f0ecfd453fa5875d8d4a5296f0e927bd6f80",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 196,
+      "comparison_tag": "timing_D5_noise2.2_seed0_late__S2_minus_S1__r2",
+      "contrast": "S2_minus_S1",
+      "fallback_reason": null,
+      "local_iterations": 12,
+      "raw_arm_to_baseline_ratio": 0.9649314301143231,
+      "replicate": 2,
+      "score_mean_difference": 0.00027462139781112005,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "e81ddb46e011c51dcedd1ffcf5eeb1b350e1af747b5229e227a5fa044d9999a0",
+      "selection_tag": "timing_D5_noise2.2_seed0_late__S2__r2",
+      "selection_terminal_sha256": "53772832c3fc198e50c7feea38832af1689d7c81bd1480cee69cdc7e84893b06",
+      "state_id": "timing_D5_noise2.2_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 738,
+      "comparison_tag": "timing_D5_noise2.2_seed0_late__S3_minus_S1__r2",
+      "contrast": "S3_minus_S1",
+      "fallback_reason": null,
+      "local_iterations": 50,
+      "raw_arm_to_baseline_ratio": 0.9649316771853101,
+      "replicate": 2,
+      "score_mean_difference": 0.0002746194632674559,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "6df7f9d3645cb8170d775eed2ba79f9d817f3c8706bfcef42dc022270e78eab8",
+      "selection_tag": "timing_D5_noise2.2_seed0_late__S3__r2",
+      "selection_terminal_sha256": "a0f2ab0b7036f7023359fb493290b5b43819a337abb32859d8ae46896a5235d5",
+      "state_id": "timing_D5_noise2.2_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 185,
+      "comparison_tag": "timing_D5_noise2.2_seed0_late__S2_minus_S1__r3",
+      "contrast": "S2_minus_S1",
+      "fallback_reason": null,
+      "local_iterations": 11,
+      "raw_arm_to_baseline_ratio": 0.9490333885270017,
+      "replicate": 3,
+      "score_mean_difference": 0.0004011604493681653,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "062f5c763aae4342c688345d68a0544bc36d55bf67a3d40f4155c636f0eabe3b",
+      "selection_tag": "timing_D5_noise2.2_seed0_late__S2__r3",
+      "selection_terminal_sha256": "7c56b7ddf9c68d4ee04d7d4138e8751d20596509dc95dd8833ad5dd9a62c5c1b",
+      "state_id": "timing_D5_noise2.2_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 672,
+      "comparison_tag": "timing_D5_noise2.2_seed0_late__S3_minus_S1__r3",
+      "contrast": "S3_minus_S1",
+      "fallback_reason": null,
+      "local_iterations": 46,
+      "raw_arm_to_baseline_ratio": 0.9490319770152619,
+      "replicate": 3,
+      "score_mean_difference": 0.0004011715572458663,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "211c0cb6f1675cc58a5ceff67a4d0f4125db5a3829a186b35784c76a8baba644",
+      "selection_tag": "timing_D5_noise2.2_seed0_late__S3__r3",
+      "selection_terminal_sha256": "793f6f39efc66d255a1aa34ed61ad6986cd93f74da442cccaf3dc80c284dc0cc",
+      "state_id": "timing_D5_noise2.2_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r0",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 44,
+      "raw_arm_to_baseline_ratio": 0.983099879735155,
+      "replicate": 0,
+      "score_mean_difference": 5.102565809090437e-05,
+      "selected_shortlist_index": 3,
+      "selection_report_sha256": "f93b8cc3d41b4085ebcf7d3afb9ad969a3868f55284f936f69f42926d3cb7f71",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r0",
+      "selection_terminal_sha256": "20ec7588c46ae8a1d833d26da4d88fef3b0cc5bcfe1dbbcbb1490bdcb268e22e",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r7",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 45,
+      "raw_arm_to_baseline_ratio": 0.8931300686663929,
+      "replicate": 7,
+      "score_mean_difference": 0.0003353606410918322,
+      "selected_shortlist_index": 7,
+      "selection_report_sha256": "e87d208e7ad3072613c629565e885cb97b607f008a97b0c9698172b2185dd733",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r7",
+      "selection_terminal_sha256": "e0367ecd01b4acefd64f38df078cc373ab04df69742455157b28e331cd4c5a3f",
+      "state_id": "student_D8_noise3_seed0_late"
+    },
+    {
+      "accurate_candidate_rows": 996,
+      "comparison_tag": "student_D8_noise3_seed0_late__S3_minus_S2__r2",
+      "contrast": "S3_minus_S2",
+      "fallback_reason": "candidate_row_budget",
+      "local_iterations": 45,
+      "raw_arm_to_baseline_ratio": 0.9094868842759167,
+      "replicate": 2,
+      "score_mean_difference": 0.0002729764562821521,
+      "selected_shortlist_index": 6,
+      "selection_report_sha256": "c7b5e267d0285e0f86b32c9cdecef393504a32e7d3de4914a6effebd29718c89",
+      "selection_tag": "student_D8_noise3_seed0_late__S3__r2",
+      "selection_terminal_sha256": "7bab212b1479ac5dc6ac998a280acf9518017207f1578364da5f4b0ca0250a3f",
+      "state_id": "student_D8_noise3_seed0_late"
+    }
+  ],
+  "kind": "noisy_acq_search_judge_outcome",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "primary_counts": {
+    "fractions_of_scheduled": {
+      "failed_or_missing": 0.0,
+      "harmful": 0.13194444444444445,
+      "raw_material_loss": 0.027777777777777776,
+      "raw_unresolved": 0.17708333333333334,
+      "unresolved": 0.16666666666666666
+    },
+    "observed": 288,
+    "raw_loss_gate_counts": {
+      "failed_or_missing": 0,
+      "material_loss": 8,
+      "no_material_loss": 229,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 51
+    },
+    "scheduled": 288,
+    "score_counts": {
+      "beneficial": 145,
+      "failed_or_missing": 0,
+      "harmful": 38,
+      "practical_tie": 57,
+      "unresolved": 48
+    }
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim_scope": "development judge evidence only",
+  "raw_artifact_sha256": "ed5793221a094b6271b09f3a8f775b64d838495477e9f796ab722ee4caae47b8",
+  "rounds": [
+    {
+      "allocation_sha256": "1805948dfb8d1cca3b1dfae6d52f46b0679382b522ea0ff9b7880f86fd915b58",
+      "budget": 4096,
+      "costs_sha256": "505f6ab9fcf0b66018cdfffdf5f183eece125b2bafd9f00931a64ad3ac2397ec",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 1.0,
+          "unresolved": 1.0
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 0,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 576
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 0,
+          "unresolved": 576
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 76.0164173000012,
+      "state_count": 12,
+      "succeeded_state_count": 12,
+      "summary_sha256": "47e53f1ea9b042d21ace6832e629b98a3604aacaad01ce438e5933a4cd84c00a"
+    },
+    {
+      "allocation_sha256": "aebd0ca0a500fa6bdc672b0a5287bf3927ae22912031bf8be7b208f67b70b50d",
+      "budget": 8192,
+      "costs_sha256": "f2a6960a66ef53b9245406e46fbd3df572d64c8922a7d1a97bf15b61bca19b3d",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.08854166666666667,
+          "raw_material_loss": 0.017361111111111112,
+          "raw_unresolved": 0.18055555555555555,
+          "unresolved": 0.14583333333333334
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 10,
+          "no_material_loss": 462,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 104
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 231,
+          "failed_or_missing": 0,
+          "harmful": 51,
+          "practical_tie": 210,
+          "unresolved": 84
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 84.56664650000675,
+      "state_count": 12,
+      "succeeded_state_count": 12,
+      "summary_sha256": "365eb1560f51abffc8b82674c4d73a3db997c6a16de8a59b4323e74bb8c35683"
+    },
+    {
+      "allocation_sha256": "783c82c0c940818fd195e62ce079e9a8590c97b8efd39d8d495bfa354db28920",
+      "budget": 16384,
+      "costs_sha256": "e38bb07e81e9bdf137e2bd863ccd6f08a44ab8e060313922dad374c04a05d668",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.09027777777777778,
+          "raw_material_loss": 0.019097222222222224,
+          "raw_unresolved": 0.1753472222222222,
+          "unresolved": 0.1423611111111111
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 464,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 101
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 232,
+          "failed_or_missing": 0,
+          "harmful": 52,
+          "practical_tie": 210,
+          "unresolved": 82
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 79.45095579999543,
+      "state_count": 8,
+      "succeeded_state_count": 8,
+      "summary_sha256": "b4303e57935f4bab80cf882c0456d7ac6c6573147c4bad5133e637cc22d4bf74"
+    },
+    {
+      "allocation_sha256": "d62360072f5d0d61c306c33e73e8f3590491a75cde7afe53675060e0c6df3e5c",
+      "budget": 32768,
+      "costs_sha256": "4ec25bdc3cc7770f2fb7edad886973bf6eb39cecb758a7250102cc6cd5e36ce2",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.09027777777777778,
+          "raw_material_loss": 0.019097222222222224,
+          "raw_unresolved": 0.171875,
+          "unresolved": 0.13541666666666666
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 466,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 99
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 236,
+          "failed_or_missing": 0,
+          "harmful": 52,
+          "practical_tie": 210,
+          "unresolved": 78
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 149.16075580000324,
+      "state_count": 8,
+      "succeeded_state_count": 8,
+      "summary_sha256": "d8e700d27060b31db7f7ae4a96a99d00ecd359baa77e6059d87ba7fee05d9540"
+    },
+    {
+      "allocation_sha256": "eb06a43b460166a85035d7196ef19168e1315cfa222076a5fd03ab435fb10649",
+      "budget": 65536,
+      "costs_sha256": "6f744c42855ad98b40d44ceb53a92ea39267442b5d2466611574a1e41aca5dec",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.09027777777777778,
+          "raw_material_loss": 0.019097222222222224,
+          "raw_unresolved": 0.171875,
+          "unresolved": 0.13194444444444445
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 466,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 99
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 236,
+          "failed_or_missing": 0,
+          "harmful": 52,
+          "practical_tie": 212,
+          "unresolved": 76
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 189.9327570000023,
+      "state_count": 6,
+      "succeeded_state_count": 6,
+      "summary_sha256": "bfd675b51614bda2fc87ed24e523722d46b469966bf6efb69e564b295250e560"
+    }
+  ],
+  "schema_version": 1,
+  "selection_snapshot_sha256": "e7d132a3f1902b4ee2e75eaf2769fd769b48b14c4dab4a9009f1705b75ae9b13",
+  "worst_losses": {
+    "component_worst_raw_retained_ratio": {
+      "cell": {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "kind": "component_diagnostic",
+        "reference_tag": "S1",
+        "replicate": 7,
+        "state_id": "timing_D5_noise2.2_seed0_early"
+      },
+      "comparison_tag": "timing_D5_noise2.2_seed0_early__S2_minus_S1__r7",
+      "raw_arm_to_baseline_ratio": 0.002916234980274234,
+      "raw_classification": "unresolved",
+      "score_classification": "unresolved",
+      "score_mean_difference": 5.251738423588954
+    },
+    "component_worst_score": {
+      "cell": {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S1",
+        "kind": "component_diagnostic",
+        "reference_tag": "S1",
+        "replicate": 4,
+        "state_id": "timing_D5_noise2.2_seed0_early"
+      },
+      "comparison_tag": "timing_D5_noise2.2_seed0_early__S2_minus_S1__r4",
+      "raw_arm_to_baseline_ratio": 0.003920853213122664,
+      "raw_classification": "unresolved",
+      "score_classification": "unresolved",
+      "score_mean_difference": 5.253503040959153
+    },
+    "primary_worst_raw_retained_ratio": {
+      "cell": {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "kind": "primary_vs_s0",
+        "reference_tag": "S0",
+        "replicate": 7,
+        "state_id": "timing_D5_noise2.2_seed0_early"
+      },
+      "comparison_tag": "timing_D5_noise2.2_seed0_early__S2_minus_S0__r7",
+      "raw_arm_to_baseline_ratio": 0.0029162349661791594,
+      "raw_classification": "unresolved",
+      "score_classification": "unresolved",
+      "score_mean_difference": 5.252070731066453
+    },
+    "primary_worst_score": {
+      "cell": {
+        "arm_tag": "S2",
+        "contrast": "S2_minus_S0",
+        "kind": "primary_vs_s0",
+        "reference_tag": "S0",
+        "replicate": 4,
+        "state_id": "timing_D5_noise2.2_seed0_early"
+      },
+      "comparison_tag": "timing_D5_noise2.2_seed0_early__S2_minus_S0__r4",
+      "raw_arm_to_baseline_ratio": 0.003920853216958717,
+      "raw_classification": "unresolved",
+      "score_classification": "unresolved",
+      "score_mean_difference": 5.25343586571541
+    }
+  }
+}

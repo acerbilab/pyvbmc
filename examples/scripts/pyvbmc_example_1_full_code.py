@@ -1,7 +1,17 @@
+import sys
+
+if "google.colab" in sys.modules:  # Colab lacks PyVBMC: install it
+    get_ipython().run_line_magic("pip", "install --upgrade pyvbmc")
+
+
 import numpy as np
 import scipy.stats as scs
 
 from pyvbmc import VBMC
+
+# Fix the random state, so that the results below are reproducible:
+np.random.seed(42)
+
 
 D = 2  # We consider a 2-D problem
 
@@ -55,7 +65,7 @@ vbmc = VBMC(log_joint, x0, LB, UB, PLB, PUB)
 vp, results = vbmc.optimize()
 
 
-lml_true = -2.272  # ground truth, which we know for this toy scenario
+lml_true = -2.2598  # ground truth, which we know for this toy scenario
 
 print("The true log model evidence is:", lml_true)
 print("The obtained ELBO is:", format(results["elbo"], ".3f"))

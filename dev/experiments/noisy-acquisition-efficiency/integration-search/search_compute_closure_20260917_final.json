@@ -1,0 +1,32 @@
+{
+  "automatic_override": false,
+  "closure_successor_script_archive": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_finalize_e3_compute_closure.py",
+    "sha256": "90c932f8f8755eb9e856c443620e9e4f7eceb1e9c509b9f3950bd9f7b741d2a9"
+  },
+  "created_utc": "2026-09-17T14:19:49.645049+00:00",
+  "e4_entry_gate_established": false,
+  "e5_allocated": false,
+  "final_assessment": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\e3_final_assessment_20260917.json",
+    "sha256": "7ea4e5f6c5e89e31fc12e5b3f6c04313ca53fe7b4547950da18507c2aded2614"
+  },
+  "final_assessment_script_archive": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_finalize_e3_assessment.py",
+    "sha256": "f4d14cc2db9203b62f8e999ca517897be4dbeec609f439eec205902738ce4712"
+  },
+  "kind": "e3_search_final_compute_closure_successor",
+  "local_inventory": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\LOCAL.md",
+    "sha256": "a7adc7e905c6e7f94e01e1ab5fd5d95d1597446fa75e679099e9586cb2bf4907"
+  },
+  "numerical_status": "complete",
+  "prior_closure": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_compute_closure_20260917.json",
+    "sha256": "6c1d292e664f8de171ffc6ec58162dfb5397a8b4df762b2c5468f97e32157999"
+  },
+  "process_status": "No noisy-acquisition or pyvbmc-stage3 Python process remained in the final pre-closure elevated Win32_Process query.",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "bdd96a38d5a69bffb04c3698f60f2d6b9a44c0ac487c32c9d22725e1696aab5a",
+  "schema_version": 1
+}

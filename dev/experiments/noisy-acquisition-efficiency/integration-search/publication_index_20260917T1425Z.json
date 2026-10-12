@@ -1,0 +1,140 @@
+{
+  "artifacts": [
+    {
+      "local_artifact_relative_to_run_root": "search_holdout_authorization_20260917.json",
+      "published_copy": "search_holdout_authorization_20260917.json",
+      "published_copy_lf_bytes_sha256": "9d720dfeeedc7a43adcc3e6bd1981967f2873019964ad795eeb9688445c7721f",
+      "raw_artifact_sha256": "6a3febdd28be0cd648c1de318329e925c1b8c74e9b0538d3ce6b474faf0547b2"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_holdout_manifest.json",
+      "published_copy": "search_holdout_manifest_20260917.json",
+      "published_copy_lf_bytes_sha256": "ff82f58e94348a1f154fbad6392416149bda99dc0bdbecb86cac373f4603773d",
+      "raw_artifact_sha256": "c39a838411efe47102007a0e4c9ef15d86b0079aeee5e36fca5cc436aa3211fd"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_holdout_selection/allocation.json",
+      "published_copy": "search_holdout_allocation_20260917.json",
+      "published_copy_lf_bytes_sha256": "dc5cb2f2cc756e7ce9198237f56a464a7c6328969f64d1d43be2d9c07eda7ef3",
+      "raw_artifact_sha256": "3ea9c6243680ff8a20c4aaf92321b2bb7198a2fb12432e6cba7f4da40c248e7a"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_holdout_selection/launch_clearance.json",
+      "published_copy": "search_holdout_clearance_20260917.json",
+      "published_copy_lf_bytes_sha256": "67be956ef363d20056a655f49d3c20ab12210deb86e0118c0aa6bcdc92f32f87",
+      "raw_artifact_sha256": "3c1804c7b4a4d04bdbcb6360bd33199731481369fce259fa6599f7f02bf2b3f5"
+    },
+    {
+      "local_artifact_relative_to_run_root": "holdout_selection_outcome.json",
+      "published_copy": "holdout_selection_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "f2ccd3dcf4bb5f6fc885d3cec31e66817db55cf17e582cb2b3fca43fbe393022",
+      "raw_artifact_sha256": "66334e5583dbc353cc0405625593af7926f544059de08831776e9f1703640cd1"
+    },
+    {
+      "local_artifact_relative_to_run_root": "holdout_judge_outcome.json",
+      "published_copy": "holdout_judge_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "cf7189f34cf1505b8506386d6711a10e56a72a8b2f5d9b4fd435f91212182d70",
+      "raw_artifact_sha256": "942721d156f691b9b5291a474c030eb8db22294ff0062d3110499c9267ad5dfe"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_holdout_judging/completed_ladder.json",
+      "published_copy": "holdout_judge_ladder_20260917.json",
+      "published_copy_lf_bytes_sha256": "c03e34e8190cc4c5a71d6563009352f97696155ea61b5400bb5c2ad7d249c014",
+      "raw_artifact_sha256": "3ae2a926b1bbd5a62eeff175dd4da6b9eafe5d30cc0d448c748e51bf57dd79a8"
+    },
+    {
+      "local_artifact_relative_to_run_root": "orchestration_scripts_holdout_20260917/index.json",
+      "published_copy": "holdout_wrapper_archive_20260917.json",
+      "published_copy_lf_bytes_sha256": "df64959ca11470f11277c04e6b67c30c6b487f4f51bcc61ac27cb2d5ed970e99",
+      "raw_artifact_sha256": "2b61c71992b2a1ac9dfac09bc6523fbd611467d3baa3c52852df018da26c9025"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_mc_holdout_catastrophes.json",
+      "published_copy": "search_mc_holdout_catastrophes_20260917.json",
+      "published_copy_lf_bytes_sha256": "0d4750e4c7b94ec000125f62e9ab44fe782647ed81349ce8b542d8bbd12200cb",
+      "raw_artifact_sha256": "30982b9bc49b45a525796aabd29e087da16830df330a4a110a2485bf4c5466f6"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_mc_development_outcome.json",
+      "published_copy": "search_mc_development_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "ff7a233866e5b5248adfff9214368fc53188e6dee8d4fc8f2467ca8c5e5cd9a0",
+      "raw_artifact_sha256": "96b1a10e8d8ecf5479adb803249eb3c12555f326c5b1fc13176bb09db26d1b5a"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_mc_holdout_outcome.json",
+      "published_copy": "search_mc_holdout_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "6d4f78c20295fce003e9f52a636c7bbf1ce3d22e707af5d285fbaefac226f979",
+      "raw_artifact_sha256": "847d52db4704206647e6522fedbc0ce872f5c6416f8648938eaac430a4dc52d9"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_mc_outcome.json",
+      "published_copy": "search_mc_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "a6e7f1b80cb1df72a3070ca165289128e8230f5ff29bc07ce415195883480954",
+      "raw_artifact_sha256": "6f81991ccf4d66c6eff57f9a35e9ebe979230bc0cb676e1608ec12c0fa8a13c1"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_mc_development/completed_ladder.json",
+      "published_copy": "search_mc_development_ladder_20260917.json",
+      "published_copy_lf_bytes_sha256": "50b819b59c1a8b3fe1dff1c71539a080806a9365f407277b1713697f13b48199",
+      "raw_artifact_sha256": "0f21946a7d80776be807a76bf834d4a1d56ae2b2b61b340509f1f16888899084"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_mc_holdout/completed_ladder.json",
+      "published_copy": "search_mc_holdout_ladder_20260917.json",
+      "published_copy_lf_bytes_sha256": "af723091d2299fcacd2d22bf3e0ba85bc12ceb299e132accff12fa31c747eee6",
+      "raw_artifact_sha256": "284a7f233bfb467b5eed157dba8819c36208836756014d5cdd968e5fca2dd7a7"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_loss_outcome.json",
+      "published_copy": "search_loss_outcome_20260917.json",
+      "published_copy_lf_bytes_sha256": "71e30a1bf6cdf73366687e18a7ceb22b2ce2750dcc70743c7420a6bcddee1322",
+      "raw_artifact_sha256": "7ef74fc9e12e5e71ccff24809a3193feafd426ff30852c8166d39b273dd571ad"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_loss/completed_ladder.json",
+      "published_copy": "search_loss_ladder_20260917.json",
+      "published_copy_lf_bytes_sha256": "db6b40a565636a15efdf5f4eeb20b61a8a6a381bac3763a24dbf68c6777fda94",
+      "raw_artifact_sha256": "585e397bf3d2d20b63840029e0a017bff781b9615ef0382368de91a58bb82adf"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e3_final_assessment_20260917.json",
+      "published_copy": "e3_final_assessment_20260917.json",
+      "published_copy_lf_bytes_sha256": "bf644ba50760cbc69e681a65eabb2b498b24c1f1725b4ee27da1395d51d214a4",
+      "raw_artifact_sha256": "7ea4e5f6c5e89e31fc12e5b3f6c04313ca53fe7b4547950da18507c2aded2614"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_compute_closure_20260917.json",
+      "published_copy": "search_compute_closure_20260917.json",
+      "published_copy_lf_bytes_sha256": "69df64af1420b227e04ecfde2e1afc13b76f8d2828eda49eb0976a310ea853dd",
+      "raw_artifact_sha256": "6c1d292e664f8de171ffc6ec58162dfb5397a8b4df762b2c5468f97e32157999"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_compute_closure_20260917_final.json",
+      "published_copy": "search_compute_closure_20260917_final.json",
+      "published_copy_lf_bytes_sha256": "617bda2e2d81e8c7506ecddd8270bacbf3bac6ab6ec968b147128c76210d89db",
+      "raw_artifact_sha256": "bdd96a38d5a69bffb04c3698f60f2d6b9a44c0ac487c32c9d22725e1696aab5a"
+    },
+    {
+      "local_artifact_relative_to_run_root": "search_compute_process_cleanup_20260917.json",
+      "published_copy": "search_compute_process_cleanup_20260917.json",
+      "published_copy_lf_bytes_sha256": "900fdb321cb19e56adbe9533f2a9a56695c436a36a02383c40cf3e19e4527767",
+      "raw_artifact_sha256": "be0245a5a3b1e06575297113772ec9b4c20c1411cd84fa4f06bccdb280c54d12"
+    },
+    {
+      "local_artifact_relative_to_run_root": "orchestration_cleanup_20260917.json",
+      "published_copy": "orchestration_cleanup_20260917.json",
+      "published_copy_lf_bytes_sha256": "5f6ef6a917659b544e42eb21fe4c04b2b4c84f0f5aed38029c46e8c8e6fcf4a5",
+      "raw_artifact_sha256": "db9f7a4f2aa2342a8cb3587b1b8e11525a96da8f92f57805489a5b44ae3513d3"
+    }
+  ],
+  "assembled_started_utc": "2026-09-17T12:53:37.156893+00:00",
+  "created_utc": "2026-09-17T14:23:38.729715+00:00",
+  "hash_convention": "Raw hashes bind original local bytes. Published-copy hashes bind UTF-8 LF bytes as stored in Git; normalize CRLF before checking a Windows working copy. Review copies are not executable manifests.",
+  "index_lifecycle": "Final publication index; assembled incrementally during the continuation, with artifact entries unchanged once added.",
+  "kind": "noisy_acquisition_holdout_publication_index",
+  "local_run_root": "dev/scripts/runs/noisy_acq_efficiency_20260916",
+  "previous_publication_index": "publication_index_20260917T1124Z.json",
+  "previous_publication_index_lf_bytes_sha256": "680f103404ac86586bc264bda24d7ca2fa4e64323a21b718e5022568e0d682c6",
+  "schema_version": 1,
+  "starting_checkpoint": "9aefe1e"
+}

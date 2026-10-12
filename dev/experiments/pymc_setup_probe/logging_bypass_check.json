@@ -1,0 +1,17 @@
+[
+  {
+    "case": "vector_0_discard",
+    "file": "calls.npz",
+    "bit_identical": true
+  },
+  {
+    "case": "vector_0_discard",
+    "file": "posterior.npz",
+    "bit_identical": true
+  },
+  {
+    "case": "vector_0_f_vals",
+    "file": "calls.npz",
+    "bit_identical": true
+  }
+]

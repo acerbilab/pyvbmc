@@ -52,6 +52,21 @@ def test__str__and__repr__():
     assert "r_index" in iteration_history.__str__()
     print(iteration_history.__repr__(full=True))
     assert "'r_index': [0.5]" in iteration_history.__repr__(full=True)
+    assert "self.check_keys: True" in iteration_history.__repr__(full=True)
+
+
+def test_str_counts_the_recorded_iterations():
+    """The summary gives the number of iterations recorded, the length of
+    the longest entry, and not the number of keys."""
+    iteration_history = IterationHistory(["elbo", "gp", "r_index", "vp"])
+    assert "num. iterations = 0" in str(iteration_history)
+    for iteration in range(3):
+        iteration_history.record_iteration(
+            {"elbo": -1.0 * iteration, "r_index": 0.1}, iteration
+        )
+    iteration_history.record("gp", "gp", 0)
+    assert len(iteration_history) == 4
+    assert "num. iterations = 3" in str(iteration_history)
 
 
 def test_len():
@@ -143,3 +158,29 @@ def test_iteration__setitem___key_not_existing():
     with pytest.raises(ValueError) as execinfo:
         iteration_history["foo"] = None
     assert "The key has not been specified" in execinfo.value.args[0]
+
+
+def test_iteration_history_record_keeps_earlier_entries():
+    """Recording a new iteration grows a key's array without copying the
+    values already stored: they were deep-copied once, when recorded, and
+    keep their identity afterwards. The new value is still copied."""
+    iteration_history = IterationHistory(["gp", "elbo"])
+    iteration_history.record_iteration({"gp": {"name": "gp0"}, "elbo": 1}, 0)
+    first = iteration_history["gp"][0]
+    iteration_history.record_iteration({"gp": {"name": "gp1"}, "elbo": 2}, 1)
+    assert iteration_history["gp"][0] is first
+    assert iteration_history["gp"][1] == {"name": "gp1"}
+    assert list(iteration_history["elbo"]) == [1, 2]
+
+    value = {"name": "gp2"}
+    iteration_history.record("gp", value, 2)
+    value["name"] = "changed"
+    assert iteration_history["gp"][2] == {"name": "gp2"}
+    assert iteration_history["gp"][0] is first
+
+    # Growing by more than one slot: the gap is None, the dtype object.
+    iteration_history.record("gp", {"name": "gp5"}, 5)
+    assert iteration_history["gp"].dtype == object
+    assert list(iteration_history["gp"][3:5]) == [None, None]
+    assert iteration_history["gp"][5] == {"name": "gp5"}
+    assert iteration_history["gp"][0] is first

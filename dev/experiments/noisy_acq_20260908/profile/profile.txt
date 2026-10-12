@@ -1,0 +1,96 @@
+         79094472 function calls (79033191 primitive calls) in 517.924 seconds
+
+   Ordered by: cumulative time
+   List reduced from 1094 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.029    0.029  517.937  517.937 /home/user/pyvbmc/pyvbmc/vbmc/vbmc.py:900(optimize)
+       39    0.117    0.003  388.376    9.958 /home/user/pyvbmc/pyvbmc/vbmc/active_sample.py:27(active_sample)
+      115    0.026    0.000  337.420    2.934 /home/user/pyvbmc/pyvbmc/vbmc/gaussian_process_train.py:15(train_gp)
+      115    0.028    0.000  336.933    2.930 /home/user/gpyreg/gpyreg/gaussian_process.py:947(fit)
+      115    5.762    0.050  315.327    2.742 /home/user/gpyreg/gpyreg/slice_sample.py:243(sample)
+   375423    1.127    0.000  309.378    0.001 /home/user/gpyreg/gpyreg/slice_sample.py:375(<lambda>)
+   375538    8.031    0.000  306.151    0.001 /home/user/gpyreg/gpyreg/slice_sample.py:664(__log_pdf_bound)
+   416372    0.839    0.000  301.250    0.001 /home/user/gpyreg/gpyreg/gaussian_process.py:1657(__gp_obj_fun)
+   416372    1.911    0.000  300.411    0.001 /home/user/gpyreg/gpyreg/gaussian_process.py:1637(__compute_nlZ)
+   375538    0.533    0.000  281.687    0.001 /home/user/gpyreg/gpyreg/gaussian_process.py:1275(<lambda>)
+   417901   42.882    0.000  269.411    0.001 /home/user/gpyreg/gpyreg/gaussian_process.py:2510(__core_computation)
+     3352    0.851    0.000  143.047    0.043 /home/user/pyvbmc/pyvbmc/acquisition_functions/abstract_acq_fcn.py:35(__call__)
+   409691    6.317    0.000  105.839    0.000 /usr/local/lib/python3.11/dist-packages/scipy/_lib/_util.py:1149(wrapper)
+   400343    0.785    0.000   92.300    0.000 /usr/local/lib/python3.11/dist-packages/scipy/linalg/_decomp_cholesky.py:50(cholesky)
+   400343   88.227    0.000   91.515    0.000 /usr/local/lib/python3.11/dist-packages/scipy/linalg/_decomp_cholesky.py:15(_cholesky)
+     3352   76.943    0.023   90.020    0.027 /home/user/pyvbmc/pyvbmc/acquisition_functions/acq_fcn_viqr.py:30(_compute_acquisition_function)
+   408044   44.878    0.000   75.309    0.000 /home/user/gpyreg/gpyreg/covariance_functions.py:135(compute)
+     3582    6.546    0.002   52.127    0.015 /home/user/gpyreg/gpyreg/gaussian_process.py:1780(predict)
+   861143   36.570    0.000   39.289    0.000 /home/user/gpyreg/gpyreg/gaussian_process.py:30(_solve_triangular)
+   429815    3.019    0.000   36.408    0.000 /usr/local/lib/python3.11/dist-packages/scipy/spatial/distance.py:2606(cdist)
+  3050332    8.685    0.000   33.986    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:66(_wrapreduction)
+   429815   32.389    0.000   32.390    0.000 {built-in method scipy.spatial._distance_pybind.cdist_sqeuclidean}
+  2252566    4.968    0.000   30.165    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:2304(sum)
+   416372   20.193    0.000   29.821    0.000 /home/user/gpyreg/gpyreg/gaussian_process.py:1419(__compute_log_priors)
+      116    0.024    0.000   26.669    0.230 /home/user/pyvbmc/pyvbmc/vbmc/variational_optimization.py:90(optimize_vp)
+  4820236   25.896    0.000   25.896    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+    13902    0.848    0.000   24.428    0.002 /home/user/pyvbmc/pyvbmc/vbmc/variational_optimization.py:1078(_neg_elcbo)
+       97    0.144    0.001   17.865    0.184 /home/user/gpyreg/gpyreg/f_min_fill.py:13(f_min_fill)
+    39969    0.049    0.000   17.560    0.000 /home/user/gpyreg/gpyreg/gaussian_process.py:1144(<lambda>)
+   417901   10.513    0.000   16.421    0.000 /home/user/gpyreg/gpyreg/mean_functions.py:389(compute)
+      190    0.070    0.000   14.017    0.074 /usr/local/lib/python3.11/dist-packages/cma/evolution_strategy.py:4749(fmin)
+      122    0.278    0.002   12.901    0.106 /home/user/pyvbmc/pyvbmc/vbmc/minimize_adam.py:8(minimize_adam)
+    13902    6.569    0.000   12.708    0.001 /home/user/pyvbmc/pyvbmc/vbmc/variational_optimization.py:1325(_gp_log_joint)
+     6580    0.021    0.000   12.514    0.002 /home/user/pyvbmc/pyvbmc/vbmc/variational_optimization.py:244(vb_train_mc_fun)
+  1189034    1.710    0.000   11.934    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:2436(any)
+  1199893    3.095    0.000   10.321    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:86(_wrapreduction_any_all)
+      116    0.056    0.000    9.003    0.078 /home/user/pyvbmc/pyvbmc/vbmc/variational_optimization.py:687(_sieve)
+   721778    1.385    0.000    8.387    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:3149(min)
+     3162    0.031    0.000    8.250    0.003 /home/user/pyvbmc/pyvbmc/vbmc/active_sample.py:360(acq_fun)
+     6892    5.611    0.001    7.464    0.001 /home/user/pyvbmc/pyvbmc/entropy/entmc_vbmc.py:18(entmc_vbmc)
+
+
+         79094472 function calls (79033191 primitive calls) in 517.924 seconds
+
+   Ordered by: internal time
+   List reduced from 1094 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   400343   88.227    0.000   91.515    0.000 /usr/local/lib/python3.11/dist-packages/scipy/linalg/_decomp_cholesky.py:15(_cholesky)
+     3352   76.943    0.023   90.020    0.027 /home/user/pyvbmc/pyvbmc/acquisition_functions/acq_fcn_viqr.py:30(_compute_acquisition_function)
+   408044   44.878    0.000   75.309    0.000 /home/user/gpyreg/gpyreg/covariance_functions.py:135(compute)
+   417901   42.882    0.000  269.411    0.001 /home/user/gpyreg/gpyreg/gaussian_process.py:2510(__core_computation)
+   861143   36.570    0.000   39.289    0.000 /home/user/gpyreg/gpyreg/gaussian_process.py:30(_solve_triangular)
+   429815   32.389    0.000   32.390    0.000 {built-in method scipy.spatial._distance_pybind.cdist_sqeuclidean}
+  4820236   25.896    0.000   25.896    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   416372   20.193    0.000   29.821    0.000 /home/user/gpyreg/gpyreg/gaussian_process.py:1419(__compute_log_priors)
+   417901   10.513    0.000   16.421    0.000 /home/user/gpyreg/gpyreg/mean_functions.py:389(compute)
+  3050332    8.685    0.000   33.986    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:66(_wrapreduction)
+   375538    8.031    0.000  306.151    0.001 /home/user/gpyreg/gpyreg/slice_sample.py:664(__log_pdf_bound)
+    13902    6.569    0.000   12.708    0.001 /home/user/pyvbmc/pyvbmc/vbmc/variational_optimization.py:1325(_gp_log_joint)
+     3582    6.546    0.002   52.127    0.015 /home/user/gpyreg/gpyreg/gaussian_process.py:1780(predict)
+   409691    6.317    0.000  105.839    0.000 /usr/local/lib/python3.11/dist-packages/scipy/_lib/_util.py:1149(wrapper)
+      115    5.762    0.050  315.327    2.742 /home/user/gpyreg/gpyreg/slice_sample.py:243(sample)
+     6892    5.611    0.001    7.464    0.001 /home/user/pyvbmc/pyvbmc/entropy/entmc_vbmc.py:18(entmc_vbmc)
+  2252566    4.968    0.000   30.165    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:2304(sum)
+  3050332    3.563    0.000    3.563    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:67(<dictcomp>)
+    57383    3.510    0.000    3.510    0.000 {built-in method numpy._core._multiarray_umath.c_einsum}
+  1270834    3.469    0.000    4.370    0.000 /usr/local/lib/python3.11/dist-packages/scipy/linalg/blas.py:395(getter)
+  1199893    3.095    0.000   10.321    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:86(_wrapreduction_any_all)
+   429815    3.019    0.000   36.408    0.000 /usr/local/lib/python3.11/dist-packages/scipy/spatial/distance.py:2606(cdist)
+   358241    2.838    0.000    3.471    0.000 /home/user/gpyreg/gpyreg/noise_functions.py:179(compute)
+   416354    2.162    0.000    4.459    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/numeric.py:2535(array_equal)
+  1170482    2.044    0.000    2.044    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+     3352    1.997    0.001    2.306    0.001 /home/user/pyvbmc/pyvbmc/acquisition_functions/abstract_acq_fcn.py:218(_sq_dist)
+  4315348    1.992    0.000    2.737    0.000 {built-in method builtins.isinstance}
+   416372    1.911    0.000  300.411    0.001 /home/user/gpyreg/gpyreg/gaussian_process.py:1637(__compute_nlZ)
+   421634    1.831    0.000    4.800    0.000 /usr/local/lib/python3.11/dist-packages/scipy/_lib/array_api_compat/numpy/_aliases.py:70(asarray)
+  1189034    1.710    0.000   11.934    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:2436(any)
+   547185    1.593    0.000    2.296    0.000 {built-in method numpy.array}
+   795084    1.574    0.000    1.574    0.000 /home/user/gpyreg/gpyreg/noise_functions.py:43(hyperparameter_count)
+     9348    1.523    0.000    1.559    0.000 /usr/local/lib/python3.11/dist-packages/scipy/linalg/_basic.py:743(_solve_triangular)
+   380147    1.486    0.000    3.659    0.000 /usr/local/lib/python3.11/dist-packages/numpy/lib/_twodim_base_impl.py:258(diag)
+   721778    1.385    0.000    8.387    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:3149(min)
+   385472    1.366    0.000    3.319    0.000 {method 'any' of 'numpy.generic' objects}
+  2402977    1.365    0.000    1.365    0.000 {method 'get' of 'dict' objects}
+   979997    1.308    0.000    3.731    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:48(_wrapfunc)
+   961124    1.205    0.000    4.630    0.000 /usr/local/lib/python3.11/dist-packages/numpy/_core/fromnumeric.py:207(reshape)
+   375423    1.127    0.000  309.378    0.001 /home/user/gpyreg/gpyreg/slice_sample.py:375(<lambda>)
+
+

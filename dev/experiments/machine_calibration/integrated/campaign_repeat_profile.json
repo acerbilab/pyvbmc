@@ -1,0 +1,23 @@
+{
+  "imports_seconds": 1.2803090000525117,
+  "api_elapsed_seconds": 43.53168129990809,
+  "profile": {
+    "schema_version": 1,
+    "settings": {
+      "pdf_chunk_elements": 65536,
+      "entropy_grad_chunk_elements": 65536,
+      "entropy_value_chunk_elements": 65536
+    },
+    "source": "calibrated",
+    "status": "complete",
+    "fingerprint": "6dc859500f54e503a8b097b1b51fea5545cc95629e4be26ee8511ce01a7d2354",
+    "provenance": {
+      "calibrated_at_utc": "2026-09-09T19:06:51.228248+00:00",
+      "elapsed_seconds": 43.42200000002049,
+      "kernel_revision": "chunk-kernels-v1",
+      "pyvbmc_version": "1.0.5.dev159+g4bff1a5b9",
+      "workload_revision": "machine-calibration-v1"
+    },
+    "cache_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\calibration_integration_20260909\\campaign_cache\\calibration\\v1\\6dc859500f54e503a8b097b1b51fea5545cc95629e4be26ee8511ce01a7d2354.json"
+  }
+}

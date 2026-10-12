@@ -1,0 +1,1124 @@
+{
+  "campaign_numpy_global_rng_unchanged": true,
+  "cases": {
+    "entropy": [],
+    "pdf": [
+      {
+        "D": 4,
+        "K": 10,
+        "budget_aliases": {
+          "131072": 65536,
+          "16384": 65536,
+          "262144": 65536,
+          "32768": 65536,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.0006152000278234482,
+        "effective_count": 8,
+        "first_use_seconds": {
+          "65536": 5.689996760338545e-05
+        },
+        "grad_flags": null,
+        "jacobian_flag": true,
+        "kernel": "pdf",
+        "measurement_seconds": 0.0003968999953940511,
+        "name": "small_batch",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 8,
+        "round_seconds": {
+          "65536": [
+            2.8399983420968056e-05,
+            2.829998265951872e-05,
+            2.4099950678646564e-05,
+            2.320006024092436e-05,
+            2.289994154125452e-05
+          ]
+        },
+        "selection_wall_seconds": 0.00018350000027567148,
+        "signatures": {
+          "131072": [
+            8
+          ],
+          "16384": [
+            8
+          ],
+          "262144": [
+            8
+          ],
+          "32768": [
+            8
+          ],
+          "65536": [
+            8
+          ]
+        },
+        "synthetic_setup_seconds": 0.00012280000373721123,
+        "timing_scope": "public PDF input adapter plus source-derived kernel",
+        "workspace_estimates": {
+          "65536": {
+            "bytes_estimate": 9280,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 4,
+        "K": 20,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": true,
+        "diagnostic_seconds": 0.03574929991737008,
+        "effective_count": 8192,
+        "first_use_seconds": {
+          "131072": 0.008557399967685342,
+          "16384": 0.004175599897280335,
+          "262144": 0.00920359999872744,
+          "32768": 0.004207400023005903,
+          "65536": 0.005800599930807948
+        },
+        "grad_flags": null,
+        "jacobian_flag": true,
+        "kernel": "pdf",
+        "measurement_seconds": 0.21693520003464073,
+        "name": "sieve_8192",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 8192,
+        "round_seconds": {
+          "131072": [
+            0.008434700081124902,
+            0.008481299970299006,
+            0.008518000016920269,
+            0.008499799994751811,
+            0.010226999991573393
+          ],
+          "16384": [
+            0.004445799975655973,
+            0.004212800064124167,
+            0.004097500001080334,
+            0.004016399965621531,
+            0.00439160002861172
+          ],
+          "262144": [
+            0.00958030007313937,
+            0.009803100023418665,
+            0.008487000013701618,
+            0.009263999992981553,
+            0.008522700052708387
+          ],
+          "32768": [
+            0.004475699970498681,
+            0.003898399998433888,
+            0.003945400007069111,
+            0.004059299943037331,
+            0.004010199918411672
+          ],
+          "65536": [
+            0.004340299987234175,
+            0.003985699964687228,
+            0.003936000051908195,
+            0.005294800037518144,
+            0.004190300009213388
+          ]
+        },
+        "selection_wall_seconds": 0.184335199999623,
+        "signatures": {
+          "131072": [
+            1638
+          ],
+          "16384": [
+            204
+          ],
+          "262144": [
+            3276
+          ],
+          "32768": [
+            409
+          ],
+          "65536": [
+            819
+          ]
+        },
+        "synthetic_setup_seconds": 0.0005932999774813652,
+        "timing_scope": "public PDF input adapter plus source-derived kernel",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 3996800,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 784640,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 7665920,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 1243840,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 2162240,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      },
+      {
+        "D": 15,
+        "K": 26,
+        "budget_aliases": {
+          "131072": 131072,
+          "16384": 16384,
+          "262144": 262144,
+          "32768": 32768,
+          "65536": 65536
+        },
+        "complete": false,
+        "diagnostic_seconds": 1.5913142000790685,
+        "effective_count": 100000,
+        "first_use_seconds": {
+          "131072": 0.39126339997164905,
+          "16384": 0.15616290003526956,
+          "262144": 0.3867140000220388,
+          "32768": 0.1418971000239253,
+          "65536": 0.13363459997344762
+        },
+        "grad_flags": null,
+        "jacobian_flag": true,
+        "kernel": "pdf",
+        "measurement_seconds": 1.2320047998800874,
+        "name": "large_export",
+        "numerical_validation": {
+          "checks": [
+            {
+              "budget": 16384,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 32768,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 65536,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 131072,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            },
+            {
+              "budget": 262144,
+              "close": true,
+              "exact": true,
+              "finite": true,
+              "float64": true,
+              "max_abs_difference": 0.0,
+              "pass": true,
+              "per_output_max_abs_difference": [
+                0.0
+              ],
+              "rng_advancement_exact": true
+            }
+          ],
+          "numpy_global_rng_unchanged": true,
+          "pass": true,
+          "vp_and_input_state_unchanged": true
+        },
+        "requested_count": 100000,
+        "round_seconds": {
+          "131072": [],
+          "16384": [],
+          "262144": [],
+          "32768": [],
+          "65536": []
+        },
+        "selection_wall_seconds": 7.0999376475811005e-06,
+        "signatures": {
+          "131072": [
+            336
+          ],
+          "16384": [
+            42
+          ],
+          "262144": [
+            672
+          ],
+          "32768": [
+            84
+          ],
+          "65536": [
+            168
+          ]
+        },
+        "synthetic_setup_seconds": 0.02211320004425943,
+        "timing_scope": "public PDF input adapter plus source-derived kernel",
+        "workspace_estimates": {
+          "131072": {
+            "bytes_estimate": 16084736,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "16384": {
+            "bytes_estimate": 13210592,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "262144": {
+            "bytes_estimate": 19369472,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "32768": {
+            "bytes_estimate": 13621184,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          },
+          "65536": {
+            "bytes_estimate": 14442368,
+            "detail": "partial live-array tally: input copy/output plus diff, quotient, square, d2, and component-density temporaries",
+            "label": "estimated NumPy workspace; not a hard memory cap or RSS peak"
+          }
+        }
+      }
+    ]
+  },
+  "configuration": {
+    "budgets": [
+      16384,
+      32768,
+      65536,
+      131072,
+      262144
+    ],
+    "calibration_seconds": 2.0,
+    "case_seconds": 20.0,
+    "deadline_seconds": 5.0,
+    "default_budget": 65536,
+    "heldout_repeats": 4,
+    "repeats": 5,
+    "selection_gates": {
+      "minimum_case_median_speedup": 0.95,
+      "minimum_median_advantage": 0.1,
+      "minimum_win_fraction": 0.8
+    },
+    "trace_allocations": false,
+    "warmups": 1
+  },
+  "environment": {
+    "logical_cpu_count": 22,
+    "machine": "AMD64",
+    "numpy_configuration": {
+      "Build Dependencies": {
+        "blas": {
+          "detection method": "pkgconfig",
+          "found": true,
+          "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+          "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+          "name": "scipy-openblas",
+          "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+          "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+          "version": "0.3.34.0.0"
+        },
+        "lapack": {
+          "detection method": "pkgconfig",
+          "found": true,
+          "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+          "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+          "name": "scipy-openblas",
+          "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+          "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+          "version": "0.3.34.0.0"
+        }
+      },
+      "Compilers": {
+        "c": {
+          "commands": "cl",
+          "linker": "link",
+          "name": "msvc",
+          "version": "19.44.35228"
+        },
+        "c++": {
+          "commands": "cl",
+          "linker": "link",
+          "name": "msvc",
+          "version": "19.44.35228"
+        },
+        "cython": {
+          "commands": "cython",
+          "linker": "cython",
+          "name": "cython",
+          "version": "3.2.9"
+        }
+      },
+      "Machine Information": {
+        "build": {
+          "cpu": "x86_64",
+          "endian": "little",
+          "family": "x86_64",
+          "system": "windows"
+        },
+        "host": {
+          "cpu": "x86_64",
+          "endian": "little",
+          "family": "x86_64",
+          "system": "windows"
+        }
+      },
+      "Python Information": {
+        "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-03ol50fu\\Scripts\\python.exe",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "X86_V2"
+        ],
+        "found": [
+          "X86_V3"
+        ]
+      }
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+    "thread_environment": {
+      "BLIS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": null
+    },
+    "threadpools": {
+      "available": true,
+      "libraries": [
+        {
+          "architecture": "Haswell",
+          "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-327b2e0bcffce2882e0dc04cdeb4eaa6.dll",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libscipy_openblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.34.0.0"
+        },
+        {
+          "architecture": "Haswell",
+          "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-197ee2fc9b4d071f7e048078cac74115.dll",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libscipy_openblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.31.dev"
+        }
+      ]
+    },
+    "versions": {
+      "numpy": "2.5.2",
+      "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+      "scipy": "1.18.1",
+      "threadpoolctl": null
+    }
+  },
+  "mode": "full",
+  "numerical_validation": {
+    "bounded_pdf_input_unchanged": true,
+    "checks": [
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "value"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "log_value"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "log_value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "variant": "gradient"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "variant": "gradient_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_value_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_log_value_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "pdf",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0
+        ],
+        "variant": "bounded_original_log_value_partial_rows"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_jacobian_default_clone"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 8.881784197001252e-16,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          8.881784197001252e-16
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_jacobian_partial_components"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 1.1102230246251565e-15,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          1.1102230246251565e-15
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_jacobian_partial_samples"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_raw_default_clone"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 2.6645352591003757e-15,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          2.6645352591003757e-15
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_raw_partial_components"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 3.552713678800501e-15,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          3.552713678800501e-15
+        ],
+        "rng_advancement_exact": true,
+        "variant": "all_grad_raw_partial_samples"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "sigma_only_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "sigma_only_partial_components"
+      },
+      {
+        "close": true,
+        "exact": false,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 2.220446049250313e-16,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          2.220446049250313e-16
+        ],
+        "rng_advancement_exact": true,
+        "variant": "sigma_only_partial_samples"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "value_only_default_clone"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "value_only_partial_components"
+      },
+      {
+        "close": true,
+        "exact": true,
+        "finite": true,
+        "float64": true,
+        "kernel": "entropy",
+        "max_abs_difference": 0.0,
+        "pass": true,
+        "per_output_max_abs_difference": [
+          0.0,
+          0.0
+        ],
+        "rng_advancement_exact": true,
+        "variant": "value_only_partial_samples"
+      }
+    ],
+    "entropy_state_unchanged": true,
+    "numpy_global_rng_unchanged": true,
+    "pass": true,
+    "pdf_state_unchanged": true
+  },
+  "provenance": {
+    "script_sha256": "156008d9e59b269876e7f4fb1a3cbaa2edd972a53898ce565cdb00ed1a590938",
+    "sources": {
+      "entmc_vbmc": {
+        "sha256": "dad1948227aacaa89b81485e62eac0eef0031296e62620fe4043944a750ac9c5",
+        "source_file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\entropy\\entmc_vbmc.py"
+      },
+      "variational_posterior_pdf": {
+        "sha256": "b5ba2b742b813f1e93866566e5da214f6518575d00891e5ff462b6fdbba70086",
+        "source_file": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\variational_posterior\\variational_posterior.py"
+      }
+    }
+  },
+  "purpose": "developer-only machine-local chunk calibration evidence",
+  "schema_version": 1,
+  "selection": {
+    "entropy": {
+      "by_regime": {
+        "active": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "adam": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "boost": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "boost_high_d": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "fine": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "fine_high_d": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        }
+      },
+      "scope": "per_regime_evidence_only"
+    },
+    "pdf": {
+      "by_regime": {
+        "large_export": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "sieve_8192": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        },
+        "small_batch": {
+          "accepted": false,
+          "budget": 65536,
+          "reason": "bounded campaign did not complete"
+        }
+      },
+      "scope": "per_regime_evidence_only"
+    }
+  },
+  "soft_deadlines": {
+    "maximum_observed_call_seconds": 0.39126339997164905,
+    "note": "deadlines are checked between calls and cannot interrupt NumPy",
+    "total_deadline_overshoot_seconds": 0.0
+  },
+  "status": "partial_defaulted",
+  "tentative_selection": {
+    "entropy": {},
+    "pdf": {
+      "large_export": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {},
+        "reason": "incomplete calibration"
+      },
+      "sieve_8192": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "case_median_speedups": [
+              0.4699397472846033
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.4699397472846033,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.5145766826904564,
+              0.4699397472846033,
+              0.46208030571609204,
+              0.6229323090881445,
+              0.4097291495713322
+            ],
+            "win_fraction": 0.0
+          },
+          "16384": {
+            "case_median_speedups": [
+              0.9605857354168252
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.9605857354168252,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              0.9762697402043529,
+              0.9460928370726863,
+              0.9605857354168252,
+              1.3182950111640046,
+              0.9541624879117311
+            ],
+            "win_fraction": 0.2
+          },
+          "262144": {
+            "case_median_speedups": [
+              0.46376812130951117
+            ],
+            "eligible": false,
+            "median_paired_speedup": 0.46376812130951117,
+            "no_case_median_below_0_95": false,
+            "paired_speedups": [
+              0.4530442631335974,
+              0.4065754664509975,
+              0.46376812130951117,
+              0.5715457730493855,
+              0.49166343803003754
+            ],
+            "win_fraction": 0.0
+          },
+          "32768": {
+            "case_median_speedups": [
+              1.0223937939381313
+            ],
+            "eligible": false,
+            "median_paired_speedup": 1.0223937939381313,
+            "no_case_median_below_0_95": true,
+            "paired_speedups": [
+              0.969747752495255,
+              1.0223937939381313,
+              0.997617489951824,
+              1.304362848722226,
+              1.0449105018367884
+            ],
+            "win_fraction": 0.6
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      },
+      "small_batch": {
+        "accepted": false,
+        "budget": 65536,
+        "candidates": {
+          "131072": {
+            "eligible": false,
+            "ratios": []
+          },
+          "16384": {
+            "eligible": false,
+            "ratios": []
+          },
+          "262144": {
+            "eligible": false,
+            "ratios": []
+          },
+          "32768": {
+            "eligible": false,
+            "ratios": []
+          }
+        },
+        "reason": "no candidate cleared conservative selection gates"
+      }
+    }
+  },
+  "timings_seconds": {
+    "calibration": 1.4493368999101222,
+    "imports": 1.2745999000035226,
+    "setup": 0.0305064000422135,
+    "total": 3.200145600014366,
+    "validation": 1.6490077000344172
+  }
+}

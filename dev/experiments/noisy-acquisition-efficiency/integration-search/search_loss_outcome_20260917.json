@@ -1,0 +1,418 @@
+{
+  "automatic_override": false,
+  "bindings": {
+    "adapter_archive_v1_failed_preflight": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\noisy_acq_search_loss_diagnostic.py",
+      "sha256": "c69c94894813fafed072a016b0467b9377392d32bf76af745463c719d8b88aa5"
+    },
+    "adapter_archive_v2": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\noisy_acq_search_loss_diagnostic_v2.py",
+      "sha256": "4e816a9ce90871b2ee0d4740f853b154a6b6c51d4385f33dbfacd4ccf4642c5c"
+    },
+    "adapter_source": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_search_loss_diagnostic.py",
+      "sha256": "4e816a9ce90871b2ee0d4740f853b154a6b6c51d4385f33dbfacd4ccf4642c5c"
+    },
+    "explicit_selection": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_holdout_catastrophes.json",
+      "sha256": "30982b9bc49b45a525796aabd29e087da16830df330a4a110a2485bf4c5466f6"
+    },
+    "final_summary": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536\\summary.json",
+      "sha256": "ff8ce1e039f9f69c0480a3792dcc737441e295062af4eedffa2985ab5ebb35ef"
+    },
+    "mc_summary": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_holdout\\b65536\\summary.json",
+      "sha256": "21dc22f2f2be1d1261774a5ec6fea2ad386f40ebd965102708e0ff119eb7a67e"
+    },
+    "rqmc_summary": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_holdout_judging\\b65536_summary.json",
+      "sha256": "add5b9e55c83bb70b8c80ce4d548e337ac9b9afd966a2e9fd96ad19c5ecedf7c"
+    },
+    "wrapper": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\tmp_run_e3_search_loss.py",
+      "sha256": "18c07a9c26624e7dad04eb5de56331f7c524ca22cabe9295f0532bb080ae199e"
+    },
+    "wrapper_archive": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_run_e3_search_loss.py",
+      "sha256": "18c07a9c26624e7dad04eb5de56331f7c524ca22cabe9295f0532bb080ae199e"
+    }
+  },
+  "cases": [
+    {
+      "causal_claim": false,
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r0",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.4845201738370428,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6625723659585959,
+          "raw_loss_classification": "material_loss"
+        },
+        "selected_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.33069424989149354,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7877993152255784,
+          "raw_loss_classification": "unresolved"
+        },
+        "selected_minus_own_winner": {
+          "judge_classification": "beneficial",
+          "judge_mean_difference": -0.15382592394554928,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.1890011653078933,
+          "raw_loss_classification": "no_material_loss"
+        }
+      },
+      "mc_eligibility": "unresolved",
+      "mechanism_status": "loss_located_before_refinement",
+      "raw_mechanism_status": "unresolved_selected_vs_S0",
+      "raw_threshold": "loss_of_more_than_10_percent_of_baseline_raw_reduction",
+      "replicate": 0,
+      "row_ids": {
+        "S0": "x_602e7f6025fae174cb4b6275d6131fc3c8bd22baa6701b4e556b2752ef820e8f",
+        "own_winner": "x_e5177958b9b1737cf33c22c8431d78ffdb27fed77d430a8c012e8c3484d5f290",
+        "selected": "x_ae612562f3905f6d163d7e5601cb77ba787081a00f3f784b6b52e3aca0602791"
+      },
+      "state_id": "logreg_D5_noise3_seed1_early"
+    },
+    {
+      "causal_claim": false,
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r4",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.32339957396458985,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7844144138977516,
+          "raw_loss_classification": "unresolved"
+        },
+        "selected_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.31199494911530157,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7932813228192566,
+          "raw_loss_classification": "unresolved"
+        },
+        "selected_minus_own_winner": {
+          "judge_classification": "beneficial",
+          "judge_mean_difference": -0.01140462484928828,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.011303857711443,
+          "raw_loss_classification": "no_material_loss"
+        }
+      },
+      "mc_eligibility": "unresolved",
+      "mechanism_status": "loss_located_before_refinement",
+      "raw_mechanism_status": "unresolved_selected_vs_S0",
+      "raw_threshold": "loss_of_more_than_10_percent_of_baseline_raw_reduction",
+      "replicate": 4,
+      "row_ids": {
+        "S0": "x_591bff07f70b5693795c18c8bc4bf9302155ab28521c52c54c90a27fd3244ab9",
+        "own_winner": "x_955e3dad798f4dd8042fdf0565339f8305bc7e9cee3f11497c7993ceb703e176",
+        "selected": "x_1ebb3f17bd2152f34952242b92f90fee35de9c784c1bff95dd03aac55a7d7095"
+      },
+      "state_id": "logreg_D5_noise3_seed1_early"
+    },
+    {
+      "causal_claim": false,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r5",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.011954974304847293,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7288098015829856,
+          "raw_loss_classification": "material_loss"
+        },
+        "selected_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.01189288730094204,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.73022663487994,
+          "raw_loss_classification": "material_loss"
+        },
+        "selected_minus_own_winner": {
+          "judge_classification": "practical_tie",
+          "judge_mean_difference": -6.208700390525346e-05,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.0019440371052597,
+          "raw_loss_classification": "no_material_loss"
+        }
+      },
+      "mc_eligibility": "material_loss",
+      "mechanism_status": "loss_located_before_refinement",
+      "raw_mechanism_status": "material_loss_before_refinement",
+      "raw_threshold": "loss_of_more_than_10_percent_of_baseline_raw_reduction",
+      "replicate": 5,
+      "row_ids": {
+        "S0": "x_527970f6c35972dd20d9b6f79ee647d3c410728980d326de0ec8c4761978e651",
+        "own_winner": "x_44f2b549b1a0f9a864a2812dad83afaea680ed2f9cfd2bbc3911acdecb959924",
+        "selected": "x_133d8fa1ba9f3884642d48ad55573eb0e9990f0566c4702563735d810004be52"
+      },
+      "state_id": "rosenbrock_D2_noise1_seed1_early"
+    },
+    {
+      "causal_claim": false,
+      "comparison_tag": "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r0",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.0016104889203277517,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6743647126195006,
+          "raw_loss_classification": "material_loss"
+        },
+        "selected_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.001570298611609372,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6824954704626837,
+          "raw_loss_classification": "material_loss"
+        },
+        "selected_minus_own_winner": {
+          "judge_classification": "unresolved",
+          "judge_mean_difference": -4.01903087183797e-05,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.012056914739207,
+          "raw_loss_classification": "no_material_loss"
+        }
+      },
+      "mc_eligibility": "material_loss",
+      "mechanism_status": "direct_regression_stage_unresolved",
+      "raw_mechanism_status": "material_loss_before_refinement",
+      "raw_threshold": "loss_of_more_than_10_percent_of_baseline_raw_reduction",
+      "replicate": 0,
+      "row_ids": {
+        "S0": "x_36d88fe14fa8c34c5ce5945c72134416f69029ec1545a08c2ad38f30792861b3",
+        "own_winner": "x_f5b22ba2865e31f5e1fb1b3e2cb37400c8a05530b786ceb74a11b74c81abb656",
+        "selected": "x_79e623e1902712ee1cb7a6606141e2f68eab59cf34957ec4d80024db85fd1ac7"
+      },
+      "state_id": "rosenbrock_D2_noise3_seed1_late"
+    },
+    {
+      "causal_claim": false,
+      "comparison_tag": "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r6",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "judge_classification": "harmful",
+          "judge_mean_difference": 0.0013336842147168848,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6996896993135222,
+          "raw_loss_classification": "material_loss"
+        },
+        "selected_minus_S0": {
+          "judge_classification": "unresolved",
+          "judge_mean_difference": 0.0005831142119482879,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.8687568103706969,
+          "raw_loss_classification": "unresolved"
+        },
+        "selected_minus_own_winner": {
+          "judge_classification": "beneficial",
+          "judge_mean_difference": -0.0007505700027685969,
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.2416315564214384,
+          "raw_loss_classification": "no_material_loss"
+        }
+      },
+      "mc_eligibility": "unresolved",
+      "mechanism_status": "unresolved_selected_vs_S0",
+      "raw_mechanism_status": "unresolved_selected_vs_S0",
+      "raw_threshold": "loss_of_more_than_10_percent_of_baseline_raw_reduction",
+      "replicate": 6,
+      "row_ids": {
+        "S0": "x_cf6f0a57e392b7058453dd4ba31f5a5441f3f30fd17631aafa07367da00c3532",
+        "own_winner": "x_d603a44928ed35c44ca492b4dc3223d28d3d1682213c2dd87ea7d777ef6c9181",
+        "selected": "x_8da5d93edfbbf004eab0b6d06de75437b2f8e3e076090073968b5a9b733e635c"
+      },
+      "state_id": "timing_D5_noise2.2_seed1_late"
+    }
+  ],
+  "causal_claim": false,
+  "changes_e4_entry_gate": false,
+  "failed_states": [],
+  "kind": "e3_search_accepted_refinement_loss_diagnostic_outcome",
+  "observed_case_count": 5,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Post-hoc explanatory diagnostic. It cannot change the frozen finalist, primary holdout verdict, or E4 entry gate.",
+  "raw_artifact_sha256": "7ef74fc9e12e5e71ccff24809a3193feafd426ff30852c8166d39b273dd571ad",
+  "rounds": [
+    {
+      "allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768_allocation.json",
+        "sha256": "9e213c5c48c656646ac2747e215c79ae7e05c9e249012a774857c3417afc595e"
+      },
+      "budget": 32768,
+      "costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768_costs.json",
+        "sha256": "ffd06de30bf29aebcb6a46d69694b887df1aa12d91ec56f6bd96662642aa093a"
+      },
+      "draft_manifest": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b32768_manifest.draft.json",
+        "sha256": "3f148e17d9e2a43ede52cde9f3b28a410ac9e9a9891233f52aff00389c456edc"
+      },
+      "failed_states": [],
+      "freeze": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b32768_freeze.json",
+        "sha256": "a3c6412d35a83c72ea08d1caf60c189d2137e6b3f8c098b872520d95d90e0bf5"
+      },
+      "manifest": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b32768_manifest.json",
+        "sha256": "9492b872ec0569cfef1bc236d0fda8fe3a79ab0eccf16ddb9e817700849c0fe8"
+      },
+      "manifest_digest": "882a0b943d4a5ac07b55b29f4e20abe60b7e13544fd5fde0fdd9b5ab3e99c0b4",
+      "new_worker_seconds_including_imports": 31.82591770000363,
+      "observed_case_count": 5,
+      "pilot_allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768_pilot_allocation.json",
+        "sha256": "979434930944e7768e0d35c0b90a244334ab3e5be9e82894fddb97b2f499bb2a"
+      },
+      "pilot_costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768_pilot_costs.json",
+        "sha256": "a9a44097a23b8f0b4d81b5f77c03088b7da278a3acb00bde92c8cf95d91cf69c"
+      },
+      "pilot_worker_seconds_including_imports": 16.268129500000214,
+      "previous_summary_sha256": null,
+      "scheduled_case_count": 5,
+      "summary": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768\\summary.json",
+        "sha256": "3c53e936c85c080949051f3b5d67674c19ecc0bb5bc84368be2bdcef652e08ed"
+      },
+      "terminals": [
+        {
+          "payload_hashes": {
+            "json": "9a0605628a6035df3acc4e22cbcacd11338bedc3680f2aabfeeb002b5d1e3da5",
+            "npz": "fc2427b96cea4c037a6200335c1934c94f28e66ed6e0dde11b88e77315ffc06c"
+          },
+          "state_id": "logreg_D5_noise3_seed1_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768\\records\\logreg_D5_noise3_seed1_early.complete.json",
+            "sha256": "45b8a9c55189aeaf0bc4a66baf00e3e96be5ecdf35464c4331e01e63c6f39e50"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "a6b93f1df77bbb2df7c560aa090f5b428c47e5b024eff5e99e443d88ba754ee8",
+            "npz": "ff53c394de16f0045d6a7a6026e2155c7b2c92f7fa263fee69db3aac9971a802"
+          },
+          "state_id": "rosenbrock_D2_noise1_seed1_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768\\records\\rosenbrock_D2_noise1_seed1_early.complete.json",
+            "sha256": "203fe23a042835f4191dfa7bb3ce7cf6057346b3bbdfe60ca68cb907191fd278"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "b8d1a5141b6d2cf52a911998c09517be789943ec252dcf5c6519e60f5bbc99ea",
+            "npz": "25d8bd8008b50dc47dbe3dfe95dfa1cc2b63cf0c642039228f37c2ac752474f5"
+          },
+          "state_id": "rosenbrock_D2_noise3_seed1_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768\\records\\rosenbrock_D2_noise3_seed1_late.complete.json",
+            "sha256": "8037e014274b0b4be02910b7aa191b4c840e3c384b56eb4d6dbeee41a31dd82b"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "b3fad4dd047ed575ff4e1fdfae950b4e5072b2bc31a9553130954f559167c61e",
+            "npz": "697e677e8bd45fc5d9fb27071cb8e5940bfd1f174951a386e6a32787094a170f"
+          },
+          "state_id": "timing_D5_noise2.2_seed1_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b32768\\records\\timing_D5_noise2.2_seed1_late.complete.json",
+            "sha256": "f3ecb09e112694df5d89b5b77d577c4d350d4d49dbce630dd66641a3e370d559"
+          }
+        }
+      ],
+      "wrapper_clearance_successor": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b32768_wrapper_clearance.json",
+        "sha256": "14fdcd51066e10d097c0cd9d7e3086c313f067d3f3e22af90bd7cf938c461ceb"
+      }
+    },
+    {
+      "allocation": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536_allocation.json",
+        "sha256": "020a657a906ec02e3c11fb71d13034527c96f3a83f44ae0d55faa9e5c299ca6c"
+      },
+      "budget": 65536,
+      "costs": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536_costs.json",
+        "sha256": "2fc324e9801b2e84f916dc9dae87b623682a0204e8654338b55f7c178cfb4f8d"
+      },
+      "draft_manifest": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b65536_manifest.draft.json",
+        "sha256": "ae462adec398a0b191767be683a9a0f00aa094644c9f0edca4a1f7648f4f7c13"
+      },
+      "failed_states": [],
+      "freeze": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b65536_freeze.json",
+        "sha256": "39accbad202b4379d72b607ab4138baaf6dbe4f0abaec0208b2f7e1a4888c676"
+      },
+      "manifest": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss_b65536_manifest.json",
+        "sha256": "cdbd5ca413b938ee3e484e321b27f7cc7282e4bfa1576ba4c2d08cd466557ec3"
+      },
+      "manifest_digest": "cababeb1bd7f90839e530a5f7231794cc65aea41134257f5cae516946def7e98",
+      "new_worker_seconds_including_imports": 92.07380249999915,
+      "observed_case_count": 5,
+      "pilot_worker_seconds_including_imports": 0,
+      "previous_summary_sha256": "3c53e936c85c080949051f3b5d67674c19ecc0bb5bc84368be2bdcef652e08ed",
+      "scheduled_case_count": 5,
+      "summary": {
+        "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536\\summary.json",
+        "sha256": "ff8ce1e039f9f69c0480a3792dcc737441e295062af4eedffa2985ab5ebb35ef"
+      },
+      "terminals": [
+        {
+          "payload_hashes": {
+            "json": "dd019e971c6b5b1eda7e8146e3a8ff170a299aba48bbed3473e9f7375822989d",
+            "npz": "b49147d65e52d2355130765aea27f53a523e590a1c12fec57a2ac9989d0f1ab3"
+          },
+          "state_id": "logreg_D5_noise3_seed1_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536\\records\\logreg_D5_noise3_seed1_early.complete.json",
+            "sha256": "282f32c15b9a8c357ad774a1e08b765688f2f30a1d9c9da71b83ebc1e9814233"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "3b13850205008432c768aa714bfb47af1258fd9f0e60084820d6478a559134cf",
+            "npz": "fd75a8f3ed4dcfa94b87136c3c722f2d5974ad593ba61b815ae04eaa9c8ba90f"
+          },
+          "state_id": "rosenbrock_D2_noise1_seed1_early",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536\\records\\rosenbrock_D2_noise1_seed1_early.complete.json",
+            "sha256": "ec7bf6ee480bacf9b907cd57641b9a72689acfee38da33f4b5285eeeccc43344"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "316d1129ca5ea6298ea7c8d1883632edcde340d2466be53c754cd61b8d9ab690",
+            "npz": "834c3ac8d0340304d6e22eb4e8d98b09b817b4ea87050dfb80e471d816c90a2a"
+          },
+          "state_id": "rosenbrock_D2_noise3_seed1_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536\\records\\rosenbrock_D2_noise3_seed1_late.complete.json",
+            "sha256": "fb2e2a384a7c63a6a5794080136d4010c1463d28b2e2188ed8ad341dcf0551ca"
+          }
+        },
+        {
+          "payload_hashes": {
+            "json": "22677aac5be6370ab24f9c8b6570659faca6368542d241871e3161153f40fab2",
+            "npz": "ac18b737a3cf2eafa5d6fd61173b373e9c398e2cfa8ea5b9a432e95effae6a2a"
+          },
+          "state_id": "timing_D5_noise2.2_seed1_late",
+          "terminal": {
+            "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_loss\\b65536\\records\\timing_D5_noise2.2_seed1_late.complete.json",
+            "sha256": "5fcd222be8fb01e85d7c63769e5bda70b92cc1ecc8cb5728f820b11dece800d2"
+          }
+        }
+      ]
+    }
+  ],
+  "scheduled_case_count": 5,
+  "schema_version": 1,
+  "tuning_use": false
+}

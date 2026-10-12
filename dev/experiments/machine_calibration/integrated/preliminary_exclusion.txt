@@ -1,0 +1,1 @@
+Campaigns at 36.80/46.78 seconds precede corrected discovery-control placement and balanced held-out pair directions. Excluded from final performance conclusions. First timing probe also exposed coarse monotonic clock; failed without persistence.

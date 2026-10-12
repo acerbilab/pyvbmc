@@ -1,0 +1,699 @@
+{
+ "cand": {
+  "Xs": "@@npz:cand/Xs"
+ },
+ "gp": {
+  "Ns": 8,
+  "X": "@@npz:gp/X",
+  "cov_fun": 1,
+  "hyp": "@@npz:gp/hyp",
+  "mean_fun": "negquad",
+  "noise_fun": [
+   1,
+   0,
+   0
+  ],
+  "noise_parameters": [
+   1,
+   0,
+   0
+  ],
+  "s2": null,
+  "y": "@@npz:gp/y"
+ },
+ "logger": {
+  "D": 5,
+  "S": null,
+  "X": "@@npz:logger/X",
+  "X_flag": "@@npz:logger/X_flag",
+  "X_orig": "@@npz:logger/X_orig",
+  "Xn": 104,
+  "cache_count": 0,
+  "cache_size": 500,
+  "fun_eval_time": "@@npz:logger/fun_eval_time",
+  "func_count": 105,
+  "n_evals": "@@npz:logger/n_evals",
+  "noise_flag": false,
+  "total_fun_eval_time": 0.006007194519042969,
+  "uncertainty_handling_level": 0,
+  "y": "@@npz:logger/y",
+  "y_max": -5.005178619100333,
+  "y_orig": "@@npz:logger/y_orig"
+ },
+ "meta": {
+  "D": 5,
+  "K": 17,
+  "N": 100,
+  "Ns": 8,
+  "best_iter": 20,
+  "config": "corr_D5",
+  "generated": "2026-09-04 13:13:22",
+  "git": {
+   "dirty": true,
+   "sha": "6606b98"
+  },
+  "iteration": 20,
+  "n_iterations": 20,
+  "noise_sd": null,
+  "note": "last iteration with a rotoscale warp in place (R_mat, scale set) on a correlated 5-D Gaussian",
+  "oracle_seed": 20260904,
+  "oracles_added": [
+   {
+    "date": "2026-09-05 08:17:20",
+    "git": {
+     "dirty": true,
+     "sha": "de6d98f"
+    },
+    "oracle": "gp_nlZ",
+    "outputs": {
+     "dlZ": [
+      8,
+      18
+     ],
+     "dlp": [
+      8,
+      18
+     ],
+     "lZ": [
+      8
+     ],
+     "lp": [
+      8
+     ]
+    },
+    "reason": "Stage 2 item 8: pin the GP log marginal likelihood and log posterior with gradients at the stored hyperparameter samples before the gpyreg refactor"
+   },
+   {
+    "date": "2026-09-05 08:17:53",
+    "git": {
+     "dirty": true,
+     "sha": "de6d98f"
+    },
+    "oracle": "gp_fit",
+    "outputs": {
+     "gp_s_N": [
+      1
+     ],
+     "hyp": [
+      8,
+      18
+     ],
+     "sn2_hpd": [
+      1
+     ]
+    },
+    "reason": "Stage 2 item 8: pin one train_gp call (space-filling design, L-BFGS-B, slice sampler) from the stored state under a seeded legacy stream before the gpyreg refactor; platform-bound"
+   },
+   {
+    "date": "2026-09-08 08:28:24",
+    "git": {
+     "dirty": true,
+     "sha": "3e879b6"
+    },
+    "oracle": "gp_fit_history",
+    "outputs": {
+     "gp_s_N": [
+      1
+     ],
+     "hyp": [
+      4,
+      18
+     ],
+     "sn2_hpd": [
+      1
+     ],
+     "widths": [
+      18
+     ]
+    },
+    "reason": "Phase 3: add controlled ragged GP history covariance and sampler widths; preserve all existing states and oracle references"
+   }
+  ],
+  "pick": "last_warped",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "problem": "corr",
+  "problem_seed": 0,
+  "python": "3.12.6",
+  "r_index": 0.09341136548964234,
+  "rebaselined": [
+   {
+    "date": "2026-09-04 15:21:26",
+    "git": {
+     "dirty": true,
+     "sha": "348dd0e"
+    },
+    "max_abs_change": {
+     "X_new": 0.15858394463256034,
+     "y_new": 0.18109003709762206
+    },
+    "oracle": "active_sample_step",
+    "reason": "Stage 2 item 3: CMA-ES evaluates the acquisition per generation in one batched call (parallel_objective + batched noise handler); the same search on batched arithmetic ends at different points; every acq_* oracle unchanged"
+   },
+   {
+    "date": "2026-09-05 09:42:22",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 53.45995549128088,
+     "sn2_hpd": 1.2978094205956983e-08
+    },
+    "oracle": "gp_fit",
+    "reason": "Stage 2 item 8 step 8: train_gp now hands its generator to gpyreg.GP.fit, so the space-filling design and the slice sampler draw from rng instead of the legacy global state; the fit's chain moves by design (same algorithm, different stream)"
+   },
+   {
+    "date": "2026-09-05 09:46:57",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "X_new": 1.3535212324096908,
+     "y_new": 0.9996875426555167
+    },
+    "oracle": "active_sample_step",
+    "reason": "Stage 2 item 8 step 8: the CMA-ES noise-handler subclass draws its re-evaluation count from vp.rng instead of the legacy global state, so the search's stream moves by design; every acq_* oracle is unchanged"
+   },
+   {
+    "date": "2026-09-06 06:45:37",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "dlogpdf": 7.105427357601002e-15,
+     "dpdf": 0.0,
+     "logpdf": 1.7763568394002505e-15,
+     "pdf": 1.3010426069826053e-18,
+     "pdf_orig": 5.551115123125783e-17
+    },
+    "oracle": "vp_pdf",
+    "reason": "Stage 2 item 3 (2026-09-04) broadcast vp.pdf over K; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:45:50",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 3.552713678800501e-15
+    },
+    "oracle": "acq_AcqFcnLog",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:02",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 2.481541837659083e-24
+    },
+    "oracle": "acq_AcqFcn",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:15",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 3.2311742677852644e-26
+    },
+    "oracle": "acq_AcqFcnVanilla",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:27",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 1.2407709188295415e-24
+    },
+    "oracle": "acq_AcqFcnNoisy",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:40",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "G": 4.313021051416399e-10,
+     "G_samples": 3.6079468301863926e-09,
+     "G_var_call": 4.313021051416399e-10,
+     "I_sk": 1.0710209608078003e-08,
+     "J_sjk": 1.8917489796876907e-10,
+     "dG": 2.9211166124865073e-10,
+     "dG_samples": 1.0593670237910024e-09,
+     "varG": 4.280285466475931e-12,
+     "var_ss": 5.038799313980908e-12
+    },
+    "oracle": "gp_log_joint",
+    "reason": "Stage 2 items 1 and 2 (2026-09-04): _gp_log_joint as einsum contractions over (Ns, K, D, N) and its variance from multi-RHS solves; rounding-level moves, largest on the ill-conditioned cigar snapshots. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:53",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "F": 4.31304769676899e-10,
+     "F_detent": 4.313038814984793e-10,
+     "F_full": 4.31304769676899e-10,
+     "G": 4.313038814984793e-10,
+     "G_full": 4.313038814984793e-10,
+     "H": 8.881784197001252e-16,
+     "H_detent": 0.0,
+     "H_full": 8.881784197001252e-16,
+     "dF": 2.921744582384811e-10,
+     "dF_detent": 2.9217457099550703e-10,
+     "theta": 0.0,
+     "varF": 4.280285982742512e-12,
+     "varG": 4.280285982742512e-12,
+     "varG_ss": 5.0387998304327775e-12,
+     "varH": 0.0
+    },
+    "oracle": "neg_elcbo",
+    "reason": "Stage 2 items 1, 2 and 5: _neg_elcbo carries _gp_log_joint (items 1 and 2) and entmc_vbmc (item 5); rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:47:05",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "H": 0.0,
+     "dH": 1.4432899320127035e-15
+    },
+    "oracle": "entmc",
+    "reason": "Stage 2 item 5 (2026-09-05): entmc_vbmc vectorized over components and samples with the same draws; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-08 08:48:05",
+    "git": {
+     "dirty": true,
+     "sha": "90d08d3"
+    },
+    "max_abs_change": {
+     "acq": 6.675310600882356e-09
+    },
+    "oracle": "acq_AcqFcn",
+    "reason": "Phase 4: activate legacy/canonical variance regularization; stored acquisition changes verified against penalty formula, with unregularized values exact"
+   },
+   {
+    "date": "2026-09-08 08:48:10",
+    "git": {
+     "dirty": true,
+     "sha": "90d08d3"
+    },
+    "max_abs_change": {
+     "acq": 146.25039083326376
+    },
+    "oracle": "acq_AcqFcnLog",
+    "reason": "Phase 4: activate legacy/canonical variance regularization; stored acquisition changes verified against penalty formula, with unregularized values exact"
+   },
+   {
+    "date": "2026-09-08 08:48:15",
+    "git": {
+     "dirty": true,
+     "sha": "90d08d3"
+    },
+    "max_abs_change": {
+     "acq": 4.278298443617303e-09
+    },
+    "oracle": "acq_AcqFcnNoisy",
+    "reason": "Phase 4: activate legacy/canonical variance regularization; stored acquisition changes verified against penalty formula, with unregularized values exact"
+   },
+   {
+    "date": "2026-09-08 08:48:20",
+    "git": {
+     "dirty": true,
+     "sha": "90d08d3"
+    },
+    "max_abs_change": {
+     "acq": 5.699958142631372e-11
+    },
+    "oracle": "acq_AcqFcnVanilla",
+    "reason": "Phase 4: activate legacy/canonical variance regularization; stored acquisition changes verified against penalty formula, with unregularized values exact"
+   },
+   {
+    "date": "2026-09-08 08:48:38",
+    "git": {
+     "dirty": true,
+     "sha": "90d08d3"
+    },
+    "max_abs_change": {
+     "X_new": 1.7977479398712624,
+     "y_new": 2.9088520628970036
+    },
+    "oracle": "active_sample_step",
+    "reason": "Phase 4: CMA-ES trajectory follows analytically verified acquisition regularization; all changed acquisition references have been updated separately"
+   },
+   {
+    "date": "2026-09-16 10:15:08",
+    "git": {
+     "dirty": true,
+     "sha": "69a7a18"
+    },
+    "max_abs_change": {
+     "X_new": 2.8430577794792438,
+     "y_new": 0.42691569211472746
+    },
+    "oracle": "active_sample_step",
+    "reason": "Restore MATLAB uniform box proposals: replace standard_normal with random in _get_search_points (2021 porting bug). Fixed-input oracles pass; paired probe in dev/results/2026-09-16-gp-box-sampler.md."
+   },
+   {
+    "date": "2026-09-19 15:24:15",
+    "git": {
+     "dirty": true,
+     "sha": "7dd2e3f"
+    },
+    "max_abs_change": {
+     "X_new": 2.095063216426638,
+     "y_new": 0.4164212063652135
+    },
+    "oracle": "active_sample_step",
+    "reason": "Wave-1 fixes of the port review (2026-09-19): the CMA-ES search starts at the per-coordinate scales (CMA_stds = insigma / max(insigma)) and runs without cma's noise handler, as MATLAB VBMC's cmaes_modded does; every acq_* oracle is unchanged, and the search reaches different points on 7 of the 8 states."
+   },
+   {
+    "date": "2026-09-20 20:27:14",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 580.7337808601135,
+     "sn2_hpd": 2.3881505188345093e-07
+    },
+    "oracle": "gp_fit",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation, as MATLAB leaves them unset (W3-5, W3-7), so the space-filling design of the fit and the point its chain starts from change"
+   },
+   {
+    "date": "2026-09-20 20:27:29",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 522.3433931711277,
+     "sn2_hpd": 4.184444936349821e-09,
+     "widths": 0.0
+    },
+    "oracle": "gp_fit_history",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): the fit collects MATLAB's window of past GPs, ceil(n/2):n, and thins an oversized pool to floor(init_N/2) (W3-2, W3-3), and _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation (W3-5, W3-7), so the starting points of the fit and the draws of its subsample change"
+   },
+   {
+    "date": "2026-09-20 20:27:46",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "dlZ": 0.0,
+     "dlp": 0.0,
+     "lZ": 0.0,
+     "lp": 0.000328626504682461
+    },
+    "oracle": "gp_nlZ",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): the noise prior is truncated at the upper bound gpyreg recommends, log(max(y) - min(y)), where _gp_hyp had written +inf (W3-7); lp moves by the change of the prior's log normalization, log(1 - cdf_lb) - log(cdf_ub - cdf_lb), checked on the eight states, and dlp, lZ and dlZ are bit-identical"
+   },
+   {
+    "date": "2026-09-22 20:48:53",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 28.087351989355383,
+     "sn2_hpd": 1.4126201562440282e-07
+    },
+    "oracle": "gp_fit",
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg takes the statistics of the training inputs per column in its bound recommendations, as gplite does, where it pooled them over all entries of X (W6-1, gpyreg f76eca2 on port-review-wave6): the hard and plausible bounds of the location and scale of the negative quadratic mean, and with them the space-filling design and the box of the slice sampler, change in every fit that samples, so hyp and sn2_hpd move in the seven states that sample and the state that does not is bit-identical; taken on the benchmark sweep before and after (verification/wave6.md, Gates)"
+   },
+   {
+    "date": "2026-09-22 20:49:08",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 6.566982002597339,
+     "sn2_hpd": 1.1721979860242883e-07,
+     "widths": 0.0
+    },
+    "oracle": "gp_fit_history",
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the fit of the recorded GP history as they move gp_fit: hyp and sn2_hpd in the seven states that sample, the sampler widths and the state that does not sample bit-identical"
+   },
+   {
+    "date": "2026-09-23 12:07:29",
+    "git": {
+     "dirty": true,
+     "sha": "129f53d6"
+    },
+    "max_abs_change": {
+     "dlogpdf": 0.8327826001422736,
+     "dpdf": 0.0,
+     "logpdf": 0.3094891831184441,
+     "pdf": 0.0,
+     "pdf_orig": 0.0
+    },
+    "oracle": "vp_pdf",
+    "reason": "Wave 7 of the port correctness review, row W7-3 (PI, 2026-09-23): the log density of the variational posterior and its gradient are computed by log-sum-exp where the mixture density is below the smallest normal double; the stored references held -inf and NaN, or the logarithm of a subnormal density, at those rows of cigar_D4_boosted, cigar_D4_largeK and corr_D5_warped, and every entry at a row whose density is a normal double is unchanged (a correction of 2026-09-23 to the reason as first written, which said -inf and NaN alone and every other entry unchanged)."
+   }
+  ],
+  "recipe": "corr_D5_warped",
+  "recipe_options": {},
+  "versions": {
+   "gpyreg": "1.0.5.dev1+g236ddd723",
+   "numpy": "2.5.2",
+   "pyvbmc": "1.0.5.dev28+gdcfeba694",
+   "scipy": "1.18.1"
+  }
+ },
+ "optim_state": {
+  "H": 7.338098369860134,
+  "N": 105,
+  "N_eff": "@@npz:optim_state/N_eff",
+  "R": 0.09341136548964234,
+  "cache": {
+   "x_orig": "@@npz:optim_state/cache/x_orig",
+   "y_orig": "@@npz:optim_state/cache/y_orig"
+  },
+  "cache_active": false,
+  "data_trim_list": [],
+  "entropy_alpha": 0,
+  "entropy_switch": false,
+  "gp_cov_fun": 1,
+  "gp_length_scale": "@@npz:optim_state/gp_length_scale",
+  "gp_mean_fun": "negquad",
+  "gp_noise_fun": [
+   1,
+   0,
+   0
+  ],
+  "hyp_dict": {
+   "full": "@@npz:optim_state/hyp_dict/full",
+   "hyp": "@@npz:optim_state/hyp_dict/hyp",
+   "logp": "@@npz:optim_state/hyp_dict/logp",
+   "run_cov": "@@npz:optim_state/hyp_dict/run_cov",
+   "runcov": null,
+   "warp": null
+  },
+  "int_mean_fun": 0,
+  "integer_vars": "@@npz:optim_state/integer_vars",
+  "iter": 20,
+  "iter_list": {
+   "f_sd": [],
+   "f_val": [],
+   "fhyp": [],
+   "u": []
+  },
+  "last_run_avg": 105,
+  "last_successful_warping": 15,
+  "last_warmup": 10,
+  "last_warping": 15,
+  "lb_eps_orig": "@@npz:optim_state/lb_eps_orig",
+  "lb_orig": "@@npz:optim_state/lb_orig",
+  "lb_search": "@@npz:optim_state/lb_search",
+  "lb_tran": "@@npz:optim_state/lb_tran",
+  "lcb_max": -5.008192656369002,
+  "lcb_max_vec": "@@npz:optim_state/lcb_max_vec",
+  "max_fun_evals": 350,
+  "n_eff": 100,
+  "out_warp_delta": [],
+  "plb_orig": "@@npz:optim_state/plb_orig",
+  "plb_tran": "@@npz:optim_state/plb_tran",
+  "proposal_fcn": "@(x)proposal_vbmc",
+  "pruned": 0,
+  "pub_orig": "@@npz:optim_state/pub_orig",
+  "pub_tran": "@@npz:optim_state/pub_tran",
+  "recompute_var_post": false,
+  "redo_roto_scaling": false,
+  "repeated_observations_streak": 0,
+  "run_cov": "@@npz:optim_state/run_cov",
+  "run_mean": "@@npz:optim_state/run_mean",
+  "search_cache": [],
+  "skip_active_sampling": false,
+  "sn2_hpd": 1.019302413731178e-05,
+  "stop_sampling": 0,
+  "tol_gp_var": 0.0001,
+  "ub_eps_orig": "@@npz:optim_state/ub_eps_orig",
+  "ub_orig": "@@npz:optim_state/ub_orig",
+  "ub_search": "@@npz:optim_state/ub_search",
+  "ub_tran": "@@npz:optim_state/ub_tran",
+  "uncertainty_handling_level": 0,
+  "variance_regularized_acqfcn": true,
+  "vp_K": 17,
+  "vp_repo": [],
+  "warmup": false,
+  "warmup_stable_count": 0,
+  "warping_count": 1
+ },
+ "options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "pt": {
+  "D": 5,
+  "R_mat": "@@npz:pt/R_mat",
+  "delta": "@@npz:pt/delta",
+  "lb_orig": "@@npz:pt/lb_orig",
+  "mu": "@@npz:pt/mu",
+  "plb_orig": "@@npz:pt/plb_orig",
+  "pub_orig": "@@npz:pt/pub_orig",
+  "scale": "@@npz:pt/scale",
+  "transform_type": "probit",
+  "type": "@@npz:pt/type",
+  "ub_orig": "@@npz:pt/ub_orig"
+ },
+ "ref": {
+  "acq_AcqFcn": {
+   "acq": "@@npz:ref/acq_AcqFcn/acq"
+  },
+  "acq_AcqFcnLog": {
+   "acq": "@@npz:ref/acq_AcqFcnLog/acq"
+  },
+  "acq_AcqFcnNoisy": {
+   "acq": "@@npz:ref/acq_AcqFcnNoisy/acq"
+  },
+  "acq_AcqFcnVanilla": {
+   "acq": "@@npz:ref/acq_AcqFcnVanilla/acq"
+  },
+  "active_sample_step": {
+   "X_new": "@@npz:ref/active_sample_step/X_new",
+   "y_new": "@@npz:ref/active_sample_step/y_new"
+  },
+  "entlb": {
+   "H": "@@npz:ref/entlb/H",
+   "dH": "@@npz:ref/entlb/dH"
+  },
+  "entmc": {
+   "H": "@@npz:ref/entmc/H",
+   "dH": "@@npz:ref/entmc/dH"
+  },
+  "gp_fit": {
+   "gp_s_N": "@@npz:ref/gp_fit/gp_s_N",
+   "hyp": "@@npz:ref/gp_fit/hyp",
+   "sn2_hpd": "@@npz:ref/gp_fit/sn2_hpd"
+  },
+  "gp_fit_history": {
+   "gp_s_N": "@@npz:ref/gp_fit_history/gp_s_N",
+   "hyp": "@@npz:ref/gp_fit_history/hyp",
+   "sn2_hpd": "@@npz:ref/gp_fit_history/sn2_hpd",
+   "widths": "@@npz:ref/gp_fit_history/widths"
+  },
+  "gp_log_joint": {
+   "G": "@@npz:ref/gp_log_joint/G",
+   "G_samples": "@@npz:ref/gp_log_joint/G_samples",
+   "G_var_call": "@@npz:ref/gp_log_joint/G_var_call",
+   "I_sk": "@@npz:ref/gp_log_joint/I_sk",
+   "J_sjk": "@@npz:ref/gp_log_joint/J_sjk",
+   "dG": "@@npz:ref/gp_log_joint/dG",
+   "dG_samples": "@@npz:ref/gp_log_joint/dG_samples",
+   "varG": "@@npz:ref/gp_log_joint/varG",
+   "var_ss": "@@npz:ref/gp_log_joint/var_ss"
+  },
+  "gp_nlZ": {
+   "dlZ": "@@npz:ref/gp_nlZ/dlZ",
+   "dlp": "@@npz:ref/gp_nlZ/dlp",
+   "lZ": "@@npz:ref/gp_nlZ/lZ",
+   "lp": "@@npz:ref/gp_nlZ/lp"
+  },
+  "gp_predict": {
+   "fmu": "@@npz:ref/gp_predict/fmu",
+   "fmu_samples": "@@npz:ref/gp_predict/fmu_samples",
+   "fs2": "@@npz:ref/gp_predict/fs2",
+   "fs2_samples": "@@npz:ref/gp_predict/fs2_samples"
+  },
+  "neg_elcbo": {
+   "F": "@@npz:ref/neg_elcbo/F",
+   "F_detent": "@@npz:ref/neg_elcbo/F_detent",
+   "F_full": "@@npz:ref/neg_elcbo/F_full",
+   "G": "@@npz:ref/neg_elcbo/G",
+   "G_full": "@@npz:ref/neg_elcbo/G_full",
+   "H": "@@npz:ref/neg_elcbo/H",
+   "H_detent": "@@npz:ref/neg_elcbo/H_detent",
+   "H_full": "@@npz:ref/neg_elcbo/H_full",
+   "dF": "@@npz:ref/neg_elcbo/dF",
+   "dF_detent": "@@npz:ref/neg_elcbo/dF_detent",
+   "theta": "@@npz:ref/neg_elcbo/theta",
+   "varF": "@@npz:ref/neg_elcbo/varF",
+   "varG": "@@npz:ref/neg_elcbo/varG",
+   "varG_ss": "@@npz:ref/neg_elcbo/varG_ss",
+   "varH": "@@npz:ref/neg_elcbo/varH"
+  },
+  "transform": {
+   "U": "@@npz:ref/transform/U",
+   "X_back": "@@npz:ref/transform/X_back",
+   "log_abs_det_jacobian": "@@npz:ref/transform/log_abs_det_jacobian"
+  },
+  "vp_pdf": {
+   "dlogpdf": "@@npz:ref/vp_pdf/dlogpdf",
+   "dpdf": "@@npz:ref/vp_pdf/dpdf",
+   "logpdf": "@@npz:ref/vp_pdf/logpdf",
+   "pdf": "@@npz:ref/vp_pdf/pdf",
+   "pdf_orig": "@@npz:ref/vp_pdf/pdf_orig"
+  }
+ },
+ "vp": {
+  "D": 5,
+  "K": 17,
+  "bounds": null,
+  "eta": "@@npz:vp/eta",
+  "lambd": "@@npz:vp/lambd",
+  "mu": "@@npz:vp/mu",
+  "optimize_lambd": true,
+  "optimize_mu": true,
+  "optimize_sigma": true,
+  "optimize_weights": true,
+  "sigma": "@@npz:vp/sigma",
+  "stats": {
+   "I_sk": "@@npz:vp/stats/I_sk",
+   "J_sjk": "@@npz:vp/stats/J_sjk",
+   "e_log_joint": -7.355195815629277,
+   "e_log_joint_sd": 0.0010753935785345148,
+   "elbo": -0.01709744576914307,
+   "elbo_sd": 0.0010753935785345148,
+   "entropy": 7.338098369860134,
+   "entropy_sd": 0.0,
+   "stable": true
+  },
+  "w": "@@npz:vp/w"
+ }
+}

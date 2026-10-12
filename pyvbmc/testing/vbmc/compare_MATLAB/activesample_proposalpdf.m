@@ -16,10 +16,10 @@ gp = gplite_post(hyp, X, y, 1, 4);
 Xa = 2 * reshape(-4:4, 3, 3) / pi;
 w_vp = 0.5;
 rect_delta = 2 * std(gp.X);
-[ln_weights_viqr, f_s2_viqr] = activcesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, @acqviqr_vbmc, vp, true)
-[ln_weights_imiqr, f_s2_imiqr] = activcesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, @acqimiqr_vbmc, vp, true)
+[ln_weights_viqr, f_s2_viqr] = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, @acqviqr_vbmc, vp, true)
+[ln_weights_imiqr, f_s2_imiqr] = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, @acqimiqr_vbmc, vp, true)
 dirpath = fileparts(matlab.desktop.editor.getActiveFilename);
-save(dirpath + "/activcesample_proposalpdf.mat", "ln_weights_viqr", "f_s2_viqr", "ln_weights_imiqr", "f_s2_imiqr")
+save(dirpath + "/activesample_proposalpdf.mat", "ln_weights_viqr", "f_s2_viqr", "ln_weights_imiqr", "f_s2_imiqr")
 
 %%
 function ll = mvnormlpdf(theta, mu, Sigma)
@@ -32,7 +32,7 @@ function ll = mvnormlpdf(theta, mu, Sigma)
     ll = -(D/2) * log(2 * pi) - halflogdet - (1/2) * (z' * z);
 end
 %--------------------------------------------------------------------------
-function [lnw,fs2] = activcesample_proposalpdf(Xa,gp,vp_is,w_vp,rect_delta,acqfun,vp,isamplevp_flag)
+function [lnw,fs2] = activesample_proposalpdf(Xa,gp,vp_is,w_vp,rect_delta,acqfun,vp,isamplevp_flag)
 %ACTIVCESAMPLE_PROPOSALPDF Compute importance weights for proposal pdf
 
 [N,D] = size(gp.X);

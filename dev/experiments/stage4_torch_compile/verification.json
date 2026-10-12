@@ -1,0 +1,29 @@
+{
+  "adapter_lifecycle_tests": {
+    "command": "python -m pytest dev/scripts/test_torch_vi_compile.py -q -p no:cacheprovider",
+    "passed": 3
+  },
+  "archived_fit_summaries_passing_corrected_gate": 80,
+  "comparison_sha256": {
+    "comparison.json": "cf752ec8c93bc66e2ec5b9dd1435902440714072670ae50416bfff431082c828",
+    "comparison.md": "c1d50531aa3f06dd173c47a68ad90b4c858145242f7ff29fedfb8c398c3088be"
+  },
+  "independent_reviews": [
+    "Sol compiler/reporting review",
+    "Sol numerical interpretation review"
+  ],
+  "measured_source_verified_before_postrun_fix": true,
+  "postrun_ast_changed_nodes": [
+    "_fit_gate"
+  ],
+  "report_regenerated_exactly_from_archive": true,
+  "schema": 1,
+  "setup_and_campaign_archive_hashes_verified": true,
+  "source_sha256": {
+    "dev/scripts/test_torch_vi_compile.py": "fc7bbf9efe7eb7eef788935ec75060169d50501c0ef59ee1a77c427666199dad",
+    "dev/scripts/torch_compile_toolchain.py": "4ab5f7ae155ac73fd4727f485c705650164ae128c213e1f94b7852a16b8ed443",
+    "dev/scripts/torch_vi_compile.py": "3c2935f695d0897b6c063799e05635cb4779dde4911b902296889a607229187b",
+    "dev/scripts/torch_vi_compile_benchmark.py": "0b8e1a3a9d8534cf3e3c8f978b7666ecc3440f1b26a6f2b87cd3a52faa6ed198",
+    "dev/scripts/torch_vi_compile_report.py": "92b546d4ef48d6974841900d528626066ad3eea2055b89f0ecc28a8687927c2d"
+  }
+}

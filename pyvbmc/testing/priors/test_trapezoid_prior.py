@@ -55,3 +55,11 @@ def test_trapezoidal_error_handling():
         f"All inputs should have the same shape, but found inputs with shapes ({D},) and ({D+1},)."
         in err.value.args[0]
     )
+
+
+def test_trapezoidal_sample_rng():
+    prior = Trapezoidal._generic(D=3)
+    s1 = prior.sample(5, rng=np.random.default_rng(0))
+    s2 = prior.sample(5, rng=np.random.default_rng(0))
+    assert np.array_equal(s1, s2)
+    assert prior.sample(5).shape == (5, prior.D)
