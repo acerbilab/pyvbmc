@@ -263,8 +263,9 @@ Example 7's explanation after `optimize()` was updated with the headline
 switch on 2026-10-06: selecting weights using noisy estimates can make the
 estimate optimistic; shrinkage is applied automatically, and some bias
 can remain. The derivation and experiments are in the developer tutorial
-linked above. Re-execution of the notebook at the release commit remains
-part of the release validation.
+linked above. The notebook was executed again with the release code on
+2026-10-08, 2026-10-10 and 2026-10-12, and passed its checks (the
+roadmap's pre-release checklist).
 
 The implementation decision of 2026-09-16 separated availability from
 headline selection. The full-covariance two-level estimate was added as

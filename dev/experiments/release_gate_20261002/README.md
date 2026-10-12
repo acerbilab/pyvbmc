@@ -337,8 +337,8 @@ empty. These comparisons preserve the historical copies and hashes above.
 
 The downloaded assets, inventories and verification logs are indexed in
 `dev/scripts/runs/LOCAL.md`, "Public release archives refreshed on
-2026-10-09". The two archives and their `.sha256` listings, attached on
-2026-10-11 from the verified local copies with the GitHub digests and
-sizes above, are assets of the release
+2026-10-09". The two archives, whose GitHub digests and sizes equal those
+above, and their `.sha256` listings were attached on 2026-10-11 from the
+verified local copies; they are assets of the release
 [`v1.5.0`](https://github.com/acerbilab/pyvbmc/releases/tag/v1.5.0),
 published on 2026-10-12.

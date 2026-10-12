@@ -6,9 +6,7 @@ rationale and the decisions; this file holds only what is done, what is next,
 and where to pick up. Update it in place; do not add status to the devlogs.
 
 Integration branch: `main`. Changes use feature branches and pull requests.
-PyVBMC 1.5.0 was released on 2026-10-12, on GitHub, PyPI and conda-forge, with
-lab checks of the soft release before the public announcement, likely on
-2026-10-13.
+PyVBMC 1.5.0 was released on 2026-10-12, on GitHub, PyPI and conda-forge.
 CI on `dev*` branches: pushes that touch the package run a reduced smoke
 (Ubuntu, Python 3.14) of the `tests` workflow automatically (added
 2026-09-03); dispatch the workflow by hand for the full matrix before
@@ -379,8 +377,9 @@ in favor of `pyvbmc.SVBMC`, follows PyVBMC 1.5 on PyPI.
 
 ## Pickup point
 
-The open work for 1.5 is the list "In scope for 1.5" of
-[TODO.md](../TODO.md); the points below record the pickups that led here.
+PyVBMC 1.5.0 is released; the work that follows it is the list "After
+PyVBMC 1.5 is published" of [TODO.md](../TODO.md). The points below record
+the pickups that led to the release.
 
 0. ~~Regenerate the benchmark results~~ done 2026-09-03/04 in two sessions
    (profile campaign plain + cProfile, golden population 20 × 14, null check
@@ -1282,10 +1281,10 @@ its design is in [slurm-benchmark-support.md](slurm-benchmark-support.md).
 
 ## Pre-release checklist
 
-The steps before the release, with their procedure, all done by the
-release on 2026-10-12. Documentation
-review can proceed alongside implementation. The final validation pass
-must cover the settled release code, API and behavior before publication.
+The steps before the release of 1.5.0, with their procedure, all done by
+its publication on 2026-10-12. Documentation review proceeded alongside
+implementation, and the final validation pass covered the settled release
+code, API and behavior.
 
 - [x] Refresh the main [README.md](../../README.md), including the
   project overview, installation, quick start, capabilities and links.
@@ -1465,13 +1464,20 @@ must cover the settled release code, API and behavior before publication.
   Stack Exchange question that refuses scripts outright and that the
   Stack Exchange API returns as open, and the BADS wiki anchor, which the
   page holds as `user-content-…`, the form GitHub resolves in the browser.
-  The redirects are a DOI to JOSS, three folder links from `blob/` to
-  `tree/` and OpenReview's bot check. Besides a missing logo, which its
-  staged copy of the sources lacked, its warnings are the two of Example
-  2's HTML output. The README, rendered as PyPI renders it, has 92
-  distinct links and 18 anchors to its own sections, all of which resolve,
-  among them the 1.5 documentation pages, the film's video and thumbnail
-  and the files on `main`; so do the 15 links of the release notes.
+  The redirects are a DOI to JOSS, four links to three folders that
+  GitHub sends from `blob/` to `tree/`, and OpenReview's bot check. It
+  reported five problems: two warnings of Example 2's HTML output, and a
+  missing logo and two includes of the options page without their files,
+  which its staged copy of the sources lacked. The README, rendered as
+  PyPI renders it, has 92 distinct links, 18 of them anchors to its own
+  sections, all of which resolve, among them the 1.5 documentation pages,
+  the film's video and thumbnail and the files on `main`; so do the 15
+  links of the release notes, two of them anchors to its own headings.
+  The lines that PR #197, merged after this check, adds to the notebooks
+  and `examples.rst` hold 15 distinct links. On 2026-10-12 each resolved,
+  with its anchor, but for
+  the anchor of the `vp.plot()` tip in the stored outputs, which the page
+  no longer has (`TODO.md`, "The `vp.plot()` tip's anchor").
 - [x] Re-execute every example notebook with the release code and commit
   its outputs, which the docs build renders as stored
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
@@ -1507,6 +1513,14 @@ must cover the settled release code, API and behavior before publication.
   for the startup tip of Example 5, a function's address and Plotly's
   element ids in Example 2, and xarray's element ids in Example 8; the
   scripts in `examples/scripts/` are regenerated.
+  On 2026-10-12, in PR #197 (`20c54984`), which also rewrites Examples 8
+  and 9, all nine ran again on a calibrated kernel and passed their
+  checks: `execute_notebooks.py` gives the kernel a calibration directory
+  of its own and calibrates it before the notebooks run, so that a first
+  run shows a tip where it suggested `pyvbmc.calibrate()`. In that
+  execution the outputs of Examples 1–6 and 8 changed only in those
+  start-of-run lines, every trace and result unchanged; Examples 7 and 9
+  print neither line. The release `v1.5.0` holds these outputs.
 - [x] Prepare the 1.5.0 changelog heading and `RELEASE_DATE` in
   `pyvbmc/_release.py` with the planned release date, 2026-10-13
   (PI, 2026-10-08). The old-release reminder reads this date;
@@ -1597,15 +1611,15 @@ must cover the settled release code, API and behavior before publication.
   on 2026-10-11, with 3020 tests in the Ubuntu 3.14 cell, which installs
   the optional integrations, and again at `1c219967`
   ([run 38169328536](https://github.com/acerbilab/pyvbmc/actions/runs/38169328536)),
-  the head before the film's commit `f88f67ee`, which changes only the
+  the head before the film's commit `f88f67ee`, which adds the film to the
   README and the docs' index. `main` requires one approving review, which
   an administrator can bypass. Merge it with a merge commit, not a squash
   or a rebase: the records cite commits of `dev-next` by hash.
   The PI merged it on 2026-10-12 as `24361cfb`, a merge commit, and
   `origin/dev-port-review`, every commit of which `main` holds, was deleted
-  the same day. PR #197, which rewrites Examples 8 and 9 and changes no
-  package or build file, merged into `main` after it, at `864ee717`, the
-  commit that the release tags.
+  the same day. PR #197, which rewrites Examples 8 and 9, executes the nine
+  notebooks again (above) and changes no code, merged into `main` after
+  it, at `864ee717`, the commit that the release tags.
 - [x] Publish the release on 2026-10-12, after the release merge. The
   draft release `v1.5.0` holds the release notes and the public archives.
   Its target, `main`, is resolved when it is published: published before
@@ -1615,12 +1629,12 @@ must cover the settled release code, API and behavior before publication.
      passed and that the 1.5 documentation is served.
   2. Set the draft's target to the merge commit (`gh release edit v1.5.0
      --target <merge commit>`), check it, and publish the draft.
-     Publishing creates the tag and starts `release.yml`, which builds
-     from the tag, so that setuptools_scm reads 1.5.0, and uploads to
-     PyPI with the `PYPI_PASSWORD` secret. If the upload fails, re-run the
-     run's failed jobs, or dispatch `release.yml` with `--ref v1.5.0`: a
-     build from a branch has no tags and yields a version such as
-     `0.1.dev1+gb61e6f7c5`, which PyPI refuses.
+     Publishing creates the tag and starts `release.yml`, which, for a
+     version tag, builds from the tag, so that setuptools_scm reads 1.5.0,
+     and uploads to PyPI with the `PYPI_PASSWORD` secret. If the upload
+     fails, re-run the run's failed jobs, or dispatch `release.yml` with
+     `--ref v1.5.0`: a build from a branch has no tags and yields a version
+     such as `0.1.dev1+gb61e6f7c5`, which PyPI refuses.
   3. Fast-forward `dev-next` to the merge commit, so that the tag is
      reachable from it; a build of `dev-next` otherwise reads a
      development version of 1.0.5.
@@ -1635,22 +1649,27 @@ must cover the settled release code, API and behavior before publication.
   and on `864ee717`, the commit that the draft then targeted.
   `PYPI_PASSWORD`, set in March 2023, held a token whose owner is not
   known, since the PI's PyPI account holds no token for pyvbmc; at 07:09
-  UTC it was replaced with a token of the PI's scoped to pyvbmc. Publishing the draft at 07:10:17 UTC created the tag
-  `v1.5.0` at `864ee717`, but `release.yml` did not start: it triggered on
-  `created`, which GitHub had sent when the draft was saved on 2026-10-11,
-  and which Actions ignores for a draft, and publishing the draft sent
-  only `published` and `released` (the deliveries of the repository's
-  webhook). Dispatched with `--ref v1.5.0`
+  UTC it was replaced with a token of the PI's scoped to pyvbmc.
+  Publishing the draft at 07:10:17 UTC created the tag `v1.5.0` at
+  `864ee717`, but `release.yml` did not start: it triggered on `created`,
+  which GitHub had sent when the draft was saved on 2026-10-11, and which
+  Actions ignores for a draft, and publishing the draft sent only
+  `published` and `released` (the deliveries of the repository's webhook).
+  Dispatched with `--ref v1.5.0`
   ([run 38216661370](https://github.com/acerbilab/pyvbmc/actions/runs/38216661370)),
-  it built `pyvbmc-1.5.0` from the tag and uploaded the wheel and the
-  sdist (SHA-256
+  it built `pyvbmc-1.5.0` from the tag and uploaded the wheel at 07:15:34
+  UTC and the sdist (SHA-256
   `4df52f82b733c8637446bc87beee1115ba32e96cf0915ba67d95e18637c31191`) at
-  07:15:34 UTC. `release.yml` has since triggered on `published`.
-  `dev-next` was fast-forwarded to `864ee717`. In a fresh environment
-  made with uv (Python 3.12), `pip install --upgrade pyvbmc` installed
-  1.5.0 with gpyreg 1.4.0, NumPy 2.5.4 and SciPy 1.18.1, and a run of six
-  iterations on a two-dimensional Gaussian gave an ELBO of 1.848 against a
-  log evidence of 1.838.
+  07:15:35. PR #198 changes `release.yml` to trigger on `published`, and
+  lets it build and upload only for a version tag, since the
+  repository's data releases are published too and setuptools_scm would
+  read a version from their tags; the tag `v1.5.0` holds the `created`
+  trigger. `dev-next` was fast-forwarded to `864ee717`. In a fresh
+  environment (Python 3.12.6, made with `uv venv --seed`), `pip install
+  --upgrade pyvbmc` (pip 26.2.1) installed 1.5.0 with gpyreg 1.4.0, NumPy
+  2.5.4 and SciPy 1.18.1, `pip check` found no broken requirement, and a
+  run of six iterations on a two-dimensional Gaussian gave an ELBO of
+  1.848 against a log evidence of 1.838.
   The conda-forge recipe
   ([`conda-forge/pyvbmc-feedstock` #12](https://github.com/conda-forge/pyvbmc-feedstock/pull/12))
   takes the requirements of the 1.5.0 metadata on PyPI, with
