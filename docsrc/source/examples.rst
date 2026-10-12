@@ -16,9 +16,9 @@ The three integration examples have optional dependencies:
   checks the model evidence against its exact value and the posterior against
   NUTS. It requires Python 3.12 or newer and ``pyvbmc[pymc]``.
 - :ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` fits a
-  two-parameter psychometric curve with a Torch target, shows the equivalent
-  short JAX target wrapper, then makes posterior probability predictions and
-  density-gradient calculations in Torch and summaries in ArviZ. The complete
+  two-parameter psychometric curve with a Torch likelihood, uses the posterior
+  in Torch for predictions and density gradients and in ArviZ for summaries,
+  and fits the same likelihood written in JAX. The complete
   notebook requires Python 3.12 or newer and ``pyvbmc[torch,arviz]``. Install
   JAX separately only to run its JAX section; the Torch sections do not depend
   on JAX. A CPU is sufficient for all three examples.

@@ -237,7 +237,7 @@ CHECKS = {
             size = 400
             axes = [
                 lo + (np.arange(size) + 0.5) * (hi - lo) / size
-                for lo, hi in zip(lower_bounds, upper_bounds)
+                for lo, hi in zip(lower_bounds.ravel(), upper_bounds.ravel())
             ]
             grid = np.stack(np.meshgrid(*axes, indexing="ij"), -1).reshape(-1, 2)
             log_lik = torch_log_likelihood(grid)
@@ -249,6 +249,9 @@ CHECKS = {
             draws = parameter_draws_t.numpy()
             assert np.max(np.abs(draws.mean(0) - mean) / sd) < 0.2
             assert np.max(np.abs(draws.std(0) / sd - 1)) < 0.2
+            assert mean[0] - threshold_true > 2 * sd[0], (mean, sd)
+            gap = abs(results_jax["elbo"] - results["elbo"])
+            assert gap < 0.02, (results["elbo"], results_jax["elbo"])
             """,
         ),
     ],
