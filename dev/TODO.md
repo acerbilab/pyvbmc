@@ -89,15 +89,6 @@ records the release and the checks before it.
 
 ## After PyVBMC 1.5 is published
 
-- [ ] **Deprecate the standalone `svbmc` package.** S-VBMC is part of
-  PyVBMC from 1.5, and users are directed to `pyvbmc.SVBMC` (PI,
-  2026-10-08). The last release of `svbmc` depends on `pyvbmc[torch]>=1.5`,
-  forwards the old imports to the integrated implementation, so that
-  existing scripts keep running, and warns on import that the package is
-  deprecated, naming `pyvbmc.SVBMC` and the migration table of the `SVBMC`
-  page. The repository `acerbilab/svbmc` stays, as the code of the S-VBMC
-  paper, and its README opens with a note that S-VBMC is integrated in
-  PyVBMC. See the [integration plan](plans/svbmc-integration.md).
 - [ ] **Zenodo at the next release.** The repository's webhook to Zenodo
   archives each release as a new version of the record
   [10.5281/zenodo.10659431](https://doi.org/10.5281/zenodo.10659431),
