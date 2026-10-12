@@ -10,12 +10,14 @@ from pyvbmc.priors import Prior
 class UserFunction(Prior):
     """Lightweight wrapper for user-defined priors.
 
+    An instance's ``log_pdf`` is the user-provided function for the
+    log-density of the prior, and its ``sample`` is the user-provided
+    function for sampling from the prior, or `None` if none was provided;
+    both are set at initialization, in place of the methods of the same
+    names.
+
     Attributes
     ----------
-    log_pdf : callable
-        The user-provided function representing the log-density of the prior.
-    sample : callable or None
-        A function for sampling from the prior, if provided.
     D : int or None
         The dimension of the prior, if provided.
     """

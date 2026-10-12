@@ -98,25 +98,20 @@ records the release and the checks before it.
   page. The repository `acerbilab/svbmc` stays, as the code of the S-VBMC
   paper, and its README opens with a note that S-VBMC is integrated in
   PyVBMC. See the [integration plan](plans/svbmc-integration.md).
-- [ ] **Zenodo.** The repository's webhook to Zenodo archives each release
-  as a new version of the record
+- [ ] **Zenodo at the next release.** The repository's webhook to Zenodo
+  archives each release as a new version of the record
   [10.5281/zenodo.10659431](https://doi.org/10.5281/zenodo.10659431),
-  which holds v1.0.2 to v1.0.4 and archived v1.0.4 six seconds after its
-  publication; an older record, 10.5281/zenodo.7966314, holds v1.0.1
-  alone. For `v1.5.0` the webhook's deliveries on 2026-10-12 got HTTP 409
-  for `published` ("The release has already been received") and 202 for
-  `released`, after a 202 for `created` when the draft was saved on
-  2026-10-11, and no record of 1.5.0 existed at 08:04 UTC. The owner of
-  the Zenodo account that holds the integration can see the release's
-  state on its GitHub page, and can otherwise add 1.5.0 by hand, as a new
-  version of 10659431 with the release's source archive. A version's
-  authors come from `CITATION.cff`, which lists Francesco Silvestrin, the
-  first author of the S-VBMC paper, since 2026-10-12 (PI); a version made
-  from `v1.5.0`, whose `CITATION.cff` does not, takes him in by an edit on
-  Zenodo. `CITATION.cff`'s `doi` is 10659431's concept DOI, which resolves
-  to the latest version, since the same day. If the draft saved before
-  publication is what kept Zenodo from archiving 1.5.0, a release prepared
-  the same way meets the same; check Zenodo after the next one.
+  whose concept DOI `CITATION.cff` gives; it holds v1.0.2 to v1.0.4 and
+  archived v1.0.4 six seconds after its publication. It archived no 1.5.0:
+  the webhook's deliveries on 2026-10-12 got HTTP 409 for `published`
+  ("The release has already been received") and 202 for `released`, after
+  a 202 for `created` when the draft was saved on 2026-10-11. 1.5.0 is not
+  added by hand (PI, 2026-10-12): the papers are what users cite. If the
+  draft saved before publication is what kept Zenodo from archiving 1.5.0,
+  a release prepared the same way meets the same; check Zenodo after the
+  next release. A version's authors come from `CITATION.cff`, which lists
+  Francesco Silvestrin, the first author of the S-VBMC paper, since
+  2026-10-12 (PI).
 - [ ] **The old PyPI token.** Until 2026-10-12, `PYPI_PASSWORD` held a
   token set on 2023-03-16 whose owner is not known: the PI's PyPI account
   holds no token for pyvbmc, and only the owner can revoke it. pyvbmc's
@@ -130,36 +125,16 @@ records the release and the checks before it.
   `created` as PyVBMC's did, so publishing a saved draft does not start its
   upload; [acerbilab/gpyreg#70](https://github.com/acerbilab/gpyreg/pull/70)
   changes it to `published`, for version tags.
-- [ ] **conda-forge.** Merge or close the feedstock's PR 11 (open since
-  2026-09-25). It proposes `bot: {automerge: true, inspection:
-  update-grayskull}` in the feedstock's `conda-forge.yml`, as gpyreg's and
-  PyBADS's feedstocks have, so that the version bot's PR takes the
-  requirements from the PyPI metadata and merges itself once the
-  feedstock's CI passes. Under those settings the bot's PR for gpyreg
-  1.4.0 (`conda-forge/gpyreg-feedstock` #13) changed the version and the
-  hash alone, though its analysis listed the run requirements that 1.4.0
-  had dropped, and merged itself. So a release that changes the
-  requirements has them changed by hand, in a PR opened before the bot's
-  or pushed to the bot's before it merges; removing `[bot-automerge]` from
-  the bot's title keeps it from merging itself. The repodata patch
+- [ ] **The conda-forge repodata patch.** The patch
   `conda-forge/conda-forge-repodata-patches-feedstock` #1274 (open since
   2026-10-08) bounds every release from 0.9.0 to 1.0.4 at `gpyreg <1.3`
   and `numpy <2.4`, beyond which they fail; until it merges, conda can
   install 1.0.4 with a gpyreg or a NumPy that it fails with, in an
-  environment whose Python or other packages exclude 1.5.0. The conda
-  package's Python floor is conda-forge's `python_min` at the feedstock's
-  last rerender (3.11 for 1.5.0), which the README and the installation
-  page state; a rerender after conda-forge raises it raises the floor.
+  environment whose Python or other packages exclude 1.5.0. Follow it up
+  until it merges.
 - [ ] **PR #73.** The pull request "pymc integration" (aloctavodia, open
   since 2022) is superseded by `pyvbmc.PyMCTarget`; close it with thanks
   and a pointer to the PyMC guide of the quickstart and Example 8.
-- [ ] **Two ambiguous cross-references.** The attributes `log_pdf` and
-  `sample` of the `UserFunction` docstring
-  (`pyvbmc/priors/user_function.py`) are cross-references that the
-  `docs` workflow's builds of 2026-10-12 find ambiguous: `log_pdf` matches
-  the methods of `Prior` and `VariationalPosterior`, and `sample` those of
-  `Prior`, `SVBMC` and `VariationalPosterior`. Sphinx links each to one of
-  them. Qualify them.
 - [ ] **The `vp.plot()` tip's anchor, for 1.5.1.** The startup tip about
   `vp.plot()` (`pyvbmc/vbmc/_tip_catalog.py`) links
   `variational_posterior.html#pyvbmc.VariationalPosterior.VariationalPosterior.plot`,

@@ -404,6 +404,17 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   installed release. `pyvbmc/testing/vbmc/test_release_reminder.py` fails
   while the two disagree, but a pull request that changes only the
   changelog runs no tests in CI.
+- **conda-forge.** The feedstock `conda-forge/pyvbmc-feedstock` lists the
+  run requirements by hand in `recipe/meta.yaml`. Its version bot opens an
+  update pull request for each PyPI release and merges it itself once the
+  feedstock's CI passes, a CI that only imports PyVBMC and runs `pip
+  check`; the bot's reading of the requirements from PyPI has missed
+  changes before. A release that changes the runtime requirements has the
+  recipe's list changed by hand, in a pull request opened before the bot's
+  or pushed to the bot's before it merges (removing `[bot-automerge]` from
+  its title keeps it from merging). The conda package's Python floor is
+  conda-forge's `python_min` at the feedstock's last rerender, which the
+  README and the installation page state.
 - **Branches.** Work on feature branches; `feat-*` and `dev-*` branches are
   live work. An implementation that is rejected or parked after evaluation
   leaves the working line and is kept for the record on a branch named
