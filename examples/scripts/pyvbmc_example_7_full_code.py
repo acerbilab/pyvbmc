@@ -4,7 +4,6 @@ if "google.colab" in sys.modules:  # Colab lacks PyVBMC: install it
     get_ipython().run_line_magic("pip", 'install --upgrade "pyvbmc[torch]"')
 
 
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as scs
 from scipy.special import logsumexp
@@ -74,7 +73,7 @@ print("Noise status source:   ", stacked.noise_status_source)
 offsets = np.concatenate([[0], np.cumsum(stacked.K)])
 for m in range(stacked.M):
     share = stacked.w[0, offsets[m] : offsets[m + 1]].sum()
-    print(f"Run {m}: total weight {share:.3f}")
+    print(f"Run {vps.index(stacked.vp_list[m])}: total weight {share:.3f}")
 
 
 n_samples = 5000
