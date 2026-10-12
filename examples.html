@@ -489,13 +489,14 @@ post-processing workflows. The corresponding Jupyter notebooks are available
 <ul class="simple">
 <li><p><a class="reference internal" href="_examples/pyvbmc_example_7_stacking.html#pyvbmc-example-7-stacking-the-posteriors-of-several-runs-s-vbmc"><span class="std std-ref">PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)</span></a>
 combines completed runs and requires <code class="docutils literal notranslate"><span class="pre">pyvbmc[torch]</span></code>.</p></li>
-<li><p><a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html#pyvbmc-example-8-fitting-a-pymc-model"><span class="std std-ref">PyVBMC Example 8: Fitting a PyMC model</span></a> covers model setup, fitting,
-structured export and posterior prediction. It requires Python 3.12 or
-newer and <code class="docutils literal notranslate"><span class="pre">pyvbmc[pymc]</span></code>.</p></li>
+<li><p><a class="reference internal" href="_examples/pyvbmc_example_8_pymc.html#pyvbmc-example-8-fitting-a-pymc-model"><span class="std std-ref">PyVBMC Example 8: Fitting a PyMC model</span></a> fits a PyMC model, returns
+its posterior to PyMC and ArviZ for summaries and posterior prediction, and
+checks the model evidence against its exact value and the posterior against
+NUTS. It requires Python 3.12 or newer and <code class="docutils literal notranslate"><span class="pre">pyvbmc[pymc]</span></code>.</p></li>
 <li><p><a class="reference internal" href="_examples/pyvbmc_example_9_torch_jax.html#pyvbmc-example-9-torch-and-jax-models-and-posterior-exports"><span class="std std-ref">PyVBMC Example 9: Torch and JAX models and posterior exports</span></a> fits a
-two-parameter psychometric curve with a Torch target, shows the equivalent
-short JAX target wrapper, then makes posterior probability predictions and
-density-gradient calculations in Torch and summaries in ArviZ. The complete
+two-parameter psychometric curve with a Torch likelihood, uses the posterior
+in Torch for predictions and density gradients and in ArviZ for summaries,
+and fits the same likelihood written in JAX. The complete
 notebook requires Python 3.12 or newer and <code class="docutils literal notranslate"><span class="pre">pyvbmc[torch,arviz]</span></code>. Install
 JAX separately only to run its JAX section; the Torch sections do not depend
 on JAX. A CPU is sufficient for all three examples.</p></li>

@@ -514,13 +514,13 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-psychometric-model-and-response-counts">1. A psychometric model and response counts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-vectorized-torch-likelihood">2. A vectorized Torch likelihood</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fit-threshold-and-slope">3. Fit threshold and slope</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#torch-posterior-samples-and-predicted-response-probabilities">4. Torch posterior samples and predicted response probabilities</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#named-posterior-summaries-in-arviz">5. Named posterior summaries in ArviZ</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-same-input-model-in-jax">6. The same input model in JAX</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-to-reuse-in-your-own-model">7. What to reuse in your own model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-psychometric-model">1. A psychometric model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-likelihood-in-torch">2. A likelihood in Torch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fit-the-threshold-and-the-slope">3. Fit the threshold and the slope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#back-to-torch">4. Back to Torch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summaries-in-arviz">5. Summaries in ArviZ</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-same-likelihood-in-jax">6. The same likelihood in JAX</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">7. Conclusions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
 </ul>
             </nav>
@@ -535,21 +535,9 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-9-torch-and-jax-models-and-posterior-exports">
 <h1>PyVBMC Example 9: Torch and JAX models and posterior exports<a class="headerlink" href="#pyvbmc-example-9-torch-and-jax-models-and-posterior-exports" title="Link to this heading">#</a></h1>
-<p>We fit a psychometric curve to counts of correct responses, then use the fitted
-posterior in Torch and ArviZ. The model has two unknown parameters: a threshold
-and a slope. Guessing and lapse rates are fixed. A short JAX section implements
-the same likelihood, showing how to connect either framework to PyVBMC.</p>
-<p>This notebook is Part 9 of the PyVBMC examples. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_9_full_code.py">here</a>. It assumes the basic workflow
-from Example 1. To run every section, use <strong>Python 3.12 or newer</strong> and install:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m pip install --upgrade "pyvbmc[torch,arviz]"</span>
-<span class="go">python -m pip install jax notebook</span>
-</pre></div>
-</div>
-<p>A CPU is sufficient; see the <a class="reference external" href="https://acerbilab.org/pyvbmc/installation.html">installation guide</a> for
-CPU-only Torch installation. JAX is needed only for the final model section.
-PyVBMC’s solver uses NumPy/SciPy; framework targets exchange NumPy arrays with
-it. This inexpensive model makes the workflow easy to run. PyVBMC is most
-useful when target evaluations are costly or limited in number.</p>
+<p>In this notebook, we fit a model whose likelihood is written in <a class="reference external" href="https://pytorch.org/">Torch</a> (PyTorch), then bring the posterior back to Torch, to predict the model’s responses, and to <a class="reference external" href="https://www.arviz.org/">ArviZ</a>, to summarize it. A final section writes the same likelihood in <a class="reference external" href="https://docs.jax.dev/">JAX</a> and fits it again.</p>
+<p>PyVBMC calls the target with NumPy arrays and expects NumPy values back, so a model written in any framework needs only a thin wrapper that converts between the two. A model that can evaluate many parameter vectors in one call can also take several points at once from PyVBMC. The model here is cheap, so that the notebook runs in seconds; PyVBMC is most useful when each evaluation of the likelihood is expensive.</p>
+<p>This notebook is Part 9 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_9_full_code.py">here</a>. It needs Python 3.12 or newer and PyVBMC’s optional <code class="docutils literal notranslate"><span class="pre">torch</span></code> and <code class="docutils literal notranslate"><span class="pre">arviz</span></code> dependencies, installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[torch,arviz]&quot;</span></code> (the <a class="reference external" href="https://acerbilab.org/pyvbmc/installation.html">installation guide</a> explains how to install Torch for the CPU only). The last section also needs JAX, installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">jax</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -562,7 +550,8 @@ useful when target evaluations are costly or limited in number.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">arviz</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">az</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">expit</span>
@@ -570,29 +559,21 @@ useful when target evaluations are costly or limited in number.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">VBMC</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">UniformBox</span>
 
-<span class="n">SEED</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">SEED</span> <span class="o">=</span> <span class="mi">9</span>  <span class="c1"># Fix the seed, so that the results below are reproducible</span>
 </pre></div>
 </div>
 </div>
 </div>
-<section id="a-psychometric-model-and-response-counts">
-<h2>1. A psychometric model and response counts<a class="headerlink" href="#a-psychometric-model-and-response-counts" title="Link to this heading">#</a></h2>
-<p>At each stimulus level <span class="math notranslate nohighlight">\(s_i\)</span>, we observe <span class="math notranslate nohighlight">\(k_i\)</span> correct responses in <span class="math notranslate nohighlight">\(n_i\)</span>
-independent trials of a two-alternative task. We model</p>
+<section id="a-psychometric-model">
+<h2>1. A psychometric model<a class="headerlink" href="#a-psychometric-model" title="Link to this heading">#</a></h2>
+<p>At each stimulus level <span class="math notranslate nohighlight">\(s_i\)</span>, we observe <span class="math notranslate nohighlight">\(k_i\)</span> correct responses in <span class="math notranslate nohighlight">\(n_i\)</span> independent trials of a two-alternative task. We model</p>
 <div class="math notranslate nohighlight">
 \[
-k_i \sim \operatorname{Binomial}(n_i, p(s_i)), \qquad
-p(s) = \gamma + (1-\gamma-\lambda)
-\operatorname{sigmoid}\bigl(\beta(s-\alpha)\bigr).
+k_i \sim \operatorname{Binomial}\bigl(n_i, p(s_i)\bigr), \qquad
+p(s) = \gamma + (1-\gamma-\lambda) \operatorname{sigmoid}\bigl(\beta(s-\alpha)\bigr).
 \]</div>
-<p>Here <span class="math notranslate nohighlight">\(\alpha\)</span> is the threshold and <span class="math notranslate nohighlight">\(\beta&gt;0\)</span> controls steepness. We fix the
-guessing rate at <span class="math notranslate nohighlight">\(\gamma=0.5\)</span> and the upper error rate at <span class="math notranslate nohighlight">\(\lambda=0.02\)</span>,
-so the curve rises from 50% to 98% correct. This convention defines the
-threshold at the midpoint of those asymptotes: <span class="math notranslate nohighlight">\(p(\alpha)=0.74\)</span>.
-The derivative there is <span class="math notranslate nohighlight">\((1-\gamma-\lambda)\beta/4\)</span>.</p>
-<p>We simulate a small dataset. The response counts are random, but evaluating
-their binomial log-likelihood is deterministic; this is an ordinary noiseless
-target for PyVBMC.</p>
+<p>The psychometric function <span class="math notranslate nohighlight">\(p(s)\)</span> rises from <span class="math notranslate nohighlight">\(\gamma\)</span>, the probability of a correct guess, to <span class="math notranslate nohighlight">\(1 - \lambda\)</span>, where the lapse rate <span class="math notranslate nohighlight">\(\lambda\)</span> is the probability of an error on an easy trial. We fix <span class="math notranslate nohighlight">\(\gamma = 0.5\)</span> and <span class="math notranslate nohighlight">\(\lambda = 0.02\)</span>, and infer the two parameters that remain: the threshold <span class="math notranslate nohighlight">\(\alpha\)</span>, where the curve is halfway up, and the slope <span class="math notranslate nohighlight">\(\beta &gt; 0\)</span>, which sets how steeply it rises.</p>
+<p>We simulate 60 trials at each of 11 stimulus levels:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">guess_rate</span> <span class="o">=</span> <span class="mf">0.5</span>
@@ -603,8 +584,8 @@ target for PyVBMC.</p>
 <span class="n">probability_true</span> <span class="o">=</span> <span class="n">guess_rate</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">guess_rate</span> <span class="o">-</span> <span class="n">lapse_rate</span><span class="p">)</span> <span class="o">*</span> <span class="n">expit</span><span class="p">(</span>
     <span class="n">slope_true</span> <span class="o">*</span> <span class="p">(</span><span class="n">stimulus</span> <span class="o">-</span> <span class="n">threshold_true</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="n">data_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
-<span class="n">n_correct</span> <span class="o">=</span> <span class="n">data_rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">probability_true</span><span class="p">)</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
+<span class="n">n_correct</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">probability_true</span><span class="p">)</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">n_correct</span> <span class="o">/</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Observed proportion"</span><span class="p">)</span>
@@ -623,26 +604,23 @@ target for PyVBMC.</p>
 </div>
 </div>
 </section>
-<section id="a-vectorized-torch-likelihood">
-<h2>2. A vectorized Torch likelihood<a class="headerlink" href="#a-vectorized-torch-likelihood" title="Link to this heading">#</a></h2>
-<p>The parameter order throughout is <code class="docutils literal notranslate"><span class="pre">[threshold,</span> <span class="pre">slope]</span></code>. With
-<code class="docutils literal notranslate"><span class="pre">vectorized_target=True</span></code>, PyVBMC passes an <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">2)</span></code> NumPy array in these
-original coordinates and expects an <code class="docutils literal notranslate"><span class="pre">(N,)</span></code> NumPy array of log-likelihoods.
-It batches the initial-design points that need evaluation. Later calls each
-have shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">2)</span></code>, because active sampling selects one point at a time.</p>
-<p>The model below broadcasts over parameter rows and stimulus levels. We use
-explicit float64 tensors on the CPU and keep the data in Torch between calls.
-<code class="docutils literal notranslate"><span class="pre">Binomial.log_prob</span></code> includes the binomial normalization constants, which
-matter for model evidence.</p>
+<section id="a-likelihood-in-torch">
+<h2>2. A likelihood in Torch<a class="headerlink" href="#a-likelihood-in-torch" title="Link to this heading">#</a></h2>
+<p>The function <code class="docutils literal notranslate"><span class="pre">torch_log_likelihood</span></code> below is the target. It receives an array of parameter vectors, one per row, in the order <code class="docutils literal notranslate"><span class="pre">[threshold,</span> <span class="pre">slope]</span></code>, converts it to a Torch tensor, computes the binomial log-likelihood of the data for each row, and returns the values as a NumPy array. Two details matter:</p>
+<ul class="simple">
+<li><p>PyVBMC works in double precision, so the tensors are <code class="docutils literal notranslate"><span class="pre">float64</span></code>, which is not Torch’s default.</p></li>
+<li><p>PyVBMC needs only the values of the likelihood, so the computation runs under <code class="docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>, without recording gradients.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">Binomial.log_prob</span></code> includes the binomial coefficients. They are constant in the parameters, so they do not change the posterior, but they are part of the model evidence.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
-<span class="n">stimulus_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-<span class="n">trials_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-<span class="n">correct_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">n_correct</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stimulus_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">n_trials_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">n_correct_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">n_correct</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">response_probability_t</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Probability correct at each level, for each row [threshold, slope]."""</span>
     <span class="n">threshold</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">slope</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">guess_rate</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">guess_rate</span> <span class="o">-</span> <span class="n">lapse_rate</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
@@ -651,55 +629,46 @@ matter for model evidence.</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">torch_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Binomial log-likelihood of the data, for each row of x."""</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">theta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">probabilities</span> <span class="o">=</span> <span class="n">response_probability_t</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">stimulus_t</span><span class="p">)</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Binomial</span><span class="p">(</span>
-                <span class="n">total_count</span><span class="o">=</span><span class="n">trials_t</span><span class="p">,</span> <span class="n">probs</span><span class="o">=</span><span class="n">probabilities</span>
+                <span class="n">total_count</span><span class="o">=</span><span class="n">n_trials_t</span><span class="p">,</span> <span class="n">probs</span><span class="o">=</span><span class="n">probabilities</span>
             <span class="p">)</span>
-            <span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">correct_t</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">n_correct_t</span><span class="p">)</span>
             <span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="p">)</span>
-    <span class="k">return</span> <span class="n">values</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">values</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
 
-<span class="n">check_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Batch log-likelihoods:"</span><span class="p">,</span> <span class="n">torch_log_likelihood</span><span class="p">(</span><span class="n">check_points</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Single-row output shape:"</span><span class="p">,</span> <span class="n">torch_log_likelihood</span><span class="p">(</span><span class="n">check_points</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="c1"># Two parameter vectors in, two log-likelihoods out:</span>
+<span class="n">check_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">]])</span>
+<span class="n">torch_log_likelihood</span><span class="p">(</span><span class="n">check_points</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Batch log-likelihoods: [-36.16985449 -26.17829108 -69.80600386]
-Single-row output shape: (1,)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([-36.16985449, -26.17829108])
 </pre></div>
 </div>
 </div>
 </div>
-<p>The return conversion completes any device work and delivers host NumPy
-values to PyVBMC. A vectorized target returns an array even for one point.
-PyVBMC needs likelihood values only, so target evaluation disables gradient
-recording; the Torch model function remains usable for other computations.</p>
+<p>On a GPU, create the tensors there (with <code class="docutils literal notranslate"><span class="pre">device=</span></code>) and return <code class="docutils literal notranslate"><span class="pre">values.cpu().numpy()</span></code>.</p>
+<p>With the option <code class="docutils literal notranslate"><span class="pre">vectorized_target</span></code>, PyVBMC passes several points in one call where it can: the points of its initial design come in one batch, and each later point comes alone, as an array with one row.</p>
 </section>
-<section id="fit-threshold-and-slope">
-<h2>3. Fit threshold and slope<a class="headerlink" href="#fit-threshold-and-slope" title="Link to this heading">#</a></h2>
-<p>We choose independent uniform priors for threshold in <code class="docutils literal notranslate"><span class="pre">[-3,</span> <span class="pre">3]</span></code> and slope in
-<code class="docutils literal notranslate"><span class="pre">[0.2,</span> <span class="pre">6]</span></code>. These finite hard bounds express the prior support. The narrower
-plausible box describes where we expect most posterior mass and helps
-initialize the search; it does not truncate the prior.</p>
-<p><code class="docutils literal notranslate"><span class="pre">prior=</span></code> supplies the normalized prior separately. The target returns only
-the log-likelihood, and PyVBMC adds the log-prior once. A separate prior
-keeps its ordinary single-point interface even with a batched likelihood.</p>
+<section id="fit-the-threshold-and-the-slope">
+<h2>3. Fit the threshold and the slope<a class="headerlink" href="#fit-the-threshold-and-the-slope" title="Link to this heading">#</a></h2>
+<p>As in the previous examples, we set the hard bounds, a plausible box where we expect most of the posterior mass, and a starting point. We put independent uniform priors on the threshold, in <span class="math notranslate nohighlight">\([-3, 3]\)</span>, and on the slope, in <span class="math notranslate nohighlight">\([0.2, 6]\)</span>, and pass them separately with <code class="docutils literal notranslate"><span class="pre">prior=</span></code>, as in Example 5: PyVBMC adds the log-prior to the log-likelihood that the target returns.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lower_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
-<span class="n">upper_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">])</span>
-<span class="n">plausible_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
-<span class="n">plausible_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
-<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lower_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]])</span>
+<span class="n">upper_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]])</span>
+<span class="n">plausible_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]])</span>
+<span class="n">plausible_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]])</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
 <span class="n">prior</span> <span class="o">=</span> <span class="n">UniformBox</span><span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
-<span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"vectorized_target"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"display"</span><span class="p">:</span> <span class="s2">"off"</span><span class="p">}</span>
 
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
     <span class="n">torch_log_likelihood</span><span class="p">,</span>
@@ -709,55 +678,51 @@ keeps its ordinary single-point interface even with a batched likelihood.</p>
     <span class="n">plausible_lower</span><span class="p">,</span>
     <span class="n">plausible_upper</span><span class="p">,</span>
     <span class="n">prior</span><span class="o">=</span><span class="n">prior</span><span class="p">,</span>
-    <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"vectorized_target"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
     <span class="n">seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Convergence status:"</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="s2">"convergence_status"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Target evaluations:"</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="s2">"func_count"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ELBO: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">'elbo'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">'elbo_sd'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Convergence status: probable
-Target evaluations: 70
-ELBO: -28.008 +/- 0.001
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+Performance settings: saved calibration.
+Tip: Use PLB and PUB to guide PyVBMC's initial search toward likely parameter values. If you have no better information, use each prior's 16th and 84th percentiles: roughly mean minus and plus one SD for a Gaussian prior. These guide the search without affecting or restricting the posterior.
+https://acerbilab.org/pyvbmc/faq.html#faq-how-do-i-choose-plb-and-pub
+ Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
+     0         10         -28.06         1.09    135863.91        2        inf     start warm-up
+     1         15         -28.09         0.06         0.84        2        inf     
+     2         20         -28.07         0.00         0.05        2       1.21     
+     3         25         -28.07         0.00         0.00        2     0.0596     
+     4         30         -28.07         0.00         0.00        2     0.0765     end warm-up
+     5         35         -28.05         0.00         0.00        2     0.0962     
+     6         40         -28.05         0.00         0.00        2     0.0398     
+     7         45         -28.03         0.00         0.01        5      0.303     
+     8         50         -28.02         0.00         0.00        8     0.0691     
+     9         55         -28.02         0.00         0.00       11      0.022     
+    10         60         -28.01         0.00         0.00       11     0.0338     rotoscale, undo rotoscale
+    11         65         -28.01         0.00         0.00       14     0.0272     
+    12         70         -28.01         0.00         0.00       15     0.0213     stable
+   inf         70         -28.01         0.00         0.00       50     0.0213     finalize
+Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
+Estimated ELBO: -28.008 +/-0.001.
 </pre></div>
 </div>
 </div>
 </div>
-<p>Read the convergence status before using the result. <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> describes
-uncertainty in the ELBO estimate; it is not the error relative to the true
-log evidence. One converged run is a starting point for validation: use
-different seeds and starting points to check agreement, as in Example 4.
-The explicit seed controls PyVBMC’s random stream; <code class="docutils literal notranslate"><span class="pre">data_rng</span></code> above controls
-the simulated dataset independently.</p>
 </section>
-<section id="torch-posterior-samples-and-predicted-response-probabilities">
-<h2>4. Torch posterior samples and predicted response probabilities<a class="headerlink" href="#torch-posterior-samples-and-predicted-response-probabilities" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">vp.to_torch()</span></code> makes an independent distribution snapshot. Its defaults are
-CPU, float64 and <strong>original parameter coordinates</strong>, so each draw contains
-<code class="docutils literal notranslate"><span class="pre">[threshold,</span> <span class="pre">slope]</span></code> within the hard bounds. PyVBMC’s internal transformations
-are already accounted for. Conversion draws no random numbers; sampling the
-export uses Torch’s random generator, seeded separately below.</p>
+<section id="back-to-torch">
+<h2>4. Back to Torch<a class="headerlink" href="#back-to-torch" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">vp.to_torch()</span></code> exports the variational posterior as a Torch distribution over <code class="docutils literal notranslate"><span class="pre">[threshold,</span> <span class="pre">slope]</span></code>, in the original parameter space. We draw parameter vectors from it and compute, for each, the probability of a correct response along the stimulus axis: the spread of these curves shows how uncertain the psychometric function remains after seeing the data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_t</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">to_torch</span><span class="p">()</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>  <span class="c1"># Sampling uses Torch's random generator</span>
 <span class="n">parameter_draws_t</span> <span class="o">=</span> <span class="n">posterior_t</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">2000</span><span class="p">,))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Posterior sample shape:"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parameter_draws_t</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
 
-<span class="c1"># The exported density agrees with the NumPy posterior at the same points.</span>
-<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
-    <span class="n">posterior_t</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">parameter_draws_t</span><span class="p">[:</span><span class="mi">10</span><span class="p">])</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
-    <span class="n">vp</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">parameter_draws_t</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">log_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
-    <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span>
-    <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">grid_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-<span class="n">probability_draws_t</span> <span class="o">=</span> <span class="n">response_probability_t</span><span class="p">(</span><span class="n">parameter_draws_t</span><span class="p">,</span> <span class="n">grid_t</span><span class="p">)</span>
+<span class="n">levels_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">probability_draws_t</span> <span class="o">=</span> <span class="n">response_probability_t</span><span class="p">(</span><span class="n">parameter_draws_t</span><span class="p">,</span> <span class="n">levels_t</span><span class="p">)</span>
 <span class="n">bands</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span>
     <span class="n">probability_draws_t</span><span class="p">,</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
@@ -766,13 +731,13 @@ export uses Torch’s random generator, seeded separately below.</p>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
-    <span class="n">grid_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+    <span class="n">levels_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
     <span class="n">bands</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
     <span class="n">bands</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
-    <span class="n">label</span><span class="o">=</span><span class="s2">"90% pointwise credible interval"</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">"90</span><span class="si">% c</span><span class="s2">redible interval"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">bands</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Posterior median probability"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">levels_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">bands</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Posterior median"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
     <span class="n">stimulus</span><span class="p">,</span>
     <span class="n">n_correct</span> <span class="o">/</span> <span class="n">n_trials</span><span class="p">,</span>
@@ -791,76 +756,91 @@ export uses Torch’s random generator, seeded separately below.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Posterior sample shape: (2000, 2)
-</pre></div>
-</div>
-<img alt="../_images/0b0e00358a1d8fbf413a74d402f1cd48993372069a0e1454b30c8c9398269517.png" src="../_images/0b0e00358a1d8fbf413a74d402f1cd48993372069a0e1454b30c8c9398269517.png" />
+<img alt="../_images/5e7d4feebab2eb2fa5e0ba78f3c613d2987efc85d6fdb44448c063cfe0e16722.png" src="../_images/5e7d4feebab2eb2fa5e0ba78f3c613d2987efc85d6fdb44448c063cfe0e16722.png" />
 </div>
 </div>
-<p>The band describes posterior uncertainty in the response probability at each
-stimulus level. Future observed proportions also vary because of binomial
-sampling: drawing future counts would require an additional binomial draw
-for each parameter sample. Observed proportions can therefore fall outside
-this probability band. Finite response counts can also move the fitted curve
-away from the generating curve. These are pointwise intervals, not a simultaneous
-band for the entire curve.</p>
-<p>The exported <code class="docutils literal notranslate"><span class="pre">log_prob</span></code> is also differentiable with respect to its input.
-Here is the gradient of the approximate log posterior in the original
-threshold and slope coordinates. It does not differentiate through the
-PyVBMC fitting procedure. For bounded parameters, density inputs must be
-strictly inside the hard bounds.</p>
+<p>The band shows, at each stimulus level, the 90% credible interval of the probability of a correct response. The observed proportions scatter more widely, since each also varies with the binomial sampling of its 60 trials. The generating curve lies partly outside the band: by chance, these data favor a higher threshold.</p>
+<p>The exported distribution is also differentiable. Its log density can enter other Torch computations, for example as the prior of a later analysis fit by gradient methods, and Torch computes its gradient with respect to the parameters:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">point_t</span> <span class="o">=</span> <span class="n">parameter_draws_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">point_t</span> <span class="o">=</span> <span class="n">parameter_draws_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">log_density_t</span> <span class="o">=</span> <span class="n">posterior_t</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">point_t</span><span class="p">)</span>
 <span class="n">gradient_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">log_density_t</span><span class="p">,</span> <span class="n">point_t</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Point [threshold, slope]:"</span><span class="p">,</span> <span class="n">point_t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Log-density gradient:"</span><span class="p">,</span> <span class="n">gradient_t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Gradient of the log density:"</span><span class="p">,</span> <span class="n">gradient_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Point [threshold, slope]: [0.5033463  2.36891447]
-Log-density gradient: [3.3859662 0.1970632]
+Gradient of the log density: [3.3859662 0.1970632]
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="named-posterior-summaries-in-arviz">
-<h2>5. Named posterior summaries in ArviZ<a class="headerlink" href="#named-posterior-summaries-in-arviz" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">vp.to_arviz()</span></code> draws new independent samples using <code class="docutils literal notranslate"><span class="pre">vp.rng</span></code> and returns a
-DataTree with one posterior chain. <code class="docutils literal notranslate"><span class="pre">var_names</span></code> follows the same parameter
-order as the target. This export advances PyVBMC’s posterior random stream,
-independently of the Torch samples above.</p>
-<p>We request marginal statistics with <code class="docutils literal notranslate"><span class="pre">kind=&quot;stats&quot;</span></code>. MCMC convergence
-diagnostics on independent variational draws do not assess how well the
-approximation matches the true posterior.</p>
+<section id="summaries-in-arviz">
+<h2>5. Summaries in ArviZ<a class="headerlink" href="#summaries-in-arviz" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">vp.to_arviz()</span></code> returns samples from the variational posterior as an ArviZ <code class="docutils literal notranslate"><span class="pre">DataTree</span></code>, under the names we give to the parameters:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">arviz</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">az</span>
-
-<span class="n">posterior_data</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"threshold"</span><span class="p">,</span> <span class="s2">"slope"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">posterior_data</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stats"</span><span class="p">,</span> <span class="n">round_to</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_data</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"threshold"</span><span class="p">,</span> <span class="s2">"slope"</span><span class="p">])</span>
+<span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span>
+    <span class="n">posterior_data</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">"stats"</span><span class="p">,</span>  <span class="c1"># MCMC diagnostics do not apply to independent draws</span>
+    <span class="n">round_to</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>            mean     sd  eti89_lb  eti89_ub
-threshold  0.626  0.141     0.395     0.850
-slope      2.926  0.737     1.952     4.267
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean</th>
+      <th>sd</th>
+      <th>eti89_lb</th>
+      <th>eti89_ub</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>threshold</th>
+      <td>0.626</td>
+      <td>0.141</td>
+      <td>0.395</td>
+      <td>0.850</td>
+    </tr>
+    <tr>
+      <th>slope</th>
+      <td>2.926</td>
+      <td>0.737</td>
+      <td>1.952</td>
+      <td>4.267</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 </section>
-<section id="the-same-input-model-in-jax">
-<h2>6. The same input model in JAX<a class="headerlink" href="#the-same-input-model-in-jax" title="Link to this heading">#</a></h2>
-<p>For a JAX model, enable <a class="reference external" href="https://docs.jax.dev/en/latest/default_dtypes.html">64-bit computation</a>
-before creating model arrays. The compiled function below computes the same
-normalized binomial likelihood. Its wrapper returns host NumPy values using
-<code class="docutils literal notranslate"><span class="pre">jax.device_get</span></code>, which waits for the result before returning it to PyVBMC.
-The first call for each input shape includes compilation work.</p>
+<section id="the-same-likelihood-in-jax">
+<h2>6. The same likelihood in JAX<a class="headerlink" href="#the-same-likelihood-in-jax" title="Link to this heading">#</a></h2>
+<p>In JAX, the likelihood takes the same form. JAX computes in single precision unless told otherwise, so we enable <a class="reference external" href="https://docs.jax.dev/en/latest/default_dtypes.html">64-bit computation</a> before creating any array. <code class="docutils literal notranslate"><span class="pre">jax.jit</span></code> compiles the computation on its first call for each shape of the input, and the wrapper returns the result as a NumPy array:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
@@ -871,8 +851,8 @@ The first call for each input shape includes compilation work.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax.scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">binom</span>
 
 <span class="n">stimulus_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-<span class="n">trials_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-<span class="n">correct_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_correct</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">n_trials_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">n_correct_j</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_correct</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
 
 <span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
@@ -882,54 +862,61 @@ The first call for each input shape includes compilation work.</p>
     <span class="n">probabilities</span> <span class="o">=</span> <span class="n">guess_rate</span> <span class="o">+</span> <span class="p">(</span>
         <span class="mi">1</span> <span class="o">-</span> <span class="n">guess_rate</span> <span class="o">-</span> <span class="n">lapse_rate</span>
     <span class="p">)</span> <span class="o">*</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">stimulus_j</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">threshold</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">binom</span><span class="o">.</span><span class="n">logpmf</span><span class="p">(</span><span class="n">correct_j</span><span class="p">,</span> <span class="n">trials_j</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">binom</span><span class="o">.</span><span class="n">logpmf</span><span class="p">(</span><span class="n">n_correct_j</span><span class="p">,</span> <span class="n">n_trials_j</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">jax_log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Binomial log-likelihood of the data, for each row of x."""</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">jax_log_likelihood_values</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">device_get</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
 
-<span class="k">for</span> <span class="n">points</span> <span class="ow">in</span> <span class="p">(</span><span class="n">check_points</span><span class="p">,</span> <span class="n">check_points</span><span class="p">[:</span><span class="mi">1</span><span class="p">]):</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
-        <span class="n">jax_log_likelihood</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
-        <span class="n">torch_log_likelihood</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
-        <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span>
-        <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Torch and JAX likelihoods agree for batch and single-row inputs."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"JAX:  "</span><span class="p">,</span> <span class="n">jax_log_likelihood</span><span class="p">(</span><span class="n">check_points</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Torch:"</span><span class="p">,</span> <span class="n">torch_log_likelihood</span><span class="p">(</span><span class="n">check_points</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Torch and JAX likelihoods agree for batch and single-row inputs.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>JAX:   [-36.16985449 -26.17829108]
+Torch: [-36.16985449 -26.17829108]
 </pre></div>
 </div>
 </div>
 </div>
-<p>To fit with this target, replace <code class="docutils literal notranslate"><span class="pre">torch_log_likelihood</span></code> by
-<code class="docutils literal notranslate"><span class="pre">jax_log_likelihood</span></code> in the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> constructor in Section 3 and call
-<code class="docutils literal notranslate"><span class="pre">optimize()</span></code>. The bounds, prior and <code class="docutils literal notranslate"><span class="pre">vectorized_target</span></code> option stay the same.
-The returned <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> supports the same Torch and ArviZ exports
-regardless of which framework evaluated the likelihood.</p>
+<p>The two likelihoods return the same values, up to rounding in the last digits. We fit the JAX one with the same settings as before, without the iteration trace this time, and compare the ELBOs of the two runs:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc_jax</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+    <span class="n">jax_log_likelihood</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">,</span>
+    <span class="n">lower_bounds</span><span class="p">,</span>
+    <span class="n">upper_bounds</span><span class="p">,</span>
+    <span class="n">plausible_lower</span><span class="p">,</span>
+    <span class="n">plausible_upper</span><span class="p">,</span>
+    <span class="n">prior</span><span class="o">=</span><span class="n">prior</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"vectorized_target"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"display"</span><span class="p">:</span> <span class="s2">"off"</span><span class="p">},</span>
+    <span class="n">seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">vp_jax</span><span class="p">,</span> <span class="n">results_jax</span> <span class="o">=</span> <span class="n">vbmc_jax</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ELBO with the Torch likelihood:"</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">],</span> <span class="s2">".3f"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ELBO with the JAX likelihood:  "</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">results_jax</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">],</span> <span class="s2">".3f"</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ELBO with the Torch likelihood: -28.008
+ELBO with the JAX likelihood:   -28.000
+</pre></div>
+</div>
+</div>
+</div>
+<p>The two ELBOs agree to about 0.01, within the precision that PyVBMC aims for (see the remarks in Example 1). They are not identical, despite the common seed, because the rounding differences between the two likelihoods send the runs along slightly different paths. The posterior of either run supports the same exports.</p>
 </section>
-<section id="what-to-reuse-in-your-own-model">
-<h2>7. What to reuse in your own model<a class="headerlink" href="#what-to-reuse-in-your-own-model" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>Wrap the model with explicit precision, NumPy inputs and host NumPy outputs.
-Opt into batching only when the target accepts <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">D)</span></code> inputs, including
-<code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code> after initialization.</p></li>
-<li><p>Supply a normalized prior and retain likelihood constants when estimating
-model evidence. Choose hard bounds for support and plausible bounds to
-guide initialization.</p></li>
-<li><p>Use Torch posterior samples for model predictions and <code class="docutils literal notranslate"><span class="pre">log_prob</span></code> for
-differentiable density evaluation. Use named ArviZ draws for summaries.</p></li>
-<li><p>Check the inference result and agreement across independent runs; increasing
-the number of exported samples only reduces sampling error within the fitted
-approximation.</p></li>
-</ul>
-<p>See Example 7 for combining fitted runs with S-VBMC, and Example 8 for a
-PyMC model with structured posterior export and posterior predictive sampling.</p>
+<section id="conclusions">
+<h2>7. Conclusions<a class="headerlink" href="#conclusions" title="Link to this heading">#</a></h2>
+<p>In this notebook, we have fit a model written in Torch, and the same model written in JAX, with PyVBMC. A model in any framework connects to PyVBMC through a wrapper that takes a NumPy array of parameter vectors and returns their log-likelihoods as a NumPy array, computed in double precision; with the option <code class="docutils literal notranslate"><span class="pre">vectorized_target</span></code>, PyVBMC passes several points in one call. We brought the posterior back to Torch as a distribution, which we sampled for predictions and differentiated, and to ArviZ for summaries.</p>
+<p>See Example 7 for combining several runs of PyVBMC with S-VBMC, and Example 8 for fitting a PyMC model.</p>
 </section>
 <section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
@@ -984,13 +971,13 @@ PyMC model with structured posterior export and posterior predictive sampling.</
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-psychometric-model-and-response-counts">1. A psychometric model and response counts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-vectorized-torch-likelihood">2. A vectorized Torch likelihood</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fit-threshold-and-slope">3. Fit threshold and slope</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#torch-posterior-samples-and-predicted-response-probabilities">4. Torch posterior samples and predicted response probabilities</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#named-posterior-summaries-in-arviz">5. Named posterior summaries in ArviZ</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-same-input-model-in-jax">6. The same input model in JAX</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-to-reuse-in-your-own-model">7. What to reuse in your own model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-psychometric-model">1. A psychometric model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-likelihood-in-torch">2. A likelihood in Torch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fit-the-threshold-and-the-slope">3. Fit the threshold and the slope</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#back-to-torch">4. Back to Torch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summaries-in-arviz">5. Summaries in ArviZ</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-same-likelihood-in-jax">6. The same likelihood in JAX</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">7. Conclusions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
 </ul>
   </nav></div>

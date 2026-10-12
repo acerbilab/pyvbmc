@@ -515,10 +515,10 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-regression-model-in-pymc">1. A regression model in PyMC</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-the-model-to-a-pyvbmc-target">2. From the model to a PyVBMC target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-the-pymc-model-to-pyvbmc">2. From the PyMC model to PyVBMC</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-pyvbmc">3. Run PyVBMC</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#back-to-pymc">4. Back to PyMC</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-with-pymc-s-nuts-sampler">5. Comparison with PyMC’s NUTS sampler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-with-nuts">5. Comparison with NUTS</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">6. Conclusions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
 </ul>
@@ -534,8 +534,9 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-8-fitting-a-pymc-model">
 <h1>PyVBMC Example 8: Fitting a PyMC model<a class="headerlink" href="#pyvbmc-example-8-fitting-a-pymc-model" title="Link to this heading">#</a></h1>
-<p>In this notebook, we fit a PyMC model with PyVBMC, convert the variational posterior back to PyMC’s named variables, and use PyMC and ArviZ for posterior analysis and prediction. We also run a short NUTS fit as a reference for the posterior marginals.</p>
-<p>This notebook is Part 8 of a series of notebooks presenting example uses of VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_8_full_code.py">here</a>. The adapter requires Python 3.12 or newer and the optional <code class="docutils literal notranslate"><span class="pre">pymc</span></code> dependency group, installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[pymc]&quot;</span></code>. The example uses fixed seeds so that its simulated data, PyVBMC run, exported samples, posterior predictive draws, and NUTS comparison are reproducible.</p>
+<p>In this notebook, we fit a model written in <a class="reference external" href="https://www.pymc.io/">PyMC</a> with PyVBMC, return the posterior to PyMC and <a class="reference external" href="https://www.arviz.org/">ArviZ</a> for analysis and prediction, and compare the results with PyMC’s NUTS sampler.</p>
+<p>PyMC models are usually fit with NUTS, which evaluates the log density of the model and its gradient many thousands of times. PyVBMC needs far fewer evaluations and no gradients, so it is worth using when each evaluation of the model is expensive, as when the likelihood solves differential equations or calls external code, or when you also want an estimate of the model evidence, which NUTS does not provide. The model in this notebook is cheap, so that the notebook runs in seconds and its results can be checked.</p>
+<p>This notebook is Part 8 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_8_full_code.py">here</a>. The PyMC integration needs Python 3.12 or newer and the optional <code class="docutils literal notranslate"><span class="pre">pymc</span></code> dependencies, installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">&quot;pyvbmc[pymc]&quot;</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -550,18 +551,28 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">arviz</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">az</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pymc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">quad</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyMCTarget</span><span class="p">,</span> <span class="n">VBMC</span>
 
-<span class="n">SEED</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">SEED</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># Fix the seed, so that the results below are reproducible</span>
 </pre></div>
 </div>
 </div>
 </div>
 <section id="a-regression-model-in-pymc">
 <h2>1. A regression model in PyMC<a class="headerlink" href="#a-regression-model-in-pymc" title="Link to this heading">#</a></h2>
-<p>We simulate a small linear regression with an intercept, a slope, and an unknown observation scale. Named coordinates keep the two entries of <code class="docutils literal notranslate"><span class="pre">beta</span></code> identifiable throughout the PyMC workflow. The positive <code class="docutils literal notranslate"><span class="pre">sigma</span></code> parameter uses PyMC’s default logarithmic value transform, and <code class="docutils literal notranslate"><span class="pre">mu</span></code> is a deterministic vector used by the likelihood.</p>
+<p>We simulate 30 observations <span class="math notranslate nohighlight">\(y_i\)</span> from a linear regression on a predictor <span class="math notranslate nohighlight">\(x_i\)</span>, with intercept <span class="math notranslate nohighlight">\(\beta_0 = 0.5\)</span>, slope <span class="math notranslate nohighlight">\(\beta_1 = 1\)</span> and Gaussian noise of standard deviation <span class="math notranslate nohighlight">\(\sigma = 0.7\)</span>. Our model assigns priors to these three parameters:</p>
+<div class="math notranslate nohighlight">
+\[
+y_i \sim \mathcal{N}\left(\beta_0 + \beta_1 x_i, \sigma^2\right), \qquad
+\beta_0, \beta_1 \sim \mathcal{N}\left(0, 5^2\right), \qquad
+\sigma \sim \operatorname{HalfNormal}(2).
+\]</div>
+<p>In PyMC, the intercept and the slope form one vector variable, <code class="docutils literal notranslate"><span class="pre">beta</span></code>, and the coordinate <code class="docutils literal notranslate"><span class="pre">coef</span></code> labels its two entries <code class="docutils literal notranslate"><span class="pre">intercept</span></code> and <code class="docutils literal notranslate"><span class="pre">slope</span></code>. The deterministic variable <code class="docutils literal notranslate"><span class="pre">mu</span></code> stores the mean of each observation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
@@ -594,10 +605,15 @@
 </div>
 </div>
 </section>
-<section id="from-the-model-to-a-pyvbmc-target">
-<h2>2. From the model to a PyVBMC target<a class="headerlink" href="#from-the-model-to-a-pyvbmc-target" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> snapshots the model data, checks that its free variables have supported continuous geometry, and prepares a finite starting point and plausible box. Its setup evaluates the same joint density that PyVBMC will see. Those finite evaluations are retained for reuse, while the setup work is recorded as a function-equivalent cost.</p>
-<p>The printed table describes both coordinate systems. The two unbounded <code class="docutils literal notranslate"><span class="pre">beta</span></code> coordinates stay in model space. The one-sided positive <code class="docutils literal notranslate"><span class="pre">sigma</span></code> keeps PyMC’s <code class="docutils literal notranslate"><span class="pre">sigma_log__</span></code> transform, so PyVBMC works on an unbounded coordinate and its log joint includes the transform Jacobian. The default plausible box comes from local curvature, with prior-draw fallbacks when curvature is not usable.</p>
+<section id="from-the-pymc-model-to-pyvbmc">
+<h2>2. From the PyMC model to PyVBMC<a class="headerlink" href="#from-the-pymc-model-to-pyvbmc" title="Link to this heading">#</a></h2>
+<p>In Examples 1 and 2, we set up PyVBMC by hand: we wrote the log-joint as a function, chose the hard and plausible bounds, and picked a starting point, ideally near the mode of the posterior. <code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> does all of this from the PyMC model:</p>
+<ul class="simple">
+<li><p>the target is the model’s log-joint density, priors included;</p></li>
+<li><p>the hard bounds follow from the support of each parameter;</p></li>
+<li><p>the starting point is the mode of the log-joint, found by a short optimization, and the plausible bounds extend three standard deviations on either side of it, as estimated from the curvature of the log-joint at the mode.</p></li>
+</ul>
+<p>Printing the target shows how PyVBMC sees the parameters of the model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <span class="n">PyMCTarget</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
@@ -613,53 +629,94 @@ sigma | () | sigma_log__ | LogTransform | [[-inf], [inf]] | [[-0.95859605], [-0.
 </div>
 </div>
 </div>
+<p>PyVBMC works with a flat vector of parameters, so the vector <code class="docutils literal notranslate"><span class="pre">beta</span></code> becomes the two coordinates <code class="docutils literal notranslate"><span class="pre">beta[intercept]</span></code> and <code class="docutils literal notranslate"><span class="pre">beta[slope]</span></code>. Since <code class="docutils literal notranslate"><span class="pre">sigma</span></code> is positive, PyVBMC works with its logarithm, <code class="docutils literal notranslate"><span class="pre">sigma_log__</span></code>, as PyMC’s own samplers do; the target includes the Jacobian of this change of variables, which leaves the model evidence unchanged. All three coordinates are then unbounded, and the plausible bounds and the starting point of <code class="docutils literal notranslate"><span class="pre">sigma</span></code> are on the log scale.</p>
+<p>The setup evaluates the model a few times. PyVBMC counts these evaluations toward its budget (the option <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code>), and reuses their results.</p>
 </section>
 <section id="run-pyvbmc">
 <h2>3. Run PyVBMC<a class="headerlink" href="#run-pyvbmc" title="Link to this heading">#</a></h2>
-<p>Passing the target directly resolves its starting point, hard and plausible bounds, setup observations, and setup cost. <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code> is the total function-equivalent allowance: the target’s setup cost is charged once, and the remainder is available for fresh evaluations during optimization. Reused setup observations do not increment the fresh-call counter, and PyVBMC still constructs its ordinary initial design.</p>
+<p>We pass the target to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> in place of the log-joint, the bounds and the starting point, and run the inference with the default options:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">total_budget</span> <span class="o">=</span> <span class="mi">150</span>
-<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
-    <span class="n">target</span><span class="p">,</span>
-    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_fun_evals"</span><span class="p">:</span> <span class="n">total_budget</span><span class="p">,</span> <span class="s2">"display"</span><span class="p">:</span> <span class="s2">"off"</span><span class="p">},</span>
-    <span class="n">seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
 <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
-
-<span class="n">budget</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">"evaluation_budget"</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Convergence status: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">'convergence_status'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"Function-equivalent budget: "</span>
-    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">budget</span><span class="p">[</span><span class="s1">'used'</span><span class="p">]</span><span class="si">}</span><span class="s2"> used of </span><span class="si">{</span><span class="n">budget</span><span class="p">[</span><span class="s1">'limit'</span><span class="p">]</span><span class="si">}</span><span class="s2"> "</span>
-    <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">budget</span><span class="p">[</span><span class="s1">'initialization'</span><span class="p">]</span><span class="si">}</span><span class="s2"> setup + </span><span class="si">{</span><span class="n">budget</span><span class="p">[</span><span class="s1">'new_calls'</span><span class="p">]</span><span class="si">}</span><span class="s2"> fresh)"</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"Reused setup observations: "</span>
-    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'precomputed_observations'</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
-<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Convergence status: probable
-Function-equivalent budget: 76 used of 150 (12 setup + 64 fresh)
-Reused setup observations: 9
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+Performance settings: saved calibration.
+Tip: Run VBMC 3–4 times with different starting points. Compare the posterior plots across runs; large differences can indicate that a run missed part of the posterior.
+https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_4_validation.html
+ Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     sKL-iter[q]   K[q]  Convergence    Action
+     0         9  /    9         -33.12          0.48      69128.12        2        inf       start warm-up
+     1        14  /    9         -35.04          0.04          1.59        2        inf       
+     2        19  /    9         -34.92          0.03          0.03        2       1.12       
+     3        24  /    9         -34.91          0.01          0.04        2      0.739       
+     4        29  /    9         -34.92          0.00          0.01        2      0.177       end warm-up
+     5        34  /    9         -34.90          0.00          0.01        2       0.22       
+     6        39  /    9         -34.93          0.00          0.00        2      0.121       
+     7        44  /    9         -34.91          0.00          0.00        5     0.0687       
+     8        49  /    9         -34.92          0.00          0.00        8     0.0375       
+     9        54  /    9         -34.91          0.00          0.00        8     0.0569       
+    10        59  /    9         -34.89          0.00          0.00       11     0.0688       rotoscale, undo rotoscale
+    11        64  /    9         -34.92          0.00          0.00       12     0.0964       
+    12        69  /    9         -34.91          0.00          0.00       12     0.0425       stable
+   inf        69  /    9         -34.91          0.00          0.00       50     0.0425       finalize
+Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
+Estimated ELBO: -34.909 +/-0.001.
+Function-equivalent budget: 81 / 250 (initialization 12 + VBMC 69)
 </pre></div>
 </div>
 </div>
 </div>
+<p>The output is the iteration trace described in Example 2, with one more column: <code class="docutils literal notranslate"><span class="pre">f-cache</span></code> counts the evaluations of the setup that PyVBMC reused, and <code class="docutils literal notranslate"><span class="pre">f-count</span></code> counts PyVBMC’s own evaluations. The last line gives the total number of evaluations used, including those of the setup (<code class="docutils literal notranslate"><span class="pre">initialization</span></code>), and the budget.</p>
+<p>As in Example 1, two especially relevant statistics are the ELBO, a lower bound on the log model evidence <span class="math notranslate nohighlight">\(\log p(\mathcal{D})\)</span>, and its uncertainty. For this model, we can compute the exact log evidence for comparison. Given <span class="math notranslate nohighlight">\(\sigma\)</span>, the coefficients integrate out analytically: the observations are jointly Gaussian, <span class="math notranslate nohighlight">\(\mathbf{y} \mid \sigma \sim \mathcal{N}\left(\mathbf{0}, \sigma^2 \mathbf{I} + 5^2 \mathbf{X} \mathbf{X}^\top\right)\)</span>, where <span class="math notranslate nohighlight">\(\mathbf{X}\)</span> is the design matrix. A one-dimensional integral over the prior of <span class="math notranslate nohighlight">\(\sigma\)</span> remains, which we compute numerically:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">log_evidence_given_sigma</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""log p(y | sigma), with the coefficients integrated out."""</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">s</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_observations</span><span class="p">)</span> <span class="o">+</span> <span class="mf">5.0</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">design</span> <span class="o">@</span> <span class="n">design</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_observations</span><span class="p">),</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span>
+        <span class="n">observed</span>
+    <span class="p">)</span>
+
+
+<span class="c1"># Factor out exp(shift), so that the integrand is of order one:</span>
+<span class="n">shift</span> <span class="o">=</span> <span class="n">log_evidence_given_sigma</span><span class="p">(</span><span class="n">sigma_true</span><span class="p">)</span>
+<span class="n">integral</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">quad</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_evidence_given_sigma</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span>
+    <span class="o">*</span> <span class="n">scs</span><span class="o">.</span><span class="n">halfnorm</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">s</span><span class="p">),</span>
+    <span class="mi">0</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">lml_true</span> <span class="o">=</span> <span class="n">shift</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">integral</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"The true log model evidence is:"</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">lml_true</span><span class="p">,</span> <span class="s2">".3f"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"The obtained ELBO is:"</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"elbo"</span><span class="p">],</span> <span class="s2">".3f"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"The obtained ELBO_SD is:"</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"elbo_sd"</span><span class="p">],</span> <span class="s2">".3f"</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The true log model evidence is: -34.910
+The obtained ELBO is: -34.909
+The obtained ELBO_SD is: 0.001
+</pre></div>
+</div>
+</div>
+</div>
+<p>The ELBO is very close to the true log model evidence. The model evidence is the basis of Bayesian model comparison: to compare models fit to the same data, compare their ELBOs.</p>
 </section>
 <section id="back-to-pymc">
 <h2>4. Back to PyMC<a class="headerlink" href="#back-to-pymc" title="Link to this heading">#</a></h2>
-<p>The variational posterior lives internally in a flat PyVBMC coordinate system. <code class="docutils literal notranslate"><span class="pre">target.to_arviz</span></code> draws from it and returns an ArviZ <code class="docutils literal notranslate"><span class="pre">DataTree</span></code> whose posterior variables have the original PyMC names, shapes, dimensions, and coordinates. The summary below asks only for marginal statistics: unlike MCMC draws, independent draws from a fitted variational distribution do not have chain convergence diagnostics such as <span class="math notranslate nohighlight">\(\hat R\)</span>.</p>
+<p>To analyze the posterior with PyMC and ArviZ, <code class="docutils literal notranslate"><span class="pre">target.to_arviz</span></code> draws samples from the variational posterior and returns them as an ArviZ <code class="docutils literal notranslate"><span class="pre">DataTree</span></code>, under the model’s own variable names, shapes and coordinates, with <code class="docutils literal notranslate"><span class="pre">sigma</span></code> back on its original scale. ArviZ summarizes them as it would the draws of a PyMC sampler:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_data</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_data</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to_arviz</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">4000</span><span class="p">)</span>
 <span class="n">vbmc_summary</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span>
     <span class="n">posterior_data</span><span class="p">,</span>
     <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">],</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">"stats"</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">"stats"</span><span class="p">,</span>  <span class="c1"># MCMC diagnostics do not apply to independent draws</span>
     <span class="n">round_to</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">vbmc_summary</span>
@@ -694,625 +751,42 @@ Reused setup observations: 9
   <tbody>
     <tr>
       <th>beta[intercept]</th>
-      <td>0.210</td>
+      <td>0.213</td>
       <td>0.112</td>
-      <td>0.036</td>
-      <td>0.389</td>
+      <td>0.034</td>
+      <td>0.388</td>
     </tr>
     <tr>
       <th>beta[slope]</th>
-      <td>0.763</td>
-      <td>0.186</td>
-      <td>0.475</td>
-      <td>1.044</td>
+      <td>0.770</td>
+      <td>0.183</td>
+      <td>0.470</td>
+      <td>1.067</td>
     </tr>
     <tr>
       <th>sigma</th>
-      <td>0.606</td>
-      <td>0.085</td>
-      <td>0.492</td>
-      <td>0.754</td>
+      <td>0.607</td>
+      <td>0.086</td>
+      <td>0.489</td>
+      <td>0.759</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
 </div>
-<p>PyMC can compute deterministics from these named posterior variables. Here it adds the full regression mean <code class="docutils literal notranslate"><span class="pre">mu</span></code> to the same <code class="docutils literal notranslate"><span class="pre">DataTree</span></code> for every exported draw. <code class="docutils literal notranslate"><span class="pre">extend_dataset=True</span></code> preserves <code class="docutils literal notranslate"><span class="pre">beta</span></code> and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>; keeping those free variables is essential because posterior predictive sampling conditions on them by name.</p>
+<p>PyMC’s own functions accept these samples too. <code class="docutils literal notranslate"><span class="pre">pm.compute_deterministics</span></code> adds the deterministic variable <code class="docutils literal notranslate"><span class="pre">mu</span></code> to every sample, and <code class="docutils literal notranslate"><span class="pre">pm.sample_posterior_predictive</span></code> draws replicated observations from the model. For each observation, ordered by the predictor, the plot shows the mean and the 50% and 90% intervals of the replicated values, and the observed value as a black dot:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_data</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">compute_deterministics</span><span class="p">(</span>
     <span class="n">posterior_data</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
     <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"mu"</span><span class="p">],</span>
-    <span class="n">extend_dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">extend_dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># keep beta and sigma beside mu</span>
     <span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="k">assert</span> <span class="p">{</span><span class="s2">"beta"</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">,</span> <span class="s2">"mu"</span><span class="p">}</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">posterior_data</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span>
-<span class="n">posterior_data</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s2">"mu"</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
-<defs>
-<symbol id="icon-database" viewBox="0 0 32 32">
-<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
-<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-</symbol>
-<symbol id="icon-file-text2" viewBox="0 0 32 32">
-<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
-<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-</symbol>
-</defs>
-</svg>
-<style>/* CSS stylesheet for displaying xarray objects in notebooks */
-
-:root {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base rgba(0, 0, 0, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, white)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 15))
-  );
-}
-
-html[theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-body.vscode-dark {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base, rgba(255, 255, 255, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, #111111)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 15))
-  );
-}
-
-.xr-wrap {
-  display: block !important;
-  min-width: 300px;
-  max-width: 700px;
-  line-height: 1.6;
-  padding-bottom: 4px;
-}
-
-.xr-text-repr-fallback {
-  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
-  display: none;
-}
-
-.xr-header {
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-
-.xr-header {
-  border-bottom: solid 1px var(--xr-border-color);
-  margin-bottom: 4px;
-}
-
-.xr-header > div,
-.xr-header > ul {
-  display: inline;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.xr-obj-type,
-.xr-obj-name {
-  margin-left: 2px;
-  margin-right: 10px;
-}
-
-.xr-obj-type,
-.xr-group-box-contents > label {
-  color: var(--xr-font-color2);
-  display: block;
-}
-
-.xr-sections {
-  padding-left: 0 !important;
-  display: grid;
-  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
-  margin-block-start: 0;
-  margin-block-end: 0;
-}
-
-.xr-section-item {
-  display: contents;
-}
-
-.xr-section-item > input,
-.xr-group-box-contents > input,
-.xr-array-wrap > input {
-  display: block;
-  opacity: 0;
-  height: 0;
-  margin: 0;
-}
-
-.xr-section-item > input + label,
-.xr-var-item > input + label {
-  color: var(--xr-disabled-color);
-}
-
-.xr-section-item > input:enabled + label,
-.xr-var-item > input:enabled + label,
-.xr-array-wrap > input:enabled + label,
-.xr-group-box-contents > input:enabled + label {
-  cursor: pointer;
-  color: var(--xr-font-color2);
-}
-
-.xr-section-item > input:focus-visible + label,
-.xr-var-item > input:focus-visible + label,
-.xr-array-wrap > input:focus-visible + label,
-.xr-group-box-contents > input:focus-visible + label {
-  outline: auto;
-}
-
-.xr-section-item > input:enabled + label:hover,
-.xr-var-item > input:enabled + label:hover,
-.xr-array-wrap > input:enabled + label:hover,
-.xr-group-box-contents > input:enabled + label:hover {
-  color: var(--xr-font-color0);
-}
-
-.xr-section-summary {
-  grid-column: 1;
-  color: var(--xr-font-color2);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.xr-section-summary > em {
-  font-weight: normal;
-}
-
-.xr-span-grid {
-  grid-column-end: -1;
-}
-
-.xr-section-summary > span {
-  display: inline-block;
-  padding-left: 0.3em;
-}
-
-.xr-group-box-contents > input:checked + label > span {
-  display: inline-block;
-  padding-left: 0.6em;
-}
-
-.xr-section-summary-in:disabled + label {
-  color: var(--xr-font-color2);
-}
-
-.xr-section-summary-in + label:before {
-  display: inline-block;
-  content: "►";
-  font-size: 11px;
-  width: 15px;
-  text-align: center;
-}
-
-.xr-section-summary-in:disabled + label:before {
-  color: var(--xr-disabled-color);
-}
-
-.xr-section-summary-in:checked + label:before {
-  content: "▼";
-}
-
-.xr-section-summary-in:checked + label > span {
-  display: none;
-}
-
-.xr-section-summary,
-.xr-section-inline-details,
-.xr-group-box-contents > label {
-  padding-top: 4px;
-}
-
-.xr-section-inline-details {
-  grid-column: 2 / -1;
-}
-
-.xr-section-details {
-  grid-column: 1 / -1;
-  margin-top: 4px;
-  margin-bottom: 5px;
-}
-
-.xr-section-summary-in ~ .xr-section-details {
-  display: none;
-}
-
-.xr-section-summary-in:checked ~ .xr-section-details {
-  display: contents;
-}
-
-.xr-children {
-  display: inline-grid;
-  grid-template-columns: 100%;
-  grid-column: 1 / -1;
-  padding-top: 4px;
-}
-
-.xr-group-box {
-  display: inline-grid;
-  grid-template-columns: 0px 30px auto;
-}
-
-.xr-group-box-vline {
-  grid-column-start: 1;
-  border-right: 0.2em solid;
-  border-color: var(--xr-border-color);
-  width: 0px;
-}
-
-.xr-group-box-hline {
-  grid-column-start: 2;
-  grid-row-start: 1;
-  height: 1em;
-  width: 26px;
-  border-bottom: 0.2em solid;
-  border-color: var(--xr-border-color);
-}
-
-.xr-group-box-contents {
-  grid-column-start: 3;
-  padding-bottom: 4px;
-}
-
-.xr-group-box-contents > label::before {
-  content: "📂";
-  padding-right: 0.3em;
-}
-
-.xr-group-box-contents > input:checked + label::before {
-  content: "📁";
-}
-
-.xr-group-box-contents > input:checked + label {
-  padding-bottom: 0px;
-}
-
-.xr-group-box-contents > input:checked ~ .xr-sections {
-  display: none;
-}
-
-.xr-group-box-contents > input + label > span {
-  display: none;
-}
-
-.xr-group-box-ellipsis {
-  font-size: 1.4em;
-  font-weight: 900;
-  color: var(--xr-font-color2);
-  letter-spacing: 0.15em;
-  cursor: default;
-}
-
-.xr-array-wrap {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 20px auto;
-}
-
-.xr-array-wrap > label {
-  grid-column: 1;
-  vertical-align: top;
-}
-
-.xr-preview {
-  color: var(--xr-font-color3);
-}
-
-.xr-array-preview,
-.xr-array-data {
-  padding: 0 5px !important;
-  grid-column: 2;
-}
-
-.xr-array-data,
-.xr-array-in:checked ~ .xr-array-preview {
-  display: none;
-}
-
-.xr-array-in:checked ~ .xr-array-data,
-.xr-array-preview {
-  display: inline-block;
-}
-
-.xr-dim-list {
-  display: inline-block !important;
-  list-style: none;
-  padding: 0 !important;
-  margin: 0;
-}
-
-.xr-dim-list li {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-}
-
-.xr-dim-list:before {
-  content: "(";
-}
-
-.xr-dim-list:after {
-  content: ")";
-}
-
-.xr-dim-list li:not(:last-child):after {
-  content: ",";
-  padding-right: 5px;
-}
-
-.xr-has-index {
-  font-weight: bold;
-}
-
-.xr-var-list,
-.xr-var-item {
-  display: contents;
-}
-
-.xr-var-item > div,
-.xr-var-item label,
-.xr-var-item > .xr-var-name span {
-  background-color: var(--xr-background-color-row-even);
-  border-color: var(--xr-background-color-row-odd);
-  margin-bottom: 0;
-  padding-top: 2px;
-}
-
-.xr-var-item > .xr-var-name:hover span {
-  padding-right: 5px;
-}
-
-.xr-var-list > li:nth-child(odd) > div,
-.xr-var-list > li:nth-child(odd) > label,
-.xr-var-list > li:nth-child(odd) > .xr-var-name span {
-  background-color: var(--xr-background-color-row-odd);
-  border-color: var(--xr-background-color-row-even);
-}
-
-.xr-var-name {
-  grid-column: 1;
-}
-
-.xr-var-dims {
-  grid-column: 2;
-}
-
-.xr-var-dtype {
-  grid-column: 3;
-  text-align: right;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-preview {
-  grid-column: 4;
-}
-
-.xr-index-preview {
-  grid-column: 2 / 5;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-name,
-.xr-var-dims,
-.xr-var-dtype,
-.xr-preview,
-.xr-attrs dt {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 10px;
-}
-
-.xr-var-name:hover,
-.xr-var-dims:hover,
-.xr-var-dtype:hover,
-.xr-attrs dt:hover {
-  overflow: visible;
-  width: auto;
-  z-index: 1;
-}
-
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  display: none;
-  border-top: 2px dotted var(--xr-background-color);
-  padding-bottom: 20px !important;
-  padding-top: 10px !important;
-}
-
-.xr-var-attrs-in + label,
-.xr-var-data-in + label,
-.xr-index-data-in + label {
-  padding: 0 1px;
-}
-
-.xr-var-attrs-in:checked ~ .xr-var-attrs,
-.xr-var-data-in:checked ~ .xr-var-data,
-.xr-index-data-in:checked ~ .xr-index-data {
-  display: block;
-}
-
-.xr-var-data > table {
-  float: right;
-}
-
-.xr-var-data > pre,
-.xr-index-data > pre,
-.xr-var-data > table > tbody > tr {
-  background-color: transparent !important;
-}
-
-.xr-var-name span,
-.xr-var-data,
-.xr-index-name div,
-.xr-index-data,
-.xr-attrs {
-  padding-left: 25px !important;
-}
-
-.xr-attrs,
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  grid-column: 1 / -1;
-}
-
-dl.xr-attrs {
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: 125px auto;
-}
-
-.xr-attrs dt,
-.xr-attrs dd {
-  padding: 0;
-  margin: 0;
-  float: left;
-  padding-right: 10px;
-  width: auto;
-}
-
-.xr-attrs dt {
-  font-weight: normal;
-  grid-column: 1;
-}
-
-.xr-attrs dt:hover span {
-  display: inline-block;
-  background: var(--xr-background-color);
-  padding-right: 10px;
-}
-
-.xr-attrs dd {
-  grid-column: 2;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.xr-icon-database,
-.xr-icon-file-text2,
-.xr-no-icon {
-  display: inline-block;
-  vertical-align: middle;
-  width: 1em;
-  height: 1.5em !important;
-  stroke-width: 0;
-  stroke: currentColor;
-  fill: currentColor;
-}
-
-.xr-var-attrs-in:checked + label > .xr-icon-file-text2,
-.xr-var-data-in:checked + label > .xr-icon-database,
-.xr-index-data-in:checked + label > .xr-icon-database {
-  color: var(--xr-font-color0);
-  filter: drop-shadow(1px 1px 5px var(--xr-font-color2));
-  stroke-width: 0.8px;
-}
-</style><pre class='xr-text-repr-fallback'>&lt;xarray.DataArray &#x27;mu&#x27; (chain: 1, draw: 1000, observation: 30)&gt; Size: 240kB
-array([[[-0.75299888, -0.68738921, -0.62177954, ...,  1.01846218,
-          1.08407185,  1.14968152],
-        [-0.4080201 , -0.36713328, -0.32624646, ...,  0.69592403,
-          0.73681085,  0.77769767],
-        [-0.90205802, -0.84201669, -0.78197537, ...,  0.71905771,
-          0.77909904,  0.83914036],
-        ...,
-        [-0.22499476, -0.18577597, -0.14655719, ...,  0.83391246,
-          0.87313125,  0.91235003],
-        [-0.39590035, -0.35762397, -0.3193476 , ...,  0.63756181,
-          0.67583819,  0.71411456],
-        [-0.97339688, -0.896401  , -0.81940511, ...,  1.10549202,
-          1.18248791,  1.25948379]]], shape=(1, 1000, 30))
-Coordinates:
-  * chain        (chain) int64 8B 0
-  * draw         (draw) int64 8kB 0 1 2 3 4 5 6 ... 993 994 995 996 997 998 999
-  * observation  (observation) int64 240B 0 1 2 3 4 5 6 ... 23 24 25 26 27 28 29</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;mu&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>chain</span>: 1</li><li><span class='xr-has-index'>draw</span>: 1000</li><li><span class='xr-has-index'>observation</span>: 30</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-e6337b61-43c7-40ed-8ea9-6ad1dda57d19' class='xr-array-in' type='checkbox' checked><label for='section-e6337b61-43c7-40ed-8ea9-6ad1dda57d19' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>-0.753 -0.6874 -0.6218 -0.5562 -0.4906 ... 1.028 1.105 1.182 1.259</span></div><div class='xr-array-data'><pre>array([[[-0.75299888, -0.68738921, -0.62177954, ...,  1.01846218,
-          1.08407185,  1.14968152],
-        [-0.4080201 , -0.36713328, -0.32624646, ...,  0.69592403,
-          0.73681085,  0.77769767],
-        [-0.90205802, -0.84201669, -0.78197537, ...,  0.71905771,
-          0.77909904,  0.83914036],
-        ...,
-        [-0.22499476, -0.18577597, -0.14655719, ...,  0.83391246,
-          0.87313125,  0.91235003],
-        [-0.39590035, -0.35762397, -0.3193476 , ...,  0.63756181,
-          0.67583819,  0.71411456],
-        [-0.97339688, -0.896401  , -0.81940511, ...,  1.10549202,
-          1.18248791,  1.25948379]]], shape=(1, 1000, 30))</pre></div></div></li><li class='xr-section-item'><input id='section-56d80918-bd56-4e6b-b06d-0a9937a237ae' class='xr-section-summary-in' type='checkbox' checked /><label for='section-56d80918-bd56-4e6b-b06d-0a9937a237ae' class='xr-section-summary' title='Expand/collapse section'>Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>chain</span></div><div class='xr-var-dims'>(chain)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0</div><input id='attrs-41881669-41cd-461b-bae4-25585b756f48' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-41881669-41cd-461b-bae4-25585b756f48' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-c8256707-5bd1-45bc-a70d-0fbd5991b026' class='xr-var-data-in' type='checkbox'><label for='data-c8256707-5bd1-45bc-a70d-0fbd5991b026' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([0])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>draw</span></div><div class='xr-var-dims'>(draw)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0 1 2 3 4 5 ... 995 996 997 998 999</div><input id='attrs-40b7d335-544c-43a3-9b64-efec876f39e6' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-40b7d335-544c-43a3-9b64-efec876f39e6' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-4dda3d8c-3d73-4d74-ad1c-c6bbe7fd289a' class='xr-var-data-in' type='checkbox'><label for='data-4dda3d8c-3d73-4d74-ad1c-c6bbe7fd289a' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([  0,   1,   2, ..., 997, 998, 999], shape=(1000,))</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>observation</span></div><div class='xr-var-dims'>(observation)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0 1 2 3 4 5 6 ... 24 25 26 27 28 29</div><input id='attrs-a2ec3e5b-0564-4730-9f5e-941910b395b1' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-a2ec3e5b-0564-4730-9f5e-941910b395b1' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-3e118024-e0e1-403a-bae8-50e5a8795493' class='xr-var-data-in' type='checkbox'><label for='data-3e118024-e0e1-403a-bae8-50e5a8795493' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
-       18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])</pre></div></li></ul></div></li></ul></div></div></div></div>
-</div>
-<p>The original model retained by <code class="docutils literal notranslate"><span class="pre">target.model</span></code> is also the prediction model. We draw replicated observations and use ArviZ 1.x’s interval plot to compare their posterior predictive intervals with the observed data.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_predictive</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample_posterior_predictive</span><span class="p">(</span>
+<span class="n">posterior_predictive</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample_posterior_predictive</span><span class="p">(</span>
     <span class="n">posterior_data</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
     <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"y"</span><span class="p">],</span>
     <span class="n">random_seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">,</span>
     <span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1330,41 +804,32 @@ Coordinates:
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Sampling: [y]
 </pre></div>
 </div>
-<img alt="../_images/535f2758d146548ef8a6f03c360bb2fa3d0b3e9ec2a8452fd59a688f9d40a8f7.png" src="../_images/535f2758d146548ef8a6f03c360bb2fa3d0b3e9ec2a8452fd59a688f9d40a8f7.png" />
+<img alt="../_images/33ecc6af059c4d6425cc717d28ecfe7518408ea063f0caca07a2bffb781fc8e2.png" src="../_images/33ecc6af059c4d6425cc717d28ecfe7518408ea063f0caca07a2bffb781fc8e2.png" />
 </div>
 </div>
 </section>
-<section id="comparison-with-pymc-s-nuts-sampler">
-<h2>5. Comparison with PyMC’s NUTS sampler<a class="headerlink" href="#comparison-with-pymc-s-nuts-sampler" title="Link to this heading">#</a></h2>
-<p>For this small, smooth model, NUTS is a natural reference. We run two short seeded chains on one core, then compare the marginal intervals from NUTS with those from PyVBMC. This is a posterior comparison, rather than a comparison with the setup probe or with a fixed parameter truth: finite simulated data move the posterior away from the values used to generate them.</p>
+<section id="comparison-with-nuts">
+<h2>5. Comparison with NUTS<a class="headerlink" href="#comparison-with-nuts" title="Link to this heading">#</a></h2>
+<p>For a model as cheap as this one, PyMC’s NUTS sampler is the natural reference. We run it with PyMC’s default settings, with the four chains one after the other (<code class="docutils literal notranslate"><span class="pre">cores=1</span></code>), and set its summary beside PyVBMC’s:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">model</span><span class="p">:</span>
     <span class="n">nuts_data</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
-        <span class="n">draws</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-        <span class="n">tune</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-        <span class="n">chains</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-        <span class="n">cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">target_accept</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
-        <span class="n">random_seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">,</span>
-        <span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">chains</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">,</span> <span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">)</span>
 
-<span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span>
-    <span class="n">nuts_data</span><span class="p">,</span>
-    <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">],</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span>
-    <span class="n">round_to</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="n">nuts_summary</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span>
+    <span class="n">nuts_data</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stats"</span><span class="p">,</span> <span class="n">round_to</span><span class="o">=</span><span class="mi">3</span>
 <span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">({</span><span class="s2">"PyVBMC"</span><span class="p">:</span> <span class="n">vbmc_summary</span><span class="p">,</span> <span class="s2">"NUTS"</span><span class="p">:</span> <span class="n">nuts_summary</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Initializing NUTS using jitter+adapt_diag...
-Sequential sampling (2 chains in 1 job)
+Sequential sampling (4 chains in 1 job)
 NUTS: [beta, sigma]
-Sampling 2 chains for 500 tune and 500 draw iterations (1_000 + 1_000 draws total) took 1 seconds.
-We recommend running at least 4 chains for robust computation of convergence diagnostics
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 1 seconds.
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -1377,102 +842,92 @@ We recommend running at least 4 chains for robust computation of convergence dia
         vertical-align: top;
     }
 
-    .dataframe thead th {
-        text-align: right;
+    .dataframe thead tr th {
+        text-align: left;
     }
 </style>
 <table border="1" class="dataframe">
   <thead>
-    <tr style="text-align: right;">
+    <tr>
+      <th></th>
+      <th colspan="4" halign="left">PyVBMC</th>
+      <th colspan="4" halign="left">NUTS</th>
+    </tr>
+    <tr>
       <th></th>
       <th>mean</th>
       <th>sd</th>
       <th>eti89_lb</th>
       <th>eti89_ub</th>
-      <th>ess_bulk</th>
-      <th>ess_tail</th>
-      <th>r_hat</th>
-      <th>mcse_mean</th>
-      <th>mcse_sd</th>
+      <th>mean</th>
+      <th>sd</th>
+      <th>eti89_lb</th>
+      <th>eti89_ub</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>beta[intercept]</th>
-      <td>0.209</td>
-      <td>0.109</td>
-      <td>0.037</td>
-      <td>0.385</td>
-      <td>835.013</td>
-      <td>549.313</td>
-      <td>1.005</td>
-      <td>0.004</td>
-      <td>0.004</td>
+      <td>0.213</td>
+      <td>0.112</td>
+      <td>0.034</td>
+      <td>0.388</td>
+      <td>0.208</td>
+      <td>0.112</td>
+      <td>0.030</td>
+      <td>0.386</td>
     </tr>
     <tr>
       <th>beta[slope]</th>
-      <td>0.759</td>
-      <td>0.196</td>
-      <td>0.450</td>
-      <td>1.075</td>
-      <td>722.737</td>
-      <td>590.703</td>
-      <td>1.000</td>
-      <td>0.007</td>
-      <td>0.007</td>
+      <td>0.770</td>
+      <td>0.183</td>
+      <td>0.470</td>
+      <td>1.067</td>
+      <td>0.767</td>
+      <td>0.183</td>
+      <td>0.475</td>
+      <td>1.051</td>
     </tr>
     <tr>
       <th>sigma</th>
-      <td>0.606</td>
+      <td>0.607</td>
       <td>0.086</td>
-      <td>0.484</td>
-      <td>0.746</td>
-      <td>775.501</td>
-      <td>574.046</td>
-      <td>1.002</td>
-      <td>0.003</td>
-      <td>0.004</td>
+      <td>0.489</td>
+      <td>0.759</td>
+      <td>0.604</td>
+      <td>0.086</td>
+      <td>0.483</td>
+      <td>0.751</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
 </div>
+<p>The two posteriors agree. Their costs differ: for each draw, NUTS follows a trajectory of several steps, and each step evaluates the log density and its gradient.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use a common sample axis for the independent draws and NUTS chains.</span>
-<span class="n">forest_data</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">label</span><span class="p">:</span> <span class="n">az</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
-        <span class="s2">"sample"</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"PyVBMC"</span><span class="p">:</span> <span class="n">posterior_data</span><span class="p">,</span> <span class="s2">"NUTS"</span><span class="p">:</span> <span class="n">nuts_data</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-<span class="p">}</span>
-<span class="n">forest</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">plot_forest</span><span class="p">(</span>
-    <span class="n">forest_data</span><span class="p">,</span>
-    <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">],</span>
-    <span class="n">sample_dims</span><span class="o">=</span><span class="s2">"sample"</span><span class="p">,</span>
-    <span class="n">combined</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">point_estimate</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">,</span>
-    <span class="n">ci_probs</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_gradients</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nuts_data</span><span class="o">.</span><span class="n">sample_stats</span><span class="p">[</span><span class="s2">"n_steps"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"PyVBMC evaluations of the log density:"</span><span class="p">,</span>
+    <span class="n">results</span><span class="p">[</span><span class="s2">"evaluation_budget"</span><span class="p">][</span><span class="s2">"used"</span><span class="p">],</span>
 <span class="p">)</span>
-<span class="n">forest</span><span class="o">.</span><span class="n">add_legend</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"method"</span><span class="p">);</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"NUTS evaluations of the log density and its gradient:"</span><span class="p">,</span> <span class="n">n_gradients</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/f0824237dcc72fa63dc0652c658557abe4c55e5521edff51197402f753397a95.png" src="../_images/f0824237dcc72fa63dc0652c658557abe4c55e5521edff51197402f753397a95.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PyVBMC evaluations of the log density: 81
+NUTS evaluations of the log density and its gradient: 12600
+</pre></div>
 </div>
 </div>
-<p>The paired intervals should substantially overlap for the intercept, slope, and observation scale. Small differences are expected: PyVBMC returns an optimized variational approximation from a limited evaluation budget, whereas NUTS estimates the posterior with correlated Markov-chain draws.</p>
+</div>
+<p>The count for NUTS leaves out its tuning steps, which PyMC does not keep. Each evaluation of this model takes microseconds, so NUTS is the better choice here, and it comes with its own convergence diagnostics. When an evaluation takes seconds or minutes, or provides no gradient, the difference between fewer than a hundred evaluations and more than ten thousand is what makes PyVBMC worth using.</p>
 </section>
 <section id="conclusions">
 <h2>6. Conclusions<a class="headerlink" href="#conclusions" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>Construct <code class="docutils literal notranslate"><span class="pre">PyMCTarget(model)</span></code> once and pass it directly to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>. Setup observations are reused, and setup work is charged once within the total function-equivalent budget.</p></li>
-<li><p>The adapter supports continuous float64 free variables that are unbounded, or that carry PyMC’s log, log-odds or interval transform; a one-sided variable keeps its PyMC transform and its Jacobian. It rejects discrete variables, any other transform (an ordered, a simplex or a custom one), unbounded distributions it does not recognize, bounds that depend on other random variables, and a variable whose coordinates mix one-sided bounds with other bounds.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">target.to_arviz</span></code> restores model variable names, shapes, dimensions, and coordinates. The resulting <code class="docutils literal notranslate"><span class="pre">DataTree</span></code> works with ArviZ summaries and plots and with PyMC deterministics and posterior predictive sampling.</p></li>
-<li><p>PyVBMC is most useful when each target evaluation is expensive, the evaluation budget is limited, or a model-evidence estimate is important. For a cheap differentiable PyMC model where many gradient evaluations are affordable, PyMC’s own NUTS sampler is usually the better default and provides standard MCMC diagnostics.</p></li>
-</ul>
-<p><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> freezes inference inputs when it is constructed. Use <code class="docutils literal notranslate"><span class="pre">target.model</span></code> for prediction, and construct a new target if the inference data or model structure changes.</p>
+<p>In this notebook, we have fit a PyMC model with PyVBMC. <code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> sets up the inference from the model, and <code class="docutils literal notranslate"><span class="pre">target.to_arviz</span></code> returns the posterior to PyMC and ArviZ for summaries and predictions. The ELBO matched the exact log model evidence, and the posterior matched that of NUTS, with a small fraction of the evaluations that NUTS needed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">PyMCTarget</span></code> handles models with continuous parameters; its <a class="reference external" href="https://acerbilab.org/pyvbmc/api/classes/pymc_target.html">documentation</a> lists the models it supports and the options of its setup. The target keeps a copy of the data it was built with, so to fit new data, build a new target. As with any model, validate the results with multiple runs of PyVBMC, as in Example 4.</p>
 </section>
 <section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
@@ -1528,10 +983,10 @@ We recommend running at least 4 chains for robust computation of convergence dia
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-regression-model-in-pymc">1. A regression model in PyMC</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-the-model-to-a-pyvbmc-target">2. From the model to a PyVBMC target</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-the-pymc-model-to-pyvbmc">2. From the PyMC model to PyVBMC</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-pyvbmc">3. Run PyVBMC</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#back-to-pymc">4. Back to PyMC</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-with-pymc-s-nuts-sampler">5. Comparison with PyMC’s NUTS sampler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-with-nuts">5. Comparison with NUTS</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">6. Conclusions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
 </ul>

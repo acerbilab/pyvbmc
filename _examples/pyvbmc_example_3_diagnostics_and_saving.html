@@ -673,8 +673,9 @@ Reshaping plausible upper bounds to (1, 4).
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
-PyVBMC is using standard performance settings. You can optionally tune these for your machine by running pyvbmc.calibrate(). Calibration takes tens of seconds and does not evaluate your model.
-Performance settings: standard settings.
+Performance settings: saved calibration.
+Tip: Run VBMC 3–4 times with different starting points. Compare the posterior plots across runs; large differences can indicate that a run missed part of the posterior.
+https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_4_validation.html
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
      0         10         -12.91         2.29    272806.70        2        inf     start warm-up
      1         15          -4.96         1.34         3.36        2        inf     
@@ -773,7 +774,7 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
 Continuing optimization from previous state.
-Performance settings: standard settings.
+Performance settings: saved calibration.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
      7         45          -4.82         0.15         0.51        2       10.2     
      8         50          -4.73         0.08         0.13        2       2.68     

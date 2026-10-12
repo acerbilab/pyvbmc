@@ -645,8 +645,9 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PyVBMC run 0 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
-PyVBMC is using standard performance settings. You can optionally tune these for your machine by running pyvbmc.calibrate(). Calibration takes tens of seconds and does not evaluate your model.
-Performance settings: standard settings.
+Performance settings: saved calibration.
+Tip: Run VBMC 3–4 times with different starting points. Compare the posterior plots across runs; large differences can indicate that a run missed part of the posterior.
+https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_4_validation.html
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
      0         10          -1.24         1.21    154443.24        2        inf     start warm-up
      1         15          -1.85         0.08         4.75        2        inf     
@@ -668,9 +669,7 @@ Estimated ELBO: -1.530 +/-0.001.
 PyVBMC run 1 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
-Performance settings: standard settings.
-Tip: A maximum-likelihood (MLE) or maximum a posteriori (MAP) estimate can provide a good starting point for PyVBMC. You can use PyBADS, one of our model-fitting tools, to find one, then pass it as x0.
-https://acerbilab.org/model-fitting/
+Performance settings: saved calibration.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
      0         10          -1.29         0.94    225710.68        2        inf     start warm-up
      1         15          -1.80         0.09         6.33        2        inf     
@@ -692,7 +691,7 @@ Estimated ELBO: -1.541 +/-0.001.
 PyVBMC run 2 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
-Performance settings: standard settings.
+Performance settings: saved calibration.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
      0         10          -1.27         0.76    184852.14        2        inf     start warm-up
      1         15          -1.91         0.01         6.58        2        inf     
