@@ -45,7 +45,8 @@ and stack them:
    print(stacked.elbo_details["shrunk_two_level"])
 
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
-walks through this on a bimodal target.
+walks through this on a target with four modes, where each run finds only
+some of them.
 
 .. The S-VBMC runtime tip noisy_elbo (pyvbmc/svbmc/_tip_catalog.py) links
    this label.
