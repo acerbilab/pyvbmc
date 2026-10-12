@@ -45,8 +45,8 @@ and stack them:
    print(stacked.elbo_details["shrunk_two_level"])
 
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
-walks through this on a target with four modes, where each run finds only
-some of them.
+walks through this on a target with four modes, where single runs typically
+find only some of them.
 
 .. The S-VBMC runtime tip noisy_elbo (pyvbmc/svbmc/_tip_catalog.py) links
    this label.
@@ -56,8 +56,9 @@ some of them.
 ELBO reporting
 --------------
 
-S-VBMC computes several estimates of the stacked ELBO, all of them in
-``stacked.elbo_details`` (below). ``stacked.elbo`` reports one of them, the
+S-VBMC computes several estimates of the stacked ELBO at the selected
+weights; ``stacked.elbo_details`` (below) lists them, with a baseline at
+equal run weights and diagnostics. ``stacked.elbo`` reports one of them, the
 *headline* estimate, chosen by the noise status of the stack, and
 ``stacked.elbo_details["headline_method"]`` names it:
 
