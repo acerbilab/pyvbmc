@@ -1,4 +1,4 @@
-![PyVBMC](https://user-images.githubusercontent.com/70731267/225583733-6cc22c33-a198-4868-90be-3818206d1398.svg)
+![PyVBMC](https://raw.githubusercontent.com/acerbilab/pyvbmc/main/logo.svg)
 
 # PyVBMC: Variational Bayesian Monte Carlo in Python
 ![Version](https://img.shields.io/badge/dynamic/json?label=python&query=info.requires_python&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fpyvbmc%2Fjson)
