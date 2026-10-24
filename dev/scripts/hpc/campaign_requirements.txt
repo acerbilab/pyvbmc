@@ -9,7 +9,7 @@
 # package installed from a source tree, editable or not, and one that
 # conda installed.
 #
-# The file is frozen (Phase 1b of the plan, 2026-09-28): it pins every
+# The file was first frozen in Phase 1b of the plan, 2026-09-28: it pins every
 # package of the first environment built from the direct requirements,
 # dependencies included (`python -m pip list --format=freeze
 # --exclude-editable` of that environment), and the Python below to its
@@ -26,6 +26,11 @@
 # conda also installs packaging, which stays pinned as a direct
 # requirement.
 #
+# Pillow and filelock received security updates on 2026-10-24. The October 2
+# release-gate campaigns used the original pins at harness commit ff3ed014.
+# Recreate a recorded campaign from its harness commit; changed pins require
+# a new environment at a new prefix and a new campaign directory.
+#
 # The interpreter, which the build takes from conda-forge:
 # python==3.12.14
 
@@ -34,7 +39,7 @@ contourpy==1.4.0
 corner==2.3.0
 cycler==0.12.1
 dill==0.4.1
-filelock==3.32.5
+filelock==4.2.1
 fonttools==4.66.0
 fsspec==2026.9.0
 ImageIO==2.37.4
@@ -48,7 +53,7 @@ networkx==3.7
 numdifftools==0.11.1
 numpy==2.5.2
 packaging==26.3
-pillow==12.3.0
+pillow==13.0.0
 platformdirs==4.11.7
 pluggy==1.6.0
 psutil==7.2.2

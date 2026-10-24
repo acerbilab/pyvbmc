@@ -234,6 +234,13 @@ branch, so that the release commit holds it. Every environment of the
 campaigns is then built from the frozen file, in whatever account, and
 holds the same libraries.
 
+Security updates to the pins apply to future campaigns. Build a new
+environment at a new prefix and prepare a new campaign directory for the
+updated requirements. Recreate a recorded campaign from the requirements
+at its recorded harness commit. The October 2 release-gate campaigns used
+[`ff3ed014`](https://github.com/acerbilab/pyvbmc/blob/ff3ed01463b3c2a031dd2225c9f487dc369d2397/dev/scripts/hpc/campaign_requirements.txt),
+which preserves their original Pillow and filelock pins.
+
 ### The environment check
 
 The test modules of the contract, the driver and the three harnesses run
